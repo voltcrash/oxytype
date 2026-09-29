@@ -1,87 +1,69 @@
-name: Publish Docker image
-
-permissions:
-  contents: read
+name: Publish Oxytype Docker images
 
 on:
   release:
     types: [published]
   workflow_dispatch:
 
-jobs:
-  push_to_registry:
-    env:
-      BE_REPO: monkeytype/monkeytype-backend
-      FE_REPO: monkeytype/monkeytype-frontend
-      PLATFORMS: linux/amd64,linux/arm64
+permissions:
+  contents: read
+  packages: write
 
-    name: Push Docker image to Docker Hub
+jobs:
+  publish:
+    name: Publish to GitHub Container Registry
     runs-on: ubuntu-latest
+    env:
+      BE_REPO: ghcr.io/${{ github.repository }}-backend
+      FE_REPO: ghcr.io/${{ github.repository }}-frontend
+      PLATFORMS: linux/amd64,linux/arm64
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v6
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-      - name: Log in to Docker Hub
+      - uses: actions/checkout@v6
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v4
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Backend extract metadata (tags, labels)
-        id: bemeta
+      - name: Backend image metadata
+        id: backend-meta
         uses: docker/metadata-action@v6
         with:
           images: ${{ env.BE_REPO }}
           tags: |
+            type=raw,value=latest
             type=semver,pattern={{version}}
 
-      - name: Backend build and push Docker image
+      - name: Build and publish backend
         uses: docker/build-push-action@v7
         with:
           context: .
           platforms: ${{ env.PLATFORMS }}
           file: ./docker/backend/Dockerfile
           push: true
-          tags: ${{ env.BE_REPO }}:latest,${{ steps.bemeta.outputs.tags }}
-          labels: ${{ steps.bemeta.outputs.labels }}
+          tags: ${{ steps.backend-meta.outputs.tags }}
+          labels: ${{ steps.backend-meta.outputs.labels }}
           build-args: |
             server_version=${{ github.event.release.tag_name }}
 
-      - name: Backend publish description
-        uses: peter-evans/dockerhub-description@1b9a80c056b620d92cedb9d9b5a223409c68ddfa #v5.0.0
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-          repository: ${{ env.BE_REPO }}
-          short-description: Official backend server for monkeytype.com
-          readme-filepath: ./docs/SELF_HOSTING.md
-
-      - name: Frontend extract metadata (tags, labels)
-        id: femeta
-        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81
+      - name: Frontend image metadata
+        id: frontend-meta
+        uses: docker/metadata-action@v6
         with:
           images: ${{ env.FE_REPO }}
           tags: |
+            type=raw,value=latest
             type=semver,pattern={{version}}
 
-      - name: Frontend build and push Docker image
+      - name: Build and publish frontend
         uses: docker/build-push-action@v7
         with:
           context: .
           platforms: ${{ env.PLATFORMS }}
           file: ./docker/frontend/Dockerfile
           push: true
-          tags: ${{ env.FE_REPO }}:latest,${{ steps.femeta.outputs.tags }}
-          labels: ${{ steps.femeta.outputs.labels }}
-
-      - name: Frontend publish description
-        uses: peter-evans/dockerhub-description@1b9a80c056b620d92cedb9d9b5a223409c68ddfa #v5.0.0
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-          repository: ${{ env.FE_REPO }}
-          short-description: Official frontend server for monkeytype.com
-          readme-filepath: ./docs/SELF_HOSTING.md
+          tags: ${{ steps.frontend-meta.outputs.tags }}
+          labels: ${{ steps.frontend-meta.outputs.labels }}
