@@ -140,9 +140,9 @@ Perf critical: per-keystroke work must not regress. Measure with `utils/profiler
 - [ ] **P6.1** Remove `ElementWithUtils`, `qs`, `qsa`, `qsr` from `utils/dom.ts` (keep pure helpers if any). Delete `hooks/useRefWithUtils.ts` (replace with `hooks/useRef.ts`). Delete `utils/skeleton.ts`. Remove `qs/qsa/qsr` from `addToGlobal` in `index.ts`.
 - [ ] **P6.2** Move remaining DOM helpers in `utils/misc.ts` into their single consumer or delete.
 - [ ] **P6.3** Sweep: `grep -rnE "document\.(querySelector|getElementById)|innerHTML|insertAdjacentHTML|createElement" src/ts` → only §2 exceptions remain. Sweep `<i class="fa` in `.tsx` → `Fa`.
-- [ ] **P6.4** SCSS: delete files/sections no longer referenced (`popups.scss`, `commandline.scss`, `loading.scss`, `test.scss` parts, `media-queries-*.scss` parts). Keep selectors used by `static/themes` & `static/funbox`.
+- [ ] **P6.4** SCSS (leftovers only; per D3 most removed during each task): delete files/sections no longer referenced (`popups.scss`, `commandline.scss`, `loading.scss`, `test.scss` parts, `media-queries-*.scss` parts). Keep selectors used by `static/themes` & `static/funbox`.
 - [ ] **P6.5** Update `CLAUDE.md` / `AGENTS.md`: drop "partially migrated" + legacy `i` tag rule. Update `docs/CONTRIBUTING_ADVANCED.md` if it mentions HTML partials.
-- [ ] **P6.6** Full check: `pnpm full-check` from root. Delete this file (or move to `docs/`) in final commit per D4.
+- [ ] **P6.6** Full check: `pnpm full-check` from root. Keep this file (D4); tick all boxes.
 
 ---
 
@@ -171,5 +171,5 @@ Parallel agents: one on P1, one on P2, one on P3 is safe (disjoint files) — ex
 
 - **D1** Word rendering: imperative-in-component (A, recommended) vs full reactive `<For>` (B)?
 - **D2** Router: keep custom `route-controller` (recommended) vs adopt `@solidjs/router`?
-- **D3** SCSS → Tailwind: convert styles of migrated components now (recommended, per CLAUDE.md) vs keep SCSS, separate effort?
-- **D4** Keep this plan file in final PR or delete before merge?
+- **D3** ✅ Convert each migrated component's styles to Tailwind in the same task/commit. Delete replaced SCSS.
+- **D4** ✅ Keep this file in final PR (P6.6: tick all boxes, don't delete).
