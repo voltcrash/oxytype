@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach, vi } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vite-plus/test";
 import { setup } from "../../__testData__/controller-test";
 import * as PresetDal from "../../../src/dal/preset";
 import { ObjectId } from "mongodb";

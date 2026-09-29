@@ -9,20 +9,17 @@
     }
   },
   "scripts": {
-    "dev": "tsup-node --watch",
-    "build": "tsup-node",
+    "dev": "vp pack --watch",
+    "build": "vp pack",
     "ts-check": "tsc --noEmit",
-    "lint": "oxlint . --type-aware --type-check",
-    "lint-fast": "oxlint ."
+    "lint": "vp lint . --type-aware --type-check",
+    "lint-fast": "vp lint ."
   },
   "devDependencies": {
     "@monkeytype/typescript-config": "workspace:*",
     "@types/node": "24.9.1",
-    "oxlint": "1.77.0",
-    "oxlint-tsgolint": "7.0.2001",
-    "typescript": "7.0.2"
+    "typescript": "7.0.2",
+    "vite-plus": "catalog:"
   },
-  "peerDependencies": {
-    "tsup": "8.4.0"
-  }
+  "peerDependencies": {}
 }

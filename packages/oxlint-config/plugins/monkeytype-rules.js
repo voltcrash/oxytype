@@ -1,4 +1,4 @@
-import { defineRule } from "@oxlint/plugins";
+import { defineRule } from "vite-plus/lint/plugins";
 
 /**
  * Walk a function body looking for a ReturnStatement whose argument is

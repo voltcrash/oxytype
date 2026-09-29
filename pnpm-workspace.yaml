@@ -20,6 +20,21 @@ allowBuilds:
 
 overrides:
   "postcss": "8.5.8"
+  vite@*: "catalog:"
+  vitest@*: "catalog:"
 engineStrict: true
 saveExact: true
 savePrefix: ""
+catalog:
+  vite: npm:@voidzero-dev/vite-plus-core@1.0.0
+  vitest: 5.0.1
+  vite-plus: 1.0.0
+  "@vitest/coverage-v8": 5.0.1
+  "@vitest/browser-playwright": 5.0.1
+peerDependencyRules:
+  allowAny:
+    - vite
+    - vitest
+  allowedVersions:
+    vite: "*"
+    vitest: "*"

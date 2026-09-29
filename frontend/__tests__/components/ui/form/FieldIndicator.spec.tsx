@@ -1,6 +1,6 @@
 import { render } from "@solidjs/testing-library";
 import { AnyFieldApi } from "@tanstack/solid-form";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 
 import { FieldIndicator } from "../../../../src/ts/components/ui/form/FieldIndicator";
 

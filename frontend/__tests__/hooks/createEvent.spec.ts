@@ -1,5 +1,5 @@
 import { createRoot } from "solid-js";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { createEvent } from "../../src/ts/hooks/createEvent";
 
 describe("createEvent", () => {

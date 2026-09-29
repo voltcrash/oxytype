@@ -1,4 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  vi,
+} from "vite-plus/test";
 import { setup } from "../../__testData__/controller-test";
 import { Test as SuperTest } from "supertest";
 import * as ApeKeyDal from "../../../src/dal/ape-keys";

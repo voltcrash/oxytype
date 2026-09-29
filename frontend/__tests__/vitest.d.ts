@@ -1,5 +1,5 @@
 // oxlint-disable typescript/consistent-type-definitions
-import type { Assertion, AsymmetricMatchersContaining } from "vitest";
+import type { Assertion, AsymmetricMatchersContaining } from "vite-plus/test";
 import { TestActivityDay } from "../src/ts/elements/test-activity-calendar";
 
 interface ActivityDayMatchers<R = TestActivityDay> {

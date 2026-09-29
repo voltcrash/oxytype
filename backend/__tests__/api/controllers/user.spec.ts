@@ -7,7 +7,7 @@ import {
   beforeAll,
   afterAll,
   vi,
-} from "vitest";
+} from "vite-plus/test";
 import { setup } from "../../__testData__/controller-test";
 import * as Configuration from "../../../src/init/configuration";
 import { generateCurrentTestActivity } from "../../../src/api/controllers/user";

@@ -1,7 +1,7 @@
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { fileURLToPath } from "url";
-import { vi } from "vitest";
+import { vi } from "vite-plus/test";
 
 const BASE_DIR = resolve(fileURLToPath(import.meta.url), "../../../static");
 

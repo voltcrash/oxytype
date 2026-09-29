@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, afterEach, vi } from "vitest";
+import { afterAll, beforeAll, afterEach, vi } from "vite-plus/test";
 import { Collection, Db, MongoClient, WithId } from "mongodb";
 import { setupCommonMocks } from "../setup-common-mocks";
 import { getConnection } from "../../src/init/redis";

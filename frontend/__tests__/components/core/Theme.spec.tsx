@@ -1,6 +1,6 @@
 import { render, fireEvent } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
 
 import { Theme } from "../../../src/ts/components/core/Theme";
 import { ThemeWithName } from "../../../src/ts/constants/themes";

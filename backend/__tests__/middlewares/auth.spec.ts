@@ -1,4 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  vi,
+} from "vite-plus/test";
 import * as AuthUtils from "../../src/utils/auth";
 import * as Auth from "../../src/middlewares/auth";
 import { DecodedIdToken } from "firebase-admin/auth";

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import { CustomThemeColors } from "@monkeytype/schemas/configs";
 import { PersonalBest, PersonalBests } from "@monkeytype/schemas/shared";

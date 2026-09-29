@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { ObjectId } from "mongodb";
 import * as PresetDal from "../../../src/dal/preset";
 

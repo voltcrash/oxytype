@@ -5,7 +5,7 @@ import {
   BuildEnvironmentOptions,
   PluginOption,
   CSSOptions,
-} from "vite";
+} from "vite-plus";
 import path from "node:path";
 import injectHTML from "vite-plugin-html-inject";
 import childProcess from "child_process";
@@ -341,6 +341,86 @@ export default defineConfig(({ mode }): UserConfig => {
   }
 
   return {
+    lint: {
+      ignorePatterns: [
+        "node_modules",
+        "dist",
+        "coverage",
+        ".firebase",
+        ".turbo",
+      ],
+      extends: [
+        "../packages/oxlint-config/index.jsonc",
+        "../packages/oxlint-config/plugin.jsonc",
+      ],
+      jsPlugins: [
+        "eslint-plugin-compat",
+        {
+          name: "vite-plus",
+          specifier: "vite-plus/oxlint-plugin",
+        },
+      ],
+      rules: {
+        "compat/compat": "error",
+        "vite-plus/prefer-vite-plus-imports": "error",
+      },
+      overrides: [
+        {
+          files: ["**/*.ts"],
+          rules: {},
+        },
+        {
+          files: ["storybook/**/*.tsx"],
+          rules: {
+            "explicit-function-return-type": "off",
+            "no-explicit-any": "off",
+            "no-unsafe-assignment": "off",
+            "no-empty-function": "off",
+          },
+        },
+        {
+          jsPlugins: ["eslint-plugin-solid", "@tanstack/eslint-plugin-query"],
+          files: ["src/**/*.tsx"],
+          rules: {
+            "explicit-function-return-type": "off",
+            "solid/components-return-once": "error",
+            "solid/event-handlers": "error",
+            "solid/imports": "error",
+            "solid/jsx-no-duplicate-props": "error",
+            "solid/jsx-no-script-url": "error",
+            "solid/jsx-no-undef": "error",
+            "solid/no-array-handlers": "error",
+            "solid/no-destructure": "error",
+            "solid/no-innerhtml": "error",
+            "solid/no-react-deps": "error",
+            "solid/no-react-specific-props": "error",
+            "solid/no-unknown-namespaces": "error",
+            "solid/prefer-classlist": "error",
+            "solid/prefer-for": "error",
+            "solid/prefer-show": "error",
+            "solid/reactivity": "error",
+            "solid/self-closing-comp": [
+              "error",
+              {
+                html: "void",
+              },
+            ],
+            "solid/style-prop": "error",
+            "@tanstack/query/exhaustive-deps": "error",
+            "@tanstack/query/no-rest-destructuring": "error",
+            "@tanstack/query/stable-query-client": "error",
+            "@tanstack/query/no-unstable-deps": "error",
+            "@tanstack/query/infinite-query-property-order": "error",
+            "@tanstack/query/no-void-query-fn": "error",
+            "@tanstack/query/mutation-property-order": "error",
+          },
+        },
+      ],
+      options: {
+        typeAware: true,
+        typeCheck: true,
+      },
+    },
     plugins: getPlugins({ isDevelopment, useSentry: useSentry, env }),
     build: getBuildOptions({ enableSourceMaps: useSentry }),
     css: getCssOptions({ isDevelopment }),

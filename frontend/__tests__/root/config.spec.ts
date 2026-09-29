@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterAll, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterAll, vi } from "vite-plus/test";
 import * as Config from "../../src/ts/config/setters";
 import * as Lifecycle from "../../src/ts/config/lifecycle";
 import * as ConfigUtils from "../../src/ts/config/utils";

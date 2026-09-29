@@ -1,5 +1,5 @@
 import { render } from "@solidjs/testing-library";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
 
 import { AnimatedModal } from "../../../src/ts/components/common/AnimatedModal";
 import { hideModal, showModal } from "../../../src/ts/states/modals";

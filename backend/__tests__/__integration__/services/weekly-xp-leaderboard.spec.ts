@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterEach } from "vitest";
+import { describe, it, expect, beforeAll, afterEach } from "vite-plus/test";
 import * as WeeklyXpLeaderboard from "../../../src/services/weekly-xp-leaderboard";
 import { Configuration } from "@monkeytype/schemas/configuration";
 import { ObjectId } from "mongodb";

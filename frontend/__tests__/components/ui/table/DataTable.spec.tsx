@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
 
 import { DataTable } from "../../../../src/ts/components/ui/table/DataTable";
 

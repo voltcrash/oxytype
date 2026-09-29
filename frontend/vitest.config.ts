@@ -1,4 +1,4 @@
-import { defineConfig, UserWorkspaceConfig } from "vitest/config";
+import { defineConfig, UserWorkspaceConfig } from "vite-plus";
 import { languageHashes } from "./vite-plugins/language-hashes";
 import { envConfig } from "./vite-plugins/env-config";
 import solidPlugin from "vite-plugin-solid";
@@ -66,6 +66,11 @@ export const projects: UserWorkspaceConfig[] = [
 ];
 export default defineConfig({
   test: {
+    // Vitest v4 compatibility: preserve mock call history.
+    // Remove after tests no longer rely on calls from setup or earlier tests.
+    // https://viteplus.dev/guide/vitest-v5#remove-unneeded-compatibility-settings
+    // https://vitest.dev/guide/migration/#clearmocks-is-enabled-by-default
+    clearMocks: false,
     projects: projects,
     coverage: {
       include: ["**/*.ts", "**/*.tsx"],

@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, afterEach, vi } from "vitest";
+import { afterAll, beforeAll, afterEach, vi } from "vite-plus/test";
 import { BASE_CONFIGURATION } from "../src/constants/base-configuration";
 import { setupCommonMocks } from "./setup-common-mocks";
 import { __testing } from "../src/init/configuration";

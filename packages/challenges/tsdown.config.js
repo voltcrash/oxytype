@@ -1,3 +1,3 @@
-import { extendConfig } from "@monkeytype/tsup-config";
+import { extendConfig } from "@monkeytype/tsdown-config";
 
 export default extendConfig(() => ({ entry: ["src/index.ts"] }));

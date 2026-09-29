@@ -9,13 +9,13 @@
     }
   },
   "scripts": {
-    "dev": "tsup-node --watch",
-    "build": "npm run madge && tsup-node",
-    "test": "vitest run",
+    "dev": "vp pack --watch",
+    "build": "npm run madge && vp pack",
+    "test": "vp test run",
     "madge": " madge --circular --extensions ts ./src",
     "ts-check": "tsc --noEmit",
-    "lint": "oxlint . --type-aware --type-check",
-    "lint-fast": "oxlint .",
+    "lint": "vp lint . --type-aware --type-check",
+    "lint-fast": "vp lint .",
     "george-mapping": "tsx ./scripts/challenge-roles"
   },
   "dependencies": {
@@ -26,10 +26,8 @@
     "@monkeytype/typescript-config": "workspace:*",
     "@types/node": "24.9.1",
     "madge": "8.0.0",
-    "oxlint": "1.77.0",
-    "oxlint-tsgolint": "7.0.2001",
-    "tsup": "8.4.0",
     "typescript": "7.0.2",
-    "vitest": "4.1.0"
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   }
 }

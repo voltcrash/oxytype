@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vite-plus/test";
 import { setup } from "../../__testData__/controller-test";
 import GeorgeQueue from "../../../src/queues/george-queue";
 import crypto from "crypto";

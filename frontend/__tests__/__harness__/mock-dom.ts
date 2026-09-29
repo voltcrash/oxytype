@@ -1,4 +1,4 @@
-import { vi } from "vitest";
+import { vi } from "vite-plus/test";
 import { ElementsWithUtils, ElementWithUtils } from "../../src/ts/utils/dom";
 
 // Mock dom-utils to always return a mock element

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import * as Migration from "../../../__migration__/testActivity";
 import * as UserTestData from "../../__testData__/users";
 import * as UserDal from "../../../src/dal/user";
