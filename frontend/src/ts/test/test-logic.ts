@@ -73,7 +73,6 @@ import * as AnalyticsController from "../controllers/analytics-controller";
 import { getAuthenticatedUser } from "../firebase";
 import { highlight } from "../events/keymap";
 import * as LazyModeState from "../legacy-states/remember-lazy-mode";
-import Format from "../singletons/format";
 import { Mode } from "@monkeytype/schemas/shared";
 import {
   CompletedEvent,
@@ -95,7 +94,6 @@ import { tryCatch } from "@monkeytype/util/trycatch";
 import * as Sentry from "../sentry";
 import { showLoaderBar, hideLoaderBar } from "../states/loader-bar";
 import { canQuickRestart } from "../utils/quick-restart";
-import { animate } from "animejs";
 import { setInputElementValue } from "../input/input-element";
 import { debounce } from "throttle-debounce";
 import { qs } from "../utils/dom";
@@ -690,7 +688,7 @@ export async function retrySavingResult(): Promise<void> {
   }
 
   retrySaving.canRetry = false;
-  qs("#retrySavingResultButton")?.hide();
+  Result.updateRetrySaving(false);
 
   showNoticeNotification("Retrying to save...");
 
@@ -1123,7 +1121,7 @@ async function saveResult(
     //only allow retry if status is not in this list
     if (![460, 461, 463, 464, 465, 466].includes(response.status)) {
       retrySaving.canRetry = true;
-      qs("#retrySavingResultButton")?.show();
+      Result.updateRetrySaving(true);
       if (!isRetrying) {
         retrySaving.completedEvent = result;
       }
@@ -1144,11 +1142,7 @@ async function saveResult(
   }
 
   const data = response.body.data;
-  qs("#result .stats .tags .editTagsButton")?.setAttribute(
-    "data-result-id",
-    data.insertedId,
-  );
-  qs("#result .stats .tags .editTagsButton")?.removeClass("invisible");
+  Result.updateSavedResultId(data.insertedId);
 
   const localDataToSave: DB.SaveLocalResultData = {};
 
@@ -1200,27 +1194,9 @@ async function saveResult(
     Result.showErrorCrownIfNeeded();
   }
 
-  const dailyLeaderboardEl = document.querySelector(
-    "#result .stats .dailyLeaderboard",
-  ) as HTMLElement;
+  Result.updateDailyLeaderboardRank(data.dailyLeaderboardRank);
 
-  if (data.dailyLeaderboardRank === undefined) {
-    dailyLeaderboardEl.classList.add("hidden");
-  } else {
-    dailyLeaderboardEl.classList.remove("hidden");
-    dailyLeaderboardEl.style.maxWidth = "13rem";
-
-    animate(dailyLeaderboardEl, {
-      opacity: [0, 1],
-      duration: Misc.applyReducedMotion(250),
-    });
-
-    qs("#result .stats .dailyLeaderboard .bottom")?.setHtml(
-      Format.rank(data.dailyLeaderboardRank, { fallback: "" }),
-    );
-  }
-
-  qs("#retrySavingResultButton")?.hide();
+  Result.updateRetrySaving(false);
   if (isRetrying) {
     showSuccessNotification("Result saved", { important: true });
   }

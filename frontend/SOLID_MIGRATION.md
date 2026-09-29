@@ -110,7 +110,8 @@ Legend: `[ ]` todo, `[~]` in progress, `[x]` done. `deps:` = must be done first.
 
 Order matters; each sub-task a commit. Container first, then pieces.
 
-- [~] **P3.1** Result state: store `states/result.ts` holding computed result view model (stats, crown state, tags, quote info, daily lb rank, flags like `loginTip`, `retrySaving`). `test/result.ts#update` computes + sets store; still writes DOM. Tests for view-model builder.
+- [x] **P3.1** Result state: store `states/result.ts` holding computed result view model (stats, crown state, tags, quote info, daily lb rank, flags like `loginTip`, `retrySaving`). `test/result.ts#update` computes + sets store; still writes DOM. Tests for view-model builder.
+  > Note: store `states/result.ts` (`resultState`), pure builders in `test/result-view-model.ts` (`buildResultStats`/`buildSpeedStats`/`buildCrown`, tested). Legacy DOM now rendered from store via `render*` fns in `result.ts`; `test-logic`/`QuoteRateModal`/edit-tags handler go through `Result.update{RetrySaving,SavedResultId,DailyLeaderboardRank,QuoteRating}` / `resultState` instead of DOM attrs. `pb-crown` `currentType` moved to store. Tags list re-rendered whole on edit (same markup minus hidden crown `<i>`). Dropped dead `.infoAndTags` toggle. Baseline spec loginTip assertion ported to `#result .loginTip` + store.
 - [ ] **P3.2** `components/pages/test/result/Result.tsx` shell mounted in place of `#result` wrapper; render stats groups (wpm, acc, raw, characters, consistency, time, test type, other, source) from store. Remove corresponding DOM writes + HTML.
 - [ ] **P3.3** Crown (`test/pb-crown.ts`, `showCrown/updateCrown/showErrorCrownIfNeeded`) → `ResultCrown.tsx`.
 - [ ] **P3.4** Tags group + edit button (`updateTagsAfterEdit`) → uses existing `EditResultTagsModal`.

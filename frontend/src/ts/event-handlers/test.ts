@@ -13,20 +13,17 @@ import { getMode2 } from "../utils/misc";
 import { qs } from "../utils/dom";
 import { getCurrentQuote } from "../states/test";
 import { showEditResultTagsModal } from "../states/edit-result-tags";
+import { resultState } from "../states/result";
 
 const testPage = qs(".pageTest");
 
 testPage?.onChild("click", ".tags .editTagsButton", () => {
   if (__nonReactive.getTags().length > 0) {
-    const resultid =
-      qs(".pageTest .tags .editTagsButton")?.getAttribute("data-result-id") ??
-      "";
-    const activeTagIds =
-      qs(".pageTest .tags .editTagsButton")?.getAttribute(
-        "data-active-tag-ids",
-      ) ?? "";
-    const tags = activeTagIds === "" ? [] : activeTagIds.split(",");
-    showEditResultTagsModal({ _id: resultid, tags, source: "resultPage" });
+    showEditResultTagsModal({
+      _id: resultState.tags.savedResultId ?? "",
+      tags: resultState.tags.items.map((tag) => tag.id),
+      source: "resultPage",
+    });
   }
 });
 

@@ -82,6 +82,9 @@ const state = vi.hoisted(() => ({
   testInvalid: false,
   localPbWpm: 0,
   accuracy: { correct: 0, incorrect: 0 },
+  tags: [] as { _id: string; name: string }[],
+  activeTagIds: [] as string[],
+  tagPbWpm: 0,
 }));
 
 const crown = vi.hoisted(() => ({
@@ -144,9 +147,14 @@ vi.mock("../../src/ts/legacy-states/glarses-mode", () => ({
   get: () => false,
 }));
 vi.mock("../../src/ts/collections/tags", () => ({
-  getLocalTagPB: () => 0,
+  getLocalTagPB: () => state.tagPbWpm,
   saveLocalTagPB: vi.fn(),
-  __nonReactive: { getActiveTags: () => [], getTags: () => [] },
+  __nonReactive: {
+    getActiveTags: () =>
+      state.tags.filter((t) => state.activeTagIds.includes(t._id)),
+    getTags: () => state.tags,
+    getTag: (id: string) => state.tags.find((t) => t._id === id),
+  },
 }));
 vi.mock("../../src/ts/states/core", async (importOriginal) => ({
   ...(await importOriginal<object>()),
@@ -170,7 +178,8 @@ vi.mock("../../src/ts/utils/misc", async (importOriginal) => ({
 }));
 vi.mock("canvas-confetti", () => ({ default: vi.fn() }));
 
-import { update } from "../../src/ts/test/result";
+import { update, updateTagsAfterEdit } from "../../src/ts/test/result";
+import { resultState } from "../../src/ts/states/result";
 import { __testing } from "../../src/ts/config/testing";
 import type { CompletedEvent } from "@monkeytype/schemas/results";
 import type { Config as ConfigType } from "@monkeytype/schemas/configs";
@@ -254,6 +263,9 @@ describe("result update", () => {
     state.testInvalid = false;
     state.localPbWpm = 0;
     state.accuracy = { correct: 150, incorrect: 5 };
+    state.tags = [];
+    state.activeTagIds = [];
+    state.tagPbWpm = 0;
     config();
   });
 
@@ -262,6 +274,10 @@ describe("result update", () => {
       await runUpdate(completedEvent());
 
       expect(el("#result .stats .wpm .top .text").text).toBe("wpm");
+      expect(resultState.stats?.wpm).toEqual({
+        text: "101",
+        ariaLabel: "101.46 wpm",
+      });
       expect(stat("wpm").text).toBe("101");
       expect(stat("wpm").attrs["aria-label"]).toBe("101.46 wpm");
       expect(stat("raw").text).toBe("111");
@@ -474,6 +490,12 @@ describe("result update", () => {
 
       expect(crown.update).toHaveBeenLastCalledWith("pending");
       expect(crownLabel()).toBe("+11.46");
+      expect(resultState.crown).toEqual({
+        visible: true,
+        type: "pending",
+        text: "+11.46",
+        wide: false,
+      });
     });
 
     it("hides crown when not a pb", async () => {
@@ -519,12 +541,65 @@ describe("result update", () => {
   describe("login tip", () => {
     it("is shown only when logged out", async () => {
       await runUpdate(completedEvent());
-      expect(el("main #result .loginTip").hidden).toBeUndefined();
       expect(el("#result .loginTip").hidden).toBe(true);
+      expect(resultState.loginTip).toBe(false);
 
       state.authenticated = false;
       await runUpdate(completedEvent());
-      expect(el("main #result .loginTip").hidden).toBe(false);
+      expect(el("#result .loginTip").hidden).toBe(false);
+      expect(resultState.loginTip).toBe(true);
+    });
+  });
+
+  describe("tags", () => {
+    const tags = (): FakeEl => el("#result .stats .tags");
+
+    it("is hidden when the user has no tags", async () => {
+      await runUpdate(completedEvent());
+
+      expect(tags().hidden).toBe(true);
+      expect(resultState.tags.visible).toBe(false);
+      expect(el("#result .stats .tags .bottom").html).toBe(
+        "<div class='noTags'>no tags</div>",
+      );
+    });
+
+    it("lists active tags with pb state", async () => {
+      state.tags = [
+        { _id: "a", name: "alpha" },
+        { _id: "b", name: "beta" },
+      ];
+      state.activeTagIds = ["a"];
+      state.tagPbWpm = 90;
+      await runUpdate(completedEvent());
+
+      expect(tags().hidden).toBe(false);
+      expect(resultState.tags.items).toEqual([
+        { id: "a", name: "alpha", ariaLabel: "+11.46", pb: true },
+      ]);
+      expect(resultState.tags.savedResultId).toBeUndefined();
+    });
+
+    it("keeps existing tags and appends new ones after edit", async () => {
+      state.tags = [
+        { _id: "a", name: "alpha" },
+        { _id: "b", name: "beta" },
+        { _id: "c", name: "gamma" },
+      ];
+      state.activeTagIds = ["a", "b"];
+      state.tagPbWpm = 120;
+      await runUpdate(completedEvent());
+
+      updateTagsAfterEdit(["b", "c"], ["c"]);
+
+      expect(resultState.tags.items).toEqual([
+        { id: "b", name: "beta", ariaLabel: "PB: 120", pb: false },
+        { id: "c", name: "gamma", pb: true },
+      ]);
+      expect(el("#result .stats .tags .bottom").html).toBe(
+        '<div tagid="b" aria-label="PB: 120" data-balloon-pos="up">beta</div>' +
+          '<div tagid="c">gamma<i class="fas fa-crown"></i></div>',
+      );
     });
   });
 });
