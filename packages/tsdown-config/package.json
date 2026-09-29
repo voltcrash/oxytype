@@ -12,8 +12,8 @@
     "dev": "vp pack --watch",
     "build": "vp pack",
     "ts-check": "tsc --noEmit",
-    "lint": "vp lint . --type-aware --type-check",
-    "lint-fast": "vp lint ."
+    "lint": "vp lint . --type-aware --type-check --format agent",
+    "lint-fast": "vp lint . --format agent"
   },
   "devDependencies": {
     "@monkeytype/typescript-config": "workspace:*",

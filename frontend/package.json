@@ -4,8 +4,8 @@
   "license": "GPL-3.0",
   "type": "module",
   "scripts": {
-    "lint": "vp lint . --type-aware --type-check",
-    "lint-fast": "vp lint .",
+    "lint": "vp lint . --type-aware --type-check --format agent",
+    "lint-fast": "vp lint . --format agent",
     "lint-styles": "stylelint \"**/*.{scss,css}\"",
     "lint-styles-fix": "stylelint \"**/*.{scss,css}\" --fix",
     "lint-json": "eslint static/**/*.json",
@@ -19,7 +19,7 @@
     "dev": "vp dev",
     "test": "vp test run",
     "test-coverage": "vp test run --coverage",
-    "dev-test": "concurrently --kill-others \"vite dev\" \"vitest\"",
+    "dev-test": "concurrently --kill-others \"vp dev\" \"vp test watch\"",
     "tsc": "tsc",
     "docker": "docker compose -f docker/compose.dev.yml up",
     "storybook": "cd storybook && pnpm run storybook",
@@ -130,10 +130,10 @@
   },
   "lint-staged": {
     "*": [
-      "oxfmt --no-error-on-unmatched-pattern -c ../.oxfmtrc.json"
+      "vp fmt --no-error-on-unmatched-pattern"
     ],
     "*.{ts,js,tsx}": [
-      "oxlint --type-aware --type-check"
+      "vp lint --type-aware --type-check --format agent"
     ]
   },
   "browserslist": [

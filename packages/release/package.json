@@ -9,8 +9,8 @@
     "dev": "nodemon --watch src --exec \"node ./src/index.js --dry\"",
     "dev-hotfix": "nodemon --watch src --exec \"node ./src/index.js --dry --hotfix\"",
     "dev-changelog": "nodemon ./src/buildChangelog.js",
-    "lint": "vp lint . --type-aware --type-check",
-    "lint-fast": "vp lint .",
+    "lint": "vp lint . --type-aware --type-check --format agent",
+    "lint-fast": "vp lint . --format agent",
     "purge-cf-cache": "./bin/purgeCfCache.sh"
   },
   "dependencies": {

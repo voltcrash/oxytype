@@ -4,8 +4,8 @@
   "private": true,
   "license": "GPL-3.0",
   "scripts": {
-    "lint": "vp lint . --type-aware --type-check",
-    "lint-fast": "vp lint .",
+    "lint": "vp lint . --type-aware --type-check --format agent",
+    "lint-fast": "vp lint . --format agent",
     "build": "npm run gen-docs && tsc --build",
     "watch": "tsc --build --watch",
     "clean": "tsc --build --clean",

@@ -13,8 +13,8 @@
     "test": "vp test run",
     "madge": " madge --circular --extensions ts ./src",
     "ts-check": "tsc --noEmit",
-    "lint": "vp lint . --type-aware --type-check",
-    "lint-fast": "vp lint ."
+    "lint": "vp lint . --type-aware --type-check --format agent",
+    "lint-fast": "vp lint . --format agent"
   },
   "devDependencies": {
     "@monkeytype/tsdown-config": "workspace:*",

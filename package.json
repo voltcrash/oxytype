@@ -56,8 +56,7 @@
     "check-assets-quotes": "turbo check-assets --filter @monkeytype/frontend  -- quotes",
     "check-assets-languages": "turbo check-assets --filter @monkeytype/frontend  -- languages",
     "check-assets-others": "turbo check-assets --filter @monkeytype/frontend  -- others",
-    "knip": "knip",
-    "update-oxc": "pnpm up -D -r oxlint@latest oxfmt@latest oxlint-tsgolint@latest"
+    "knip": "knip"
   },
   "devDependencies": {
     "@commitlint/cli": "20.5.2",
@@ -81,10 +80,10 @@
   },
   "lint-staged": {
     "*": [
-      "oxfmt --no-error-on-unmatched-pattern"
+      "vp fmt --no-error-on-unmatched-pattern"
     ],
     "*.{ts,tsx,js}": [
-      "oxlint --type-aware --type-check"
+      "vp lint --type-aware --type-check --format agent"
     ],
     "*.{scss,css}": [
       "stylelint"
