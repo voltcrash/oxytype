@@ -5,7 +5,7 @@
     ".": {
       "types": "./src/index.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "require": "./dist/index.cjs"
     }
   },
   "scripts": {
@@ -22,7 +22,7 @@
     "@monkeytype/schemas": "workspace:*"
   },
   "devDependencies": {
-    "@monkeytype/tsup-config": "workspace:*",
+    "@monkeytype/tsdown-config": "workspace:*",
     "@monkeytype/typescript-config": "workspace:*",
     "@types/node": "24.9.1",
     "madge": "8.0.0",

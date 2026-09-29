@@ -1,4 +1,4 @@
-import tsdownConfig from "./tsdown.config.js";
+import { extendConfig } from "@monkeytype/tsdown-config";
 
 import { defineConfig } from "vite-plus";
 
@@ -10,7 +10,7 @@ export default defineConfig({
     // https://vitest.dev/guide/migration/#clearmocks-is-enabled-by-default
     clearMocks: false,
   },
-  pack: tsdownConfig,
+  pack: extendConfig({ entry: ["src/index.ts"] }),
   lint: {
     ignorePatterns: ["node_modules", "dist", ".turbo"],
     extends: ["../oxlint-config/index.jsonc"],

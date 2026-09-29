@@ -1,9 +1,14 @@
-import tsdownConfig from "./tsdown.config.js";
-
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({
-  pack: tsdownConfig,
+  pack: {
+    deps: { resolveDepSubpath: true },
+    entry: ["src/index.ts"],
+    sourcemap: false,
+    clean: true,
+    format: ["cjs", "esm"],
+    dts: false,
+  },
   lint: {
     ignorePatterns: ["node_modules", "dist", ".turbo"],
     extends: ["../oxlint-config/index.jsonc"],
