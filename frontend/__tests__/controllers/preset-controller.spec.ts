@@ -12,14 +12,15 @@ import * as TestLogic from "../../src/ts/test/test-logic";
 import * as Tags from "../../src/ts/collections/tags";
 import * as Presets from "../../src/ts/collections/presets";
 
+vi.mock("../../src/ts/test/test-logic", () => ({
+  restart: vi.fn(),
+}));
+vi.mock("../../src/ts/test/pace-caret", () => ({
+  //
+}));
+
 describe("PresetController", () => {
   describe("apply", () => {
-    vi.mock("../../src/ts/test/test-logic", () => ({
-      restart: vi.fn(),
-    }));
-    vi.mock("../../src/ts/test/pace-caret", () => ({
-      //
-    }));
     const dbGetSnapshotMock = vi.spyOn(DB, "getSnapshot");
     const getPresetMock = vi.spyOn(Presets.__nonReactive, "getPreset");
     const configApplyMock = vi.spyOn(Lifecycle, "applyConfig");

@@ -11,12 +11,12 @@ import { Command } from "../../src/ts/commandline/types";
 
 const buildCommandForConfigKey = Util.__testing._buildCommandForConfigKey;
 
-describe("CommandlineUtils", () => {
-  vi.mock("../../src/ts/config/metadata", () => ({ configMetadata: [] }));
-  vi.mock("../../src/ts/commandline/commandline-metadata", () => ({
-    commandlineConfigMetadata: [],
-  }));
+vi.mock("../../src/ts/config/metadata", () => ({ configMetadata: [] }));
+vi.mock("../../src/ts/commandline/commandline-metadata", () => ({
+  commandlineConfigMetadata: [],
+}));
 
+describe("CommandlineUtils", () => {
   afterAll(() => {
     vi.resetModules();
     vi.restoreAllMocks();

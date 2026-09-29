@@ -37,6 +37,11 @@ import * as ConnectionsDal from "../../../src/dal/connections";
 import { pb } from "../../__testData__/users";
 import Test from "supertest/lib/test";
 
+vi.mock("../../../src/queues/email-queue", () => ({
+  __esModule: true,
+  default: { sendVerificationEmail: vi.fn() },
+}));
+
 const { mockApp, uid, mockAuth } = setup();
 const configuration = Configuration.getCachedConfiguration();
 
@@ -294,11 +299,6 @@ describe("user controller test", () => {
         generateEmailVerificationLink: adminGenerateVerificationLinkMock,
       }),
     } as any);
-
-    vi.mock("../../../src/queues/email-queue", () => ({
-      __esModule: true,
-      default: { sendVerificationEmail: vi.fn() },
-    }));
 
     beforeEach(() => {
       adminGetUserMock.mockClear().mockResolvedValue({ emailVerified: false });
