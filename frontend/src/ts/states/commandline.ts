@@ -1,0 +1,52 @@
+import { createMutable } from "solid-js/store";
+import type { Command, CommandsSubgroup } from "../commandline/types";
+import type { ValidationResult } from "../types/validation";
+
+export type CommandlineMode = "search" | "input";
+
+export type InputModeParams = {
+  command: Command | null;
+  placeholder: string | null;
+  value: string | null;
+  icon: string | null;
+  validation?: ValidationResult;
+};
+
+type CommandlineState = {
+  open: boolean;
+  inputValue: string;
+  mode: CommandlineMode;
+  subgroupStack: CommandsSubgroup[];
+  activeIndex: number;
+  warning: string | null;
+  checking: boolean;
+  usingSingleList: boolean;
+  activeCommand: Command | null;
+  mouseMode: boolean;
+  inputModeParams: InputModeParams;
+  subgroupOverride: CommandsSubgroup | null;
+  isAnimating: boolean;
+  lastSingleListModeInputValue: string;
+};
+
+export const commandlineState = createMutable<CommandlineState>({
+  open: false,
+  inputValue: "",
+  mode: "search",
+  subgroupStack: [],
+  activeIndex: 0,
+  warning: null,
+  checking: false,
+  usingSingleList: false,
+  activeCommand: null,
+  mouseMode: false,
+  inputModeParams: {
+    command: null,
+    placeholder: "",
+    value: "",
+    icon: "",
+  },
+  subgroupOverride: null,
+  isAnimating: false,
+  lastSingleListModeInputValue: "",
+});

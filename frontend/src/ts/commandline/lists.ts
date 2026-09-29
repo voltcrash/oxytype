@@ -36,6 +36,7 @@ import {
 } from "../components/layout/overlays/FpsCounter";
 import { applyConfigFromJson } from "../config/lifecycle";
 import { getLastEventLog } from "../states/test";
+import { commandlineState } from "../states/commandline";
 
 const adsCommands = buildCommands("ads");
 
@@ -402,12 +403,10 @@ export async function getList(
   return list;
 }
 
-let stack: CommandsSubgroup[] = [];
-
-stack = [commands];
+commandlineState.subgroupStack = [commands];
 
 export function getStackLength(): number {
-  return stack.length;
+  return commandlineState.subgroupStack.length;
 }
 
 export function setStackToDefault(): void {
@@ -415,18 +414,19 @@ export function setStackToDefault(): void {
 }
 
 export function setStack(val: CommandsSubgroup[]): void {
-  stack = val;
+  commandlineState.subgroupStack = val;
 }
 
 export function pushToStack(val: CommandsSubgroup): void {
-  stack.push(val);
+  commandlineState.subgroupStack.push(val);
 }
 
 export function popFromStack(): void {
-  stack.pop();
+  commandlineState.subgroupStack.pop();
 }
 
 export function getTopOfStack(): CommandsSubgroup {
+  const stack = commandlineState.subgroupStack;
   return stack[stack.length - 1] as CommandsSubgroup;
 }
 
