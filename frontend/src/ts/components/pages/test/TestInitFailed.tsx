@@ -10,7 +10,7 @@ export function TestInitFailed(): JSXElement {
     <div
       id="testInitFailed"
       class={cn(
-        "content-grid col-[content] mt-8 text-center text-base",
+        "content-grid col-[content] mt-8 text-center text-[1rem]",
         getTestInitError() === null && "hidden",
       )}
     >
