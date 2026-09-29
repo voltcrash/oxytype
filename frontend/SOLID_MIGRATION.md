@@ -110,7 +110,7 @@ Legend: `[ ]` todo, `[~]` in progress, `[x]` done. `deps:` = must be done first.
 
 Order matters; each sub-task a commit. Container first, then pieces.
 
-- [ ] **P3.1** Result state: store `states/result.ts` holding computed result view model (stats, crown state, tags, quote info, daily lb rank, flags like `loginTip`, `retrySaving`). `test/result.ts#update` computes + sets store; still writes DOM. Tests for view-model builder.
+- [~] **P3.1** Result state: store `states/result.ts` holding computed result view model (stats, crown state, tags, quote info, daily lb rank, flags like `loginTip`, `retrySaving`). `test/result.ts#update` computes + sets store; still writes DOM. Tests for view-model builder.
 - [ ] **P3.2** `components/pages/test/result/Result.tsx` shell mounted in place of `#result` wrapper; render stats groups (wpm, acc, raw, characters, consistency, time, test type, other, source) from store. Remove corresponding DOM writes + HTML.
 - [ ] **P3.3** Crown (`test/pb-crown.ts`, `showCrown/updateCrown/showErrorCrownIfNeeded`) → `ResultCrown.tsx`.
 - [ ] **P3.4** Tags group + edit button (`updateTagsAfterEdit`) → uses existing `EditResultTagsModal`.
