@@ -73,7 +73,7 @@ Legend: `[ ]` todo, `[~]` in progress, `[x]` done. `deps:` = must be done first.
 ### Phase 0 — Prep
 
 - [x] **P0.1** Create branch + this plan.
-- [ ] **P0.2** Dead code sweep. Run `pnpm knip`; grep each "possibly dead" file (incl. relative imports `./x`). Delete unused ones + their SCSS. Commit: `refactor: remove unused legacy dom modules`.
+- [~] **P0.2** Dead code sweep. Run `pnpm knip`; grep each "possibly dead" file (incl. relative imports `./x`). Delete unused ones + their SCSS. Commit: `refactor: remove unused legacy dom modules`.
 - [ ] **P0.3** Add baseline tests guarding test-page behavior that later phases touch: word element structure (`.word > letter` classes: `correct`/`incorrect`/`extra`), result stats computation outputs. Pure-logic tests only (no snapshot of whole DOM). Commit: `test: add baseline tests for test ui and result`.
 
 ### Phase 1 — Small leaf elements (independent; parallelizable)
