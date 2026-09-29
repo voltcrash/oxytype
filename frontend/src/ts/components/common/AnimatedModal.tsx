@@ -25,6 +25,7 @@ type AnimationConfig = {
 
 type AnimatedModalProps = ParentProps<{
   id: ModalId;
+  domId?: string;
   mode?: "modal" | "dialog";
   animationMode?: "none" | "both" | "modalOnly";
   customAnimations?: {
@@ -315,7 +316,7 @@ export function AnimatedModal(props: AnimatedModalProps): JSXElement {
 
   return (
     <dialog
-      id={`${props.id as string}Modal`}
+      id={props.domId ?? `${props.id as string}Modal`}
       ref={dialogRef}
       class={cn(
         "fixed top-0 left-0 z-1000 m-0 hidden h-screen max-h-screen w-screen max-w-screen border-none bg-[rgba(0,0,0,0.5)] p-8 backdrop:bg-transparent",

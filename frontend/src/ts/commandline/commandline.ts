@@ -5,8 +5,6 @@ import { Config } from "../config/store";
 import * as AnalyticsController from "../controllers/analytics-controller";
 import * as ThemeController from "../controllers/theme-controller";
 import { clearFontPreview } from "../ui";
-import AnimatedModal from "../utils/animated-modal";
-import * as Skeleton from "../utils/skeleton";
 import { showNoticeNotification } from "../states/notifications";
 import {
   getActivePage,
@@ -20,13 +18,12 @@ import {
   CommandsSubgroup,
   CommandWithValidation,
 } from "./types";
-import { areSortedArraysEqual, areUnsortedArraysEqual } from "../utils/arrays";
+import { areUnsortedArraysEqual } from "../utils/arrays";
 import { parseIntOptional } from "../utils/numbers";
 import { debounce } from "throttle-debounce";
 import { intersect } from "@monkeytype/util/arrays";
 import { useInputValidation } from "../hooks/useInputValidation";
 import { isInputElementFocused } from "../input/input-element";
-import { qs } from "../utils/dom";
 import {
   hideModal as storeHideModal,
   hideModalAndClearChain as storeClearChain,
@@ -37,17 +34,7 @@ import { commandlineState, type InputModeParams } from "../states/commandline";
 
 const MODAL_STORE_ID = "Commandline";
 
-type CommandWithIsActive = Command & { isActive: boolean };
-
-let lastState:
-  | {
-      list: CommandWithIsActive[];
-      usingSingleList: boolean;
-    }
-  | undefined;
-
 function removeCommandlineBackground(): void {
-  qs("#commandLine")?.addClass("noBackground");
   commandlineState.noBackground = true;
   if (Config.showOutOfFocusWarning) {
     setTestFocusState("focused");
@@ -55,7 +42,6 @@ function removeCommandlineBackground(): void {
 }
 
 function addCommandlineBackground(): void {
-  qs("#commandLine")?.removeClass("noBackground");
   commandlineState.noBackground = false;
   if (!isInputElementFocused()) {
     setTestFocusState("unfocused");
@@ -149,8 +135,6 @@ export async function prepareCommandline(): Promise<void> {
   await showCommands();
   await updateActiveCommand();
   setTimeout(() => {
-    lastActiveIndex = undefined;
-    keepActiveCommandInView();
     if (showInputCommand) {
       const escaped =
         showInputCommand.display.split("</i>")[1] ?? showInputCommand.display;
@@ -241,13 +225,7 @@ async function filterSubgroup(): Promise<void> {
 }
 
 function hideCommands(): void {
-  const element = document.querySelector("#commandLine .suggestions");
-  if (element === null) {
-    throw new Error("Commandline element not found");
-  }
-  element.innerHTML = "";
   commandlineState.suggestions = [];
-  lastState = undefined;
 }
 
 let cachedSingleSubgroup: CommandsSubgroup | null = null;
@@ -272,39 +250,7 @@ async function getList(): Promise<Command[]> {
   return (await getSubgroup()).list;
 }
 
-function getCommandIconsHtml(command: Command & { isActive: boolean }): {
-  iconHtml: string;
-  configIconHtml: string;
-} {
-  let iconHtml = `<i class="fas fa-fw fa-chevron-right"></i>`;
-  if (command.icon !== undefined && command.icon !== "") {
-    const faIcon = command.icon.startsWith("fa-");
-    const faType = command.iconType ?? "solid";
-    const faTypeClass = faType === "solid" ? "fas" : "far";
-    if (!faIcon) {
-      iconHtml = `<div class="textIcon">${command.icon}</div>`;
-    } else {
-      iconHtml = `<i class="${faTypeClass} fa-fw ${command.icon}"></i>`;
-    }
-  }
-
-  let configIconHtml = `<i class="fas fa-fw"></i>`;
-  if (command.isActive) {
-    configIconHtml = `<i class="fas fa-fw fa-check"></i>`;
-  }
-
-  return {
-    iconHtml,
-    configIconHtml,
-  };
-}
-
 async function showCommands(): Promise<void> {
-  const element = document.querySelector("#commandLine .suggestions");
-  if (element === null) {
-    throw new Error("Commandline element not found");
-  }
-
   if (commandlineState.inputValue === "" && commandlineState.usingSingleList) {
     hideCommands();
     return;
@@ -341,152 +287,35 @@ async function showCommands(): Promise<void> {
       return { ...command, isActive };
     });
 
-  if (
-    commandlineState.usingSingleList === lastState?.usingSingleList &&
-    areSortedArraysEqual(list, lastState.list)
-  ) {
-    return;
+  if (!commandlineState.usingSingleList && commandlineState.inputValue === "") {
+    const firstActive = list.findIndex((command) => command.isActive);
+    if (firstActive >= 0) commandlineState.activeIndex = firstActive;
   }
-
-  lastState = {
-    list: list,
-    usingSingleList: commandlineState.usingSingleList,
-  };
-
-  let html = "";
-  let index = 0;
-
-  let firstActive: null | number = null;
-
-  for (const command of list) {
-    if (command.found !== true) continue;
-
-    if (
-      command.isActive &&
-      firstActive === null &&
-      commandlineState.inputValue === ""
-    ) {
-      firstActive = index;
-    }
-
-    let customStyle = "";
-    if (command.customStyle !== undefined && command.customStyle !== "") {
-      customStyle = command.customStyle;
-    }
-
-    const { iconHtml, configIconHtml } = getCommandIconsHtml(command);
-
-    let display = command.display;
-    if (commandlineState.usingSingleList) {
-      display = (command.singleListDisplay ?? "") || command.display;
-      if (command.configValue !== undefined || command.active !== undefined) {
-        display = display.replace(
-          `<i class="fas fa-fw fa-chevron-right chevronIcon"></i>`,
-          `<i class="fas fa-fw fa-chevron-right chevronIcon"></i>${
-            configIconHtml
-          }`,
-        );
-      }
-    }
-
-    let finalIconHtml = iconHtml;
-    if (
-      (!commandlineState.usingSingleList &&
-        command.subgroup === undefined &&
-        command.configValue !== undefined) ||
-      (!commandlineState.usingSingleList && command.active !== undefined)
-    ) {
-      finalIconHtml = configIconHtml;
-    }
-
-    if (command.customData !== undefined) {
-      if (command.id.startsWith("changeTheme")) {
-        html += `<div class="command changeThemeCommand" data-command-id="${
-          command.id
-        }" data-index="${index}" style="${customStyle}">
-      <div class="icon">${finalIconHtml}</div><div>${display}</div>
-      <div class="themeFavIcon ${
-        command.customData["isFavorite"] === true ? "" : "hidden"
-      }">
-        <i class="fas fa-star"></i>
-      </div>
-      <div class="themeBubbles" style="background: ${
-        command.customData["bg"]
-      };outline: 0.25rem solid ${command.customData["bg"]};">
-        <div class="themeBubble" style="background: ${
-          command.customData["main"]
-        }"></div>
-        <div class="themeBubble" style="background: ${
-          command.customData["sub"]
-        }"></div>
-        <div class="themeBubble" style="background: ${
-          command.customData["text"]
-        }"></div>
-      </div>
-      </div>`;
-      }
-      if (command.id.startsWith("setFontFamily")) {
-        let fontFamily = command.customData["name"];
-
-        if (fontFamily === "Helvetica") {
-          fontFamily = "Comic Sans MS";
-        }
-
-        if (command.customData["isSystem"] === false) {
-          fontFamily += " Preview";
-        }
-
-        html += `<div class="command" data-command-id="${command.id}" data-index="${index}" style="font-family: '${fontFamily}'"><div class="icon">${finalIconHtml}</div><div>${display}</div></div>`;
-      }
-    } else {
-      html += `<div class="command" data-command-id="${command.id}" data-index="${index}" style="${customStyle}"><div class="icon">${finalIconHtml}</div><div>${display}</div></div>`;
-    }
-    index++;
-  }
-  if (firstActive !== null && !commandlineState.usingSingleList) {
-    commandlineState.activeIndex = firstActive;
-  }
-
-  element.innerHTML = html;
   commandlineState.suggestions = list;
 }
 
 async function updateActiveCommand(): Promise<void> {
   if (commandlineState.isAnimating) return;
 
-  const elements = [
-    ...document.querySelectorAll("#commandLine .suggestions .command"),
-  ];
-
-  for (const element of elements) {
-    element.classList.remove("active");
-  }
-
-  const element = elements[commandlineState.activeIndex];
-  const command = (await getList()).filter((c) => c.found)[
-    commandlineState.activeIndex
-  ];
+  const command = commandlineState.suggestions[commandlineState.activeIndex];
   commandlineState.activeCommand = command ?? null;
-  if (element === undefined || command === undefined) {
+  if (command === undefined) {
     clearFontPreview();
     void ThemeController.clearPreview();
     addCommandlineBackground();
     return;
   }
-  element.classList.add("active");
-  keepActiveCommandInView();
 
   clearFontPreview();
   if (
-    command.id?.startsWith("changeTheme") ||
-    command.id?.startsWith("setCustomThemeId")
+    command.id.startsWith("changeTheme") ||
+    command.id.startsWith("setCustomThemeId")
   ) {
     removeCommandlineBackground();
   } else {
     void ThemeController.clearPreview();
     addCommandlineBackground();
   }
-
   command.hover?.();
 }
 
@@ -502,13 +331,11 @@ function handleInputSubmit(): void {
     //validation ongoing, ignore the submit
     return;
   } else if (commandlineState.inputModeParams.validation?.status === "failed") {
-    modal.getModal().addClass("hasError");
     commandlineState.hasError = true;
     if (shakeTimeout !== null) {
       clearTimeout(shakeTimeout);
     }
     shakeTimeout = setTimeout(() => {
-      modal.getModal().removeClass("hasError");
       commandlineState.hasError = false;
     }, 500);
     return;
@@ -516,8 +343,6 @@ function handleInputSubmit(): void {
 
   if ("inputValueConvert" in commandlineState.inputModeParams.command) {
     commandlineState.inputModeParams.command.exec?.({
-      commandlineModal: modal,
-
       // @ts-expect-error this is fine
       // oxlint-disable-next-line no-unsafe-assignment
       input: commandlineState.inputModeParams.command.inputValueConvert(
@@ -526,7 +351,6 @@ function handleInputSubmit(): void {
     });
   } else {
     commandlineState.inputModeParams.command.exec?.({
-      commandlineModal: modal,
       input: commandlineState.inputValue,
     });
   }
@@ -561,9 +385,7 @@ async function runActiveCommand(): Promise<void> {
     await showCommands();
     await updateActiveCommand();
   } else {
-    command.exec?.({
-      commandlineModal: modal,
-    });
+    command.exec?.({});
     if (Config.singleListCommandLine === "on") {
       commandlineState.lastSingleListModeInputValue =
         commandlineState.inputValue;
@@ -582,78 +404,23 @@ async function runActiveCommand(): Promise<void> {
   }
 }
 
-let lastActiveIndex: string | undefined;
-function keepActiveCommandInView(): void {
-  if (commandlineState.mouseMode) return;
-
-  const active: HTMLElement | null = document.querySelector(
-    "#CommandlineModal .suggestions .command.active",
-  );
-
-  if (active === null || active.dataset["index"] === lastActiveIndex) {
-    return;
-  }
-
-  active.scrollIntoView({ behavior: "auto", block: "center" });
-  lastActiveIndex = active.dataset["index"];
-}
-
 async function updateInput(setInput?: string): Promise<void> {
-  const iconElement: HTMLElement | null = document.querySelector(
-    "#commandLine .searchicon",
-  );
-  const element: HTMLInputElement | null =
-    document.querySelector("#commandLine input");
-
-  if (element === null || iconElement === null) {
-    throw new Error("Commandline element or icon element not found");
-  }
-
-  if (setInput !== undefined) {
-    commandlineState.inputValue = setInput;
-  }
-
-  element.value = commandlineState.inputValue;
+  if (setInput !== undefined) commandlineState.inputValue = setInput;
 
   if (commandlineState.mode === "input") {
-    if (commandlineState.inputModeParams.icon !== null) {
-      iconElement.innerHTML = `<i class="fas fa-fw ${commandlineState.inputModeParams.icon}"></i>`;
+    const params = commandlineState.inputModeParams;
+    commandlineState.inputIcon = params.icon ?? "fa-search";
+    if (params.placeholder !== null) {
+      commandlineState.inputPlaceholder = params.placeholder;
     }
-    if (commandlineState.inputModeParams.placeholder !== null) {
-      element.placeholder = commandlineState.inputModeParams.placeholder;
-    }
-    if (commandlineState.inputModeParams.value !== null) {
-      element.value = commandlineState.inputModeParams.value;
-      //select the text inside
-      element.setSelectionRange(0, element.value.length);
-    }
+    if (params.value !== null) commandlineState.inputValue = params.value;
+    commandlineState.selectAll = params.value !== null;
   } else {
-    iconElement.innerHTML = '<i class="fas fa-fw fa-search"></i>';
-    element.placeholder = "Search...";
-
-    const subgroup = await getSubgroup();
-
-    if (subgroup.title !== undefined && subgroup.title !== "") {
-      element.placeholder = `${subgroup.title}`;
-    }
-
-    let length = commandlineState.inputValue.length;
-    if (setInput !== undefined) {
-      length = setInput.length;
-    }
-    setTimeout(() => {
-      element.setSelectionRange(length, length);
-    }, 0);
+    commandlineState.inputIcon = "fa-search";
+    commandlineState.inputPlaceholder =
+      (await getSubgroup()).title || "Search...";
+    commandlineState.selectAll = false;
   }
-
-  commandlineState.inputPlaceholder = element.placeholder;
-  commandlineState.inputIcon =
-    commandlineState.mode === "input"
-      ? (commandlineState.inputModeParams.icon ?? "fa-search")
-      : "fa-search";
-  commandlineState.selectAll =
-    commandlineState.mode === "input" &&
-    commandlineState.inputModeParams.value !== null;
   commandlineState.selectionNonce++;
 }
 
@@ -679,42 +446,19 @@ async function decrementActiveIndex(): Promise<void> {
 
 function showWarning(message: string): void {
   commandlineState.warning = message;
-  const warningEl = modal.getModal().qs(".warning");
-  const warningTextEl = modal.getModal().qs(".warning .text");
-  if (warningEl === null || warningTextEl === null) {
-    throw new Error("Commandline warning element not found");
-  }
-  warningEl.show();
-  warningTextEl.setText(message);
 }
 
-const showCheckingIcon = debounce(200, async () => {
+const showCheckingIcon = debounce(200, () => {
   commandlineState.checking = true;
-  const checkingiconEl = modal.getModal().qs(".checkingicon");
-  if (checkingiconEl === null) {
-    throw new Error("Commandline checking icon element not found");
-  }
-  checkingiconEl.show();
 });
 
 function hideCheckingIcon(): void {
   showCheckingIcon.cancel({ upcomingOnly: true });
   commandlineState.checking = false;
-
-  const checkingiconEl = modal.getModal().qs(".checkingicon");
-  if (checkingiconEl === null) {
-    throw new Error("Commandline checking icon element not found");
-  }
-  checkingiconEl.hide();
 }
 
 function hideWarning(): void {
   commandlineState.warning = null;
-  const warningEl = modal.getModal().qs(".warning");
-  if (warningEl === null) {
-    throw new Error("Commandline warning element not found");
-  }
-  warningEl.hide();
 }
 
 function updateValidationResult(
@@ -753,12 +497,6 @@ function createValidationHandler(command: Command): void {
     handlersCache.set(command.id, handler);
   }
 }
-
-const modal = new AnimatedModal({
-  dialogId: "commandLine",
-  storeId: MODAL_STORE_ID,
-});
-Skeleton.append("commandLine", "popups");
 
 const filterInput = debounce(50, async (value: string) => {
   if (commandlineState.isAnimating) return;

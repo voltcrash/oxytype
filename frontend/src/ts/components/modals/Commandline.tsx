@@ -168,6 +168,7 @@ function Suggestion(props: {
 
 export function Commandline(): JSXElement {
   let inputEl: HTMLInputElement | undefined;
+  let suggestionsEl: HTMLDivElement | undefined;
 
   createEffect(
     on(
@@ -186,9 +187,29 @@ export function Commandline(): JSXElement {
     ),
   );
 
+  createEffect(
+    on(
+      () => [
+        commandlineState.activeIndex,
+        commandlineState.suggestions,
+        commandlineState.mouseMode,
+      ],
+      () => {
+        if (commandlineState.mouseMode) return;
+        queueMicrotask(() => {
+          const active = suggestionsEl?.children.item(
+            commandlineState.activeIndex,
+          ) as HTMLElement | null;
+          active?.scrollIntoView({ behavior: "auto", block: "center" });
+        });
+      },
+    ),
+  );
+
   return (
     <AnimatedModal
       id="Commandline"
+      domId="commandLine"
       focusFirstInput
       beforeShow={prepareCommandline}
       beforeHide={onCommandlineBeforeHide}
@@ -242,6 +263,9 @@ export function Commandline(): JSXElement {
       </Show>
       <div
         class="suggestions ffscroll grid max-h-[calc(100vh-15rem)] cursor-pointer overflow-y-scroll select-none"
+        ref={(el) => {
+          suggestionsEl = el;
+        }}
         onMouseMove={(e) => void onSuggestionMouseMove(e)}
         onClick={(e) => void onSuggestionClick(e)}
       >
