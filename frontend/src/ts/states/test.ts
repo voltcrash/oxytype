@@ -32,6 +32,10 @@ export const [getResultVisible, setResultVisible] = createSignal(false);
 export const [isResultCalculating, setResultCalculating] = createSignal(false);
 // Set when the user bails out of a test early; reset by TestLogic.restart().
 export const [getBailedOut, setBailedOut] = createSignal(false);
+// Set when test init fails repeatedly; message is the last init error, if any.
+export const [getTestInitError, setTestInitError] = createSignal<{
+  message: string | undefined;
+} | null>(null);
 export const [getFocus, setFocus] = createSignal(false);
 // #words is still vanilla so it's blurred imperatively (see test/test-ui);
 // the Solid-owned composition display + OutOfFocusWarning read this signal.

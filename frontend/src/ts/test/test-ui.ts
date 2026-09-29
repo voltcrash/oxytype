@@ -69,6 +69,7 @@ import {
   setTestFocusState,
   showOutOfFocusWarning,
   getResultVisible,
+  setTestInitError,
 } from "../states/test";
 import { createEffect } from "solid-js";
 import {
@@ -78,7 +79,6 @@ import {
   getWordBurstHistory,
 } from "./events/stats";
 import * as ConnectionState from "../legacy-states/connection";
-import * as TestInitFailed from "../elements/test-init-failed";
 
 export const updateHintsPositionDebounced = Misc.debounceUntilResolved(
   updateHintsPosition,
@@ -1854,7 +1854,7 @@ export function onTestRestart(source: "testPage" | "resultPage"): void {
   MonkeyPower.reset();
   MemoryFunboxTimer.reset();
   Caret.resetPosition();
-  TestInitFailed.hide();
+  setTestInitError(null);
 
   if (!ConnectionState.get()) {
     ConnectionState.showOfflineBanner();

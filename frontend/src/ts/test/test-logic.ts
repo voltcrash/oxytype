@@ -59,6 +59,7 @@ import {
   setWordsHaveNumbers,
   setWordsHaveTab,
   getResultVisible,
+  setTestInitError,
 } from "../states/test";
 import { restartTestEvent } from "../events/test";
 import * as TestWords from "./test-words";
@@ -92,7 +93,6 @@ import { WordGenError } from "../utils/word-gen-error";
 import { tryCatch } from "@monkeytype/util/trycatch";
 import * as Sentry from "../sentry";
 import { showLoaderBar, hideLoaderBar } from "../states/loader-bar";
-import * as TestInitFailed from "../elements/test-init-failed";
 import { canQuickRestart } from "../utils/quick-restart";
 import { animate } from "animejs";
 import { setInputElementValue } from "../input/input-element";
@@ -357,11 +357,13 @@ async function init(): Promise<boolean> {
   if (testReinitCount > 3) {
     if (lastInitError) {
       void Sentry.captureException(lastInitError);
-      TestInitFailed.showError(
-        `${lastInitError.name}: ${lastInitError.message}`,
-      );
     }
-    TestInitFailed.show();
+    setTestInitError({
+      message: lastInitError
+        ? `${lastInitError.name}: ${lastInitError.message}`
+        : undefined,
+    });
+    qs(".pageTest #typingTest")?.hide();
     setIsTestRestarting(false);
     return false;
   }
@@ -1252,10 +1254,6 @@ const debouncedZipfCheck = debounce(250, async () => {
       },
     );
   }
-});
-
-qs(".pageTest")?.onChild("click", "#testInitFailed button.restart", () => {
-  void restart();
 });
 
 qs(".pageTest")?.onChild("click", "#restartTestButton", () => {

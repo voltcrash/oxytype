@@ -35,6 +35,7 @@ import { Monkey } from "./pages/test/Monkey";
 import { OutOfFocusWarning } from "./pages/test/OutOfFocusWarning";
 import { Premid } from "./pages/test/Premid";
 import { TestConfig } from "./pages/test/TestConfig";
+import { TestInitFailed } from "./pages/test/TestInitFailed";
 import { Popups } from "./popups/Popups";
 
 const components: Record<string, () => JSXElement> = {
@@ -70,6 +71,7 @@ const components: Record<string, () => JSXElement> = {
   bartimerprogress: () => <BarTimerProgress />,
   premid: () => <Premid />,
   loadingpage: () => <LoadingPage />,
+  testinitfailed: () => <TestInitFailed />,
 };
 
 function mountToMountpoint(name: string, component: () => JSXElement): void {
