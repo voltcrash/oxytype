@@ -1,11 +1,9 @@
 import dotenv from "dotenv";
+import { getRepository } from "./repository.js";
 
 dotenv.config();
 
-const OWNER = "monkeytypegame";
-const REPO = "monkeytype";
-
-const EXCLUDED = new Set(["monkeytypegeorge", "miodec"]);
+const { owner: OWNER, repo: REPO } = getRepository();
 
 async function getContributors(page) {
   console.log(`Getting contributors from page ${page}`);
@@ -14,7 +12,7 @@ async function getContributors(page) {
     {
       method: "GET",
       headers: {
-        "User-Agent": "monkeytypegame release script",
+        "User-Agent": "oxytype release script",
         ...(process.env.GITHUB_TOKEN && {
           Authorization: `token ${process.env.GITHUB_TOKEN}`,
         }),
@@ -42,7 +40,7 @@ async function main() {
 
   total = total
     .filter(
-      (c) => !EXCLUDED.has(c.name?.toLowerCase()) && !c.name?.includes("[bot]"),
+      (c) => !c.name?.includes("[bot]"),
     )
     .sort((a, b) => b.contributions - a.contributions);
 
