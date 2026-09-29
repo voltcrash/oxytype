@@ -28,14 +28,36 @@ const QuoteDataSchema = z.object({
   groups: z.array(z.tuple([z.number(), z.number()])),
 });
 
-const PATH_TO_REPO = "../../../../monkeytype-new-quotes";
+const quoteRepositoryPath = process.env["OXYTYPE_QUOTES_REPO_PATH"];
+const git = quoteRepositoryPath ? simpleGit(quoteRepositoryPath) : undefined;
 
-const { data: git, error } = tryCatchSync(() =>
-  simpleGit(path.join(__dirname, PATH_TO_REPO)),
-);
+function requireQuoteRepositoryPath(): string {
+  if (!quoteRepositoryPath || !git) {
+    throw new MonkeyError(503, "Oxytype quote repository is not configured.");
+  }
+  return quoteRepositoryPath;
+}
 
-if (error) {
-  console.error(`Failed to initialize git: ${error}`);
+async function verifyQuoteRepositoryRemote(): Promise<
+  ReturnType<typeof simpleGit>
+> {
+  const quoteGit = git;
+  if (!quoteGit) {
+    throw new MonkeyError(503, "Oxytype quote repository is not configured.");
+  }
+  const expectedRemote = process.env["OXYTYPE_QUOTES_REMOTE_URL"];
+  const actualRemote = (await quoteGit.raw(["remote", "get-url", "origin"])).trim();
+  if (
+    !expectedRemote ||
+    actualRemote !== expectedRemote ||
+    /monkeytypegame/i.test(actualRemote)
+  ) {
+    throw new MonkeyError(
+      503,
+      "Oxytype quote repository remote is not allowed.",
+    );
+  }
+  return quoteGit;
 }
 
 type AddQuoteReturn = {
@@ -56,7 +78,7 @@ export async function add(
   language: string,
   uid: string,
 ): Promise<AddQuoteReturn | undefined> {
-  if (git === undefined) throw new MonkeyError(500, "Git not available.");
+  const repositoryPath = requireQuoteRepositoryPath();
   const quote = {
     _id: new ObjectId(),
     text: text,
@@ -84,8 +106,8 @@ export async function add(
 
   //check for duplicate first
   const fileDir = path.join(
-    __dirname,
-    `${PATH_TO_REPO}/frontend/static/quotes/${language}.json`,
+    repositoryPath,
+    `frontend/static/quotes/${language}.json`,
   );
   let duplicateId = -1;
   let similarityScore = -1;
@@ -114,7 +136,6 @@ export async function add(
 }
 
 export async function get(language: Language | "all"): Promise<DBNewQuote[]> {
-  if (git === undefined) throw new MonkeyError(500, "Git not available.");
   const where: {
     approved: boolean;
     language?: Language;
@@ -147,7 +168,8 @@ export async function approve(
   editSource: string | undefined,
   name: string,
 ): Promise<ApproveReturn> {
-  if (git === null) throw new MonkeyError(500, "Git not available.");
+  const repositoryPath = requireQuoteRepositoryPath();
+  const quoteGit = await verifyQuoteRepositoryRemote();
   //check mod status
   const targetQuote = await getNewQuoteCollection().findOne({
     _id: new ObjectId(quoteId),
@@ -175,10 +197,10 @@ export async function approve(
   }
 
   const fileDir = path.join(
-    __dirname,
-    `${PATH_TO_REPO}/frontend/static/quotes/${language}.json`,
+    repositoryPath,
+    `frontend/static/quotes/${language}.json`,
   );
-  await git.pull("upstream", "master");
+  await quoteGit.pull("origin", "master");
   if (existsSync(fileDir)) {
     const quoteFile = await readFile(fileDir);
     const quoteObject = parseJsonWithSchema(
@@ -224,14 +246,13 @@ export async function approve(
     );
     message = `Created file ${language}.json and added quote.`;
   }
-  await git.add([`frontend/static/quotes/${language}.json`]);
-  await git.commit(`Added quote to ${language}.json`);
-  await git.push("origin", "master");
+  await quoteGit.add([`frontend/static/quotes/${language}.json`]);
+  await quoteGit.commit(`Added quote to ${language}.json`);
+  await quoteGit.push("origin", "master");
   await getNewQuoteCollection().deleteOne({ _id: new ObjectId(quoteId) });
   return { quote, message };
 }
 
 export async function refuse(quoteId: string): Promise<void> {
-  if (git === undefined) throw new MonkeyError(500, "Git not available.");
   await getNewQuoteCollection().deleteOne({ _id: new ObjectId(quoteId) });
 }
