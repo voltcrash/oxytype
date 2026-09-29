@@ -340,7 +340,6 @@ function getEventLogAccuracy(): { correct: number; incorrect: number } | null {
 
 export function updateTodayTracker(): void {
   setResultState("timeToday", TodayTracker.getString());
-  qs("#result .stats .time .bottom .timeToday")?.setText(resultState.timeToday);
 }
 
 export function showCrown(type: ResultCrownType): void {
@@ -472,36 +471,8 @@ export function showConfetti(): void {
   })();
 }
 
-function tagHtml(tag: ResultTag): string {
-  const balloon =
-    tag.ariaLabel === undefined
-      ? ""
-      : ` aria-label="${tag.ariaLabel}" data-balloon-pos="up"`;
-  const crown = tag.pb ? `<i class="fas fa-crown"></i>` : "";
-  return `<div tagid="${tag.id}"${balloon}>${tag.name}${crown}</div>`;
-}
-
-function renderTags(): void {
-  const tags = resultState.tags;
-  if (tags.visible) {
-    qs("#result .stats .tags")?.show();
-  } else {
-    qs("#result .stats .tags")?.hide();
-  }
-  qs("#result .stats .tags .bottom")?.setHtml(
-    tags.items.length === 0
-      ? "<div class='noTags'>no tags</div>"
-      : tags.items.map(tagHtml).join(""),
-  );
-  qs("#result .stats .tags .editTagsButton")?.toggleClass(
-    "invisible",
-    tags.savedResultId === undefined,
-  );
-}
-
 export function updateSavedResultId(resultId: string): void {
   setResultState("tags", "savedResultId", resultId);
-  renderTags();
 }
 
 async function updateTags(dontSave: boolean): Promise<void> {
@@ -601,7 +572,6 @@ async function updateTags(dontSave: boolean): Promise<void> {
     items,
     savedResultId: undefined,
   });
-  renderTags();
 }
 
 function renderQuoteButtons(): void {
@@ -1033,7 +1003,6 @@ export function updateTagsAfterEdit(
     }));
 
   setResultState("tags", "items", [...kept, ...added]);
-  renderTags();
 }
 
 qsa(".pageTest #result .chart .chartLegend button")?.on(

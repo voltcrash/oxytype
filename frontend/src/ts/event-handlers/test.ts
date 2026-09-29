@@ -1,5 +1,4 @@
 import { Config } from "../config/store";
-import { __nonReactive } from "../collections/tags";
 import {
   showNoticeNotification,
   showErrorNotification,
@@ -12,20 +11,8 @@ import { navigate } from "../controllers/route-controller";
 import { getMode2 } from "../utils/misc";
 import { qs } from "../utils/dom";
 import { getCurrentQuote } from "../states/test";
-import { showEditResultTagsModal } from "../states/edit-result-tags";
-import { resultState } from "../states/result";
 
 const testPage = qs(".pageTest");
-
-testPage?.onChild("click", ".tags .editTagsButton", () => {
-  if (__nonReactive.getTags().length > 0) {
-    showEditResultTagsModal({
-      _id: resultState.tags.savedResultId ?? "",
-      tags: resultState.tags.items.map((tag) => tag.id),
-      source: "resultPage",
-    });
-  }
-});
 
 testPage?.onChild("click", "#rateQuoteButton", async () => {
   const currentQuote = getCurrentQuote();

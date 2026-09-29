@@ -4,9 +4,10 @@ import { resultState } from "../../../../states/result";
 import { cn } from "../../../../utils/cn";
 import { Fa } from "../../../common/Fa";
 import { ResultCrown } from "./ResultCrown";
+import { ResultTags } from "./ResultTags";
 
-// tags, daily leaderboard and quote buttons are still driven by
-// test/result.ts (P3.4-P3.6), so their markup is static here
+// daily leaderboard and quote buttons are still driven by test/result.ts
+// (P3.5-P3.6), so their markup is static here
 
 const topClass = "top mb-1 text-[1rem] leading-[1rem] text-sub";
 const bottomClass = "bottom text-[2rem] leading-[2rem] text-main";
@@ -96,27 +97,13 @@ export function ResultStats(): JSXElement {
           >
             <Lines lines={stats()?.testType} />
           </div>
-          <div class="tags mt-2 hidden">
-            <div class={smallTopClass}>
-              <span>tags</span>
-              <div
-                class="textButton editTagsButton"
-                aria-label="Edit tags"
-                role="button"
-                data-balloon-pos="right"
-              >
-                <Fa icon="fa-pen" fixedWidth />
-              </div>
-            </div>
-            <div
-              class={cn(
-                "bottom text-[1rem] leading-[1.25] text-main",
-                moreStatsBottomClass,
-              )}
-            >
-              -
-            </div>
-          </div>
+          <ResultTags
+            topClass={smallTopClass}
+            bottomClass={cn(
+              "bottom text-[1rem] leading-[1.25] text-main",
+              moreStatsBottomClass,
+            )}
+          />
         </div>
         <div
           class={cn(

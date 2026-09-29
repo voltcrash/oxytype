@@ -571,16 +571,11 @@ describe("result update", () => {
   });
 
   describe("tags", () => {
-    const tags = (): FakeEl => el("#result .stats .tags");
-
     it("is hidden when the user has no tags", async () => {
       await runUpdate(completedEvent());
 
-      expect(tags().hidden).toBe(true);
       expect(resultState.tags.visible).toBe(false);
-      expect(el("#result .stats .tags .bottom").html).toBe(
-        "<div class='noTags'>no tags</div>",
-      );
+      expect(resultState.tags.items).toEqual([]);
     });
 
     it("lists active tags with pb state", async () => {
@@ -592,7 +587,7 @@ describe("result update", () => {
       state.tagPbWpm = 90;
       await runUpdate(completedEvent());
 
-      expect(tags().hidden).toBe(false);
+      expect(resultState.tags.visible).toBe(true);
       expect(resultState.tags.items).toEqual([
         { id: "a", name: "alpha", ariaLabel: "+11.46", pb: true },
       ]);
@@ -615,10 +610,6 @@ describe("result update", () => {
         { id: "b", name: "beta", ariaLabel: "PB: 120", pb: false },
         { id: "c", name: "gamma", pb: true },
       ]);
-      expect(el("#result .stats .tags .bottom").html).toBe(
-        '<div tagid="b" aria-label="PB: 120" data-balloon-pos="up">beta</div>' +
-          '<div tagid="c">gamma<i class="fas fa-crown"></i></div>',
-      );
     });
   });
 });
