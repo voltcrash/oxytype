@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
   "overrides": [
     {
-      "files": ["*.js", "*.cjs"],
+      "files": ["**/*.js", "**/*.cjs"],
       "rules": {
         "typescript/strict-boolean-expressions": "off",
         "typescript/await-thenable": "off",
@@ -48,7 +48,7 @@
       },
     },
     {
-      "files": ["__tests__/**"],
+      "files": ["**/__tests__/**"],
       "plugins": [
         "typescript",
         "unicorn",
@@ -67,7 +67,7 @@
       },
     },
     {
-      "files": ["private/script.js"],
+      "files": ["**/private/script.js"],
       "rules": {
         "no-shadow": "off",
       },

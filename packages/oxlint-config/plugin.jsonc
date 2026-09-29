@@ -16,7 +16,7 @@
   },
   "overrides": [
     {
-      "files": ["__tests__/**/*.ts"],
+      "files": ["**/__tests__/**/*.ts"],
       "rules": {
         "monkeytype-rules/no-testing-access": "off",
       },

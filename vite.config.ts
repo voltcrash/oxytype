@@ -1,3 +1,4 @@
+import { sharedLint } from "./packages/oxlint-config/config";
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({
@@ -51,7 +52,7 @@ export default defineConfig({
   },
   lint: {
     ignorePatterns: ["node_modules", "dist", ".turbo"],
-    extends: ["./packages/oxlint-config/index.jsonc"],
+    extends: [sharedLint],
     options: {
       typeAware: true,
       typeCheck: true,

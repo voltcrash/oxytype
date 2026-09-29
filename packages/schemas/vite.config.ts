@@ -1,3 +1,4 @@
+import { sharedLint } from "../oxlint-config/config";
 import { extendConfig } from "@monkeytype/tsdown-config";
 
 import { defineConfig } from "vite-plus";
@@ -13,7 +14,7 @@ export default defineConfig({
   pack: extendConfig(),
   lint: {
     ignorePatterns: ["node_modules", "dist", ".turbo"],
-    extends: ["../oxlint-config/index.jsonc"],
+    extends: [sharedLint],
     options: {
       typeAware: true,
       typeCheck: true,

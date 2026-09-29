@@ -1,3 +1,4 @@
+import { sharedLint, pluginLint } from "../packages/oxlint-config/config";
 import {
   defineConfig,
   loadEnv,
@@ -349,10 +350,7 @@ export default defineConfig(({ mode }): UserConfig => {
         ".firebase",
         ".turbo",
       ],
-      extends: [
-        "../packages/oxlint-config/index.jsonc",
-        "../packages/oxlint-config/plugin.jsonc",
-      ],
+      extends: [sharedLint, pluginLint],
       jsPlugins: [
         "eslint-plugin-compat",
         {

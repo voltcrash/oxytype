@@ -11,7 +11,7 @@
         "promise",
         "react",
       ],
-      "files": ["src/**/*.tsx"],
+      "files": ["**/src/**/*.tsx"],
       "rules": {
         "react/react-in-jsx-scope": "off",
         "react/button-has-type": "error",
