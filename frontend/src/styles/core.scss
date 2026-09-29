@@ -395,15 +395,6 @@ kbd {
   }
 }
 
-//sorted-tables
-.headerSorted {
-  font-weight: bold;
-}
 table {
   z-index: 0;
-  td.sortable:hover {
-    cursor: pointer;
-    user-select: none;
-    background-color: var(--sub-alt-color);
-  }
 }
