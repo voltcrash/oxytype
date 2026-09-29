@@ -22,14 +22,13 @@ describe("dom", () => {
         },
       ): void {
         const parent = options?.parent ?? qsr("#parent");
-        parent?.onChild(event, selector, (e) =>
-          // oxlint-disable-next-line typescript/no-unsafe-return
+        parent?.onChild(event, selector, (e) => {
           handler({
             target: e.target,
             childTarget: e.childTarget,
             currentTarget: e.currentTarget,
-          }),
-        );
+          });
+        });
       }
 
       beforeEach(() => {
