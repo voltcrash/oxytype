@@ -75,7 +75,7 @@ Legend: `[ ]` todo, `[~]` in progress, `[x]` done. `deps:` = must be done first.
 - [x] **P0.1** Create branch + this plan.
 - [x] **P0.2** Dead code sweep. Run `pnpm knip`; grep each "possibly dead" file (incl. relative imports `./x`). Delete unused ones + their SCSS. Commit: `refactor: remove unused legacy dom modules`.
   > Note: deleted `result-batches`, `character-counter`, `discord-avatar`, `sorted-table`, `tag-builder` (+spec; only test used it), `.textareaWithCounter`/`.headerSorted`/`td.sortable` SCSS, now-unused `createElementWithUtils`. Kept `input-indicator` (used by `input-validation` → P2.2). Root `pnpm knip` crashes loading `storybook/.storybook/main.ts` (pre-existing); use `pnpm knip --workspace frontend`. Its other unused files (`ignored-keys`, `async-modules`, `debug`, `tanstack-table.d.ts`, `firebase-config-example`) are not legacy DOM, left alone.
-- [ ] **P0.3** Add baseline tests guarding test-page behavior that later phases touch: word element structure (`.word > letter` classes: `correct`/`incorrect`/`extra`), result stats computation outputs. Pure-logic tests only (no snapshot of whole DOM). Commit: `test: add baseline tests for test ui and result`.
+- [~] **P0.3** Add baseline tests guarding test-page behavior that later phases touch: word element structure (`.word > letter` classes: `correct`/`incorrect`/`extra`), result stats computation outputs. Pure-logic tests only (no snapshot of whole DOM). Commit: `test: add baseline tests for test ui and result`.
 
 ### Phase 1 — Small leaf elements (independent; parallelizable)
 
