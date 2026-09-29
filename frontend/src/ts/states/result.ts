@@ -19,7 +19,7 @@ export type ResultSpeedStats = {
   typingSpeedUnit: TypingSpeedUnit;
   wpm: ResultStat;
   raw: ResultStat;
-  // legacy dom only ever adds data-balloon-break, never removes it
+  // balloonBreak = render the hover label on multiple lines
   acc: ResultStat & { balloonBreak: boolean };
 };
 

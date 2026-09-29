@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 // Baseline for what test/result.ts#update shows on the result screen (stat
-// texts, hover labels, test type/other info, crown). DOM writes are recorded
-// per selector so the expected values can be ported when the result screen
-// moves to a store + Solid components (P3.x).
+// texts, hover labels, test type/other info, crown). Stats are rendered by
+// ResultStats.tsx from the result store; the rest is still legacy DOM, recorded
+// per selector until it moves to Solid components (P3.x).
 
 type FakeEl = {
   text?: string;
@@ -179,7 +179,7 @@ vi.mock("../../src/ts/utils/misc", async (importOriginal) => ({
 vi.mock("canvas-confetti", () => ({ default: vi.fn() }));
 
 import { update, updateTagsAfterEdit } from "../../src/ts/test/result";
-import { resultState } from "../../src/ts/states/result";
+import { resultState, type ResultStats } from "../../src/ts/states/result";
 import { __testing } from "../../src/ts/config/testing";
 import type { CompletedEvent } from "@monkeytype/schemas/results";
 import type { Config as ConfigType } from "@monkeytype/schemas/configs";
@@ -240,7 +240,7 @@ async function runUpdate(
 }
 
 const el = (selector: string): FakeEl => dom.get(selector);
-const stat = (name: string): FakeEl => el(`#result .stats .${name} .bottom`);
+const s = (): ResultStats => resultState.stats as ResultStats;
 
 function config(partial: Partial<ConfigType> = {}): void {
   replaceConfig({
@@ -273,56 +273,52 @@ describe("result update", () => {
     it("shows rounded values with precise hover labels", async () => {
       await runUpdate(completedEvent());
 
-      expect(el("#result .stats .wpm .top .text").text).toBe("wpm");
+      expect(s().typingSpeedUnit).toBe("wpm");
       expect(resultState.stats?.wpm).toEqual({
         text: "101",
         ariaLabel: "101.46 wpm",
       });
-      expect(stat("wpm").text).toBe("101");
-      expect(stat("wpm").attrs["aria-label"]).toBe("101.46 wpm");
-      expect(stat("raw").text).toBe("111");
-      expect(stat("raw").attrs["aria-label"]).toBe("110.79 wpm");
-      expect(stat("acc").text).toBe("96%");
-      expect(stat("acc").attrs["aria-label"]).toBe(
-        "96.54%\n150 correct\n5 incorrect",
-      );
+      expect(s().wpm.text).toBe("101");
+      expect(s().wpm.ariaLabel).toBe("101.46 wpm");
+      expect(s().raw.text).toBe("111");
+      expect(s().raw.ariaLabel).toBe("110.79 wpm");
+      expect(s().acc.text).toBe("96%");
+      expect(s().acc.ariaLabel).toBe("96.54%\n150 correct\n5 incorrect");
     });
 
     it("shows 100% accuracy without decimals", async () => {
       await runUpdate(completedEvent({ acc: 100 }));
 
-      expect(stat("acc").text).toBe("100%");
-      expect(stat("acc").attrs["aria-label"]).toBe(
-        "100%\n150 correct\n5 incorrect",
-      );
+      expect(s().acc.text).toBe("100%");
+      expect(s().acc.ariaLabel).toBe("100%\n150 correct\n5 incorrect");
     });
 
     it("shows Infinite for wpm >= 1000", async () => {
       await runUpdate(completedEvent({ wpm: 1000 }));
 
-      expect(stat("wpm").text).toBe("Infinite");
+      expect(s().wpm.text).toBe("Infinite");
     });
 
     it("converts to the configured typing speed unit", async () => {
       config({ typingSpeedUnit: "cpm" });
       await runUpdate(completedEvent());
 
-      expect(el("#result .stats .wpm .top .text").text).toBe("cpm");
-      expect(stat("wpm").text).toBe("507");
-      expect(stat("wpm").attrs["aria-label"]).toBe("507.28 cpm (101.46 wpm)");
-      expect(stat("raw").text).toBe("554");
-      expect(stat("raw").attrs["aria-label"]).toBe("553.95 cpm (110.79 wpm)");
+      expect(s().typingSpeedUnit).toBe("cpm");
+      expect(s().wpm.text).toBe("507");
+      expect(s().wpm.ariaLabel).toBe("507.28 cpm (101.46 wpm)");
+      expect(s().raw.text).toBe("554");
+      expect(s().raw.ariaLabel).toBe("553.95 cpm (110.79 wpm)");
     });
 
     it("uses decimals in text when alwaysShowDecimalPlaces", async () => {
       config({ alwaysShowDecimalPlaces: true });
       await runUpdate(completedEvent());
 
-      expect(stat("wpm").text).toBe("101.46");
-      expect(stat("wpm").attrs["aria-label"]).toBeUndefined();
-      expect(stat("raw").text).toBe("110.79");
-      expect(stat("acc").text).toBe("96.54%");
-      expect(stat("acc").attrs["aria-label"]).toBe("150 correct\n5 incorrect");
+      expect(s().wpm.text).toBe("101.46");
+      expect(s().wpm.ariaLabel).toBeUndefined();
+      expect(s().raw.text).toBe("110.79");
+      expect(s().acc.text).toBe("96.54%");
+      expect(s().acc.ariaLabel).toBe("150 correct\n5 incorrect");
     });
   });
 
@@ -330,49 +326,47 @@ describe("result update", () => {
     it("shows consistency with key consistency hover", async () => {
       await runUpdate(completedEvent());
 
-      expect(stat("consistency").text).toBe("79%");
-      expect(stat("consistency").attrs["aria-label"]).toBe(
-        "78.91% (45.67% key)",
-      );
+      expect(s().consistency.text).toBe("79%");
+      expect(s().consistency.ariaLabel).toBe("78.91% (45.67% key)");
     });
 
     it("shows consistency with decimals when alwaysShowDecimalPlaces", async () => {
       config({ alwaysShowDecimalPlaces: true });
       await runUpdate(completedEvent());
 
-      expect(stat("consistency").text).toBe("78.91%");
-      expect(stat("consistency").attrs["aria-label"]).toBe("45.67% key");
+      expect(s().consistency.text).toBe("78.91%");
+      expect(s().consistency.ariaLabel).toBe("45.67% key");
     });
 
     it("shows rounded time, afk percentage and hover", async () => {
       await runUpdate(completedEvent());
 
-      expect(el("#result .stats .time .bottom .text").text).toBe("30s");
-      expect(el("#result .stats .time .bottom .afk").text).toBe("9.85% afk");
-      expect(stat("time").attrs["aria-label"]).toBe("30.46s (3s afk 9.85%)");
+      expect(s().time.text).toBe("30s");
+      expect(s().time.afk).toBe("9.85% afk");
+      expect(s().time.ariaLabel).toBe("30.46s (3s afk 9.85%)");
     });
 
     it("shows no afk text when there was no afk time", async () => {
       await runUpdate(completedEvent({ afkDuration: 0 }));
 
-      expect(el("#result .stats .time .bottom .afk").text).toBe("");
-      expect(stat("time").attrs["aria-label"]).toBe("30.46s (0s afk 0%)");
+      expect(s().time.afk).toBe("");
+      expect(s().time.ariaLabel).toBe("30.46s (0s afk 0%)");
     });
 
     it("formats long tests as duration strings", async () => {
       await runUpdate(completedEvent({ testDuration: 125.4 }));
-      expect(el("#result .stats .time .bottom .text").text).toBe("02:05");
+      expect(s().time.text).toBe("02:05");
 
       config({ alwaysShowDecimalPlaces: true });
       await runUpdate(completedEvent({ testDuration: 30.456 }));
-      expect(el("#result .stats .time .bottom .text").text).toBe("30.46s");
-      expect(stat("time").attrs["aria-label"]).toBe("3s afk 9.85%");
+      expect(s().time.text).toBe("30.46s");
+      expect(s().time.ariaLabel).toBe("3s afk 9.85%");
     });
 
     it("shows char stats", async () => {
       await runUpdate(completedEvent());
 
-      expect(stat("key").text).toBe("150/5/2/1");
+      expect(s().characters).toBe("150/5/2/1");
     });
   });
 
@@ -380,7 +374,7 @@ describe("result update", () => {
     it("shows mode, mode2 and language", async () => {
       await runUpdate(completedEvent());
 
-      expect(stat("testType").html).toBe("time 30<br>english");
+      expect(s().testType.join("<br>")).toBe("time 30<br>english");
     });
 
     it("lists enabled modifiers", async () => {
@@ -397,7 +391,7 @@ describe("result update", () => {
       });
       await runUpdate(completedEvent({ language: "english_1k" }));
 
-      expect(stat("testType").html).toBe(
+      expect(s().testType.join("<br>")).toBe(
         "words 50<br>english 1k<br>punctuation<br>numbers<br>blind<br>lazy" +
           "<br>master<br>stop on word<br>delete on letter hard",
       );
@@ -414,14 +408,14 @@ describe("result update", () => {
         } as Quote,
       });
 
-      expect(stat("testType").html).toBe("quote long<br>english");
+      expect(s().testType.join("<br>")).toBe("quote long<br>english");
     });
 
     it("omits language in custom mode", async () => {
       config({ mode: "custom" });
       await runUpdate(completedEvent());
 
-      expect(stat("testType").html).toBe("custom");
+      expect(s().testType.join("<br>")).toBe("custom");
     });
   });
 
@@ -429,7 +423,7 @@ describe("result update", () => {
     it("is hidden when there is nothing to show", async () => {
       await runUpdate(completedEvent());
 
-      expect(el("#result .stats .info").hidden).toBe(true);
+      expect(s().other).toEqual([]);
     });
 
     it("lists every flag", async () => {
@@ -442,8 +436,8 @@ describe("result update", () => {
         tooShort: true,
       });
 
-      expect(el("#result .stats .info").hidden).toBe(false);
-      expect(stat("info").html).toBe(
+      expect(s().other).not.toEqual([]);
+      expect(s().other.join("<br>")).toBe(
         "failed (min wpm)<br>afk detected<br>invalid (accuracy)<br>repeated" +
           "<br>bailed out<br>too short",
       );
@@ -453,7 +447,7 @@ describe("result update", () => {
       state.testInvalid = true;
       await runUpdate(completedEvent({ wpm: 400, rawWpm: -1 }));
 
-      expect(stat("info").html).toBe("invalid (wpm,raw)");
+      expect(s().other.join("<br>")).toBe("invalid (wpm,raw)");
     });
   });
 
@@ -469,14 +463,14 @@ describe("result update", () => {
         } as Quote,
       });
 
-      expect(el("#result .stats .source").hidden).toBe(false);
-      expect(stat("source").html).toBe("a book");
+      expect(s().source).toBeDefined();
+      expect(s().source).toBe("a book");
     });
 
     it("is hidden outside quote mode", async () => {
       await runUpdate(completedEvent());
 
-      expect(el("#result .stats .source").hidden).toBe(true);
+      expect(s().source).toBeUndefined();
     });
   });
 

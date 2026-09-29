@@ -38,6 +38,7 @@ import { MonkeyPower } from "./pages/test/MonkeyPower";
 import { OutOfFocusWarning } from "./pages/test/OutOfFocusWarning";
 import { Premid } from "./pages/test/Premid";
 import { RestartTestButton } from "./pages/test/RestartTestButton";
+import { ResultStats } from "./pages/test/result/ResultStats";
 import { TestConfig } from "./pages/test/TestConfig";
 import { TestInitFailed } from "./pages/test/TestInitFailed";
 import { TestLoading } from "./pages/test/TestLoading";
@@ -81,6 +82,7 @@ const components: Record<string, () => JSXElement> = {
   restarttestbutton: () => <RestartTestButton />,
   testloading: () => <TestLoading />,
   monkeypower: () => <MonkeyPower />,
+  resultstats: () => <ResultStats />,
   verticalads: () => (
     <>
       <Advertisement

@@ -339,68 +339,6 @@ function getEventLogAccuracy(): { correct: number; incorrect: number } | null {
   return eventLog === null ? null : getAccuracy(eventLog);
 }
 
-function setAriaLabel(selector: string, label: string | undefined): void {
-  if (label === undefined) {
-    qs(selector)?.removeAttribute("aria-label");
-  } else {
-    qs(selector)?.setAttribute("aria-label", label);
-  }
-}
-
-function renderSpeedStats(): void {
-  const stats = resultState.stats;
-  if (stats === undefined) return;
-
-  qs("#result .stats .wpm .top .text")?.setText(stats.typingSpeedUnit);
-  qs("#result .stats .wpm .bottom")?.setText(stats.wpm.text);
-  qs("#result .stats .raw .bottom")?.setText(stats.raw.text);
-  qs("#result .stats .acc .bottom")?.setText(stats.acc.text);
-  setAriaLabel("#result .stats .wpm .bottom", stats.wpm.ariaLabel);
-  setAriaLabel("#result .stats .raw .bottom", stats.raw.ariaLabel);
-  setAriaLabel("#result .stats .acc .bottom", stats.acc.ariaLabel);
-  if (stats.acc.balloonBreak) {
-    qs("#result .stats .acc .bottom")?.setAttribute("data-balloon-break", "");
-  }
-}
-
-function renderStats(): void {
-  const stats = resultState.stats;
-  if (stats === undefined) return;
-
-  renderSpeedStats();
-
-  qs("#result .stats .consistency .bottom")?.setText(stats.consistency.text);
-  setAriaLabel(
-    "#result .stats .consistency .bottom",
-    stats.consistency.ariaLabel,
-  );
-
-  qs("#result .stats .time .bottom .text")?.setText(stats.time.text);
-  qs("#result .stats .time .bottom .afk")?.setText(stats.time.afk);
-  qs("#result .stats .time .bottom")?.setAttribute(
-    "aria-label",
-    stats.time.ariaLabel,
-  );
-
-  qs("#result .stats .key .bottom")?.setText(stats.characters);
-
-  qsa("#result .stats .testType .bottom")?.setHtml(stats.testType.join("<br>"));
-
-  if (stats.source === undefined) {
-    qs("#result .stats .source")?.hide();
-  } else {
-    qs("#result .stats .source")?.show();
-    qs("#result .stats .source .bottom")?.setHtml(stats.source);
-  }
-
-  if (stats.other.length === 0) {
-    qs("#result .stats .info")?.hide();
-  } else {
-    qs("#result .stats .info")?.show();
-    qs("#result .stats .info .bottom")?.setHtml(stats.other.join("<br>"));
-  }
-}
-
 export function updateTodayTracker(): void {
   setResultState("timeToday", TodayTracker.getString());
   qs("#result .stats .time .bottom .timeToday")?.setText(resultState.timeToday);
@@ -840,7 +778,6 @@ export async function update(
       tooShort,
     }),
   );
-  renderStats();
   updateQuoteFavorite(randomQuote);
   await updateCrown(dontSave);
   await updateChartData();
@@ -880,7 +817,6 @@ export async function update(
       </div>
 
     `);
-    qsa("main #result .stats")?.hide();
     qs("main #result .chart")?.hide();
     qs("main #result #resultWordsHistory")?.hide();
     qs("main #result #resultReplay")?.hide();
@@ -892,7 +828,6 @@ export async function update(
       `Test Completed: ${result.wpm} wpm ${result.acc}% acc ${result.rawWpm} raw ${result.consistency}% consistency`,
     );
   } else {
-    qsa("main #result .stats")?.show();
     qs("main #result .chart")?.show();
     if (!isAuthenticated()) {
       setResultState("quote", { rateVisible: false, reportVisible: false });
@@ -1149,7 +1084,7 @@ qsa(".pageTest #result .chart .chartLegend button")?.on(
   },
 );
 
-qs(".pageTest #favoriteQuoteButton")?.on("click", async () => {
+qs(".pageTest")?.onChild("click", "#favoriteQuoteButton", async () => {
   const { language: quoteLang, id: quoteId, favorite } = resultState.quote;
   if (quoteLang === undefined || quoteId === "") {
     showErrorNotification("Could not get quote stats!");
@@ -1221,7 +1156,6 @@ configEvent.subscribe(async ({ key }) => {
           ...buildSpeedStats(result, getEventLogAccuracy()),
         },
     );
-    renderSpeedStats();
     await updateChartData();
     await updateChartPBLine();
     updateResultChartDataVisibility();

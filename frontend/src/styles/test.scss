@@ -874,70 +874,7 @@
     }
 
     .stats {
-      grid-area: stats;
-      display: grid;
-      // column-gap: 0.5rem;
-      gap: 0.5rem;
-      justify-content: center;
-      align-items: center;
-      // grid-template-areas:
-      //   "wpm acc"
-      //   "wpm key"
-      //   "raw time"
-      //   "consistency consistency"
-      //   "source source"
-      //   "leaderboards leaderboards"
-      //   "testType infoAndTags";
-      // grid-template-areas:
-      //   "wpm acc key consistency testType leaderboards source"
-      //   "wpm raw time nothing infoAndTags leaderboards source";
-      grid-template-areas:
-        "wpm"
-        "acc";
-
-      &.morestats {
-        display: grid;
-        grid-auto-flow: column;
-        grid-template-areas: none;
-        align-items: flex-start;
-        justify-content: space-between;
-        column-gap: 2rem;
-        grid-area: morestats;
-
-        // grid-template-areas: "raw consistency testType infoAndTags leaderboards source"
-        //   "key time testType infoAndTags leaderboards source";
-        .subgroup {
-          display: grid;
-          gap: 0.5rem;
-        }
-      }
-
       .group {
-        // margin-bottom: 0.5rem;
-
-        .top {
-          color: var(--sub-color);
-          font-size: 1rem;
-          line-height: 1rem;
-          margin-bottom: 0.25rem;
-        }
-
-        .bottom {
-          color: var(--main-color);
-          font-size: 2rem;
-          line-height: 2rem;
-        }
-
-        &.time {
-          .afk,
-          .timeToday {
-            color: var(--sub-color);
-            font-size: 0.75rem;
-            line-height: 0.75rem;
-            margin-left: 0.2rem;
-          }
-        }
-
         &.dailyLeaderboard {
           max-width: 13rem;
           white-space: nowrap;
@@ -955,186 +892,84 @@
         }
       }
 
-      // .infoAndTags {
-      //   display: grid;
-      //   gap: 0.5rem;
-      //   align-self: baseline;
-      //   // grid-area: infoAndTags;
-      //   color: var(--sub-color);
-
-      //   .top {
-      //     font-size: 1rem;
-      //     line-height: 1rem;
-      //   }
-
-      //   .bottom {
-      //     font-size: 1rem;
-      //     line-height: 1rem;
-      //   }
-      // }
-
-      .info,
-      .tags,
-      .source {
-        .top {
-          display: flex;
-          align-items: center;
-          font-size: 1rem;
-          line-height: 1rem;
-        }
-
-        .bottom {
-          font-size: 1rem;
-          line-height: 1rem;
-        }
-      }
-
-      .source {
-        max-width: 30rem;
-      }
-
       .tags .bottom .fas {
         margin-left: 0.5rem;
       }
 
-      .wpm {
-        grid-area: wpm;
+      .wpm .top {
+        .crown {
+          --main: var(--main-color);
+          --alt: var(--bg-color);
 
-        .top {
-          font-size: 2rem;
-          line-height: 1.5rem;
-          display: flex;
+          margin-left: 0.5rem;
+          margin-top: -0.2rem;
+          font-size: 0.7rem;
+          background: var(--main);
+          color: var(--alt);
+          width: 1.7rem;
+          height: 1.7rem;
+          border-radius: var(--roundness);
+          display: grid;
+          grid-template-areas: "icon";
+          align-items: center;
+          justify-items: center;
 
-          .crown {
-            --main: var(--main-color);
-            --alt: var(--bg-color);
+          transition:
+            opacity 0.125s,
+            background 0.125s,
+            color 0.125s,
+            outline 0.125s;
 
-            margin-left: 0.5rem;
-            margin-top: -0.2rem;
-            font-size: 0.7rem;
-            background: var(--main);
+          i {
+            grid-area: icon;
+          }
+
+          .fa-slash {
+            color: var(--main);
+            font-size: 1.2rem;
+            opacity: 0;
+          }
+
+          .fa-question,
+          .fa-exclamation-triangle {
             color: var(--alt);
-            width: 1.7rem;
-            height: 1.7rem;
-            border-radius: var(--roundness);
-            display: grid;
-            grid-template-areas: "icon";
-            align-items: center;
-            justify-items: center;
+            opacity: 0;
+          }
 
-            transition:
-              opacity 0.125s,
-              background 0.125s,
-              color 0.125s,
-              outline 0.125s;
-
-            i {
-              grid-area: icon;
-            }
-
+          &.pending {
+            --main: var(--bg-color);
+            --alt: var(--main-color);
+            outline: 0.2em solid var(--main-color);
+          }
+          &.ineligible {
+            --main: var(--sub-color);
+            --alt: var(--bg-color);
             .fa-slash {
-              color: var(--main);
-              font-size: 1.2rem;
+              opacity: 1;
+            }
+          }
+          &.error {
+            --main: var(--error-color);
+            --alt: var(--bg-color);
+            .fa-crown {
               opacity: 0;
             }
-
-            .fa-question,
+            .fa-question {
+              opacity: 1;
+            }
+          }
+          &.warning {
+            --main: var(--sub-color);
+            --alt: var(--bg-color);
+            .fa-crown {
+              opacity: 0;
+            }
             .fa-exclamation-triangle {
-              color: var(--alt);
-              opacity: 0;
-            }
-
-            &.pending {
-              --main: var(--bg-color);
-              --alt: var(--main-color);
-              outline: 0.2em solid var(--main-color);
-            }
-            &.ineligible {
-              --main: var(--sub-color);
-              --alt: var(--bg-color);
-              .fa-slash {
-                opacity: 1;
-              }
-            }
-            &.error {
-              --main: var(--error-color);
-              --alt: var(--bg-color);
-              .fa-crown {
-                opacity: 0;
-              }
-              .fa-question {
-                opacity: 1;
-              }
-            }
-            &.warning {
-              --main: var(--sub-color);
-              --alt: var(--bg-color);
-              .fa-crown {
-                opacity: 0;
-              }
-              .fa-exclamation-triangle {
-                opacity: 1;
-              }
+              opacity: 1;
             }
           }
         }
-
-        .bottom {
-          font-size: 4rem;
-          line-height: 4rem;
-        }
       }
-
-      .testType,
-      .leaderboards {
-        .bottom {
-          font-size: 1rem;
-          line-height: 1.25;
-          .lbChange .fas {
-            margin-right: 0.15rem;
-          }
-        }
-      }
-
-      .acc {
-        grid-area: acc;
-
-        .top {
-          font-size: 2rem;
-          line-height: 1.5rem;
-        }
-
-        .bottom {
-          font-size: 4rem;
-          line-height: 4rem;
-        }
-      }
-
-      .burst {
-        grid-area: burst;
-
-        .top {
-          font-size: 2rem;
-          line-height: 1.5rem;
-        }
-
-        .bottom {
-          font-size: 4rem;
-          line-height: 4rem;
-        }
-      }
-
-      // .key {
-      //   grid-area: key;
-      // }
-
-      // .time {
-      //   grid-area: time;
-      // }
-
-      // .raw {
-      //   grid-area: raw;
-      // }
     }
   }
 }
