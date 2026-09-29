@@ -190,14 +190,11 @@ export function AboutPage(): JSXElement {
         <section>
           <H2 fa={{ icon: "fa-info-circle" }} text="about" />
           <p>
-            Monkeytype is a minimalistic and customizable typing test. It
-            features many test modes, an account system to save your typing
-            speed history, and user-configurable features such as themes,
-            sounds, a smooth caret, and more. Monkeytype attempts to emulate the
-            experience of natural keyboard typing during a typing test, by
-            unobtrusively presenting the text prompts and displaying typed
-            characters in-place, providing straightforward, real-time feedback
-            on typos, speed, and accuracy.
+            Oxytype is an independent typing test project based on Monkeytype.
+            It offers multiple test modes, progress tracking, themes, and a
+            customizable typing experience. The original Monkeytype project
+            was created by Miodec; its contributors remain credited here and
+            in the repository.
             <br />
             <br />
             Test yourself in various modes, track your progress and improve your
@@ -296,8 +293,7 @@ export function AboutPage(): JSXElement {
         <section>
           <H2 fa={{ icon: "fa-envelope" }} text="contact" />
           <p>
-            If you encounter a bug, have a feature request or just want to say
-            hi - here are the different ways you can contact me directly.
+            Report bugs or request features through the Oxytype repository.
           </p>
           <div class="mt-4 grid w-full grid-cols-1 gap-4 text-xl sm:grid-cols-2 lg:grid-cols-4">
             <Button
@@ -307,21 +303,15 @@ export function AboutPage(): JSXElement {
               class="w-full p-8"
             />
             <Button
-              text="twitter"
-              fa={{ icon: "fa-twitter", variant: "brand" }}
-              href="https://x.com/monkeytype"
-              class="w-full p-8"
-            />
-            <Button
-              text="discord"
-              fa={{ icon: "fa-discord", variant: "brand" }}
-              href="https://discord.gg/monkeytype"
+              text="discussions"
+              fa={{ icon: "fa-comments" }}
+              href="https://github.com/voltcrash/oxytype/discussions"
               class="w-full p-8"
             />
             <Button
               text="github"
               fa={{ icon: "fa-github", variant: "brand" }}
-              href="https://github.com/monkeytypegame/monkeytype"
+              href="https://github.com/voltcrash/oxytype"
               class="w-full p-8"
             />
           </div>
@@ -355,18 +345,16 @@ export function AboutPage(): JSXElement {
               href="#supporters_title"
               class="p-0 pt-2 pr-2 pb-2"
             />
-            who helped financially by donating, enabling optional ads or buying
-            merch
+            who supported the original project financially
           </p>
           <p>
             <Button
               variant="text"
               text="Contributors"
-              href="https://github.com/monkeytypegame/monkeytype/graphs/contributors"
+              href="https://github.com/voltcrash/oxytype/graphs/contributors"
               class="p-0 pt-2 pr-2 pb-2"
             />
-            on GitHub that have helped with implementing various features,
-            adding themes and more
+            who built the original project and continue to improve Oxytype
           </p>
         </section>
         <Advertisement id="ad-about-2" visible="sellout" />

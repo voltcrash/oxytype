@@ -35,7 +35,7 @@ export function ApeKeysTab() {
           Generate Ape Keys to access certain API endpoints (
           <Button
             text="documentation"
-            href="https://api.monkeytype.com/docs"
+            href="/api/docs"
             variant="text"
           />
           ).
