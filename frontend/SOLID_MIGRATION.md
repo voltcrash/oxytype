@@ -103,7 +103,7 @@ Legend: `[ ]` todo, `[~]` in progress, `[x]` done. `deps:` = must be done first.
   > Note: matching moved to a pure helper with tests; DOM rendering stayed legacy. Root `pnpm knip` still fails loading Storybook config; scoped exports/types passes, and scoped unused-file/dependency findings match the P0.2 baseline. Build used ignored local Firebase configs and a test Recaptcha key.
 - [x] **P2.2** `components/modals/Commandline.tsx` rendering input, suggestions list (use `<For>`; virtualize only if current code limits count), warning, checking icon, input-validation (port `elements/input-validation.ts` to a hook or reuse `components/ui/form`). Register `Commandline` modal id (exists in `ModalId`). Keep keyboard nav + mouse hover behavior identical; keep `commandline.show()` API as thin wrapper → `showModal("Commandline", …)`.
   > Note: old dialog/SCSS remain until P2.3; controller still mirrors to the hidden dialog during this step. Theme preview swatches retain data-driven colors. Browser checked hotkey, filtering, navigation, hover, input validation, and Escape. Root Knip still fails on Storybook; scoped exports/types passes with only P0.2 baseline findings.
-- [ ] **P2.3** Remove `<dialog id="commandLine">`, `commandline.scss` → Tailwind, delete legacy render code. `commandline/lists/*.ts` data stays (not UI). Delete `utils/animated-modal.ts` if no users remain (also `commandline/types.ts` import).
+- [~] **P2.3** Remove `<dialog id="commandLine">`, `commandline.scss` → Tailwind, delete legacy render code. `commandline/lists/*.ts` data stays (not UI). Delete `utils/animated-modal.ts` if no users remain (also `commandline/types.ts` import).
 
 ### Phase 3 — Result screen (deps: P0.3)
 
