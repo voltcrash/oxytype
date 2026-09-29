@@ -1,5 +1,4 @@
 import * as Misc from "./utils/misc";
-import * as MonkeyPower from "./elements/monkey-power";
 import * as MerchBanner from "./elements/merch-banner";
 import * as ServerConfiguration from "./ape/server-configuration";
 import { configLoadPromise } from "./config/lifecycle";
@@ -27,8 +26,6 @@ onDOMReady(async () => {
   });
 
   void ServerConfiguration.sync();
-
-  MonkeyPower.init();
 
   if (isDevEnvironment()) {
     void navigator.serviceWorker

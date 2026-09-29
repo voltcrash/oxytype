@@ -39,7 +39,7 @@ import {
   getInputElement,
   isInputElementFocused,
 } from "../input/input-element";
-import * as MonkeyPower from "../elements/monkey-power";
+import * as MonkeyPower from "../components/pages/test/MonkeyPower";
 import * as SlowTimer from "../legacy-states/slow-timer";
 import * as AdController from "../controllers/ad-controller";
 import * as Joining from "./break-joining";

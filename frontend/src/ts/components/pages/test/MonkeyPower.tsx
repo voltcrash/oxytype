@@ -1,12 +1,11 @@
-import * as SlowTimer from "../legacy-states/slow-timer";
-import { Config } from "../config/store";
 import { isSafeNumber } from "@monkeytype/util/numbers";
-import { requestDebouncedAnimationFrame } from "../utils/debounced-animation-frame";
-import { ElementWithUtils, qsr } from "../utils/dom";
-import { getTheme } from "../states/theme";
+import { JSXElement, onCleanup, onMount } from "solid-js";
 
-const html = qsr("html");
-const body = qsr("body");
+import { Config } from "../../../config/store";
+import * as SlowTimer from "../../../legacy-states/slow-timer";
+import { getTheme } from "../../../states/theme";
+import { requestDebouncedAnimationFrame } from "../../../utils/debounced-animation-frame";
+import { qsr } from "../../../utils/dom";
 
 type Particle = {
   x: number;
@@ -19,7 +18,7 @@ type Particle = {
 
 type CTX = {
   particles: Particle[];
-  caret?: ElementWithUtils;
+  caret?: HTMLElement;
   canvas?: HTMLCanvasElement;
   context2d?: CanvasRenderingContext2D;
   rendering: boolean;
@@ -28,15 +27,6 @@ type CTX = {
   resetTimeOut?: number;
 };
 
-/**
- * @typedef {{ x: number, y: number }} vec2
- * @typedef {vec2 & { prev: vec2, vel: vec2, alpha: number, color: string }} Particle
- * @typedef {{ particles: Particle[], caret: any, canvas: HTMLCanvasElement, context2d: CanvasRenderingContext2D, rendering: boolean, lastFrame: number, deltaTime: number, resetTimeOut: number }} CTX
- */
-
-/**
- * @type {CTX} ctx
- */
 const ctx: CTX = {
   particles: [],
   rendering: false,
@@ -50,29 +40,6 @@ const particleBounceMod = 0.3;
 const particleCreateCount: [number, number] = [6, 3];
 const shakeAmount = 10;
 
-function createCanvas(): HTMLCanvasElement {
-  const canvas = document.createElement("canvas");
-  canvas.style.cssText =
-    "position:fixed;top:0;left:0;pointer-events:none;z-index:999999";
-  canvas.height = window.innerHeight;
-  canvas.width = window.innerWidth;
-
-  window.addEventListener("resize", () => {
-    canvas.height = window.innerHeight;
-    canvas.width = window.innerWidth;
-  });
-
-  document.body.appendChild(canvas);
-
-  return canvas;
-}
-
-/**
- * @param {number} x
- * @param {number} y
- * @param {string} color
- * @returns {Particle}
- */
 function createParticle(x: number, y: number, color: string): Particle {
   return {
     x,
@@ -87,9 +54,6 @@ function createParticle(x: number, y: number, color: string): Particle {
   };
 }
 
-/**
- * @param {Particle} particle
- */
 function updateParticle(particle: Particle): void {
   if (!ctx.canvas || !isSafeNumber(ctx.deltaTime)) return;
 
@@ -122,12 +86,6 @@ function updateParticle(particle: Particle): void {
   particle.alpha *= 1 - particleFade * ctx.deltaTime;
 }
 
-export function init(): void {
-  ctx.caret = qsr("#caret");
-  ctx.canvas = createCanvas();
-  ctx.context2d = ctx.canvas.getContext("2d") as CanvasRenderingContext2D;
-}
-
 function render(): void {
   if (!isSafeNumber(ctx.lastFrame) || !ctx.context2d || !ctx.canvas) return;
   ctx.rendering = true;
@@ -138,7 +96,6 @@ function render(): void {
   ctx.context2d.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
   const keep = [];
-  // for (let i = 0; i < ctx.particles.length; i++) {
   for (const particle of ctx.particles) {
     if (particle.alpha < 0.1) continue;
 
@@ -173,16 +130,13 @@ export function reset(immediate = false): void {
   delete ctx.resetTimeOut;
 
   clearTimeout(ctx.resetTimeOut);
-  body.setStyle({
-    transition: "all .25s, transform 0.8s",
-    transform: "translate(0,0)",
-  });
+  document.body.style.transition = "all .25s, transform 0.8s";
+  document.body.style.transform = "translate(0,0)";
   setTimeout(
     () => {
-      body.setStyle({
-        transition: "all .25s, transform .05s",
-      });
-      html.setStyle({ overflow: "inherit", overflowY: "scroll" });
+      document.body.style.transition = "all .25s, transform .05s";
+      document.documentElement.style.overflow = "inherit";
+      document.documentElement.style.overflowY = "scroll";
     },
     immediate ? 0 : 1000,
   );
@@ -213,21 +167,21 @@ export async function addPower(good = true, extra = false): Promise<void> {
 
     // Shake
     if (["3", "4"].includes(Config.monkeyPowerLevel)) {
-      html.setStyle({ overflow: "hidden" });
+      document.documentElement.style.overflow = "hidden";
       const shake = [
         Math.round(shakeAmount - Math.random() * shakeAmount),
         Math.round(shakeAmount - Math.random() * shakeAmount),
       ];
-      body.setStyle({ transform: `translate(${shake[0]}px, ${shake[1]}px)` });
+      document.body.style.transform = `translate(${shake[0]}px, ${shake[1]}px)`;
       if (isSafeNumber(ctx.resetTimeOut)) clearTimeout(ctx.resetTimeOut);
       ctx.resetTimeOut = setTimeout(reset, 2000) as unknown as number;
     }
 
     // Sparks
-    const offset = ctx.caret?.native.getBoundingClientRect();
+    const offset = ctx.caret?.getBoundingClientRect();
     const coords = [
       offset?.left ?? 0,
-      (offset?.top ?? 0) + (ctx.caret?.native.offsetHeight ?? 0) / 2,
+      (offset?.top ?? 0) + (ctx.caret?.offsetHeight ?? 0) / 2,
     ];
 
     for (
@@ -251,4 +205,35 @@ export async function addPower(good = true, extra = false): Promise<void> {
 
     startRender();
   });
+}
+
+export function MonkeyPower(): JSXElement {
+  let canvas: HTMLCanvasElement | undefined;
+
+  const resize = (): void => {
+    if (canvas === undefined) return;
+    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
+  };
+
+  onMount(() => {
+    if (canvas === undefined) return;
+    // #caret is still legacy markup (P4.4)
+    ctx.caret = qsr("#caret").native;
+    ctx.canvas = canvas;
+    ctx.context2d = canvas.getContext("2d") as CanvasRenderingContext2D;
+    resize();
+    window.addEventListener("resize", resize);
+  });
+
+  onCleanup(() => {
+    window.removeEventListener("resize", resize);
+  });
+
+  return (
+    <canvas
+      ref={(el) => (canvas = el)}
+      class="pointer-events-none fixed top-0 left-0 z-999999"
+    ></canvas>
+  );
 }

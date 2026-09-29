@@ -33,6 +33,7 @@ import { LiveStatsTextBottom } from "./pages/test/live-stats/LiveStatsTextBottom
 import { LiveStatsTextTop } from "./pages/test/live-stats/LiveStatsTextTop";
 import { TestModesNotice } from "./pages/test/modes-notice/TestModesNotice";
 import { Monkey } from "./pages/test/Monkey";
+import { MonkeyPower } from "./pages/test/MonkeyPower";
 import { OutOfFocusWarning } from "./pages/test/OutOfFocusWarning";
 import { Premid } from "./pages/test/Premid";
 import { RestartTestButton } from "./pages/test/RestartTestButton";
@@ -78,6 +79,7 @@ const components: Record<string, () => JSXElement> = {
   funboxtimers: () => <FunboxTimers />,
   restarttestbutton: () => <RestartTestButton />,
   testloading: () => <TestLoading />,
+  monkeypower: () => <MonkeyPower />,
 };
 
 function mountToMountpoint(name: string, component: () => JSXElement): void {
