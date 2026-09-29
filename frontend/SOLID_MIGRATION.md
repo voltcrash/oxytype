@@ -80,7 +80,8 @@ Legend: `[ ]` todo, `[~]` in progress, `[x]` done. `deps:` = must be done first.
 
 ### Phase 1 — Small leaf elements (independent; parallelizable)
 
-- [~] **P1.1** Loading page → `components/pages/LoadingPage.tsx`. Move bar/spinner/error/text to signals in `states/loading-page.ts` (API kept: `updateBar`, `updateText`, `showSpinner`, `showError`, `showBar`). Remove `html/pages/loading.html`, markup in `pages/loading.ts` (keep `Page` object until P5). Drop `loading.scss` parts replaced.
+- [x] **P1.1** Loading page → `components/pages/LoadingPage.tsx`. Move bar/spinner/error/text to signals in `states/loading-page.ts` (API kept: `updateBar`, `updateText`, `showSpinner`, `showError`, `showBar`). Remove `html/pages/loading.html`, markup in `pages/loading.ts` (keep `Page` object until P5). Drop `loading.scss` parts replaced.
+  > Note: `pages/loading.ts` re-exports setters from `states/loading-page.ts`. `#pageLoading` wrapper stays in `index.html` (Skeleton + `Page.element`), layout moved to Tailwind there. Bar fill animated via `Anime` (`respectReducedMotion={false}` to match legacy). Text rendered as text, not HTML (all callers pass plain text).
 - [ ] **P1.2** Test init failed → `components/pages/test/TestInitFailed.tsx`, signal `testInitError` in `states/test.ts`. Replace `elements/test-init-failed.ts` callers with setters. Remove `#testInitFailed` from `test.html`.
 - [ ] **P1.3** Memory + layoutfluid timers → `components/pages/test/FunboxTimer.tsx` (one component, two instances or mode prop). Signals for visible/text. Remove `#memoryTimer`, `#layoutfluidTimer` from HTML; delete timer modules' DOM code.
 - [ ] **P1.4** Restart button + test loading spinner (`#restartTestButton`, `.pageTest > .loading`) → `RestartTestButton.tsx`, `TestLoading.tsx`. Keep id `restartTestButton` (focus/tab logic in `input/hotkeys/quickrestart.ts`, `event-handlers/test.ts`).
