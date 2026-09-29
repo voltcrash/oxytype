@@ -1,23 +1,18 @@
-import { applyReducedMotion } from "../../utils/misc";
 import { qs } from "../../utils/dom";
+import {
+  setMemoryTimerText,
+  setMemoryTimerVisibility,
+} from "../../states/funbox-timers";
 
 let memoryTimer: number | null = null;
 let memoryInterval: NodeJS.Timeout | null = null;
 
-const timerEl = qs("#typingTest #memoryTimer");
-
 export function show(): void {
-  timerEl?.animate({
-    opacity: 1,
-    duration: applyReducedMotion(125),
-  });
+  setMemoryTimerVisibility("shown");
 }
 
 export function hide(): void {
-  timerEl?.animate({
-    opacity: 0,
-    duration: applyReducedMotion(125),
-  });
+  setMemoryTimerVisibility("hidden");
 }
 
 export function reset(): void {
@@ -46,5 +41,5 @@ export function start(time: number): void {
 }
 
 export function update(sec: number): void {
-  timerEl?.setText(`Timer left to memorise all words: ${sec}s`);
+  setMemoryTimerText(`Timer left to memorise all words: ${sec}s`);
 }

@@ -25,6 +25,7 @@ import { ProfileSearchPage } from "./pages/profile/ProfileSearchPage";
 import { SettingsPage } from "./pages/settings/SettingsPage";
 import { CapsWarning } from "./pages/test/CapsWarning";
 import { CompositionDisplay } from "./pages/test/CompositionDisplay";
+import { FunboxTimers } from "./pages/test/FunboxTimer";
 import { Keymap } from "./pages/test/Keymap";
 import { BarTimerProgress } from "./pages/test/live-stats/BarTimerProgress";
 import { LiveStatsMini } from "./pages/test/live-stats/LiveStatsMini";
@@ -72,6 +73,7 @@ const components: Record<string, () => JSXElement> = {
   premid: () => <Premid />,
   loadingpage: () => <LoadingPage />,
   testinitfailed: () => <TestInitFailed />,
+  funboxtimers: () => <FunboxTimers />,
 };
 
 function mountToMountpoint(name: string, component: () => JSXElement): void {
