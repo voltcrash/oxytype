@@ -9,6 +9,8 @@ let debug = false;
 let activated = false;
 
 export async function activateSentry(): Promise<void> {
+  const dsn = envConfig.sentryDsn;
+  if (!dsn) return;
   if (activated) {
     console.warn("Sentry already activated");
     return;
@@ -19,10 +21,8 @@ export async function activateSentry(): Promise<void> {
   const Sentry = await getSentry();
   Sentry.init({
     release: envConfig.clientVersion,
-    dsn: "https://f50c25dc9dd75304a63776063896a39b@o4509236448133120.ingest.us.sentry.io/4509237217394688",
-    // Setting this option to true will send default PII data to Sentry.
-    // For example, automatic IP address collection on events
-    sendDefaultPii: true,
+    dsn,
+    sendDefaultPii: false,
     environment: envConfig.isDevelopment ? "development" : "production",
     integrations: [
       Sentry.browserTracingIntegration(),
@@ -32,7 +32,7 @@ export async function activateSentry(): Promise<void> {
       // //   // ignore: ["#wordsInput"],
       // }),
       Sentry.thirdPartyErrorFilterIntegration({
-        filterKeys: ["monkeytype-frontend"],
+        filterKeys: ["oxytype-frontend"],
         // Defines how to handle errors that contain third party stack frames.
         // Possible values are:
         // - 'drop-error-if-contains-third-party-frames'
@@ -45,7 +45,9 @@ export async function activateSentry(): Promise<void> {
     // Tracing
     tracesSampleRate: 0.25, //  Capture 100% of the transactions
     // Set 'tracePropagationTargets' to control for which URLs distributed tracing should be enabled
-    tracePropagationTargets: ["localhost", /^https:\/\/api\.monkeytype\.com/],
+    tracePropagationTargets: [
+      new URL(envConfig.backendUrl, window.location.origin).href,
+    ],
     // Session Replay
     replaysSessionSampleRate: 0, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
     replaysOnErrorSampleRate: 0.5, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
