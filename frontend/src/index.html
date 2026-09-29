@@ -19,14 +19,7 @@
     <div id="app" class="content-grid focus hidden">
       <mount data-component="header"></mount>
       <main class="full-width content-grid" style="height: 100%">
-        <div id="ad-vertical-left-wrapper" class="ad advertisement ad-v focus">
-          <div class="icon"><i class="fas fa-ad"></i></div>
-          <div id="ad-vertical-left"></div>
-        </div>
-        <div id="ad-vertical-right-wrapper" class="ad advertisement ad-v focus">
-          <div class="icon"><i class="fas fa-ad"></i></div>
-          <div id="ad-vertical-right"></div>
-        </div>
+        <mount data-component="verticalads" class="contents"></mount>
         <div
           class="page pageLoading grid h-full w-full place-self-center content-center items-center"
           id="pageLoading"
@@ -75,17 +68,7 @@
         </div>
       </main>
       <mount data-component="footer"></mount>
-      <div
-        id="ad-footer-wrapper"
-        class="full-width ad advertisement ad-h focus"
-      >
-        <div class="icon"><i class="fas fa-ad"></i></div>
-        <div id="ad-footer"></div>
-      </div>
-      <div id="ad-footer-small-wrapper" class="ad advertisement ad-h-s focus">
-        <div class="icon small"><i class="fas fa-ad"></i></div>
-        <div id="ad-footer-small"></div>
-      </div>
+      <mount data-component="footerad" class="contents"></mount>
     </div>
     <script
       src="https://www.google.com/recaptcha/api.js?render=explicit"

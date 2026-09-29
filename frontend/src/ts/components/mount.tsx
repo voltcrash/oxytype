@@ -4,6 +4,7 @@ import { render } from "solid-js/web";
 
 import { queryClient } from "../queries";
 import { qsa } from "../utils/dom";
+import { Advertisement } from "./common/Advertisement";
 import { Theme } from "./core/Theme";
 import { DevTools } from "./dev/DevTools";
 import { CommandlineHotkey } from "./hotkeys/CommandlineHotkey";
@@ -80,6 +81,42 @@ const components: Record<string, () => JSXElement> = {
   restarttestbutton: () => <RestartTestButton />,
   testloading: () => <TestLoading />,
   monkeypower: () => <MonkeyPower />,
+  verticalads: () => (
+    <>
+      <Advertisement
+        id="ad-vertical-left"
+        visible={["on", "sellout"]}
+        staticVisibility
+        vertical
+        focus
+      />
+      <Advertisement
+        id="ad-vertical-right"
+        visible={["on", "sellout"]}
+        staticVisibility
+        vertical
+        focus
+      />
+    </>
+  ),
+  footerad: () => (
+    <Advertisement
+      id="ad-footer"
+      visible="sellout"
+      staticVisibility
+      focus
+      class="col-[full-width]"
+      smallClass="col-[content]"
+    />
+  ),
+  resultad: () => (
+    <Advertisement
+      id="ad-result"
+      visible={["result", "on", "sellout"]}
+      staticVisibility
+      withText
+    />
+  ),
 };
 
 function mountToMountpoint(name: string, component: () => JSXElement): void {
