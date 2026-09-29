@@ -21,17 +21,13 @@ export function getOpenApi(): OpenAPIObject {
     {
       openapi: "3.1.0",
       info: {
-        title: "Monkeytype API",
+        title: "Oxytype API",
         description:
-          "Documentation for the endpoints provided by the Monkeytype API server.\n\nNote that authentication is performed with the Authorization HTTP header in the format `Authorization: ApeKey YOUR_APE_KEY`\n\nThere is a rate limit of `30 requests per minute` across all endpoints with some endpoints being more strict. Rate limit rates are shared across all ape keys.",
+          "Documentation for the endpoints provided by the Oxytype API server.\n\nNote that authentication is performed with the Authorization HTTP header in the format `Authorization: ApeKey YOUR_APE_KEY`\n\nThere is a rate limit of `30 requests per minute` across all endpoints with some endpoints being more strict. Rate limit rates are shared across all ape keys.",
         version: `2.${COMPATIBILITY_CHECK}.0`,
-        termsOfService: "https://monkeytype.com/terms-of-service",
         contact: {
-          name: "Support",
-          email: "support@monkeytype.com",
-        },
-        "x-logo": {
-          url: "https://monkeytype.com/images/mtfulllogo.png",
+          name: "Oxytype repository",
+          url: "https://github.com/voltcrash/oxytype",
         },
         license: {
           name: "GPL-3.0",
@@ -40,8 +36,8 @@ export function getOpenApi(): OpenAPIObject {
       },
       servers: [
         {
-          url: "https://api.monkeytype.com",
-          description: "Production server",
+          url: "/",
+          description: "Current server",
         },
       ],
       components: {
