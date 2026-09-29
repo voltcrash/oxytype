@@ -1,5 +1,5 @@
 import { Plugin, ViteDevServer, normalizePath } from "vite";
-import { spawn, execSync, ChildProcess } from "child_process";
+import { spawn, execFileSync, ChildProcess } from "child_process";
 import { fileURLToPath } from "url";
 
 export type OxlintCheckerOptions = {
@@ -22,6 +22,7 @@ type LintResult = {
 };
 
 const OXLINT_SUMMARY_REGEX = /Found (\d+) warnings? and (\d+) errors?/;
+const OXLINT_DIAGNOSTIC_REGEX = /^.+:\d+:\d+: (warning|error)\b/gm;
 
 export function oxlintChecker(options: OxlintCheckerOptions = {}): Plugin {
   const {
@@ -69,7 +70,12 @@ export function oxlintChecker(options: OxlintCheckerOptions = {}): Plugin {
         errorCount: parseInt(summaryMatch[2], 10),
       };
     }
-    return { errorCount: 0, warningCount: 0 };
+    const diagnostics = [...output.matchAll(OXLINT_DIAGNOSTIC_REGEX)];
+    return {
+      errorCount: diagnostics.filter((match) => match[1] === "error").length,
+      warningCount: diagnostics.filter((match) => match[1] === "warning")
+        .length,
+    };
   };
 
   const sendLintResult = (result: Partial<LintResult>): void => {
@@ -102,7 +108,7 @@ export function oxlintChecker(options: OxlintCheckerOptions = {}): Plugin {
    * Runs an oxlint process with the given arguments and captures its combined output.
    *
    * This function is responsible for managing the lifecycle of the current lint process:
-   * - It spawns a new child process via `npx oxlint . ...args`.
+   * - It spawns a new child process via `pnpm exec vp lint . ...args`.
    * - It assigns the spawned process to the shared {@link currentProcess} variable so that
    *   other parts of the plugin can cancel or track the active lint run.
    * - On process termination (either "error" or "close"), it clears {@link currentProcess}
@@ -118,11 +124,14 @@ export function oxlintChecker(options: OxlintCheckerOptions = {}): Plugin {
     args: string[],
   ): Promise<{ code: number | null; output: string }> => {
     return new Promise((resolve) => {
-      const childProcess = spawn("npx", ["oxlint", ".", ...args], {
-        cwd: process.cwd(),
-        shell: true,
-        env: { ...process.env, FORCE_COLOR: "3" },
-      });
+      const childProcess = spawn(
+        "pnpm",
+        ["exec", "vp", "lint", ".", "--format", "agent", ...args],
+        {
+          cwd: process.cwd(),
+          env: process.env,
+        },
+      );
 
       currentProcess = childProcess;
       let output = "";
@@ -179,10 +188,12 @@ export function oxlintChecker(options: OxlintCheckerOptions = {}): Plugin {
     // If first pass had errors, send them immediately (fast-fail)
     if (code !== 0) {
       const counts = parseLintOutput(output);
-      if (counts.errorCount > 0 || counts.warningCount > 0) {
-        sendLintResult({ ...counts, running: false });
-        return;
-      }
+      sendLintResult({
+        ...counts,
+        errorCount: Math.max(counts.errorCount, 1),
+        running: false,
+      });
+      return;
     }
 
     // Run type-aware check if enabled
@@ -204,10 +215,10 @@ export function oxlintChecker(options: OxlintCheckerOptions = {}): Plugin {
       console.log(typeResult.output);
     }
 
-    const counts =
-      typeResult.code !== 0
-        ? parseLintOutput(typeResult.output)
-        : { errorCount: 0, warningCount: 0 };
+    const counts = parseLintOutput(typeResult.output);
+    if (typeResult.code !== 0) {
+      counts.errorCount = Math.max(counts.errorCount, 1);
+    }
     sendLintResult({ ...counts, running: false });
   };
 
@@ -275,16 +286,23 @@ export function oxlintChecker(options: OxlintCheckerOptions = {}): Plugin {
       console.log("\n\x1b[1mRunning oxlint...\x1b[0m");
 
       try {
-        const commands = ["npx oxlint ."];
-        if (typeAware) {
-          commands.push("npx oxlint . --type-aware --type-check");
-        }
-
-        const output = execSync(commands.join(" && "), {
-          cwd: process.cwd(),
-          encoding: "utf-8",
-          env: { ...process.env, FORCE_COLOR: "3" },
-        });
+        const output = execFileSync(
+          "pnpm",
+          [
+            "exec",
+            "vp",
+            "lint",
+            ".",
+            "--format",
+            "agent",
+            ...(typeAware ? ["--type-aware", "--type-check"] : []),
+          ],
+          {
+            cwd: process.cwd(),
+            encoding: "utf-8",
+            env: process.env,
+          },
+        );
 
         if (output) {
           console.log(output);
