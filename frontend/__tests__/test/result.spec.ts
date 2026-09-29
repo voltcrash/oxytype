@@ -87,23 +87,25 @@ const state = vi.hoisted(() => ({
   tagPbWpm: 0,
 }));
 
-vi.mock("../../src/ts/controllers/chart-controller", () => {
+vi.mock("../../src/ts/states/result", async (importOriginal) => {
   const datasets = new Map<string, Record<string, unknown>>();
   const scales = new Map<string, Record<string, unknown>>();
+  const chart = {
+    data: { labels: [] },
+    options: { plugins: { annotation: { annotations: [] } } },
+    resize: vi.fn(),
+    update: vi.fn(),
+  };
   return {
-    result: {
-      data: { labels: [] },
-      options: { plugins: { annotation: { annotations: [] } } },
-      getDataset: (id: string) => {
-        if (!datasets.has(id)) datasets.set(id, { data: [], hidden: false });
-        return datasets.get(id);
-      },
-      getScale: (id: string) => {
-        if (!scales.has(id)) scales.set(id, { title: { text: "" } });
-        return scales.get(id);
-      },
-      resize: vi.fn(),
-      update: vi.fn(),
+    ...(await importOriginal<object>()),
+    getResultChart: () => chart,
+    getResultChartDataset: (id: string) => {
+      if (!datasets.has(id)) datasets.set(id, { data: [], hidden: false });
+      return datasets.get(id);
+    },
+    getResultChartScale: (id: string) => {
+      if (!scales.has(id)) scales.set(id, { title: { text: "" } });
+      return scales.get(id);
     },
   };
 });
@@ -173,11 +175,13 @@ vi.mock("canvas-confetti", () => ({ default: vi.fn() }));
 import {
   showCrown,
   showErrorCrownIfNeeded,
+  toggleResultChartLegend,
   update,
   updateTagsAfterEdit,
 } from "../../src/ts/test/result";
 import { resultState, type ResultStats } from "../../src/ts/states/result";
 import { __testing } from "../../src/ts/config/testing";
+import { Config } from "../../src/ts/config/store";
 import type { CompletedEvent } from "@monkeytype/schemas/results";
 import type { Config as ConfigType } from "@monkeytype/schemas/configs";
 import type { Quote } from "../../src/ts/controllers/quotes-controller";
@@ -610,6 +614,51 @@ describe("result update", () => {
         { id: "b", name: "beta", ariaLabel: "PB: 120", pb: false },
         { id: "c", name: "gamma", pb: true },
       ]);
+    });
+  });
+
+  describe("chart legend", () => {
+    beforeEach(() => {
+      localStorage.removeItem("resultChartDataVisibility");
+    });
+
+    it("shows pb button only when logged in", async () => {
+      await runUpdate(completedEvent());
+      expect(resultState.chartLegend.visibility).toEqual({
+        raw: true,
+        burst: true,
+        errors: true,
+        pbLine: true,
+        tagPbLine: true,
+      });
+      expect(resultState.chartLegend.pbLineVisible).toBe(true);
+
+      state.authenticated = false;
+      await runUpdate(completedEvent());
+      expect(resultState.chartLegend.pbLineVisible).toBe(false);
+      expect(resultState.chartLegend.tagPbLineVisible).toBe(false);
+    });
+
+    it("toggles data visibility", async () => {
+      state.tags = [{ _id: "a", name: "alpha" }];
+      state.activeTagIds = ["a"];
+      state.tagPbWpm = 120;
+      await runUpdate(completedEvent());
+      // tag pb lines are added after the legend is updated
+      expect(resultState.chartLegend.tagPbLineVisible).toBe(false);
+
+      toggleResultChartLegend("raw");
+      expect(resultState.chartLegend.visibility.raw).toBe(false);
+      expect(resultState.chartLegend.tagPbLineVisible).toBe(true);
+
+      toggleResultChartLegend("raw");
+      expect(resultState.chartLegend.visibility.raw).toBe(true);
+    });
+
+    it("toggles start graphs at zero with scale", () => {
+      config({ startGraphsAtZero: true });
+      toggleResultChartLegend("scale");
+      expect(Config.startGraphsAtZero).toBe(false);
     });
   });
 });

@@ -1,3 +1,4 @@
+import type { CartesianScaleOptions, Chart, ChartDataset } from "chart.js";
 import { createStore } from "solid-js/store";
 import { Language } from "@monkeytype/schemas/languages";
 import { TypingSpeedUnit } from "@monkeytype/schemas/configs";
@@ -42,6 +43,13 @@ export type ResultTag = {
   pb: boolean;
 };
 
+export type ResultChartLegendId =
+  | "raw"
+  | "burst"
+  | "errors"
+  | "pbLine"
+  | "tagPbLine";
+
 export type ResultState = {
   stats: ResultStats | undefined;
   crown: {
@@ -68,6 +76,12 @@ export type ResultState = {
     rating: string;
     reportVisible: boolean;
   };
+  chartLegend: {
+    // chart data toggled on, persisted in local storage
+    visibility: Record<ResultChartLegendId, boolean>;
+    pbLineVisible: boolean;
+    tagPbLineVisible: boolean;
+  };
   timeToday: string;
   dailyLeaderboardRank: number | undefined;
   loginTip: boolean;
@@ -90,9 +104,53 @@ export const [resultState, setResultState] = createStore<ResultState>({
     rating: "",
     reportVisible: false,
   },
+  chartLegend: {
+    visibility: {
+      raw: false,
+      burst: false,
+      errors: false,
+      pbLine: false,
+      tagPbLine: false,
+    },
+    pbLineVisible: true,
+    tagPbLineVisible: true,
+  },
   timeToday: "",
   dailyLeaderboardRank: undefined,
   loginTip: false,
   retrySaving: false,
   noStress: false,
 });
+
+export type ResultChartType = Chart<"line" | "scatter", number[]>;
+export type ResultChartDatasetId = "wpm" | "raw" | "error" | "burst";
+
+// set by ResultChart once the canvas is mounted
+let resultChart: ResultChartType | undefined;
+
+export function setResultChart(chart: ResultChartType | undefined): void {
+  resultChart = chart;
+}
+
+export function getResultChart(): ResultChartType {
+  if (resultChart === undefined) {
+    throw new Error("Result chart is not mounted");
+  }
+  return resultChart;
+}
+
+export function getResultChartDataset(
+  id: ResultChartDatasetId,
+): ChartDataset<"line" | "scatter", number[]> {
+  const dataset = getResultChart().data.datasets.find((x) => x.yAxisID === id);
+  if (dataset === undefined) {
+    throw new Error(`Result chart dataset ${id} not found`);
+  }
+  return dataset;
+}
+
+export function getResultChartScale(
+  id: "x" | ResultChartDatasetId,
+): CartesianScaleOptions {
+  return getResultChart().options.scales?.[id] as CartesianScaleOptions;
+}

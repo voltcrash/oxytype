@@ -1993,15 +1993,6 @@ qs(".pageTest #toggleBurstHeatmap")?.on("click", async () => {
   ResultWordHighlight.destroy();
 });
 
-qs(".pageTest #result #wpmChart")?.on("mouseleave", () => {
-  ResultWordHighlight.setIsHoverChart(false);
-  ResultWordHighlight.clear();
-});
-
-qs(".pageTest #result #wpmChart")?.on("mouseenter", () => {
-  ResultWordHighlight.setIsHoverChart(true);
-});
-
 addEventListener("resize", () => {
   ResultWordHighlight.destroy();
 });

@@ -4,7 +4,6 @@ import { Chart, type PluginChartOptions } from "chart.js";
 import { Config } from "../config/store";
 import { setConfig } from "../config/setters";
 import * as AdController from "../controllers/ad-controller";
-import * as ChartController from "../controllers/chart-controller";
 import QuotesController, { Quote } from "../controllers/quotes-controller";
 import * as DB from "../db";
 
@@ -45,7 +44,7 @@ import { LocalStorageWithSchema } from "../utils/local-storage-with-schema";
 import { z } from "zod";
 import { blurInputElement } from "../input/input-element";
 import * as ConnectionState from "../legacy-states/connection";
-import { qs, qsa } from "../utils/dom";
+import { qs } from "../utils/dom";
 import { getTheme } from "../states/theme";
 import {
   getLastEventLog,
@@ -61,8 +60,12 @@ import {
   getTimerBoundaryLabels,
 } from "./events/stats";
 import {
+  getResultChart,
+  getResultChartDataset,
+  getResultChartScale,
   resultState,
   setResultState,
+  type ResultChartLegendId,
   type ResultCrownType,
   type ResultTag,
 } from "../states/result";
@@ -85,7 +88,7 @@ export function toggleSmoothedBurst(): void {
   showSuccessNotification(useSmoothedBurst ? "on" : "off");
   if (getResultVisible()) {
     void updateChartData().then(() => {
-      ChartController.result.update("resize");
+      getResultChart().update("resize");
     });
   }
 }
@@ -95,7 +98,7 @@ export function toggleUserFakeChartData(): void {
   showSuccessNotification(useFakeChartData ? "on" : "off");
   if (getResultVisible()) {
     void updateChartData().then(() => {
-      ChartController.result.update("resize");
+      getResultChart().update("resize");
     });
   }
 }
@@ -105,16 +108,15 @@ let resultAnnotation: AnnotationOptions<"line">[] = [];
 async function updateChartData(): Promise<void> {
   const eventLog = getLastEventLog();
   if (result.chartData === "toolong" || eventLog === null) {
-    ChartController.result.getDataset("wpm").data = [];
-    ChartController.result.getDataset("raw").data = [];
-    ChartController.result.getDataset("burst").data = [];
-    ChartController.result.getDataset("error").data = [];
+    getResultChartDataset("wpm").data = [];
+    getResultChartDataset("raw").data = [];
+    getResultChartDataset("burst").data = [];
+    getResultChartDataset("error").data = [];
     return;
   }
 
   const typingSpeedUnit = getTypingSpeedUnit(Config.typingSpeedUnit);
-  ChartController.result.getScale("wpm").title.text =
-    typingSpeedUnit.fullUnitString;
+  getResultChartScale("wpm").title.text = typingSpeedUnit.fullUnitString;
 
   const labels = getTimerBoundaryLabels(eventLog, false);
 
@@ -156,7 +158,7 @@ async function updateChartData(): Promise<void> {
       id: "funbox-label",
       type: "line",
       scaleID: "wpm",
-      value: ChartController.result.getScale("wpm").min,
+      value: getResultChartScale("wpm").min,
       borderColor: "transparent",
       borderWidth: 1,
       borderDash: [2, 2],
@@ -179,19 +181,17 @@ async function updateChartData(): Promise<void> {
     });
   }
 
-  ChartController.result.data.labels = labels;
+  getResultChart().data.labels = labels;
 
-  ChartController.result.getDataset("wpm").data = chartData1;
-  ChartController.result.getDataset("wpm").label = Config.typingSpeedUnit;
+  getResultChartDataset("wpm").data = chartData1;
+  getResultChartDataset("wpm").label = Config.typingSpeedUnit;
 
-  ChartController.result.getDataset("raw").data = chartData2;
+  getResultChartDataset("raw").data = chartData2;
 
-  ChartController.result.getDataset("burst").data = chartData3;
+  getResultChartDataset("burst").data = chartData3;
 
-  ChartController.result.getDataset("error").data = result.chartData.err;
-  ChartController.result.getScale("error").max = Math.max(
-    ...result.chartData.err,
-  );
+  getResultChartDataset("error").data = result.chartData.err;
+  getResultChartScale("error").max = Math.max(...result.chartData.err);
 
   if (useFakeChartData) {
     applyFakeChartData();
@@ -263,23 +263,23 @@ function applyFakeChartData(): void {
     minChartVal = Math.floor(minChartVal / 10) * 10;
   }
 
-  ChartController.result.data.labels = labels;
+  getResultChart().data.labels = labels;
 
-  ChartController.result.getDataset("wpm").data = chartData1;
-  ChartController.result.getDataset("wpm").label = Config.typingSpeedUnit;
-  ChartController.result.getScale("wpm").min = minChartVal;
-  ChartController.result.getScale("wpm").max = maxChartVal;
+  getResultChartDataset("wpm").data = chartData1;
+  getResultChartDataset("wpm").label = Config.typingSpeedUnit;
+  getResultChartScale("wpm").min = minChartVal;
+  getResultChartScale("wpm").max = maxChartVal;
 
-  ChartController.result.getDataset("raw").data = chartData2;
-  ChartController.result.getScale("raw").min = minChartVal;
-  ChartController.result.getScale("raw").max = maxChartVal;
+  getResultChartDataset("raw").data = chartData2;
+  getResultChartScale("raw").min = minChartVal;
+  getResultChartScale("raw").max = maxChartVal;
 
-  ChartController.result.getDataset("burst").data = chartData3;
-  ChartController.result.getScale("burst").min = minChartVal;
-  ChartController.result.getScale("burst").max = maxChartVal;
+  getResultChartDataset("burst").data = chartData3;
+  getResultChartScale("burst").min = minChartVal;
+  getResultChartScale("burst").max = maxChartVal;
 
-  ChartController.result.getDataset("error").data = fakeChartData.err;
-  ChartController.result.getScale("error").max = Math.max(...fakeChartData.err);
+  getResultChartDataset("error").data = fakeChartData.err;
+  getResultChartScale("error").max = Math.max(...fakeChartData.err);
 }
 
 export async function updateChartPBLine(): Promise<void> {
@@ -686,10 +686,9 @@ export async function update(
   applyMinMaxChartValues();
   await updateTags(dontSave);
 
-  ((ChartController.result.options as PluginChartOptions<"line" | "scatter">)
-    .plugins.annotation.annotations as AnnotationOptions<"line">[]) =
-    resultAnnotation;
-  ChartController.result.resize();
+  ((getResultChart().options as PluginChartOptions<"line" | "scatter">).plugins
+    .annotation.annotations as AnnotationOptions<"line">[]) = resultAnnotation;
+  getResultChart().resize();
 
   const noStress = GlarsesMode.get();
   setResultState({
@@ -716,7 +715,6 @@ export async function update(
       </div>
 
     `);
-    qs("main #result .chart")?.hide();
     qs("main #result #resultWordsHistory")?.hide();
     qs("main #result #resultReplay")?.hide();
     qs("main #result #showWordHistoryButton")?.hide();
@@ -727,7 +725,6 @@ export async function update(
       `Test Completed: ${result.wpm} wpm ${result.acc}% acc ${result.rawWpm} raw ${result.consistency}% consistency`,
     );
   } else {
-    qs("main #result .chart")?.show();
     if (!isAuthenticated()) {
       setResultState("quote", { rateVisible: false, reportVisible: false });
     } else {
@@ -797,7 +794,7 @@ export async function update(
   void AdController.renderResult();
   setResultCalculating(false);
   qs("#words")?.empty();
-  ChartController.result.resize();
+  getResultChart().resize();
 }
 
 const resultChartDataVisibility = new LocalStorageWithSchema({
@@ -824,9 +821,9 @@ function updateMinMaxChartValues(): void {
   const values = [];
 
   const datasets = {
-    wpm: ChartController.result.getDataset("wpm"),
-    burst: ChartController.result.getDataset("burst"),
-    raw: ChartController.result.getDataset("raw"),
+    wpm: getResultChartDataset("wpm"),
+    burst: getResultChartDataset("burst"),
+    raw: getResultChartDataset("raw"),
   };
 
   if (!datasets.wpm.hidden) {
@@ -878,19 +875,19 @@ function updateMinMaxChartValues(): void {
 }
 
 function applyMinMaxChartValues(): void {
-  ChartController.result.getScale("wpm").min = minChartVal;
-  ChartController.result.getScale("wpm").max = maxChartVal;
-  ChartController.result.getScale("raw").min = minChartVal;
-  ChartController.result.getScale("raw").max = maxChartVal;
-  ChartController.result.getScale("burst").min = minChartVal;
-  ChartController.result.getScale("burst").max = maxChartVal;
+  getResultChartScale("wpm").min = minChartVal;
+  getResultChartScale("wpm").max = maxChartVal;
+  getResultChartScale("raw").min = minChartVal;
+  getResultChartScale("raw").max = maxChartVal;
+  getResultChartScale("burst").min = minChartVal;
+  getResultChartScale("burst").max = maxChartVal;
 }
 
 function updateResultChartDataVisibility(): void {
   const vis = resultChartDataVisibility.get();
-  ChartController.result.getDataset("raw").hidden = !vis.raw;
-  ChartController.result.getDataset("burst").hidden = !vis.burst;
-  ChartController.result.getDataset("error").hidden = !vis.errors;
+  getResultChartDataset("raw").hidden = !vis.raw;
+  getResultChartDataset("burst").hidden = !vis.burst;
+  getResultChartDataset("error").hidden = !vis.errors;
 
   for (const annotation of resultAnnotation) {
     if (annotation.id === "lpb") {
@@ -900,38 +897,16 @@ function updateResultChartDataVisibility(): void {
     }
   }
 
-  const buttons = qsa(".pageTest #result .chart .chartLegend button");
-
   // Check if there are any tag PB annotations
   const hasTagPbAnnotations = resultAnnotation.some(
     (annotation) => annotation.id === "tpb",
   );
 
-  for (const button of buttons) {
-    const id = button?.getAttribute("data-id") as string;
-
-    if (id === "scale") {
-      continue;
-    }
-
-    if (
-      id !== "raw" &&
-      id !== "burst" &&
-      id !== "errors" &&
-      id !== "pbLine" &&
-      id !== "tagPbLine"
-    ) {
-      continue;
-    }
-
-    button.toggleClass("active", vis[id]);
-
-    if (id === "pbLine") {
-      button.toggleClass("hidden", !isAuthenticated());
-    } else if (id === "tagPbLine") {
-      button.toggleClass("hidden", !isAuthenticated() || !hasTagPbAnnotations);
-    }
-  }
+  setResultState("chartLegend", {
+    visibility: vis,
+    pbLineVisible: isAuthenticated(),
+    tagPbLineVisible: isAuthenticated() && hasTagPbAnnotations,
+  });
 }
 
 export function updateTagsAfterEdit(
@@ -950,36 +925,23 @@ export function updateTagsAfterEdit(
   setResultState("tags", "items", [...kept, ...added]);
 }
 
-qsa(".pageTest #result .chart .chartLegend button")?.on(
-  "click",
-  async (event) => {
-    const $target = event.target as HTMLElement;
-    const id = $target.getAttribute("data-id");
+export function toggleResultChartLegend(
+  id: "scale" | ResultChartLegendId,
+): void {
+  if (id === "scale") {
+    setConfig("startGraphsAtZero", !Config.startGraphsAtZero);
+    return;
+  }
 
-    if (id === "scale") {
-      setConfig("startGraphsAtZero", !Config.startGraphsAtZero);
-      return;
-    }
+  const vis = resultChartDataVisibility.get();
+  vis[id] = !vis[id];
+  resultChartDataVisibility.set(vis);
 
-    if (
-      id !== "raw" &&
-      id !== "burst" &&
-      id !== "errors" &&
-      id !== "pbLine" &&
-      id !== "tagPbLine"
-    ) {
-      return;
-    }
-    const vis = resultChartDataVisibility.get();
-    vis[id] = !vis[id];
-    resultChartDataVisibility.set(vis);
-
-    updateResultChartDataVisibility();
-    updateMinMaxChartValues();
-    applyMinMaxChartValues();
-    ChartController.result.update();
-  },
-);
+  updateResultChartDataVisibility();
+  updateMinMaxChartValues();
+  applyMinMaxChartValues();
+  getResultChart().update();
+}
 
 configEvent.subscribe(async ({ key }) => {
   if (
@@ -1003,10 +965,10 @@ configEvent.subscribe(async ({ key }) => {
     applyMinMaxChartValues();
     void TestUI.applyBurstHeatmap();
 
-    ((ChartController.result.options as PluginChartOptions<"line" | "scatter">)
+    ((getResultChart().options as PluginChartOptions<"line" | "scatter">)
       .plugins.annotation.annotations as AnnotationOptions<"line">[]) =
       resultAnnotation;
-    ChartController.result.update();
-    ChartController.result.resize();
+    getResultChart().update();
+    getResultChart().resize();
   }
 });

@@ -2,6 +2,7 @@ import { QueryClientProvider } from "@tanstack/solid-query";
 import { JSXElement } from "solid-js";
 import { render } from "solid-js/web";
 
+import * as ResultWordHighlight from "../elements/result-word-highlight";
 import { queryClient } from "../queries";
 import { qsa } from "../utils/dom";
 import { Advertisement } from "./common/Advertisement";
@@ -38,6 +39,7 @@ import { MonkeyPower } from "./pages/test/MonkeyPower";
 import { OutOfFocusWarning } from "./pages/test/OutOfFocusWarning";
 import { Premid } from "./pages/test/Premid";
 import { RestartTestButton } from "./pages/test/RestartTestButton";
+import { ResultChart } from "./pages/test/result/ResultChart";
 import { ResultStats } from "./pages/test/result/ResultStats";
 import { TestConfig } from "./pages/test/TestConfig";
 import { TestInitFailed } from "./pages/test/TestInitFailed";
@@ -83,6 +85,17 @@ const components: Record<string, () => JSXElement> = {
   testloading: () => <TestLoading />,
   monkeypower: () => <MonkeyPower />,
   resultstats: () => <ResultStats />,
+  resultchart: () => (
+    <ResultChart
+      onHighlightWords={(first, last) =>
+        void ResultWordHighlight.highlightWordsInRange(first, last)
+      }
+      onHoverChange={(hovering) => {
+        ResultWordHighlight.setIsHoverChart(hovering);
+        if (!hovering) ResultWordHighlight.clear();
+      }}
+    />
+  ),
   verticalads: () => (
     <>
       <Advertisement
