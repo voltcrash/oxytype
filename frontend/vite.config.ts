@@ -127,20 +127,14 @@ function getPlugins({
       injectRegister: null,
       registerType: "autoUpdate",
       manifest: {
-        short_name: "Monkeytype",
-        name: "Monkeytype",
+        short_name: "Oxytype",
+        name: "Oxytype",
         start_url: "/",
         icons: [
           {
-            src: "/images/icons/maskable_icon_x512.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "maskable",
-          },
-          {
-            src: "/images/icons/general_icon_x512.png",
-            sizes: "512x512",
-            type: "image/png",
+            src: "/images/favicon/oxytype.svg",
+            sizes: "any",
+            type: "image/svg+xml",
             purpose: "any",
           },
         ],
@@ -209,7 +203,7 @@ function getBuildOptions({
     assetsInlineLimit: 0, //dont inline small files as data
     rolldownOptions: {
       input: {
-        monkeytype: path.resolve(__dirname, "src/index.html"),
+        oxytype: path.resolve(__dirname, "src/index.html"),
         email: path.resolve(__dirname, "src/email-handler.html"),
         privacy: path.resolve(__dirname, "src/privacy-policy.html"),
         security: path.resolve(__dirname, "src/security-policy.html"),
@@ -258,7 +252,7 @@ function getBuildOptions({
               test: /node_modules\/@tanstack\//,
             },
             {
-              name: "monkeytype-packages",
+              name: "oxytype-packages",
               test: /monkeytype\/packages\//,
             },
             {
@@ -266,7 +260,7 @@ function getBuildOptions({
               test: /node_modules\/chart/,
             },
             {
-              name: "monkeytype-utils",
+              name: "oxytype-utils",
               test: /src\/ts\/utils\//,
             },
             {
