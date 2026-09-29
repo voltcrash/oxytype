@@ -35,8 +35,10 @@ import { TestModesNotice } from "./pages/test/modes-notice/TestModesNotice";
 import { Monkey } from "./pages/test/Monkey";
 import { OutOfFocusWarning } from "./pages/test/OutOfFocusWarning";
 import { Premid } from "./pages/test/Premid";
+import { RestartTestButton } from "./pages/test/RestartTestButton";
 import { TestConfig } from "./pages/test/TestConfig";
 import { TestInitFailed } from "./pages/test/TestInitFailed";
+import { TestLoading } from "./pages/test/TestLoading";
 import { Popups } from "./popups/Popups";
 
 const components: Record<string, () => JSXElement> = {
@@ -74,6 +76,8 @@ const components: Record<string, () => JSXElement> = {
   loadingpage: () => <LoadingPage />,
   testinitfailed: () => <TestInitFailed />,
   funboxtimers: () => <FunboxTimers />,
+  restarttestbutton: () => <RestartTestButton />,
+  testloading: () => <TestLoading />,
 };
 
 function mountToMountpoint(name: string, component: () => JSXElement): void {

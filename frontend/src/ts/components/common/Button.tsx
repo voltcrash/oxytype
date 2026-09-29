@@ -5,6 +5,7 @@ import { BalloonProps, buildBalloonHtmlProperties } from "./Balloon";
 import { Fa, FaProps } from "./Fa";
 
 type BaseProps = {
+  id?: string;
   text?: string;
   fa?: FaProps;
   class?: string;
@@ -90,6 +91,7 @@ export function Button(props: ButtonProps | AnchorProps): JSXElement {
         <button
           // oxlint-disable-next-line button-has-type
           type={(props as ButtonProps).type ?? "button"}
+          id={props.id}
           class={getClasses()}
           onClick={(e) => props.onClick?.(e)}
           onMouseEnter={(e) => props.onMouseEnter?.(e)}
@@ -107,6 +109,7 @@ export function Button(props: ButtonProps | AnchorProps): JSXElement {
       }
     >
       <a
+        id={props.id}
         class={getClasses()}
         href={props.href}
         target={

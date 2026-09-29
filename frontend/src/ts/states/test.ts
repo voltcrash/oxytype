@@ -30,6 +30,8 @@ export const [getResultVisible, setResultVisible] = createSignal(false);
 // True from the first line of TestLogic.finish() until the result is built, so
 // it covers the words fade-out that getResultVisible() is still false during.
 export const [isResultCalculating, setResultCalculating] = createSignal(false);
+// Spinner between the typing test fading out and the result showing.
+export const [isResultLoading, setResultLoading] = createSignal(false);
 // Set when the user bails out of a test early; reset by TestLogic.restart().
 export const [getBailedOut, setBailedOut] = createSignal(false);
 // Set when test init fails repeatedly; message is the last init error, if any.

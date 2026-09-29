@@ -1615,14 +1615,6 @@ function updateWordsWidth(): void {
   }
 }
 
-function showHideTestRestartButton(showHide: boolean): void {
-  if (showHide) {
-    qs(".pageTest #restartTestButton")?.show();
-  } else {
-    qs(".pageTest #restartTestButton")?.hide();
-  }
-}
-
 export function getActiveWordTopAndHeightWithDifferentData(data: string): {
   top: number;
   height: number;
@@ -2048,9 +2040,6 @@ document.addEventListener("visibilitychange", () => {
 });
 
 configEvent.subscribe(({ key, newValue }) => {
-  if (key === "quickRestart") {
-    showHideTestRestartButton(newValue === "off");
-  }
   if (key === "showOutOfFocusWarning" && !newValue) {
     setTestFocusState("focused");
   }

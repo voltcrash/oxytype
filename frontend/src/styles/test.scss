@@ -572,22 +572,6 @@
   contain: strict;
 }
 
-.pageTest > .loading {
-  text-align: center;
-  & > i {
-    font-size: 2rem;
-    color: var(--main-color);
-  }
-  opacity: 0;
-  &:not(.hidden) {
-    animation-name: fadeIn;
-    animation-duration: 0.125s;
-    animation-delay: 0.5s;
-    animation-fill-mode: forwards;
-    animation-timing-function: ease;
-  }
-}
-
 #result {
   &:focus-visible {
     outline: none;
@@ -1170,13 +1154,6 @@
   margin-left: 0.5em;
 }
 
-#restartTestButton {
-  font-size: 1rem;
-  margin: 1rem auto 0 auto;
-  display: flex;
-  padding: 1em 2em;
-}
-
 .pageTest {
   height: 100%;
   display: grid;
@@ -1200,15 +1177,6 @@
 
     --c-dot: var(--text-color);
     --c-dot--error: var(--error-color);
-  }
-}
-
-main.focus .pageTest {
-  #restartTestButton {
-    opacity: 0 !important;
-    &:focus-visible {
-      opacity: 1 !important;
-    }
   }
 }
 

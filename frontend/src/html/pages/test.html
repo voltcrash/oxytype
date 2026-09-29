@@ -37,19 +37,10 @@
     <mount data-component="keymap"></mount>
     <mount data-component="monkey"></mount>
 
-    <button
-      id="restartTestButton"
-      aria-label="Restart Test"
-      data-balloon-pos="down"
-      class="text"
-    >
-      <i class="fas fa-fw fa-redo-alt"></i>
-    </button>
+    <mount data-component="restarttestbutton" class="contents"></mount>
     <mount data-component="livestatstextbottom"></mount>
     <mount data-component="premid"></mount>
   </div>
-  <div class="loading hidden">
-    <i class="fas fa-circle-notch fa-spin"></i>
-  </div>
+  <mount data-component="testloading" class="contents"></mount>
   <load src="./test-result.html" />
 </div>

@@ -62,6 +62,7 @@ import {
   getResultVisible,
   isTestInvalid,
   setResultCalculating,
+  setResultLoading,
 } from "../states/test";
 import {
   getAccuracy,
@@ -1095,7 +1096,7 @@ export async function update(
   AdController.updateFooterAndVerticalAds(true);
   void Funbox.clear();
 
-  qs(".pageTest .loading")?.hide();
+  setResultLoading(false);
   qs("#result")?.show();
 
   const resultEl = qs("#result");

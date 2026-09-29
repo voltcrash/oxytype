@@ -53,6 +53,7 @@ import {
   setBailedOut,
   setLastSignedOutResult,
   setResultCalculating,
+  setResultLoading,
   setResultVisible,
   setTestActive,
   setWordsHaveNewline,
@@ -824,7 +825,7 @@ export async function finish(difficultyFailed = false): Promise<void> {
     duration: Misc.applyReducedMotion(125),
   });
   qs(".pageTest #typingTest")?.hide();
-  qs(".pageTest .loading")?.show();
+  setResultLoading(true);
   await Misc.sleep(0); //allow ui update
 
   TestUI.onTestFinish();
@@ -1253,21 +1254,6 @@ const debouncedZipfCheck = debounce(250, async () => {
         durationMs: 7000,
       },
     );
-  }
-});
-
-qs(".pageTest")?.onChild("click", "#restartTestButton", () => {
-  if (isResultCalculating()) return;
-  if (
-    isTestActive() &&
-    Config.repeatQuotes === "typing" &&
-    Config.mode === "quote"
-  ) {
-    void restart({
-      withSameWordset: true,
-    });
-  } else {
-    void restart();
   }
 });
 
