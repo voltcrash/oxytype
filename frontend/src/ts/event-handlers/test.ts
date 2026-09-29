@@ -7,6 +7,7 @@ import {
 import { showQuoteRateModal } from "../states/quote-rate";
 import { showQuoteReportModal } from "../states/quote-report";
 import { showModal } from "../states/modals";
+import { showVideoAdPopup } from "../components/popups/VideoAdPopup";
 import { navigate } from "../controllers/route-controller";
 import { getMode2 } from "../utils/misc";
 import { qs } from "../utils/dom";
@@ -53,6 +54,10 @@ testPage?.onChild("click", "#practiseWordsButton", () => {
     return;
   }
   showModal("PractiseWords");
+});
+
+testPage?.onChild("click", "#watchVideoAdButton", () => {
+  void showVideoAdPopup();
 });
 
 qs(".pageTest #dailyLeaderboardRank")?.on("click", async () => {

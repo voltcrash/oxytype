@@ -20,7 +20,7 @@ import { enable } from "./legacy-states/glarses-mode";
 import "./input/listeners";
 import "./controllers/route-controller";
 import "./elements/no-css";
-import { egVideoListener } from "./popups/video-ad-popup";
+import { egVideoListener } from "./components/popups/VideoAdPopup";
 import "./legacy-states/connection";
 import "./test/tts";
 import { addToGlobal } from "./utils/misc";

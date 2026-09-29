@@ -23,7 +23,7 @@ import {
   clearAllNotifications,
   showSuccessNotification,
 } from "../states/notifications";
-import * as VideoAdPopup from "../popups/video-ad-popup";
+import { showVideoAdPopup } from "../components/popups/VideoAdPopup";
 import { Command, CommandlineListKey, CommandsSubgroup } from "./types";
 import { buildCommandForConfigKey } from "./util";
 import { CommandlineConfigMetadataObject } from "./commandline-metadata";
@@ -218,7 +218,7 @@ export const commands: CommandsSubgroup = {
       alias: "support donate",
       icon: "fa-ad",
       exec: (): void => {
-        void VideoAdPopup.show();
+        void showVideoAdPopup();
       },
     },
     {
