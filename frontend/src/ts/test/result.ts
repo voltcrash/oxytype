@@ -26,7 +26,6 @@ import { configEvent } from "../events/config";
 import * as Focus from "./focus";
 import * as CustomText from "./custom-text";
 import * as Funbox from "./funbox/funbox";
-import Format from "../singletons/format";
 import confetti from "canvas-confetti";
 import type {
   AnnotationOptions,
@@ -626,22 +625,6 @@ function updateQuoteFavorite(randomQuote: Quote | null): void {
 
 export function updateDailyLeaderboardRank(rank: number | undefined): void {
   setResultState("dailyLeaderboardRank", rank);
-  const el = qs("#result .stats .dailyLeaderboard");
-
-  if (rank === undefined) {
-    el?.hide();
-    return;
-  }
-
-  el?.show();
-  el?.setStyle({ maxWidth: "13rem" });
-  el?.animate({
-    opacity: [0, 1],
-    duration: Misc.applyReducedMotion(250),
-  });
-  qs("#result .stats .dailyLeaderboard .bottom")?.setHtml(
-    Format.rank(rank, { fallback: "" }),
-  );
 }
 
 export function updateRetrySaving(visible: boolean): void {

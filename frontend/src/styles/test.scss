@@ -867,15 +867,6 @@
     .bottom {
       grid-column: 1/-1;
     }
-
-    .stats {
-      .group {
-        &.dailyLeaderboard {
-          max-width: 13rem;
-          white-space: nowrap;
-        }
-      }
-    }
   }
 }
 

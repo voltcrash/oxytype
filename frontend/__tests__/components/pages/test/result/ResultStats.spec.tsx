@@ -12,6 +12,10 @@ vi.mock(
     ResultTags: () => null,
   }),
 );
+vi.mock(
+  "../../../../../src/ts/components/pages/test/result/ResultDailyLeaderboard",
+  () => ({ ResultDailyLeaderboard: () => null }),
+);
 
 import { ResultStats } from "../../../../../src/ts/components/pages/test/result/ResultStats";
 import {

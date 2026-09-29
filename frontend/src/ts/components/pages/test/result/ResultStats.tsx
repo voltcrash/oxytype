@@ -3,11 +3,9 @@ import { For, JSXElement, Show } from "solid-js";
 import { resultState } from "../../../../states/result";
 import { cn } from "../../../../utils/cn";
 import { ResultCrown } from "./ResultCrown";
+import { ResultDailyLeaderboard } from "./ResultDailyLeaderboard";
 import { ResultQuoteActions } from "./ResultQuoteActions";
 import { ResultTags } from "./ResultTags";
-
-// daily leaderboard is still driven by test/result.ts (P3.6), so its markup
-// is static here
 
 const topClass = "top mb-1 text-[1rem] leading-[1rem] text-sub";
 const bottomClass = "bottom text-[2rem] leading-[2rem] text-main";
@@ -161,17 +159,10 @@ export function ResultStats(): JSXElement {
             </div>
           </div>
         </div>
-        <div class="group dailyLeaderboard hidden">
-          <div class={topClass}>daily leaderboard</div>
-          <div
-            id="dailyLeaderboardRank"
-            aria-label="Show daily leaderboard"
-            data-balloon-pos="up"
-            class={cn(bottomClass, moreStatsBottomClass)}
-          >
-            -
-          </div>
-        </div>
+        <ResultDailyLeaderboard
+          topClass={topClass}
+          bottomClass={cn(bottomClass, moreStatsBottomClass)}
+        />
         <div
           class={cn(
             "group source max-w-[30rem]",
