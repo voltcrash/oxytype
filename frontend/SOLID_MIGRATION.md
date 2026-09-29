@@ -120,9 +120,7 @@ Perf critical: per-keystroke work must not regress. Measure with `utils/profiler
 - [ ] **P4.3** Focus/blur (`test/focus.ts`, words blur) → driven by `testFocusState` signal + `cn` classes on TestPage (comment in `states/test.ts` says words blurred imperatively).
 - [ ] **P4.4** Caret → `components/pages/test/Caret.tsx` owning element; `Caret` class keeps position math + animation, receives element via ref. Pace caret same.
 - [ ] **P4.5** Words wrapper sizing (`updateWordsWrapperHeight`, `centerActiveLine`, `keepWordsInputInTheCenter`, `updateWordsInputPosition`) → reactive styles on TestPage from signals.
-- [ ] **P4.6** Word rendering — per decision **D1**:
-  - Option A (recommended): keep imperative `updateWordLetters`/`addWord`/`scrollTape` inside a `Words.tsx` component's module; only lifecycle + container are Solid. Extract pure markup builders to `test/word-markup.ts` with tests.
-  - Option B: `<For>` over words store with per-letter fine-grained signals. Only if benchmarks show parity.
+- [ ] **P4.6** Word rendering (D1 = A): keep imperative `updateWordLetters`/`addWord`/`scrollTape` inside a `Words.tsx` component's module; only lifecycle + container are Solid. Extract pure markup builders to `test/word-markup.ts` with tests. Do NOT convert to reactive `<For>` in this PR.
 - [ ] **P4.7** Break joining / hints (`break-joining.ts`, `updateHintsPositionDebounced`, `setJoiningClass`) into Words component module.
 - [ ] **P4.8** Remove remaining `qs`/`qsa` DOM calls from `test-logic.ts`, `funbox/*.ts` (funbox DOM effects → signals consumed by TestPage, e.g. classes on `#words`/body), `event-handlers/test.ts` (delegate listeners → JSX `onClick`).
 - [ ] **P4.9** `test.scss` cleanup for converted pieces (keep selectors themes rely on).
@@ -131,7 +129,7 @@ Perf critical: per-keystroke work must not regress. Measure with `utils/profiler
 
 - [ ] **P5.1** `components/App.tsx`: render header, `<main>`, all pages, footer, overlays, modals, popups, theme, devtools, bartimerprogress. `index.html` body → `<load src="html/warnings.html" />`, `.customBackground`, `<div id="app">` mount, funbox css link, scripts. Replace `mountComponents()` with single `render(<App/>)`. Delete `components/mount.tsx`.
 - [ ] **P5.2** Page switching: `states/core.ts` already has `getActivePage`. Make pages render via `<Show>`/`<Switch>` on active page + existing `components/common/Page.tsx`; move page transition animation (`page-controller.ts`, `legacy-states/page-transition.ts`) into component. Keep `PageController.change()` API as a thin wrapper setting signal + running lifecycle hooks (`beforeShow` etc.).
-- [ ] **P5.3** Router: `route-controller.ts` → keep own router (don't add `@solidjs/router` unless D2 says so); replace `[router-link]` delegated handler with `<A>`-like `Link` component; remove `pages/page.ts` `element: ElementWithUtils` field.
+- [ ] **P5.3** Router: `route-controller.ts` → keep own router (D2; no `@solidjs/router`); replace `[router-link]` delegated handler with `<A>`-like `Link` component; remove `pages/page.ts` `element: ElementWithUtils` field.
 - [ ] **P5.4** `legacy-states/*` → move to `states/` as signals (composition, connection, glarses-mode, page-transition, remember-lazy-mode, slow-timer). Delete `legacy-states/`.
 - [ ] **P5.5** `ui.ts` / `ready.ts` / `elements/no-css.ts` / `event-handlers/global.ts` DOM bits → App effects or `onMount`. `body.loading` class → App.
 
@@ -169,7 +167,7 @@ Parallel agents: one on P1, one on P2, one on P3 is safe (disjoint files) — ex
 
 ## 7. Decisions (fill in)
 
-- **D1** Word rendering: imperative-in-component (A, recommended) vs full reactive `<For>` (B)?
-- **D2** Router: keep custom `route-controller` (recommended) vs adopt `@solidjs/router`?
+- **D1** ✅ Word rendering: imperative DOM inside Solid component (A). Reason: keystroke perf, low risk; fully reactive `<For>` (B) = possible follow-up PR with benchmarks.
+- **D2** ✅ Router: keep custom `route-controller`. Reason: navigation guards + page lifecycle/loading modes already built in; `@solidjs/router` = possible follow-up PR.
 - **D3** ✅ Convert each migrated component's styles to Tailwind in the same task/commit. Delete replaced SCSS.
 - **D4** ✅ Keep this file in final PR (P6.6: tick all boxes, don't delete).
