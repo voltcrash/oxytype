@@ -94,7 +94,7 @@ Legend: `[ ]` todo, `[~]` in progress, `[x]` done. `deps:` = must be done first.
   > Note: commandline "custom..." command drops `opensModal` + legacy `modalChain` and just calls `showModal("PractiseWords")`, same as other Solid modals opened from commandline (e.g. QuoteSearch); Escape still lands back on commandline. Modal uses standard `AnimatedModal` look (`max-w-[400px]`). Dialog id is now `PractiseWordsModal` (no theme refs). `src/ts/modals/` dir is gone.
 - [x] **P1.7** Video ad popup → `components/popups/VideoAdPopup.tsx`. Keep `egVideoListener` global export. Remove `#videoAdPopupWrapper`, `popups/video-ad-popup.ts`.
   > Note: rendered from `Popups.tsx` (`#solidpopups`) behind `<Show>` (replaces Skeleton detach). Kept ids `videoAdPopupWrapper`/`videoAdPopup`/`eg-video-player`. `utils/misc.ts` `isPopupVisible`/`isAnyPopupVisible` now also check `#solidpopups #videoAdPopupWrapper` so hotkeys stay blocked while it's open. `#watchVideoAdButton` click moved to `event-handlers/test.ts` (button is commented out in `test-result.html`, so inert as before). `src/ts/popups/` dir is gone.
-- [ ] **P1.8** Ads containers in `index.html` / `test-result.html` → use `components/common/Advertisement.tsx` via mounts. Keep ids the ad controllers target.
+- [~] **P1.8** Ads containers in `index.html` / `test-result.html` → use `components/common/Advertisement.tsx` via mounts. Keep ids the ad controllers target.
 
 ### Phase 2 — Commandline (deps: none; parallel with P1)
 
