@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import * as Configurations from "../../src/init/configuration";
 
-import { Configuration } from "@monkeytype/schemas/configuration";
+import { Configuration } from "@oxytype/schemas/configuration";
 const mergeConfigurations = Configurations.__testing.mergeConfigurations;
 
 describe("configurations", () => {

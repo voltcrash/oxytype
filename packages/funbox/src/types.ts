@@ -1,4 +1,4 @@
-import { FunboxName } from "@monkeytype/schemas/configs";
+import { FunboxName } from "@oxytype/schemas/configs";
 
 export type FunboxForcedConfig = Record<string, string[] | boolean[]>;
 

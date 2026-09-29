@@ -3,8 +3,8 @@ import * as Misc from "../utils/misc";
 import * as Strings from "../utils/strings";
 import * as JSONData from "../utils/json-data";
 import { z } from "zod";
-import { parseWithSchema as parseJsonWithSchema } from "@monkeytype/util/json";
-import { Language } from "@monkeytype/schemas/languages";
+import { parseWithSchema as parseJsonWithSchema } from "@oxytype/util/json";
+import { Language } from "@oxytype/schemas/languages";
 
 type Post = {
   title: string;

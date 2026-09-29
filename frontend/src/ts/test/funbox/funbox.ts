@@ -11,9 +11,9 @@ import {
 } from "../../config/setters";
 import * as MemoryTimer from "./memory-funbox-timer";
 import * as FunboxMemory from "./funbox-memory";
-import { HighlightMode, FunboxName } from "@monkeytype/schemas/configs";
-import { Mode } from "@monkeytype/schemas/shared";
-import { checkCompatibility, checkForcedConfig } from "@monkeytype/funbox";
+import { HighlightMode, FunboxName } from "@oxytype/schemas/configs";
+import { Mode } from "@oxytype/schemas/shared";
+import { checkCompatibility, checkForcedConfig } from "@oxytype/funbox";
 import {
   getAllFunboxes,
   getActiveFunboxes,
@@ -22,7 +22,7 @@ import {
   isFunboxActiveWithProperty,
   getActiveFunboxesWithProperty,
 } from "./list";
-import { tryCatch } from "@monkeytype/util/trycatch";
+import { tryCatch } from "@oxytype/util/trycatch";
 import { qs, qsa } from "../../utils/dom";
 import { configEvent } from "../../events/config";
 

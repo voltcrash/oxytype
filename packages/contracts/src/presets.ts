@@ -10,8 +10,8 @@ import {
 import {
   EditPresetRequestSchema,
   PresetSchema,
-} from "@monkeytype/schemas/presets";
-import { IdSchema } from "@monkeytype/schemas/util";
+} from "@oxytype/schemas/presets";
+import { IdSchema } from "@oxytype/schemas/util";
 
 export const GetPresetResponseSchema = responseWithData(z.array(PresetSchema));
 export type GetPresetResponse = z.infer<typeof GetPresetResponseSchema>;

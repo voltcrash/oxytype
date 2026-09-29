@@ -8,7 +8,7 @@ import type { Howl } from "howler";
 import {
   PlaySoundOnClick,
   PlaySoundOnError,
-} from "@monkeytype/schemas/configs";
+} from "@oxytype/schemas/configs";
 import {
   clickSoundConfig,
   ScaleSoundConfig,

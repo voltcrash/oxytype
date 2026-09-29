@@ -1,4 +1,4 @@
-import { roundTo2 } from "@monkeytype/util/numbers";
+import { roundTo2 } from "@oxytype/util/numbers";
 
 /**
  * Converts a value in rem units to pixels based on the root element's font size.

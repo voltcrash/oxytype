@@ -1,6 +1,6 @@
-import { PSA } from "@monkeytype/schemas/psas";
-import { IdSchema } from "@monkeytype/schemas/util";
-import { isSafeNumber } from "@monkeytype/util/numbers";
+import { PSA } from "@oxytype/schemas/psas";
+import { IdSchema } from "@oxytype/schemas/util";
+import { isSafeNumber } from "@oxytype/util/numbers";
 import { format } from "date-fns/format";
 import { z } from "zod";
 

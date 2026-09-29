@@ -1,5 +1,5 @@
-import { Configuration } from "@monkeytype/schemas/configuration";
-import { tryCatch } from "@monkeytype/util/trycatch";
+import { Configuration } from "@oxytype/schemas/configuration";
+import { tryCatch } from "@oxytype/util/trycatch";
 import { deleteAllApeKeys } from "../dal/ape-keys";
 import * as BlocklistDal from "../dal/blocklist";
 import { deleteConfig } from "../dal/config";

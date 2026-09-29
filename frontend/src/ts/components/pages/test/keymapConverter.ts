@@ -1,5 +1,5 @@
-import { KeymapStyle } from "@monkeytype/schemas/configs";
-import { KeyLegends, LayoutObject } from "@monkeytype/schemas/layouts";
+import { KeymapStyle } from "@oxytype/schemas/configs";
+import { KeyLegends, LayoutObject } from "@oxytype/schemas/layouts";
 
 import {
   KeyboardDefinition,

@@ -1,4 +1,4 @@
-import { UserProfile as UserProfileType } from "@monkeytype/schemas/users";
+import { UserProfile as UserProfileType } from "@oxytype/schemas/users";
 
 import preview from "#.storybook/preview";
 

@@ -1,6 +1,6 @@
-import { ResultFilters } from "@monkeytype/schemas/users";
+import { ResultFilters } from "@oxytype/schemas/users";
 import { LanguageList } from "./languages";
-import { getFunboxNames } from "@monkeytype/funbox";
+import { getFunboxNames } from "@oxytype/funbox";
 
 const object: ResultFilters = {
   _id: "default",

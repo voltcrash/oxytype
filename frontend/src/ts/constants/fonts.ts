@@ -1,4 +1,4 @@
-import { KnownFontName } from "@monkeytype/schemas/fonts";
+import { KnownFontName } from "@oxytype/schemas/fonts";
 
 export type FontConfig = {
   display?: string;

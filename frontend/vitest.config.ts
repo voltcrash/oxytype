@@ -73,7 +73,7 @@ export default defineConfig({
     deps: {
       optimizer: {
         web: {
-          include: ["@monkeytype/funbox"],
+          include: ["@oxytype/funbox"],
         },
       },
     },
