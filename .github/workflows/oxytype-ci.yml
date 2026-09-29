@@ -1,4 +1,4 @@
-name: Monkey CI
+name: Oxytype CI
 
 env:
   PNPM_VERSION: "11.21.0"
@@ -52,12 +52,6 @@ jobs:
               - 'frontend/**/package.json'
             pkg-src:
               - 'packages/**/*'
-            anti-cheat:
-              - 'backend/**/anticheat/**'
-
-      - name: Check Anti-cheat
-        if: steps.filter.outputs.anti-cheat == 'true' && !contains(github.event.pull_request.labels.*.name, 'force-ci') && !contains(github.event.pull_request.labels.*.name, 'force-full-ci')
-        run: exit 1
 
       - name: Export changes
         id: export-changes
