@@ -50,7 +50,8 @@ body::before {
   background: var(--theme-accent-stripe-color);
 }
 
-#commandLine .modal {
+#commandLine .modal,
+#CommandlineModal .modal {
   --roundness: 0; /* making command line sharp */
 }
 

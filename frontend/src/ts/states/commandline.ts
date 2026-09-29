@@ -12,6 +12,8 @@ export type InputModeParams = {
   validation?: ValidationResult;
 };
 
+export type CommandlineSuggestion = Command & { isActive: boolean };
+
 type CommandlineState = {
   open: boolean;
   inputValue: string;
@@ -27,6 +29,13 @@ type CommandlineState = {
   subgroupOverride: CommandsSubgroup | null;
   isAnimating: boolean;
   lastSingleListModeInputValue: string;
+  suggestions: CommandlineSuggestion[];
+  inputPlaceholder: string;
+  inputIcon: string;
+  selectAll: boolean;
+  selectionNonce: number;
+  noBackground: boolean;
+  hasError: boolean;
 };
 
 export const commandlineState = createMutable<CommandlineState>({
@@ -49,4 +58,11 @@ export const commandlineState = createMutable<CommandlineState>({
   subgroupOverride: null,
   isAnimating: false,
   lastSingleListModeInputValue: "",
+  suggestions: [],
+  inputPlaceholder: "Search...",
+  inputIcon: "fa-search",
+  selectAll: false,
+  selectionNonce: 0,
+  noBackground: false,
+  hasError: false,
 });

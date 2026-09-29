@@ -5,7 +5,8 @@ import { Config } from "../config/store";
 import * as AnalyticsController from "../controllers/analytics-controller";
 import * as ThemeController from "../controllers/theme-controller";
 import { clearFontPreview } from "../ui";
-import AnimatedModal, { ShowOptions } from "../utils/animated-modal";
+import AnimatedModal from "../utils/animated-modal";
+import * as Skeleton from "../utils/skeleton";
 import { showNoticeNotification } from "../states/notifications";
 import {
   getActivePage,
@@ -23,15 +24,13 @@ import { areSortedArraysEqual, areUnsortedArraysEqual } from "../utils/arrays";
 import { parseIntOptional } from "../utils/numbers";
 import { debounce } from "throttle-debounce";
 import { intersect } from "@monkeytype/util/arrays";
-import { createInputEventHandler } from "../elements/input-validation";
+import { useInputValidation } from "../hooks/useInputValidation";
 import { isInputElementFocused } from "../input/input-element";
 import { qs } from "../utils/dom";
-import { createEffect } from "solid-js";
 import {
-  getModalVisibility,
   hideModal as storeHideModal,
   hideModalAndClearChain as storeClearChain,
-  isModalOpen,
+  showModal,
 } from "../states/modals";
 import { setTestFocusState } from "../states/test";
 import { commandlineState, type InputModeParams } from "../states/commandline";
@@ -49,6 +48,7 @@ let lastState:
 
 function removeCommandlineBackground(): void {
   qs("#commandLine")?.addClass("noBackground");
+  commandlineState.noBackground = true;
   if (Config.showOutOfFocusWarning) {
     setTestFocusState("focused");
   }
@@ -56,6 +56,7 @@ function removeCommandlineBackground(): void {
 
 function addCommandlineBackground(): void {
   qs("#commandLine")?.removeClass("noBackground");
+  commandlineState.noBackground = false;
   if (!isInputElementFocused()) {
     setTestFocusState("unfocused");
   }
@@ -67,143 +68,127 @@ type ShowSettings = {
   singleListOverride?: boolean;
 };
 
-export function show(
-  settings?: ShowSettings,
-  modalShowSettings?: ShowOptions,
-): void {
-  void modal.show({
-    ...modalShowSettings,
-    focusFirstInput: true,
-    beforeAnimation: async () => {
-      commandlineState.open = true;
-      commandlineState.mouseMode = false;
-      commandlineState.inputValue = "";
-      commandlineState.activeIndex = 0;
-      commandlineState.mode = "search";
-      cachedSingleSubgroup = null;
-      commandlineState.inputModeParams = {
-        command: null,
-        placeholder: null,
-        value: null,
-        icon: null,
-      };
-      const subgroupSignal = getCommandlineSubgroup();
+let pendingSettings: ShowSettings | undefined;
 
-      const overrideStringOrGroup =
-        settings?.subgroupOverride ?? subgroupSignal ?? null;
+export function show(settings?: ShowSettings): void {
+  pendingSettings = settings;
+  showModal(MODAL_STORE_ID);
+}
 
-      if (
-        overrideStringOrGroup !== undefined &&
-        overrideStringOrGroup !== null
-      ) {
-        if (typeof overrideStringOrGroup === "string") {
-          const exists = CommandlineLists.doesListExist(overrideStringOrGroup);
-          if (exists) {
-            showLoaderBar();
-            commandlineState.subgroupOverride = await CommandlineLists.getList(
-              overrideStringOrGroup as CommandlineSubgroupKey,
-            );
-            hideLoaderBar();
-          } else {
-            commandlineState.subgroupOverride = null;
-            commandlineState.usingSingleList =
-              Config.singleListCommandLine === "on";
-            showNoticeNotification(
-              `Command list ${overrideStringOrGroup} not found`,
-            );
-          }
-        } else {
-          commandlineState.subgroupOverride = overrideStringOrGroup;
-        }
-        commandlineState.usingSingleList = false;
+export async function prepareCommandline(): Promise<void> {
+  const settings = pendingSettings;
+  pendingSettings = undefined;
+  commandlineState.open = true;
+  commandlineState.mouseMode = false;
+  commandlineState.inputValue = "";
+  commandlineState.activeIndex = 0;
+  commandlineState.mode = "search";
+  cachedSingleSubgroup = null;
+  commandlineState.inputModeParams = {
+    command: null,
+    placeholder: null,
+    value: null,
+    icon: null,
+  };
+  const subgroupSignal = getCommandlineSubgroup();
+
+  const overrideStringOrGroup =
+    settings?.subgroupOverride ?? subgroupSignal ?? null;
+
+  if (overrideStringOrGroup !== undefined && overrideStringOrGroup !== null) {
+    if (typeof overrideStringOrGroup === "string") {
+      const exists = CommandlineLists.doesListExist(overrideStringOrGroup);
+      if (exists) {
+        showLoaderBar();
+        commandlineState.subgroupOverride = await CommandlineLists.getList(
+          overrideStringOrGroup as CommandlineSubgroupKey,
+        );
+        hideLoaderBar();
       } else {
         commandlineState.subgroupOverride = null;
         commandlineState.usingSingleList =
           Config.singleListCommandLine === "on";
-      }
-
-      let showInputCommand: Command | undefined = undefined;
-
-      if (settings?.commandOverride !== undefined) {
-        const command = (await getList()).find(
-          (c) => c.id === settings.commandOverride,
+        showNoticeNotification(
+          `Command list ${overrideStringOrGroup} not found`,
         );
-        if (command === undefined) {
-          showNoticeNotification(
-            `Command ${settings.commandOverride} not found`,
-          );
-        } else if (command?.input !== true) {
-          showNoticeNotification(
-            `Command ${settings.commandOverride} is not an input command`,
-          );
-        } else {
-          showInputCommand = command;
-        }
       }
+    } else {
+      commandlineState.subgroupOverride = overrideStringOrGroup;
+    }
+    commandlineState.usingSingleList = false;
+  } else {
+    commandlineState.subgroupOverride = null;
+    commandlineState.usingSingleList = Config.singleListCommandLine === "on";
+  }
 
-      if (settings?.singleListOverride) {
-        commandlineState.usingSingleList = settings.singleListOverride;
-      }
-      commandlineState.activeCommand = null;
-      Focus.set(false);
-      CommandlineLists.setStackToDefault();
-      await updateInput();
-      await filterSubgroup();
-      await showCommands();
-      await updateActiveCommand();
-      setTimeout(() => {
-        lastActiveIndex = undefined;
-        keepActiveCommandInView();
-        if (showInputCommand) {
-          const escaped =
-            showInputCommand.display.split("</i>")[1] ??
-            showInputCommand.display;
-          commandlineState.mode = "input";
-          commandlineState.inputModeParams = {
-            command: showInputCommand,
-            placeholder: escaped,
-            value: showInputCommand.defaultValue?.() ?? "",
-            icon: showInputCommand.icon ?? "fa-chevron-right",
-          };
-          createValidationHandler(showInputCommand);
-          void updateInput(commandlineState.inputModeParams.value as string);
-          hideCommands();
-        }
-      }, 1);
-    },
-  });
+  let showInputCommand: Command | undefined = undefined;
+
+  if (settings?.commandOverride !== undefined) {
+    const command = (await getList()).find(
+      (c) => c.id === settings.commandOverride,
+    );
+    if (command === undefined) {
+      showNoticeNotification(`Command ${settings.commandOverride} not found`);
+    } else if (command?.input !== true) {
+      showNoticeNotification(
+        `Command ${settings.commandOverride} is not an input command`,
+      );
+    } else {
+      showInputCommand = command;
+    }
+  }
+
+  if (settings?.singleListOverride) {
+    commandlineState.usingSingleList = settings.singleListOverride;
+  }
+  commandlineState.activeCommand = null;
+  Focus.set(false);
+  CommandlineLists.setStackToDefault();
+  await updateInput();
+  await filterSubgroup();
+  await showCommands();
+  await updateActiveCommand();
+  setTimeout(() => {
+    lastActiveIndex = undefined;
+    keepActiveCommandInView();
+    if (showInputCommand) {
+      const escaped =
+        showInputCommand.display.split("</i>")[1] ?? showInputCommand.display;
+      commandlineState.mode = "input";
+      commandlineState.inputModeParams = {
+        command: showInputCommand,
+        placeholder: escaped,
+        value: showInputCommand.defaultValue?.() ?? "",
+        icon: showInputCommand.icon ?? "fa-chevron-right",
+      };
+      createValidationHandler(showInputCommand);
+      void updateInput(commandlineState.inputModeParams.value as string);
+      hideCommands();
+    }
+  }, 1);
 }
 
 function hide(clearModalChain = false): void {
   clearFontPreview();
   void ThemeController.clearPreview();
   commandlineState.isAnimating = true;
-
-  // If managed by store, notify the store
-  if (isModalOpen(MODAL_STORE_ID)) {
-    if (clearModalChain) {
-      storeClearChain(MODAL_STORE_ID);
-    } else {
-      storeHideModal(MODAL_STORE_ID);
-    }
-    // Cleanup will happen in the effect when visibility changes
+  if (clearModalChain) {
+    storeClearChain(MODAL_STORE_ID);
   } else {
-    // Old modal system, hide directly
-    void modal.hide({
-      clearModalChain,
-      afterAnimation: async () => {
-        hideWarning();
-        addCommandlineBackground();
-        if (getActivePage() !== "test") {
-          (document.activeElement as HTMLElement | undefined)?.blur();
-        }
-        commandlineState.isAnimating = false;
-        commandlineState.subgroupOverride = null;
-        commandlineState.open = false;
-        setCommandlineSubgroup(null);
-      },
-    });
+    storeHideModal(MODAL_STORE_ID);
   }
+}
+
+export function afterHideCommandline(): void {
+  hideWarning();
+  addCommandlineBackground();
+  if (getActivePage() !== "test") {
+    (document.activeElement as HTMLElement | undefined)?.blur();
+  }
+  commandlineState.isAnimating = false;
+  commandlineState.subgroupOverride = null;
+  commandlineState.open = false;
+  setCommandlineSubgroup(null);
 }
 
 async function goBackOrHide(): Promise<void> {
@@ -261,6 +246,7 @@ function hideCommands(): void {
     throw new Error("Commandline element not found");
   }
   element.innerHTML = "";
+  commandlineState.suggestions = [];
   lastState = undefined;
 }
 
@@ -462,6 +448,7 @@ async function showCommands(): Promise<void> {
   }
 
   element.innerHTML = html;
+  commandlineState.suggestions = list;
 }
 
 async function updateActiveCommand(): Promise<void> {
@@ -516,11 +503,13 @@ function handleInputSubmit(): void {
     return;
   } else if (commandlineState.inputModeParams.validation?.status === "failed") {
     modal.getModal().addClass("hasError");
+    commandlineState.hasError = true;
     if (shakeTimeout !== null) {
       clearTimeout(shakeTimeout);
     }
     shakeTimeout = setTimeout(() => {
       modal.getModal().removeClass("hasError");
+      commandlineState.hasError = false;
     }, 500);
     return;
   }
@@ -598,7 +587,7 @@ function keepActiveCommandInView(): void {
   if (commandlineState.mouseMode) return;
 
   const active: HTMLElement | null = document.querySelector(
-    ".suggestions .command.active",
+    "#CommandlineModal .suggestions .command.active",
   );
 
   if (active === null || active.dataset["index"] === lastActiveIndex) {
@@ -656,6 +645,16 @@ async function updateInput(setInput?: string): Promise<void> {
       element.setSelectionRange(length, length);
     }, 0);
   }
+
+  commandlineState.inputPlaceholder = element.placeholder;
+  commandlineState.inputIcon =
+    commandlineState.mode === "input"
+      ? (commandlineState.inputModeParams.icon ?? "fa-search")
+      : "fa-search";
+  commandlineState.selectAll =
+    commandlineState.mode === "input" &&
+    commandlineState.inputModeParams.value !== null;
+  commandlineState.selectionNonce++;
 }
 
 async function incrementActiveIndex(): Promise<void> {
@@ -744,7 +743,7 @@ const handlersCache = new Map<string, (e: Event) => Promise<void>>();
 function createValidationHandler(command: Command): void {
   if ("validation" in command && !handlersCache.has(command.id)) {
     const commandWithValidation = command as CommandWithValidation<unknown>;
-    const handler = createInputEventHandler(
+    const handler = useInputValidation(
       updateValidationResult,
       commandWithValidation.validation,
       "inputValueConvert" in commandWithValidation
@@ -758,197 +757,132 @@ function createValidationHandler(command: Command): void {
 const modal = new AnimatedModal({
   dialogId: "commandLine",
   storeId: MODAL_STORE_ID,
-  customEscapeHandler: (): void => {
-    //
-  },
-  customWrapperClickHandler: (): void => {
-    hide();
-  },
-  showOptionsWhenInChain: {
-    focusFirstInput: true,
-  },
-  setup: async (modalEl): Promise<void> => {
-    const input = modalEl.qsr("input");
+});
+Skeleton.append("commandLine", "popups");
 
-    input.on(
-      "input",
-      debounce(50, async (e) => {
-        if (commandlineState.isAnimating) return;
-        commandlineState.inputValue = (
-          (e as InputEvent).target as HTMLInputElement
-        ).value;
-        if (commandlineState.subgroupOverride === null) {
-          if (Config.singleListCommandLine === "on") {
-            commandlineState.usingSingleList = true;
-          } else {
-            commandlineState.usingSingleList =
-              commandlineState.inputValue.startsWith(">");
-          }
-        }
-        if (commandlineState.mode !== "search") return;
-        commandlineState.mouseMode = false;
-        commandlineState.activeIndex = 0;
-        await filterSubgroup();
-        await showCommands();
-        await updateActiveCommand();
-      }),
-    );
-
-    input.on("keydown", async (e) => {
-      //the commandline is on its way out - swallow everything
-      if (commandlineState.isAnimating) {
-        e.preventDefault();
-        return;
-      }
-      commandlineState.mouseMode = false;
-      if (
-        e.key === "ArrowUp" ||
-        (e.ctrlKey &&
-          (e.key.toLowerCase() === "k" || e.key.toLowerCase() === "p"))
-      ) {
-        if (
-          Config.singleListCommandLine === "on" &&
-          commandlineState.subgroupOverride === null &&
-          commandlineState.inputValue === "" &&
-          commandlineState.lastSingleListModeInputValue !== ""
-        ) {
-          commandlineState.inputValue =
-            commandlineState.lastSingleListModeInputValue;
-          await updateInput();
-          await filterSubgroup();
-          await showCommands();
-          await updateActiveCommand();
-          return;
-        }
-        e.preventDefault();
-        await decrementActiveIndex();
-      }
-      if (
-        e.key === "ArrowDown" ||
-        (e.ctrlKey &&
-          (e.key.toLowerCase() === "j" || e.key.toLowerCase() === "n"))
-      ) {
-        e.preventDefault();
-        await incrementActiveIndex();
-      }
-      if (e.key === "Tab") {
-        e.preventDefault();
-        if (e.shiftKey) {
-          await decrementActiveIndex();
-        } else {
-          await incrementActiveIndex();
-        }
-      }
-      if (e.key === "Enter") {
-        e.preventDefault();
-        if (commandlineState.mode === "search") {
-          await runActiveCommand();
-        } else if (commandlineState.mode === "input") {
-          handleInputSubmit();
-        } else {
-          throw new Error("Unknown mode, can't handle enter press");
-        }
-      }
-      if (e.key === "Escape") {
-        e.preventDefault();
-        e.stopPropagation();
-        await goBackOrHide();
-      }
-    });
-
-    input.on("input", async (e) => {
-      if (
-        commandlineState.inputModeParams?.command === null ||
-        !("validation" in commandlineState.inputModeParams.command)
-      ) {
-        return;
-      }
-
-      const handler = handlersCache.get(
-        commandlineState.inputModeParams.command.id,
-      );
-      if (handler === undefined) {
-        throw new Error(
-          `Expected handler for command ${commandlineState.inputModeParams.command.id} is missing`,
-        );
-      }
-
-      await handler(e);
-    });
-
-    modalEl.on("mousemove", (_e) => {
-      commandlineState.mouseMode = true;
-    });
-
-    const suggestions = document.querySelector(".suggestions") as HTMLElement;
-    let lastHover: HTMLElement | undefined;
-
-    suggestions.addEventListener("mousemove", async (e) => {
-      commandlineState.mouseMode = true;
-      const target = e.target as HTMLElement | null;
-      if (target === lastHover) return;
-
-      const dataIndex = parseIntOptional(target?.getAttribute("data-index"));
-
-      if (dataIndex === undefined) return;
-
-      lastHover = e.target as HTMLElement;
-      commandlineState.activeIndex = dataIndex;
-      await updateActiveCommand();
-    });
-
-    suggestions.addEventListener("click", async (e) => {
-      const target = e.target as HTMLElement | null;
-
-      const dataIndex = parseIntOptional(target?.getAttribute("data-index"));
-
-      if (dataIndex === undefined) return;
-
-      const previous = commandlineState.activeIndex;
-      commandlineState.activeIndex = dataIndex;
-      if (previous !== commandlineState.activeIndex) {
-        await updateActiveCommand();
-      }
-      await runActiveCommand();
-    });
-  },
+const filterInput = debounce(50, async (value: string) => {
+  if (commandlineState.isAnimating) return;
+  commandlineState.inputValue = value;
+  if (commandlineState.subgroupOverride === null) {
+    commandlineState.usingSingleList =
+      Config.singleListCommandLine === "on" || value.startsWith(">");
+  }
+  if (commandlineState.mode !== "search") return;
+  commandlineState.mouseMode = false;
+  commandlineState.activeIndex = 0;
+  await filterSubgroup();
+  await showCommands();
+  await updateActiveCommand();
 });
 
-let lastVisibility: { visible: boolean; chained: boolean } | null = null;
-
-createEffect(() => {
-  const visibility = getModalVisibility(MODAL_STORE_ID);
-  const isVisible = visibility?.visible ?? false;
-  const wasVisible = lastVisibility?.visible ?? false;
-  commandlineState.open = isVisible;
-
-  // Show when visibility changes from false to true
-  if (isVisible && !wasVisible) {
-    show();
+export function onCommandlineInput(e: Event): void {
+  const input = e.target as HTMLInputElement;
+  filterInput(input.value);
+  const command = commandlineState.inputModeParams.command;
+  if (command === null || !("validation" in command)) return;
+  const handler = handlersCache.get(command.id);
+  if (handler === undefined) {
+    throw new Error(`Expected handler for command ${command.id} is missing`);
   }
-  // Hide when visibility changes from true to false (triggered by store)
-  else if (!isVisible && wasVisible) {
-    // Only trigger hide if modal is actually open
-    if (modal.isOpen()) {
-      clearFontPreview();
-      void ThemeController.clearPreview();
-      // The store already updated, just trigger the animation
-      void modal.hide({
-        clearModalChain: !visibility?.chained,
-        afterAnimation: async () => {
-          hideWarning();
-          addCommandlineBackground();
-          if (getActivePage() !== "test") {
-            (document.activeElement as HTMLElement | undefined)?.blur();
-          }
-          commandlineState.isAnimating = false;
-          commandlineState.subgroupOverride = null;
-          commandlineState.open = false;
-          setCommandlineSubgroup(null);
-        },
-      });
+  void handler(e);
+}
+
+export async function onCommandlineKeyDown(e: KeyboardEvent): Promise<void> {
+  if (commandlineState.isAnimating) {
+    e.preventDefault();
+    return;
+  }
+  commandlineState.mouseMode = false;
+  if (
+    e.key === "ArrowUp" ||
+    (e.ctrlKey && (e.key.toLowerCase() === "k" || e.key.toLowerCase() === "p"))
+  ) {
+    if (
+      Config.singleListCommandLine === "on" &&
+      commandlineState.subgroupOverride === null &&
+      commandlineState.inputValue === "" &&
+      commandlineState.lastSingleListModeInputValue !== ""
+    ) {
+      commandlineState.inputValue =
+        commandlineState.lastSingleListModeInputValue;
+      await updateInput();
+      await filterSubgroup();
+      await showCommands();
+      await updateActiveCommand();
+      return;
+    }
+    e.preventDefault();
+    await decrementActiveIndex();
+  }
+  if (
+    e.key === "ArrowDown" ||
+    (e.ctrlKey && (e.key.toLowerCase() === "j" || e.key.toLowerCase() === "n"))
+  ) {
+    e.preventDefault();
+    await incrementActiveIndex();
+  }
+  if (e.key === "Tab") {
+    e.preventDefault();
+    if (e.shiftKey) {
+      await decrementActiveIndex();
+    } else {
+      await incrementActiveIndex();
     }
   }
+  if (e.key === "Enter") {
+    e.preventDefault();
+    if (commandlineState.mode === "search") {
+      await runActiveCommand();
+    } else if (commandlineState.mode === "input") {
+      handleInputSubmit();
+    } else {
+      throw new Error("Unknown mode, can't handle enter press");
+    }
+  }
+  if (e.key === "Escape") {
+    e.preventDefault();
+    e.stopPropagation();
+    await goBackOrHide();
+  }
+}
 
-  lastVisibility = visibility ? { ...visibility } : null;
-});
+let lastHover: HTMLElement | undefined;
+
+export function onCommandlineMouseMove(): void {
+  commandlineState.mouseMode = true;
+}
+
+export async function onSuggestionMouseMove(e: MouseEvent): Promise<void> {
+  commandlineState.mouseMode = true;
+  const target = e.target as HTMLElement | null;
+  if (target === lastHover) return;
+  const dataIndex = parseIntOptional(target?.getAttribute("data-index"));
+  if (dataIndex === undefined) return;
+  lastHover = target ?? undefined;
+  commandlineState.activeIndex = dataIndex;
+  await updateActiveCommand();
+}
+
+export async function onSuggestionClick(e: MouseEvent): Promise<void> {
+  const target = e.target as HTMLElement | null;
+  const dataIndex = parseIntOptional(target?.getAttribute("data-index"));
+  if (dataIndex === undefined) return;
+  const previous = commandlineState.activeIndex;
+  commandlineState.activeIndex = dataIndex;
+  if (previous !== dataIndex) await updateActiveCommand();
+  await runActiveCommand();
+}
+
+export function onCommandlineBeforeHide(): void {
+  clearFontPreview();
+  void ThemeController.clearPreview();
+  commandlineState.isAnimating = true;
+}
+
+export function onCommandlineBackdropClick(): void {
+  hide();
+}
+
+export function onCommandlineEscape(): void {
+  void goBackOrHide();
+}
