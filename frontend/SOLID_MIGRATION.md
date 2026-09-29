@@ -99,7 +99,7 @@ Legend: `[ ]` todo, `[~]` in progress, `[x]` done. `deps:` = must be done first.
 
 ### Phase 2 — Commandline (deps: none; parallel with P1)
 
-- [ ] **P2.1** Extract commandline state (open, input value, mode, subgroup stack, selected index, warning, checking) to `states/commandline.ts` signals/store. Legacy `commandline.ts` reads/writes store; no render changes. Tests for filtering/matching (`commandline/util.ts` already tested).
+- [~] **P2.1** Extract commandline state (open, input value, mode, subgroup stack, selected index, warning, checking) to `states/commandline.ts` signals/store. Legacy `commandline.ts` reads/writes store; no render changes. Tests for filtering/matching (`commandline/util.ts` already tested).
 - [ ] **P2.2** `components/modals/Commandline.tsx` rendering input, suggestions list (use `<For>`; virtualize only if current code limits count), warning, checking icon, input-validation (port `elements/input-validation.ts` to a hook or reuse `components/ui/form`). Register `Commandline` modal id (exists in `ModalId`). Keep keyboard nav + mouse hover behavior identical; keep `commandline.show()` API as thin wrapper → `showModal("Commandline", …)`.
 - [ ] **P2.3** Remove `<dialog id="commandLine">`, `commandline.scss` → Tailwind, delete legacy render code. `commandline/lists/*.ts` data stays (not UI). Delete `utils/animated-modal.ts` if no users remain (also `commandline/types.ts` import).
 
