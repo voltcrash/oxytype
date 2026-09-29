@@ -23,7 +23,6 @@ import * as Misc from "../utils/misc";
 import * as Numbers from "@monkeytype/util/numbers";
 import * as Arrays from "../utils/arrays";
 import { get as getTypingSpeedUnit } from "../utils/typing-speed-units";
-import * as PbCrown from "./pb-crown";
 import * as TestUI from "./test-ui";
 import * as TodayTracker from "./today-tracker";
 import { configEvent } from "../events/config";
@@ -344,26 +343,12 @@ export function updateTodayTracker(): void {
   qs("#result .stats .time .bottom .timeToday")?.setText(resultState.timeToday);
 }
 
-function renderCrownText(): void {
-  qs("#result .stats .wpm .crown")?.setAttribute(
-    "aria-label",
-    resultState.crown.text,
-  );
-  qs("#result .stats .wpm .crown")?.setAttribute(
-    "data-balloon-length",
-    resultState.crown.wide ? "medium" : "",
-  );
-}
-
 export function showCrown(type: ResultCrownType): void {
   setResultState("crown", { visible: true, type });
-  PbCrown.show();
-  PbCrown.update(type);
 }
 
 function updateCrownText(text: string, wide = false): void {
   setResultState("crown", { text, wide });
-  renderCrownText();
 }
 
 async function updateCrown(dontSave: boolean): Promise<void> {
@@ -402,9 +387,7 @@ async function updateCrown(dontSave: boolean): Promise<void> {
 }
 
 function hideCrown(): void {
-  setResultState("crown", "visible", false);
-  PbCrown.hide();
-  updateCrownText("");
+  setResultState("crown", { visible: false, text: "", wide: false });
 }
 
 export function showErrorCrownIfNeeded(): void {

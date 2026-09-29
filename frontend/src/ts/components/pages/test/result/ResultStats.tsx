@@ -3,9 +3,10 @@ import { For, JSXElement, Show } from "solid-js";
 import { resultState } from "../../../../states/result";
 import { cn } from "../../../../utils/cn";
 import { Fa } from "../../../common/Fa";
+import { ResultCrown } from "./ResultCrown";
 
-// crown, tags, daily leaderboard and quote buttons are still driven by
-// test/result.ts + test/pb-crown.ts (P3.3-P3.6), so their markup is static here
+// tags, daily leaderboard and quote buttons are still driven by
+// test/result.ts (P3.4-P3.6), so their markup is static here
 
 const topClass = "top mb-1 text-[1rem] leading-[1rem] text-sub";
 const bottomClass = "bottom text-[2rem] leading-[2rem] text-main";
@@ -53,17 +54,7 @@ export function ResultStats(): JSXElement {
         <div class="group wpm [grid-area:wpm]">
           <div class={cn(bigTopClass, "flex")}>
             <div class="text">{stats()?.typingSpeedUnit ?? "wpm"}</div>
-            <div
-              class="crown hidden"
-              aria-label=""
-              data-balloon-pos="up"
-              data-balloon-length="medium"
-            >
-              <Fa icon="fa-question" />
-              <Fa icon="fa-crown" />
-              <Fa icon="fa-slash" />
-              <Fa icon="fa-exclamation-triangle" />
-            </div>
+            <ResultCrown />
           </div>
           <div
             class={bigBottomClass}

@@ -87,14 +87,6 @@ const state = vi.hoisted(() => ({
   tagPbWpm: 0,
 }));
 
-const crown = vi.hoisted(() => ({
-  show: vi.fn(),
-  hide: vi.fn(),
-  update: vi.fn(),
-  getCurrentType: vi.fn(),
-}));
-vi.mock("../../src/ts/test/pb-crown", () => crown);
-
 vi.mock("../../src/ts/controllers/chart-controller", () => {
   const datasets = new Map<string, Record<string, unknown>>();
   const scales = new Map<string, Record<string, unknown>>();
@@ -178,7 +170,12 @@ vi.mock("../../src/ts/utils/misc", async (importOriginal) => ({
 }));
 vi.mock("canvas-confetti", () => ({ default: vi.fn() }));
 
-import { update, updateTagsAfterEdit } from "../../src/ts/test/result";
+import {
+  showCrown,
+  showErrorCrownIfNeeded,
+  update,
+  updateTagsAfterEdit,
+} from "../../src/ts/test/result";
 import { resultState, type ResultStats } from "../../src/ts/states/result";
 import { __testing } from "../../src/ts/config/testing";
 import type { CompletedEvent } from "@monkeytype/schemas/results";
@@ -475,16 +472,13 @@ describe("result update", () => {
   });
 
   describe("crown", () => {
-    const crownLabel = (): string | undefined =>
-      el("#result .stats .wpm .crown").attrs["aria-label"];
+    const crown = (): typeof resultState.crown => ({ ...resultState.crown });
 
     it("shows pending crown with diff for a new pb", async () => {
       state.localPbWpm = 90;
       await runUpdate(completedEvent());
 
-      expect(crown.update).toHaveBeenLastCalledWith("pending");
-      expect(crownLabel()).toBe("+11.46");
-      expect(resultState.crown).toEqual({
+      expect(crown()).toEqual({
         visible: true,
         type: "pending",
         text: "+11.46",
@@ -496,28 +490,29 @@ describe("result update", () => {
       state.localPbWpm = 120;
       await runUpdate(completedEvent());
 
-      expect(crown.update).not.toHaveBeenCalled();
-      expect(crown.hide).toHaveBeenCalled();
-      expect(crownLabel()).toBe("");
+      expect(crown()).toMatchObject({ visible: false, text: "", wide: false });
     });
 
     it("hides crown in quote mode or when not saving", async () => {
+      state.localPbWpm = 90;
       config({ mode: "quote" });
       await runUpdate(completedEvent());
-      expect(crown.update).not.toHaveBeenCalled();
+      expect(crown().visible).toBe(false);
 
       config();
       await runUpdate(completedEvent(), { dontSave: true });
-      expect(crown.update).not.toHaveBeenCalled();
+      expect(crown().visible).toBe(false);
     });
 
     it("shows ineligible crown when pb is blocked by config", async () => {
       await runUpdate(completedEvent({ bailedOut: true }));
 
-      expect(crown.update).toHaveBeenLastCalledWith("ineligible");
-      expect(crownLabel()).toBe(
-        "You could've gotten a new PB (+101.46), but your config does not allow it (bailed out)",
-      );
+      expect(crown()).toEqual({
+        visible: true,
+        type: "ineligible",
+        text: "You could've gotten a new PB (+101.46), but your config does not allow it (bailed out)",
+        wide: true,
+      });
     });
 
     it("shows warning crown when not eligible and not faster", async () => {
@@ -525,10 +520,40 @@ describe("result update", () => {
       config({ stopOnError: "letter" });
       await runUpdate(completedEvent());
 
-      expect(crown.update).toHaveBeenLastCalledWith("warning");
-      expect(crownLabel()).toBe(
-        "This result is not eligible for a new PB (stop on letter)",
-      );
+      expect(crown()).toEqual({
+        visible: true,
+        type: "warning",
+        text: "This result is not eligible for a new PB (stop on letter)",
+        wide: true,
+      });
+    });
+
+    it("turns a pending crown into an error crown", async () => {
+      state.localPbWpm = 90;
+      await runUpdate(completedEvent());
+      showErrorCrownIfNeeded();
+
+      expect(crown()).toEqual({
+        visible: true,
+        type: "error",
+        text: "Local PB data is out of sync with the server - please refresh (pb mismatch)",
+        wide: true,
+      });
+    });
+
+    it("confirms a pending crown as normal", async () => {
+      state.localPbWpm = 90;
+      await runUpdate(completedEvent());
+      showCrown("normal");
+
+      expect(crown()).toMatchObject({ visible: true, type: "normal" });
+    });
+
+    it("keeps other crowns when the server has no pb", async () => {
+      await runUpdate(completedEvent({ bailedOut: true }));
+      showErrorCrownIfNeeded();
+
+      expect(crown().type).toBe("ineligible");
     });
   });
 
