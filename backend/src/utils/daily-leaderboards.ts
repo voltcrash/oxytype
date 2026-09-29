@@ -15,7 +15,7 @@ import MonkeyError from "./error";
 import { Mode, Mode2 } from "@monkeytype/schemas/shared";
 import { getCurrentDayTimestamp } from "@monkeytype/util/date-and-time";
 
-const dailyLeaderboardNamespace = "monkeytype:dailyleaderboard";
+const dailyLeaderboardNamespace = "oxytype:dailyleaderboard";
 const scoresNamespace = `${dailyLeaderboardNamespace}:scores`;
 const resultsNamespace = `${dailyLeaderboardNamespace}:results`;
 

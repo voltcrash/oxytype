@@ -18,7 +18,7 @@ export type AddResultOpts = {
 };
 
 const weeklyXpLeaderboardLeaderboardNamespace =
-  "monkeytype:weekly-xp-leaderboard";
+  "oxytype:weekly-xp-leaderboard";
 const scoresNamespace = `${weeklyXpLeaderboardLeaderboardNamespace}:scores`;
 const resultsNamespace = `${weeklyXpLeaderboardLeaderboardNamespace}:results`;
 

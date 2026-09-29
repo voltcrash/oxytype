@@ -17,18 +17,18 @@ type EmailMetadata = {
 
 const templates: Record<EmailType, EmailMetadata> = {
   verify: {
-    subject: "Verify your Monkeytype account",
+    subject: "Verify your Oxytype account",
     templateName: "verification.html",
   },
   resetPassword: {
-    subject: "Reset your Monkeytype password",
+    subject: "Reset your Oxytype password",
     templateName: "reset-password.html",
   },
 };
 
 let transportInitialized = false;
 let transporter: nodemailer.Transporter;
-let emailFrom = "Monkeytype <noreply@monkeytype.com>";
+let emailFrom = "";
 
 export function isInitialized(): boolean {
   return transportInitialized;
@@ -42,10 +42,6 @@ export async function init(): Promise<void> {
   const { EMAIL_HOST, EMAIL_USER, EMAIL_PASS, EMAIL_PORT, EMAIL_FROM } =
     process.env;
 
-  if (EMAIL_FROM !== undefined) {
-    emailFrom = EMAIL_FROM;
-  }
-
   if (!(EMAIL_HOST ?? "") || !(EMAIL_USER ?? "") || !(EMAIL_PASS ?? "")) {
     if (isDevEnvironment()) {
       Logger.warning(
@@ -58,6 +54,11 @@ export async function init(): Promise<void> {
     }
     return;
   }
+
+  if (!EMAIL_FROM) {
+    throw new Error("EMAIL_FROM must be configured when email is enabled");
+  }
+  emailFrom = EMAIL_FROM;
 
   try {
     transporter = nodemailer.createTransport({

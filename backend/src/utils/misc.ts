@@ -182,9 +182,13 @@ export function isDevEnvironment(): boolean {
 }
 
 export function getFrontendUrl(): string {
-  return isDevEnvironment()
-    ? "http://localhost:3000"
-    : (process.env["FRONTEND_URL"] ?? "https://monkeytype.com");
+  if (isDevEnvironment()) return "http://localhost:3000";
+
+  const frontendUrl = process.env["FRONTEND_URL"];
+  if (!frontendUrl) {
+    throw new Error("FRONTEND_URL must be configured for production links");
+  }
+  return frontendUrl;
 }
 
 /**
