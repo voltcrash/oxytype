@@ -8,12 +8,9 @@ import * as ChartController from "../controllers/chart-controller";
 import QuotesController, { Quote } from "../controllers/quotes-controller";
 import * as DB from "../db";
 
-import { showLoaderBar, hideLoaderBar } from "../states/loader-bar";
 import {
   showNoticeNotification,
-  showErrorNotification,
   showSuccessNotification,
-  addNotificationWithLevel,
 } from "../states/notifications";
 import { getCustomTextIndicator, isAuthenticated } from "../states/core";
 import { getQuoteStats } from "../states/quote-rate";
@@ -35,7 +32,6 @@ import type {
   AnnotationOptions,
   LabelPosition,
 } from "chartjs-plugin-annotation";
-import Ape from "../ape";
 import { CompletedEvent } from "@monkeytype/schemas/results";
 import { getActiveFunboxes } from "./funbox/list";
 import { getFunbox } from "@monkeytype/funbox";
@@ -574,35 +570,8 @@ async function updateTags(dontSave: boolean): Promise<void> {
   });
 }
 
-function renderQuoteButtons(): void {
-  const quote = resultState.quote;
-
-  qs(".pageTest #result #favoriteQuoteButton")?.toggleClass(
-    "hidden",
-    !quote.favoriteVisible,
-  );
-  qs(".pageTest #result #favoriteQuoteButton .icon")
-    ?.toggleClass("fas", quote.favorite)
-    ?.toggleClass("far", !quote.favorite);
-
-  qs(".pageTest #result #rateQuoteButton")?.toggleClass(
-    "hidden",
-    !quote.rateVisible,
-  );
-  qs(".pageTest #result #rateQuoteButton .icon")
-    ?.toggleClass("fas", quote.rated)
-    ?.toggleClass("far", !quote.rated);
-  qs(".pageTest #result #rateQuoteButton .rating")?.setText(quote.rating);
-
-  qs(".pageTest #result #reportQuoteButton")?.toggleClass(
-    "hidden",
-    !quote.reportVisible,
-  );
-}
-
 export function updateQuoteRating(rating: string): void {
   setResultState("quote", { rated: true, rating });
-  renderQuoteButtons();
 }
 
 function updateRateQuote(randomQuote: Quote | null): void {
@@ -626,21 +595,17 @@ function updateRateQuote(randomQuote: Quote | null): void {
           "rating",
           quoteStats?.average?.toFixed(1) ?? "",
         );
-        renderQuoteButtons();
       })
       .catch((_e: unknown) => {
         setResultState("quote", "rating", "?");
-        renderQuoteButtons();
       });
     setResultState("quote", "rateVisible", true);
-    renderQuoteButtons();
   }
 }
 
 function updateQuoteFavorite(randomQuote: Quote | null): void {
   if (Config.mode !== "quote" || !isAuthenticated()) {
     setResultState("quote", "favoriteVisible", false);
-    renderQuoteButtons();
     return;
   }
 
@@ -657,7 +622,6 @@ function updateQuoteFavorite(randomQuote: Quote | null): void {
     favorite: QuotesController.isQuoteFavorite(randomQuote),
     favoriteVisible: true,
   });
-  renderQuoteButtons();
 }
 
 export function updateDailyLeaderboardRank(rank: number | undefined): void {
@@ -705,7 +669,6 @@ export async function update(
   qs("#result #replayWords")?.empty();
   updateRetrySaving(false);
   setResultState("quote", { rateVisible: false, rated: false, rating: "" });
-  renderQuoteButtons();
   qs("#words")?.removeClass("blurred");
   blurInputElement();
   if (Config.ads === "off" || Config.ads === "result") {
@@ -788,7 +751,6 @@ export async function update(
       updateRateQuote(getCurrentQuote());
       setResultState("quote", "reportVisible", true);
     }
-    renderQuoteButtons();
     updateDailyLeaderboardRank(undefined);
     qs("main #result #showWordHistoryButton")?.show();
     qs("main #result #watchReplayButton")?.show();
@@ -1035,63 +997,6 @@ qsa(".pageTest #result .chart .chartLegend button")?.on(
     ChartController.result.update();
   },
 );
-
-qs(".pageTest")?.onChild("click", "#favoriteQuoteButton", async () => {
-  const { language: quoteLang, id: quoteId, favorite } = resultState.quote;
-  if (quoteLang === undefined || quoteId === "") {
-    showErrorNotification("Could not get quote stats!");
-    return;
-  }
-
-  const dbSnapshot = DB.getSnapshot();
-  if (!dbSnapshot) return;
-
-  if (favorite) {
-    // Remove from
-    showLoaderBar();
-    const response = await Ape.users.removeQuoteFromFavorites({
-      body: {
-        language: quoteLang,
-        quoteId,
-      },
-    });
-    hideLoaderBar();
-
-    addNotificationWithLevel(
-      response.body.message,
-      response.status === 200 ? "success" : "error",
-    );
-
-    if (response.status === 200) {
-      setResultState("quote", "favorite", false);
-      renderQuoteButtons();
-      const quoteIndex = dbSnapshot.favoriteQuotes?.[quoteLang]?.indexOf(
-        quoteId,
-      ) as number;
-      dbSnapshot.favoriteQuotes?.[quoteLang]?.splice(quoteIndex, 1);
-    }
-  } else {
-    // Add to favorites
-    showLoaderBar();
-    const response = await Ape.users.addQuoteToFavorites({
-      body: { language: quoteLang, quoteId },
-    });
-    hideLoaderBar();
-
-    addNotificationWithLevel(
-      response.body.message,
-      response.status === 200 ? "success" : "error",
-    );
-
-    if (response.status === 200) {
-      setResultState("quote", "favorite", true);
-      renderQuoteButtons();
-      dbSnapshot.favoriteQuotes ??= {};
-      dbSnapshot.favoriteQuotes[quoteLang] ??= [];
-      dbSnapshot.favoriteQuotes[quoteLang]?.push(quoteId);
-    }
-  }
-});
 
 configEvent.subscribe(async ({ key }) => {
   if (

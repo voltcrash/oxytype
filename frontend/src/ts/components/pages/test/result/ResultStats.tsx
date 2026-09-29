@@ -2,12 +2,12 @@ import { For, JSXElement, Show } from "solid-js";
 
 import { resultState } from "../../../../states/result";
 import { cn } from "../../../../utils/cn";
-import { Fa } from "../../../common/Fa";
 import { ResultCrown } from "./ResultCrown";
+import { ResultQuoteActions } from "./ResultQuoteActions";
 import { ResultTags } from "./ResultTags";
 
-// daily leaderboard and quote buttons are still driven by test/result.ts
-// (P3.5-P3.6), so their markup is static here
+// daily leaderboard is still driven by test/result.ts (P3.6), so its markup
+// is static here
 
 const topClass = "top mb-1 text-[1rem] leading-[1rem] text-sub";
 const bottomClass = "bottom text-[2rem] leading-[2rem] text-main";
@@ -180,31 +180,7 @@ export function ResultStats(): JSXElement {
         >
           <div class={smallTopClass}>
             <span class="mr-[0.5em]">source</span>
-            <span
-              id="reportQuoteButton"
-              class="textButton hidden"
-              aria-label="Report quote"
-              data-balloon-pos="up"
-            >
-              <Fa icon="fa-flag" fixedWidth class="icon" />
-            </span>
-            <span
-              id="favoriteQuoteButton"
-              class="textButton hidden"
-              aria-label="Favorite quote"
-              data-balloon-pos="up"
-            >
-              <Fa icon="fa-heart" variant="regular" fixedWidth class="icon" />
-            </span>
-            <span
-              id="rateQuoteButton"
-              class="textButton hidden"
-              aria-label="Rate quote"
-              data-balloon-pos="up"
-            >
-              <Fa icon="fa-star" variant="regular" fixedWidth class="icon" />
-              <span class="rating"></span>
-            </span>
+            <ResultQuoteActions />
           </div>
           <div class={cn(smallBottomClass, moreStatsBottomClass)}>
             {stats()?.source ?? "-"}

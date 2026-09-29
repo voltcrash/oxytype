@@ -1,36 +1,12 @@
 import { Config } from "../config/store";
-import {
-  showNoticeNotification,
-  showErrorNotification,
-} from "../states/notifications";
-import { showQuoteRateModal } from "../states/quote-rate";
-import { showQuoteReportModal } from "../states/quote-report";
+import { showNoticeNotification } from "../states/notifications";
 import { showModal } from "../states/modals";
 import { showVideoAdPopup } from "../components/popups/VideoAdPopup";
 import { navigate } from "../controllers/route-controller";
 import { getMode2 } from "../utils/misc";
 import { qs } from "../utils/dom";
-import { getCurrentQuote } from "../states/test";
 
 const testPage = qs(".pageTest");
-
-testPage?.onChild("click", "#rateQuoteButton", async () => {
-  const currentQuote = getCurrentQuote();
-  if (currentQuote === null) {
-    showErrorNotification("Failed to show quote rating popup: no quote");
-    return;
-  }
-  showQuoteRateModal(currentQuote);
-});
-
-testPage?.onChild("click", "#reportQuoteButton", async () => {
-  const currentQuote = getCurrentQuote();
-  if (currentQuote === null) {
-    showErrorNotification("Failed to show quote report popup: no quote");
-    return;
-  }
-  showQuoteReportModal(currentQuote?.id);
-});
 
 testPage?.onChild("click", "#practiseWordsButton", () => {
   if (Config.mode === "zen") {

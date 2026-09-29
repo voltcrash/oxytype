@@ -1,5 +1,17 @@
 import { cleanup, render } from "@solidjs/testing-library";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+// children have their own specs
+vi.mock(
+  "../../../../../src/ts/components/pages/test/result/ResultQuoteActions",
+  () => ({ ResultQuoteActions: () => null }),
+);
+vi.mock(
+  "../../../../../src/ts/components/pages/test/result/ResultTags",
+  () => ({
+    ResultTags: () => null,
+  }),
+);
 
 import { ResultStats } from "../../../../../src/ts/components/pages/test/result/ResultStats";
 import {
