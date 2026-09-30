@@ -18,7 +18,7 @@ import {
   setScreenshotWatermark,
 } from "../states/result";
 import { getTheme } from "../states/theme";
-import { download as downloadFile } from "../utils/misc";
+import { download as downloadFile } from "../components/common/Download";
 
 function revert(): void {
   setIsScreenshotting(false);

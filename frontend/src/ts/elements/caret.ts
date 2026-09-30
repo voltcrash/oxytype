@@ -1,7 +1,6 @@
 import { updateClassNames } from "../utils/cn";
 import { CaretStyle } from "@monkeytype/schemas/configs";
 import { Config } from "../config/store";
-import { getTotalInlineMargin } from "../utils/misc";
 import { isWordRightToLeft } from "../utils/strings";
 import { requestDebouncedAnimationFrame } from "../utils/debounced-animation-frame";
 import { animate, EasingParam, JSAnimation } from "animejs";
@@ -587,4 +586,11 @@ function setClass(
       enabled,
     );
   }
+}
+
+function getTotalInlineMargin(element: HTMLElement): number {
+  const computedStyle = window.getComputedStyle(element);
+  return (
+    parseInt(computedStyle.marginRight) + parseInt(computedStyle.marginLeft)
+  );
 }

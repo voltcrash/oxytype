@@ -95,11 +95,6 @@ vi.mock("../../src/ts/test/events/stats", () => ({
   getCorrectedWordsHistory: () => [],
   getWordBurstHistory: () => [100],
 }));
-vi.mock("../../src/ts/utils/misc", async (importOriginal) => ({
-  ...(await importOriginal<object>()),
-  promiseAnimate: vi.fn(),
-  scrollToCenterOrTop: vi.fn(),
-}));
 vi.mock("canvas-confetti", () => ({ default: vi.fn() }));
 
 import {

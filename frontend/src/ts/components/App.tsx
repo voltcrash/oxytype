@@ -2,10 +2,11 @@ import { QueryClientProvider } from "@tanstack/solid-query";
 import { JSXElement } from "solid-js";
 import { Portal } from "solid-js/web";
 
+import { queryClient } from "../queries";
 import { getFocus } from "../states/test";
 import { cn } from "../utils/cn";
-import { queryClient } from "../queries";
 import { Advertisement } from "./common/Advertisement";
+import { Download } from "./common/Download";
 import { AppEffects, AppElements } from "./core/AppEffects";
 import { FunboxEffects } from "./core/FunboxEffects";
 import { Theme } from "./core/Theme";
@@ -24,6 +25,7 @@ export function App(props: AppElements): JSXElement {
     <QueryClientProvider client={queryClient}>
       <Portal mount={props.body}>
         <AppEffects {...props} />
+        <Download />
         <Overlays />
         <Theme />
         <FunboxEffects />

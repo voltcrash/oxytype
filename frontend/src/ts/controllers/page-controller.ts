@@ -1,3 +1,4 @@
+import { isDevEnvironment } from "../utils/env";
 import * as Misc from "../utils/misc";
 import * as Strings from "../utils/strings";
 import {
@@ -170,12 +171,13 @@ function updateOpenGraphUrl(): void {
 }
 
 function updateTitle(nextPage: { id: string; display?: string }): void {
+  const local = isDevEnvironment() ? "localhost - " : "";
   if (nextPage.id === "test") {
-    Misc.updateTitle();
+    document.title = `${local}Monkeytype | A minimalistic, customizable typing test`;
   } else {
     const titleString =
       nextPage.display ?? Strings.capitalizeFirstLetterOfEachWord(nextPage.id);
-    Misc.updateTitle(`${titleString} | Monkeytype`);
+    document.title = `${local}${titleString} | Monkeytype`;
   }
 }
 

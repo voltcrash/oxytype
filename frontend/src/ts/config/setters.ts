@@ -7,7 +7,7 @@ import {
   canSetConfigWithCurrentFunboxes,
   canSetFunboxWithConfig,
 } from "./funbox-validation";
-import { triggerResize, escapeHTML } from "../utils/misc";
+import { escapeHTML } from "../utils/misc";
 import { camelCaseToWords, capitalizeFirstLetter } from "../utils/strings";
 import { configMetadata } from "./metadata";
 import { Config, setConfigStore } from "./store";
@@ -137,7 +137,7 @@ export function setConfig<T extends keyof ConfigSchemas.Config>(
   }
 
   if (metadata.triggerResize && !options?.nosave) {
-    triggerResize();
+    window.dispatchEvent(new Event("resize"));
   }
 
   metadata.afterSet?.({

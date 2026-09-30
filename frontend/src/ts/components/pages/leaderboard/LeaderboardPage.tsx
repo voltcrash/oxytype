@@ -23,7 +23,6 @@ import {
   updateGetParameters,
 } from "../../../states/leaderboard-selection";
 import { cn } from "../../../utils/cn";
-import { scrollToTop } from "../../../utils/misc";
 import AsyncContent from "../../common/AsyncContent";
 import { LoadingCircle } from "../../common/LoadingCircle";
 import { Page } from "../../common/Page";
@@ -295,7 +294,7 @@ export function LeaderboardPage(): JSXElement {
                     currentPage={getPage()}
                     onPageChange={(page) => {
                       setPage(page);
-                      scrollToTop();
+                      window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
                     onScrollToUser={setScrollToUser}
                     class="w-full sm:w-max"

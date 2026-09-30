@@ -1,11 +1,12 @@
 import { animate } from "animejs";
-import { JSXElement, Show, createSignal, onMount } from "solid-js";
+import { JSXElement, Show, createSignal, onMount, onCleanup } from "solid-js";
 
 import * as AdController from "../../controllers/ad-controller";
 import {
   showErrorNotification,
   showNoticeNotification,
 } from "../../states/notifications";
+import { registerOverlayVisibility } from "../../states/overlay-visibility";
 import { Fa } from "../common/Fa";
 
 const [isVisible, setVisible] = createSignal(false);
@@ -63,6 +64,11 @@ export function egVideoListener(options: Record<string, string>): void {
 
 function Content(): JSXElement {
   onMount(() => {
+    onCleanup(
+      registerOverlayVisibility(
+        () => (wrapperEl?.getClientRects().length ?? 0) > 0,
+      ),
+    );
     if (wrapperEl === undefined) return;
     animate(wrapperEl, {
       opacity: [0, 1],

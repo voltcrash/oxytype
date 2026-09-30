@@ -1,7 +1,6 @@
 import { JSXElement, createSignal, onMount, onCleanup } from "solid-js";
 
 import { getActivePage } from "../../../states/core";
-import { scrollToTop } from "../../../utils/misc";
 import { Fa } from "../../common/Fa";
 
 export function ScrollToTop(): JSXElement {
@@ -38,7 +37,7 @@ export function ScrollToTop(): JSXElement {
         }}
         onClick={() => {
           setVisible(false);
-          scrollToTop();
+          window.scrollTo({ top: 0, behavior: "smooth" });
         }}
       >
         <Fa icon="fa-angle-double-up" />

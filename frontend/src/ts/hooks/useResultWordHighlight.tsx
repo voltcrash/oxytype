@@ -16,7 +16,6 @@ import { getIsScreenshotting } from "../states/core";
 import { resultState, resultWordHighlightEvent } from "../states/result";
 import { isLanguageRightToLeft } from "../states/test";
 import { cn } from "../utils/cn";
-import { getBoundingRectOfElements } from "../utils/misc";
 import { createEffectOn } from "./effects";
 
 const PADDING_X = 16;
@@ -627,4 +626,44 @@ export function useResultWordHighlight(
   }
 
   return { component, destroy };
+}
+
+function getBoundingRectOfElements(elements: HTMLElement[]): DOMRect {
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity;
+
+  elements.forEach((element) => {
+    const rect = element.getBoundingClientRect();
+
+    minX = Math.min(minX, rect.left);
+    minY = Math.min(minY, rect.top);
+    maxX = Math.max(maxX, rect.right);
+    maxY = Math.max(maxY, rect.bottom);
+  });
+
+  // Create a new object with the same properties as a DOMRect
+  return {
+    x: minX,
+    y: minY,
+    width: maxX - minX,
+    height: maxY - minY,
+    top: minY,
+    right: maxX,
+    bottom: maxY,
+    left: minX,
+    toJSON: function (): string {
+      return JSON.stringify({
+        x: this.x,
+        y: this.y,
+        width: this.width,
+        height: this.height,
+        top: this.top,
+        right: this.right,
+        bottom: this.bottom,
+        left: this.left,
+      });
+    },
+  };
 }

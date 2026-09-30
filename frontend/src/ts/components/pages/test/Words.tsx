@@ -95,7 +95,7 @@ export function focusWords(force = false): void {
     keepWordsInputInTheCenter(true);
   } else {
     const typingTest = getTypingTestElement();
-    Misc.scrollToCenterOrTop(typingTest);
+    scrollToCenterOrTop(typingTest);
   }
 }
 
@@ -1616,4 +1616,15 @@ function outerHeight(element: HTMLElement): number {
     parseFloat(style.marginTop) +
     parseFloat(style.marginBottom)
   );
+}
+
+function scrollToCenterOrTop(el: HTMLElement | null): void {
+  if (!el) return;
+
+  const elementHeight = el.offsetHeight;
+  const windowHeight = window.innerHeight;
+
+  el.scrollIntoView({
+    block: elementHeight < windowHeight ? "center" : "start",
+  });
 }

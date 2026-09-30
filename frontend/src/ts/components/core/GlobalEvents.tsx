@@ -5,12 +5,12 @@ import { ModifierKeys } from "../../constants/modifier-keys";
 import { isInputElementFocused } from "../../input/input-element";
 import { getActivePage } from "../../states/core";
 import { showErrorNotification } from "../../states/notifications";
+import { isAnyPopupVisible } from "../../states/overlay-visibility";
 import * as PageTransition from "../../states/page-transition";
 import { getFocus, getResultVisible } from "../../states/test";
 import * as Focus from "../../test/focus";
 import { focusWords } from "../../test/test-ui";
 import { isDevEnvironment } from "../../utils/env";
-import { isAnyPopupVisible } from "../../utils/misc";
 
 export function GlobalEvents(): null {
   onMount(() => {

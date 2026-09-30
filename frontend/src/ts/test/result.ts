@@ -773,7 +773,7 @@ export async function update(
     duration: Misc.applyReducedMotion(125),
   });
 
-  Misc.scrollToCenterOrTop(resultEl ?? null);
+  scrollToCenterOrTop(resultEl ?? null);
   void AdController.renderResult();
   setResultCalculating(false);
   getWordsElement().innerHTML = "";
@@ -1009,4 +1009,15 @@ function setClass(
       enabled,
     );
   }
+}
+
+function scrollToCenterOrTop(el: HTMLElement | null): void {
+  if (!el) return;
+
+  const elementHeight = el.offsetHeight;
+  const windowHeight = window.innerHeight;
+
+  el.scrollIntoView({
+    block: elementHeight < windowHeight ? "center" : "start",
+  });
 }

@@ -8,9 +8,9 @@ import {
 } from "../../states/notifications";
 import { showSimpleModal } from "../../states/simple-modal";
 import * as CustomText from "../../test/custom-text";
-import { download } from "../../utils/misc";
 import { AnimatedModal } from "../common/AnimatedModal";
 import { Button } from "../common/Button";
+import { download } from "../common/Download";
 import { Separator } from "../common/Separator";
 
 type CustomTextIncomingData =

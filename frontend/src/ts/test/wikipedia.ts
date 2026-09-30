@@ -1,5 +1,4 @@
 import { showLoaderBar, hideLoaderBar } from "../states/loader-bar";
-import * as Misc from "../utils/misc";
 import * as Strings from "../utils/strings";
 import * as JSONData from "../utils/json-data";
 import { z } from "zod";
@@ -78,7 +77,7 @@ export async function getSection(
           sectionText = sectionText.replace(/<\/p><p>+/g, " ");
 
           // Convert HTML to text
-          sectionText = Misc.htmlToText(sectionText);
+          sectionText = htmlToText(sectionText);
 
           // Remove reference links
           sectionText = sectionText.replace(/\[\d+\]/gi, "");
@@ -124,4 +123,10 @@ export async function getSection(
     sectionReq.open("GET", sectionURL);
     sectionReq.send();
   });
+}
+
+function htmlToText(html: string): string {
+  const el = document.createElement("div");
+  el.innerHTML = html;
+  return el.textContent || el.innerText || "";
 }

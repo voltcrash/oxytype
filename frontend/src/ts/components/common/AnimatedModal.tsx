@@ -1,5 +1,5 @@
 import { animate, AnimationParams as AnimeParams } from "animejs";
-import { JSXElement, ParentProps, Show, onCleanup } from "solid-js";
+import { JSXElement, ParentProps, Show, onCleanup, onMount } from "solid-js";
 
 import { createEffectOn } from "../../hooks/effects";
 import { useRef } from "../../hooks/useRef";
@@ -9,6 +9,7 @@ import {
   isModalOpen,
   hideModal as storeHideModal,
 } from "../../states/modals";
+import { registerOverlayVisibility } from "../../states/overlay-visibility";
 import { cn, updateClassNames } from "../../utils/cn";
 import { applyReducedMotion } from "../../utils/misc";
 
@@ -77,6 +78,12 @@ export function AnimatedModal(props: AnimatedModalProps): JSXElement {
   // Refs are assigned by SolidJS via the ref attribute
   const [dialogRef, dialogEl] = useRef<HTMLDialogElement>();
   const [modalRef, modalEl] = useRef<HTMLDivElement>();
+  onMount(() => {
+    const unregister = registerOverlayVisibility(
+      () => (dialogEl()?.getClientRects().length ?? 0) > 0,
+    );
+    onCleanup(unregister);
+  });
 
   const visibility = (): boolean => isModalOpen(props.id);
 

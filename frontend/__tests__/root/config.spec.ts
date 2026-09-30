@@ -42,7 +42,7 @@ describe("Config", () => {
       "showNoticeNotification",
     );
     const miscReloadAfterMock = vi.spyOn(Misc, "reloadAfter");
-    const miscTriggerResizeMock = vi.spyOn(Misc, "triggerResize");
+    const miscTriggerResizeMock = vi.spyOn(window, "dispatchEvent");
     const stateIsTestActiveMock = vi.spyOn(TestState, "isTestActive");
 
     const mocks = [

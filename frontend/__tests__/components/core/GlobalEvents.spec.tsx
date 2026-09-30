@@ -37,7 +37,7 @@ vi.mock("../../../src/ts/input/input-element", () => ({
   isInputElementFocused: () => state.inputFocused,
 }));
 vi.mock("../../../src/ts/test/test-ui", () => ({ focusWords }));
-vi.mock("../../../src/ts/utils/misc", () => ({
+vi.mock("../../../src/ts/states/overlay-visibility", () => ({
   isAnyPopupVisible: () => {
     popupVisible();
     return state.popup;
