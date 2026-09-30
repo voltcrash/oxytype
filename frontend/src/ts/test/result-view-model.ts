@@ -1,12 +1,14 @@
 import { CompletedEvent } from "@monkeytype/schemas/results";
 import * as Numbers from "@monkeytype/util/numbers";
 import { Config } from "../config/store";
+import type { Theme } from "../constants/themes";
 import Format from "../singletons/format";
 import type {
   ResultCrownType,
   ResultSpeedStats,
   ResultStats,
 } from "../states/result";
+import { blendTwoHexColors } from "../utils/colors";
 import * as DateTime from "../utils/date-and-time";
 import * as Strings from "../utils/strings";
 import { isFunboxActiveWithProperty } from "./funbox/list";
@@ -267,4 +269,114 @@ export function buildCrown(
     })}), but your config does not allow it (${canGetPb.reason})`,
     wide: true,
   };
+}
+
+export type BurstHeatmap = {
+  steps: { val: number; colorId: number }[];
+  colors: string[];
+  unreachedColor: string;
+  // legend box texts, one per step
+  legend: string[];
+};
+
+export function buildBurstHeatmap(
+  burstHistory: number[],
+  fromWpm: (wpm: number) => number,
+  themeColors: Theme,
+): BurstHeatmap {
+  let burstlist = [...burstHistory];
+
+  burstlist = burstlist.map((x) => (x >= 1000 ? Infinity : x));
+
+  burstlist.forEach((burst, index) => {
+    burstlist[index] = Math.round(fromWpm(burst));
+  });
+
+  let colors = [
+    themeColors.colorfulError,
+    blendTwoHexColors(themeColors.colorfulError, themeColors.text, 0.5),
+    themeColors.text,
+    blendTwoHexColors(themeColors.main, themeColors.text, 0.5),
+    themeColors.main,
+  ];
+  let unreachedColor = themeColors.sub;
+
+  if (themeColors.main === themeColors.text) {
+    colors = [
+      themeColors.colorfulError,
+      blendTwoHexColors(themeColors.colorfulError, themeColors.text, 0.5),
+      themeColors.sub,
+      blendTwoHexColors(themeColors.sub, themeColors.text, 0.5),
+      themeColors.main,
+    ];
+    unreachedColor = themeColors.subAlt;
+  }
+
+  const burstlistSorted = burstlist.sort((a, b) => a - b);
+  const burstlistLength = burstlist.length;
+
+  const steps = [
+    {
+      val: 0,
+      colorId: 0,
+    },
+    {
+      val: burstlistSorted[(burstlistLength * 0.15) | 0] as number,
+      colorId: 1,
+    },
+    {
+      val: burstlistSorted[(burstlistLength * 0.35) | 0] as number,
+      colorId: 2,
+    },
+    {
+      val: burstlistSorted[(burstlistLength * 0.65) | 0] as number,
+      colorId: 3,
+    },
+    {
+      val: burstlistSorted[(burstlistLength * 0.85) | 0] as number,
+      colorId: 4,
+    },
+  ];
+
+  const legend = steps.map((step, index) => {
+    const nextStep = steps[index + 1];
+    let string = "";
+    if (index === 0 && nextStep) {
+      string = `<${Math.round(nextStep.val)}`;
+    } else if (index === 4) {
+      string = `${Math.round(step.val)}+`;
+    } else if (nextStep) {
+      if (step.val !== nextStep.val) {
+        string = `${Math.round(step.val)}-${Math.round(nextStep.val) - 1}`;
+      } else {
+        string = `${Math.round(step.val)}-${Math.round(step.val)}`;
+      }
+    }
+    return string;
+  });
+
+  return { steps, colors, unreachedColor, legend };
+}
+
+/**
+ * Heatmap color of a words history word. `inherit` = letters take the word
+ * color instead of their own.
+ */
+export function getBurstHeatmapWordColor(
+  heatmap: BurstHeatmap,
+  burst: number | undefined,
+  fromWpm: (wpm: number) => number,
+): { color: string; inherit: boolean } | undefined {
+  if (burst === undefined) {
+    return { color: heatmap.unreachedColor, inherit: false };
+  }
+  // legacy read the value back from the word's burst attribute
+  const wordBurstVal = Math.round(fromWpm(parseInt(String(burst))));
+  let out: { color: string; inherit: boolean } | undefined;
+  heatmap.steps.forEach((step) => {
+    if (wordBurstVal >= step.val) {
+      out = { color: heatmap.colors[step.colorId] as string, inherit: true };
+    }
+  });
+  return out;
 }

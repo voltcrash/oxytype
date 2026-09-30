@@ -19,7 +19,6 @@ import * as Misc from "../utils/misc";
 import * as Numbers from "@monkeytype/util/numbers";
 import * as Arrays from "../utils/arrays";
 import { get as getTypingSpeedUnit } from "../utils/typing-speed-units";
-import * as TestUI from "./test-ui";
 import * as TodayTracker from "./today-tracker";
 import { configEvent } from "../events/config";
 import * as Focus from "./focus";
@@ -49,6 +48,7 @@ import { getTheme } from "../states/theme";
 import {
   getLastEventLog,
   getCurrentQuote,
+  getKoreanStatus,
   getResultVisible,
   isTestInvalid,
   setResultCalculating,
@@ -56,9 +56,15 @@ import {
 } from "../states/test";
 import {
   getAccuracy,
+  getCorrectedWordsHistory,
+  getInputHistory,
   getRawHistory,
   getTimerBoundaryLabels,
+  getWordBurstHistory,
 } from "./events/stats";
+import * as TestWords from "./test-words";
+import * as ResultWordHighlight from "../elements/result-word-highlight";
+import { buildWordsHistory } from "./word-markup";
 import {
   getResultChart,
   getResultChartDataset,
@@ -645,8 +651,11 @@ export async function update(
   resultAnnotation = [];
   result = structuredClone(res);
   hideCrown();
-  qs("#resultWordsHistory .words")?.empty();
-  qs("#result #resultWordsHistory")?.hide();
+  setResultState("wordsHistory", {
+    items: [],
+    visible: false,
+    slideDuration: 0,
+  });
   qs("#result #replayStats")?.setText("");
   qs("#result #resultReplay")?.hide();
   qs("#result #replayWords")?.empty();
@@ -715,7 +724,7 @@ export async function update(
       </div>
 
     `);
-    qs("main #result #resultWordsHistory")?.hide();
+    setResultState("wordsHistory", { visible: false, slideDuration: 0 });
     qs("main #result #resultReplay")?.hide();
     qs("main #result #showWordHistoryButton")?.hide();
     qs("main #result #watchReplayButton")?.hide();
@@ -772,7 +781,7 @@ export async function update(
   );
 
   if (Config.alwaysShowWordsHistory && canQuickRestart && !noStress) {
-    void TestUI.toggleResultWords(true);
+    toggleResultWords(true);
   }
   AdController.updateFooterAndVerticalAds(true);
   void Funbox.clear();
@@ -943,6 +952,54 @@ export function toggleResultChartLegend(
   getResultChart().update();
 }
 
+function loadWordsHistory(): boolean {
+  setResultState("wordsHistory", "items", []);
+
+  const eventLog = getLastEventLog();
+  if (eventLog === null) {
+    return false;
+  }
+
+  setResultState(
+    "wordsHistory",
+    "items",
+    buildWordsHistory({
+      inputHistory: getInputHistory(eventLog),
+      correctedHistory: getCorrectedWordsHistory(eventLog),
+      burstHistory: getWordBurstHistory(eventLog),
+      getTargetWord: (i) => TestWords.words.get(i)?.textWithCommit ?? "",
+      zen: Config.mode === "zen",
+      timed:
+        Config.mode === "time" ||
+        (Config.mode === "custom" && CustomText.getLimitMode() === "time") ||
+        (Config.mode === "custom" && CustomText.getLimitValue() === 0),
+      korean: getKoreanStatus(),
+    }),
+  );
+
+  qs("#showWordHistoryButton")?.addClass("loaded");
+  return true;
+}
+
+export function toggleResultWords(noAnimation = false): void {
+  if (!getResultVisible()) return;
+  ResultWordHighlight.updateToggleWordsHistoryTime();
+
+  const slideDuration = noAnimation ? 0 : 250;
+  if (!resultState.wordsHistory.visible) {
+    if (resultState.wordsHistory.items.length === 0) {
+      loadWordsHistory();
+    }
+    setResultState("wordsHistory", { visible: true, slideDuration });
+  } else {
+    setResultState("wordsHistory", { visible: false, slideDuration });
+  }
+}
+
+qs(".pageTest")?.onChild("click", "#showWordHistoryButton", () => {
+  toggleResultWords();
+});
+
 configEvent.subscribe(async ({ key }) => {
   if (
     ["typingSpeedUnit", "startGraphsAtZero"].includes(key) &&
@@ -963,7 +1020,6 @@ configEvent.subscribe(async ({ key }) => {
     updateResultChartDataVisibility();
     updateMinMaxChartValues();
     applyMinMaxChartValues();
-    void TestUI.applyBurstHeatmap();
 
     ((getResultChart().options as PluginChartOptions<"line" | "scatter">)
       .plugins.annotation.annotations as AnnotationOptions<"line">[]) =

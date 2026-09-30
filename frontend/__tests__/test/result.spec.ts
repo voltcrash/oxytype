@@ -121,9 +121,9 @@ vi.mock("../../src/ts/db", () => ({
     state.localPbWpm === 0 ? undefined : { wpm: state.localPbWpm },
   getSnapshot: () => undefined,
 }));
-vi.mock("../../src/ts/test/test-ui", () => ({
-  toggleResultWords: vi.fn(),
-  applyBurstHeatmap: vi.fn(),
+vi.mock("../../src/ts/test/test-ui", () => ({}));
+vi.mock("../../src/ts/elements/result-word-highlight", () => ({
+  updateToggleWordsHistoryTime: vi.fn(),
 }));
 vi.mock("../../src/ts/test/today-tracker", () => ({
   getString: () => "",
@@ -158,12 +158,17 @@ vi.mock("../../src/ts/states/test", async (importOriginal) => ({
   ...(await importOriginal<object>()),
   getLastEventLog: () => [],
   getCurrentQuote: () => null,
+  getResultVisible: () => true,
+  getKoreanStatus: () => false,
   isTestInvalid: () => state.testInvalid,
 }));
 vi.mock("../../src/ts/test/events/stats", () => ({
   getAccuracy: () => state.accuracy,
   getRawHistory: () => [],
   getTimerBoundaryLabels: () => [],
+  getInputHistory: () => ["hello "],
+  getCorrectedWordsHistory: () => [],
+  getWordBurstHistory: () => [100],
 }));
 vi.mock("../../src/ts/utils/misc", async (importOriginal) => ({
   ...(await importOriginal<object>()),
@@ -176,6 +181,7 @@ import {
   showCrown,
   showErrorCrownIfNeeded,
   toggleResultChartLegend,
+  toggleResultWords,
   update,
   updateTagsAfterEdit,
 } from "../../src/ts/test/result";
@@ -659,6 +665,52 @@ describe("result update", () => {
       config({ startGraphsAtZero: true });
       toggleResultChartLegend("scale");
       expect(Config.startGraphsAtZero).toBe(false);
+    });
+  });
+
+  describe("words history", () => {
+    it("loads words on first show and toggles visibility", async () => {
+      await runUpdate(completedEvent());
+      expect(resultState.wordsHistory).toMatchObject({
+        items: [],
+        visible: false,
+      });
+
+      toggleResultWords(true);
+      expect(resultState.wordsHistory.visible).toBe(true);
+      expect(resultState.wordsHistory.slideDuration).toBe(0);
+      // input + 2 trailing words
+      expect(resultState.wordsHistory.items).toHaveLength(3);
+      expect(resultState.wordsHistory.items[0]).toMatchObject({
+        input: "hello",
+        burst: 100,
+        typed: true,
+      });
+
+      toggleResultWords();
+      expect(resultState.wordsHistory.visible).toBe(false);
+      expect(resultState.wordsHistory.slideDuration).toBe(250);
+    });
+
+    it("is reset by the next result", async () => {
+      await runUpdate(completedEvent());
+      toggleResultWords(true);
+      await runUpdate(completedEvent());
+      expect(resultState.wordsHistory).toMatchObject({
+        items: [],
+        visible: false,
+        slideDuration: 0,
+      });
+    });
+
+    it("is shown instantly with always show words history", async () => {
+      config({ alwaysShowWordsHistory: true });
+      await runUpdate(completedEvent());
+      expect(resultState.wordsHistory).toMatchObject({
+        visible: true,
+        slideDuration: 0,
+      });
+      expect(resultState.wordsHistory.items).toHaveLength(3);
     });
   });
 });

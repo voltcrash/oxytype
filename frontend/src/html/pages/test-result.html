@@ -3,59 +3,7 @@
     <mount data-component="resultstats" class="contents"></mount>
     <mount data-component="resultchart" class="contents"></mount>
     <div class="bottom">
-      <div id="resultWordsHistory" class="hidden">
-        <div class="title">
-          <span>input history</span>
-          <button
-            id="copyWordsListButton"
-            class="textButton"
-            aria-label="Copy words list"
-            data-balloon-pos="up"
-            style="display: inline-block"
-            tabindex="-1"
-          >
-            <i class="fas fa-fw fa-align-left"></i>
-          </button>
-          <button
-            id="copyMissedWordsListButton"
-            class="textButton"
-            aria-label="Copy missed words list"
-            data-balloon-pos="up"
-            tabindex="-1"
-          >
-            <i class="fas fa-fw fa-times"></i>
-          </button>
-          <button
-            id="copySlowWordsListButton"
-            class="textButton"
-            aria-label="Copy slow words list"
-            data-balloon-pos="up"
-            tabindex="-1"
-          >
-            <i class="fas fa-fw fa-tachometer-alt"></i>
-          </button>
-          <button
-            id="toggleBurstHeatmap"
-            class="textButton"
-            aria-label="Toggle burst heatmap"
-            data-balloon-pos="up"
-            style="display: inline-block"
-            tabindex="-1"
-          >
-            <i class="fas fa-fw fa-fire-alt"></i>
-          </button>
-          <div class="heatmapLegend hidden">
-            <div class="boxes">
-              <div class="box box0"></div>
-              <div class="box box1"></div>
-              <div class="box box2"></div>
-              <div class="box box3"></div>
-              <div class="box box4"></div>
-            </div>
-          </div>
-        </div>
-        <div class="words"></div>
-      </div>
+      <mount data-component="resultwordshistory" class="contents"></mount>
       <div id="resultReplay" class="hidden">
         <div class="title">
           watch replay

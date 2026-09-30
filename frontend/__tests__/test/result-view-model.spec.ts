@@ -3,6 +3,8 @@ import type { CompletedEvent } from "@monkeytype/schemas/results";
 import type { Config as ConfigType } from "@monkeytype/schemas/configs";
 import { __testing } from "../../src/ts/config/testing";
 import {
+  buildBurstHeatmap,
+  getBurstHeatmapWordColor,
   buildCrown,
   buildResultStats,
   buildSpeedStats,
@@ -294,5 +296,66 @@ describe("result view model", () => {
         wide: true,
       });
     });
+  });
+});
+
+describe("buildBurstHeatmap", () => {
+  const theme = {
+    bg: "#000000",
+    caret: "#ffffff",
+    main: "#ff0000",
+    sub: "#888888",
+    subAlt: "#222222",
+    text: "#ffffff",
+    error: "#ff0000",
+    errorExtra: "#880000",
+    colorfulError: "#00ff00",
+    colorfulErrorExtra: "#008800",
+  };
+  const identity = (wpm: number): number => wpm;
+  const bursts = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+
+  it("builds legend steps from burst percentiles", () => {
+    const heatmap = buildBurstHeatmap(bursts, identity, theme);
+    expect(heatmap.steps.map((s) => s.val)).toEqual([0, 20, 40, 70, 90]);
+    expect(heatmap.legend).toEqual(["<20", "20-39", "40-69", "70-89", "90+"]);
+    expect(heatmap.colors[0]).toBe(theme.colorfulError);
+    expect(heatmap.colors[2]).toBe(theme.text);
+    expect(heatmap.colors[4]).toBe(theme.main);
+    expect(heatmap.unreachedColor).toBe(theme.sub);
+  });
+
+  it("uses sub colors when main equals text", () => {
+    const heatmap = buildBurstHeatmap(bursts, identity, {
+      ...theme,
+      main: theme.text,
+    });
+    expect(heatmap.colors[2]).toBe(theme.sub);
+    expect(heatmap.unreachedColor).toBe(theme.subAlt);
+  });
+
+  it("does not mutate the burst history", () => {
+    const input = [30, 10, 20];
+    buildBurstHeatmap(input, identity, theme);
+    expect(input).toEqual([30, 10, 20]);
+  });
+
+  it("colors words by their burst step", () => {
+    const heatmap = buildBurstHeatmap(bursts, identity, theme);
+    expect(getBurstHeatmapWordColor(heatmap, 95, identity)).toEqual({
+      color: theme.main,
+      inherit: true,
+    });
+    expect(getBurstHeatmapWordColor(heatmap, 5, identity)).toEqual({
+      color: theme.colorfulError,
+      inherit: true,
+    });
+    expect(getBurstHeatmapWordColor(heatmap, undefined, identity)).toEqual({
+      color: theme.sub,
+      inherit: false,
+    });
+    expect(
+      getBurstHeatmapWordColor(heatmap, Infinity, identity),
+    ).toBeUndefined();
   });
 });

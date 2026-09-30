@@ -2,6 +2,7 @@ import type { CartesianScaleOptions, Chart, ChartDataset } from "chart.js";
 import { createStore } from "solid-js/store";
 import { Language } from "@monkeytype/schemas/languages";
 import { TypingSpeedUnit } from "@monkeytype/schemas/configs";
+import type { WordsHistoryItem } from "../test/word-markup";
 
 export type ResultCrownType =
   | "normal"
@@ -82,6 +83,15 @@ export type ResultState = {
     pbLineVisible: boolean;
     tagPbLineVisible: boolean;
   };
+  wordsHistory: {
+    // empty = not loaded yet, loaded when first shown
+    items: WordsHistoryItem[];
+    visible: boolean;
+    // for the next visibility change, 0 = instant
+    slideDuration: number;
+    rightToLeft: boolean;
+    joiningScript: boolean;
+  };
   timeToday: string;
   dailyLeaderboardRank: number | undefined;
   loginTip: boolean;
@@ -114,6 +124,13 @@ export const [resultState, setResultState] = createStore<ResultState>({
     },
     pbLineVisible: true,
     tagPbLineVisible: true,
+  },
+  wordsHistory: {
+    items: [],
+    visible: false,
+    slideDuration: 0,
+    rightToLeft: false,
+    joiningScript: false,
   },
   timeToday: "",
   dailyLeaderboardRank: undefined,

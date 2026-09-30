@@ -2,7 +2,9 @@ import { describe, it, expect, beforeAll, beforeEach, vi } from "vitest";
 
 // Baseline for the word/letter markup test-ui.ts produces. Asserts the
 // `.word > letter` structure + classes only (themes/funbox css target these),
-// so it should survive the markup being moved/extracted (P3.8, P4.6).
+// so it should survive the markup being moved/extracted (P4.6). Words history
+// markup moved to test/word-markup.ts + ResultWordsHistory.tsx (P3.8), see
+// word-markup.spec.ts and ResultWordsHistory.spec.tsx.
 
 // real dom helpers against a real (happy-dom) fixture instead of the global
 // mock; required elements outside the fixture fall back to detached divs
@@ -31,18 +33,6 @@ vi.mock("../../src/ts/utils/debounced-animation-frame", () => ({
 vi.mock("../../src/ts/controllers/theme-controller", () => ({}));
 vi.mock("../../src/ts/controllers/sound-controller", () => ({}));
 vi.mock("../../src/ts/controllers/ad-controller", () => ({}));
-
-const history = vi.hoisted(() => ({
-  input: [] as string[],
-  corrected: [] as string[],
-  burst: [] as number[],
-}));
-vi.mock("../../src/ts/test/events/stats", async (importOriginal) => ({
-  ...(await importOriginal<object>()),
-  getInputHistory: () => history.input,
-  getCorrectedWordsHistory: () => history.corrected,
-  getWordBurstHistory: () => history.burst,
-}));
 
 const testState = vi.hoisted(() => ({ activeWordIndex: 0 }));
 vi.mock("../../src/ts/states/test", async (importOriginal) => ({
@@ -132,7 +122,6 @@ beforeAll(async () => {
     <div class="pageTest">
       <textarea id="wordsInput"></textarea>
       <div id="wordsWrapper"><div id="words"></div></div>
-      <div id="resultWordsHistory" class="hidden"><div class="words"></div></div>
     </div>`;
   TestUI = await import("../../src/ts/test/test-ui");
 });
@@ -276,91 +265,6 @@ describe("test-ui word markup", () => {
 
     it("renders an invisible placeholder when empty", async () => {
       expect(await type("")).toEqual([["_", "invisible"]]);
-    });
-  });
-
-  describe("words history", () => {
-    const historyWords = (): HTMLElement[] => [
-      ...document.querySelectorAll<HTMLElement>(
-        "#resultWordsHistory .words .word",
-      ),
-    ];
-
-    async function loadHistory(): Promise<HTMLElement[]> {
-      const container = document.querySelector("#resultWordsHistory");
-      container?.classList.add("hidden");
-      (container?.querySelector(".words") as HTMLElement).innerHTML = "";
-      await TestUI.toggleResultWords(true);
-      return historyWords();
-    }
-
-    beforeEach(() => {
-      setWords("hello ", "world ", "foo ", "bar");
-      history.input = [];
-      history.corrected = [];
-      history.burst = [];
-    });
-
-    it("marks correct, incorrect, extra and untyped letters", async () => {
-      history.input = ["hxllo ", "worldzz ", "fo"];
-      history.corrected = ["hxllo ", "worldzz ", "fo"];
-      history.burst = [100, 90, 80];
-
-      const words = await loadHistory();
-
-      expect(letters(words[0] as HTMLElement)).toEqual([
-        ["h", "correct"],
-        ["e", "incorrect"],
-        ["l", "correct"],
-        ["l", "correct"],
-        ["o", "correct"],
-      ]);
-      expect(letters(words[1] as HTMLElement)).toEqual([
-        ["w", "correct"],
-        ["o", "correct"],
-        ["r", "correct"],
-        ["l", "correct"],
-        ["d", "correct"],
-        ["z", "incorrect extra"],
-        ["z", "incorrect extra"],
-      ]);
-      // untyped tail of the last word keeps a bare letter
-      expect(letters(words[2] as HTMLElement)).toEqual([
-        ["f", "correct"],
-        ["o", "correct"],
-        ["o", ""],
-      ]);
-    });
-
-    it("marks letters fixed during typing as corrected", async () => {
-      history.input = ["hello "];
-      history.corrected = ["hxllo "];
-
-      const [word] = await loadHistory();
-
-      expect(letters(word as HTMLElement)[1]).toEqual(["e", "corrected"]);
-    });
-
-    it("sets error/nocursor classes and input/burst attributes on .word", async () => {
-      history.input = ["hxllo ", "world "];
-      history.corrected = ["", ""];
-      history.burst = [100, 90];
-
-      const words = await loadHistory();
-
-      // input + 2 trailing words are rendered
-      expect(words).toHaveLength(4);
-      expect(words[0]?.className).toBe("word nocursor error");
-      expect(words[0]?.getAttribute("input")).toBe("hxllo");
-      expect(words[0]?.getAttribute("burst")).toBe("100");
-      expect(words[1]?.className).toBe("word nocursor");
-      expect(words[2]?.className).toBe("word");
-      expect(words[2]?.getAttribute("input")).toBe("");
-      expect(letters(words[2] as HTMLElement)).toEqual([
-        ["f", ""],
-        ["o", ""],
-        ["o", ""],
-      ]);
     });
   });
 });

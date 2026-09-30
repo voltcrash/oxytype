@@ -531,10 +531,6 @@
   }
 }
 
-#resultWordsHistory {
-  position: relative;
-}
-
 #words.noErrorBorder,
 #resultWordsHistory.noErrorBorder {
   .word.error {
@@ -625,7 +621,6 @@
       display: flex;
     }
 
-    #resultWordsHistory,
     #resultReplay {
       // grid-area: wordsHistory;
       color: var(--sub-color);
@@ -634,39 +629,8 @@
       .textButton {
         padding: 0 0.25em;
       }
-      #copyWordsListButton,
       #playpauseReplayButton {
         margin-left: 0.5em;
-      }
-      .heatmapLegend {
-        margin-left: 0.5rem;
-        display: inline-grid;
-        grid-template-columns: auto auto auto;
-        gap: 1rem;
-        font-size: 0.75rem;
-        color: var(--sub-color);
-        width: min-content;
-        .boxes {
-          // display: flex;
-          display: grid;
-          grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-          .box {
-            // width: 1rem;
-            height: 1rem;
-            color: var(--bg-color);
-            padding: 0.1rem 0.5rem;
-            white-space: nowrap;
-            line-height: 0.75rem;
-            display: grid;
-            place-content: center center;
-          }
-          .box:nth-child(1) {
-            border-radius: var(--roundness) 0 0 var(--roundness);
-          }
-          .box:nth-child(5) {
-            border-radius: 0 var(--roundness) var(--roundness) 0;
-          }
-        }
       }
       .title {
         user-select: none;
@@ -697,9 +661,6 @@
           }
           & letter.incorrect.extra {
             color: var(--error-extra-color);
-          }
-          &.heatmapInherit letter {
-            color: inherit;
           }
         }
         &.rightToLeftTest {

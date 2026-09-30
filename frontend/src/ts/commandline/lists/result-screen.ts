@@ -1,5 +1,5 @@
 import * as TestLogic from "../../test/test-logic";
-import * as TestUI from "../../test/test-ui";
+import { toggleResultWords } from "../../test/result";
 import { showModal } from "../../states/modals";
 import {
   showErrorNotification,
@@ -96,7 +96,7 @@ const commands: Command[] = [
     display: "Toggle word history",
     icon: "fa-align-left",
     exec: (): void => {
-      void TestUI.toggleResultWords();
+      toggleResultWords();
     },
     available: (): boolean => {
       return getResultVisible();

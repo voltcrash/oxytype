@@ -41,6 +41,7 @@ import { Premid } from "./pages/test/Premid";
 import { RestartTestButton } from "./pages/test/RestartTestButton";
 import { ResultChart } from "./pages/test/result/ResultChart";
 import { ResultStats } from "./pages/test/result/ResultStats";
+import { ResultWordsHistory } from "./pages/test/result/ResultWordsHistory";
 import { TestConfig } from "./pages/test/TestConfig";
 import { TestInitFailed } from "./pages/test/TestInitFailed";
 import { TestLoading } from "./pages/test/TestLoading";
@@ -85,6 +86,7 @@ const components: Record<string, () => JSXElement> = {
   testloading: () => <TestLoading />,
   monkeypower: () => <MonkeyPower />,
   resultstats: () => <ResultStats />,
+  resultwordshistory: () => <ResultWordsHistory />,
   resultchart: () => (
     <ResultChart
       onHighlightWords={(first, last) =>
