@@ -2,7 +2,7 @@ import { For, JSXElement, onCleanup, onMount, Show } from "solid-js";
 import { debounce } from "throttle-debounce";
 
 import { createEffectOn } from "../../../hooks/effects";
-import { useRefWithUtils } from "../../../hooks/useRefWithUtils";
+import { useRef } from "../../../hooks/useRef";
 import {
   Banner as BannerType,
   addBanner,
@@ -73,7 +73,7 @@ function Banner(props: BannerType): JSXElement {
 }
 
 export function Banners(): JSXElement {
-  const [ref, element] = useRefWithUtils();
+  const [ref, element] = useRef();
 
   let nameChangeAdded = false;
   createEffectOn(
@@ -104,7 +104,7 @@ export function Banners(): JSXElement {
   );
 
   const setGlobalOffsetSignal = (): void => {
-    const height = element()?.getOffsetHeight() ?? 0;
+    const height = element()?.offsetHeight ?? 0;
     setGlobalOffsetTop(height);
   };
 

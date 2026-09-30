@@ -1,10 +1,10 @@
 import { Accessor, createEffect, onCleanup } from "solid-js";
-import { AnimationParams, JSAnimation } from "animejs";
-import { ElementWithUtils } from "../utils/dom";
+import { animate, AnimationParams, JSAnimation } from "animejs";
+import { updateClassNames } from "../utils/cn";
 import { applyReducedMotion } from "../utils/misc";
 
 export function useVisibilityAnimation(options: {
-  element: Accessor<ElementWithUtils | undefined>;
+  element: Accessor<HTMLElement | undefined>;
   isVisible: Accessor<boolean>;
   showAnimationOptions?: AnimationParams;
   hideAnimationOptions?: AnimationParams;
@@ -20,23 +20,23 @@ export function useVisibilityAnimation(options: {
 
     if (visible) {
       hideAnimation?.pause();
-      showAnimation = el.animate({
+      showAnimation = animate(el, {
         opacity: 1,
         duration: applyReducedMotion(125),
         ...options.showAnimationOptions,
         onBegin: (self) => {
-          el.show();
+          el.className = updateClassNames(el.className, "hidden", false);
           options.showAnimationOptions?.onBegin?.(self);
         },
       });
     } else {
       showAnimation?.pause();
-      hideAnimation = el.animate({
+      hideAnimation = animate(el, {
         opacity: 0,
         duration: applyReducedMotion(125),
         ...options.hideAnimationOptions,
         onComplete: (self) => {
-          el.hide();
+          el.className = updateClassNames(el.className, "hidden", true);
           options.hideAnimationOptions?.onComplete?.(self);
         },
       });

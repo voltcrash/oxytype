@@ -28,7 +28,7 @@ import { createDeferred, JSXElement, onCleanup, onMount } from "solid-js";
 import { Theme } from "../../constants/themes";
 import { configEvent } from "../../events/config";
 import { createEffectOn } from "../../hooks/effects";
-import { useRefWithUtils } from "../../hooks/useRefWithUtils";
+import { useRef } from "../../hooks/useRef";
 import { getTheme } from "../../states/theme";
 import { cn } from "../../utils/cn";
 
@@ -80,7 +80,7 @@ export function ChartJs<T extends ChartType, TData = DefaultDataPoint<T>>(
   props: ChartJSProps<T, TData>,
 ): JSXElement {
   // Refs are assigned by SolidJS via the ref attribute
-  const [canvasRef, canvasEl] = useRefWithUtils<HTMLCanvasElement>();
+  const [canvasRef, canvasEl] = useRef<HTMLCanvasElement>();
 
   let chart: Chart<T, TData> | undefined;
 
@@ -89,7 +89,7 @@ export function ChartJs<T extends ChartType, TData = DefaultDataPoint<T>>(
     if (canvas === undefined) return;
     if (chart !== undefined) return;
 
-    chart = new Chart(canvas.native, {
+    chart = new Chart(canvas, {
       type: props.type,
       data: props.data,
       options: addColorsToOptions(props.options as ChartOptions<T>, getTheme),

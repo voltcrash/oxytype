@@ -1,3 +1,4 @@
+import { animate } from "animejs";
 import { ComponentProps, For, JSXElement, Show } from "solid-js";
 
 import { configMetadata } from "../../../config/metadata";
@@ -5,13 +6,13 @@ import { setConfig, setQuoteLengthAll } from "../../../config/setters";
 import { getConfig } from "../../../config/store";
 import { restartTestEvent } from "../../../events/test";
 import { createEffectOn } from "../../../hooks/effects";
-import { useRefWithUtils } from "../../../hooks/useRefWithUtils";
+import { useRef } from "../../../hooks/useRef";
 import { isAuthenticated } from "../../../states/core";
 import { showModal } from "../../../states/modals";
 import { getResultVisible, getFocus } from "../../../states/test";
 import { FaObject } from "../../../types/font-awesome";
 import { areUnsortedArraysEqual } from "../../../utils/arrays";
-import { cn } from "../../../utils/cn";
+import { cn, updateClassNames } from "../../../utils/cn";
 import { Anime, AnimeShow } from "../../common/anime";
 import { Button } from "../../common/Button";
 
@@ -25,6 +26,22 @@ const buttonClass = "px-(--horizontal-padding) py-(--vertical-padding)";
 const cardClass =
   "card rounded-(--roundness) bg-sub-alt px-(--horizontal-padding)";
 const durationMs = 250;
+
+function setHidden(element: HTMLElement | undefined, hidden: boolean): void {
+  if (element) {
+    element.className = updateClassNames(element.className, "hidden", hidden);
+  }
+}
+
+function outerWidth(element: HTMLElement | undefined): number {
+  if (!element) return 0;
+  const style = getComputedStyle(element);
+  return (
+    element.getBoundingClientRect().width +
+    parseFloat(style.marginLeft) +
+    parseFloat(style.marginRight)
+  );
+}
 
 export function TestConfig(): JSXElement {
   return (
@@ -147,16 +164,19 @@ function Mode(): JSXElement {
 }
 
 function Mode2(): JSXElement {
-  const [wrapperRef, wrapperElement] = useRefWithUtils();
-  const [timeRef, timeElement] = useRefWithUtils();
-  const [wordsRef, wordsElement] = useRefWithUtils();
-  const [quoteRef, quoteElement] = useRefWithUtils();
-  const [customRef, customElement] = useRefWithUtils();
+  const [wrapperRef, wrapperElement] = useRef();
+  const [timeRef, timeElement] = useRef();
+  const [wordsRef, wordsElement] = useRef();
+  const [quoteRef, quoteElement] = useRef();
+  const [customRef, customElement] = useRef();
 
   const sClass =
     "z-2 col-start-1 row-start-1 grid w-max place-self-start grid-flow-col ml-(--card-gap)";
 
-  const getElements = () => {
+  type Mode2Key = "time" | "words" | "quote" | "custom";
+  const getElements = ():
+    | Partial<Record<Mode2Key, HTMLElement>>
+    | undefined => {
     const time = timeElement();
     const words = wordsElement();
     const quote = quoteElement();
@@ -172,44 +192,45 @@ function Mode2(): JSXElement {
       const el = getElements();
       if (!wrapperEl || !el) return;
 
-      type Mode2Key = "time" | "words" | "quote" | "custom";
       const prev = el[previousMode as Mode2Key];
       const next = el[mode as Mode2Key];
 
       if (previousMode === undefined) {
         for (const e of Object.values(el)) {
-          e.hide();
+          setHidden(e, true);
         }
-        next?.show();
+        setHidden(next, false);
         return;
       }
 
-      prev?.show();
-      const previousWidth = prev?.getOuterWidth() ?? 0;
+      setHidden(prev, false);
+      const previousWidth = outerWidth(prev);
 
-      next?.show();
-      const newWidth = next?.getOuterWidth() ?? 0;
+      setHidden(next, false);
+      const newWidth = outerWidth(next);
 
-      void wrapperEl.promiseAnimate({
+      animate(wrapperEl, {
         width: [`${previousWidth}px`, `${newWidth}px`],
         duration: durationMs,
         onComplete: () => {
-          wrapperEl.setStyle({
-            width: "",
-          });
+          wrapperEl.style.width = "";
         },
       });
 
-      prev?.show()?.animate({
-        opacity: [1, 0],
-        duration: durationMs,
-        onComplete: () => prev?.hide(),
-      });
+      if (prev) {
+        animate(prev, {
+          opacity: [1, 0],
+          duration: durationMs,
+          onComplete: () => setHidden(prev, true),
+        });
+      }
 
-      next?.show()?.animate({
-        opacity: [0, 1],
-        duration: durationMs,
-      });
+      if (next) {
+        animate(next, {
+          opacity: [0, 1],
+          duration: durationMs,
+        });
+      }
     },
   );
 

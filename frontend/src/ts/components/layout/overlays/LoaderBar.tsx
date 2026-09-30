@@ -1,12 +1,12 @@
 import { JSX } from "solid-js";
 
-import { useRefWithUtils } from "../../../hooks/useRefWithUtils";
+import { useRef } from "../../../hooks/useRef";
 import { useVisibilityAnimation } from "../../../hooks/useVisibilityAnimation";
 import { getLoaderBarSignal } from "../../../states/loader-bar";
 import { applyReducedMotion } from "../../../utils/misc";
 
 export function LoaderBar(): JSX.Element {
-  const [ref, loaderEl] = useRefWithUtils<HTMLDivElement>();
+  const [ref, loaderEl] = useRef<HTMLDivElement>();
 
   useVisibilityAnimation({
     element: loaderEl,

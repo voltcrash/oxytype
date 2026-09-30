@@ -2,8 +2,8 @@ import { For, JSXElement } from "solid-js";
 
 import type { ReplayLetter } from "../../../../states/result";
 
-import { createEffectOn } from "../../../../hooks/effects";
-import { useRefWithUtils } from "../../../../hooks/useRefWithUtils";
+import { useRef } from "../../../../hooks/useRef";
+import { useSlideAnimation } from "../../../../hooks/useSlideAnimation";
 import { getIsScreenshotting } from "../../../../states/core";
 import { resultState } from "../../../../states/result";
 import { jumpToLetter, togglePlayback } from "../../../../test/replay";
@@ -27,26 +27,15 @@ function letterClass(letter: ReplayLetter): string {
 }
 
 export function ResultReplay(): JSXElement {
-  const [ref, element] = useRefWithUtils<HTMLDivElement>();
+  const [ref, element] = useRef<HTMLDivElement>();
 
   const replay = () => resultState.replay;
 
-  createEffectOn(
-    () => replay().visible,
-    (visible) => {
-      const el = element();
-      if (el === undefined) return;
-      const duration = replay().slideDuration;
-      if (visible) {
-        void el.slideDown(duration);
-      } else if (duration === 0) {
-        el.hide();
-      } else {
-        void el.slideUp(duration);
-      }
-    },
-    { defer: true },
-  );
+  useSlideAnimation({
+    element,
+    visible: () => replay().visible,
+    duration: () => replay().slideDuration,
+  });
 
   return (
     // left out of screenshots; own wrapper since slideDown/Up manage #resultReplay classes

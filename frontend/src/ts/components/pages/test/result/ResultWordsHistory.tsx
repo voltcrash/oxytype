@@ -15,9 +15,9 @@ import type {
 
 import { setConfig } from "../../../../config/setters";
 import { getConfig } from "../../../../config/store";
-import { createEffectOn } from "../../../../hooks/effects";
-import { useRefWithUtils } from "../../../../hooks/useRefWithUtils";
+import { useRef } from "../../../../hooks/useRef";
 import { useResultWordHighlight } from "../../../../hooks/useResultWordHighlight";
+import { useSlideAnimation } from "../../../../hooks/useSlideAnimation";
 import Format from "../../../../singletons/format";
 import { getIsScreenshotting } from "../../../../states/core";
 import {
@@ -226,29 +226,18 @@ function formatHoverSpeed(burst: number): string {
 }
 
 export function ResultWordsHistory(): JSXElement {
-  const [ref, element] = useRefWithUtils<HTMLDivElement>();
+  const [ref, element] = useRef<HTMLDivElement>();
   const [hoveredWord, setHoveredWord] = createSignal<number>();
   const isHovered = createSelector(hoveredWord);
-  const wordHighlight = useResultWordHighlight(() => element()?.native);
+  const wordHighlight = useResultWordHighlight(element);
 
   const history = () => resultState.wordsHistory;
 
-  createEffectOn(
-    () => history().visible,
-    (visible) => {
-      const el = element();
-      if (el === undefined) return;
-      const duration = history().slideDuration;
-      if (visible) {
-        void el.slideDown(duration);
-      } else if (duration === 0) {
-        el.hide();
-      } else {
-        void el.slideUp(duration);
-      }
-    },
-    { defer: true },
-  );
+  useSlideAnimation({
+    element,
+    visible: () => history().visible,
+    duration: () => history().slideDuration,
+  });
 
   const heatmap = createMemo(() => {
     if (!getConfig.burstHeatmap) return undefined;
