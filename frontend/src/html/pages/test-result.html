@@ -4,25 +4,7 @@
     <mount data-component="resultchart" class="contents"></mount>
     <div class="bottom">
       <mount data-component="resultwordshistory" class="contents"></mount>
-      <div id="resultReplay" class="hidden">
-        <div class="title">
-          watch replay
-          <button
-            id="playpauseReplayButton"
-            class="textButton"
-            aria-label="Start replay"
-            data-balloon-pos="up"
-            style="display: inline-block"
-            tabindex="-1"
-          >
-            <i class="fas fa-play"></i>
-          </button>
-          <p id="replayStats">0s</p>
-        </div>
-        <div id="replayWordsWrapper">
-          <div id="replayWords" class="words"></div>
-        </div>
-      </div>
+      <mount data-component="resultreplay" class="contents"></mount>
       <button id="retrySavingResultButton" class="danger hidden">
         <i class="fas fa-redo"></i>
         Retry saving result

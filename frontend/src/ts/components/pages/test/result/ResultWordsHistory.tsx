@@ -319,8 +319,8 @@ export function ResultWordsHistory(): JSXElement {
       <div
         class={cn(
           "words flex w-full flex-wrap content-start",
-          history().rightToLeft && "rightToLeftTest [direction:rtl]",
-          history().joiningScript && "joiningScript",
+          resultState.rightToLeft && "rightToLeftTest [direction:rtl]",
+          resultState.joiningScript && "joiningScript",
         )}
       >
         <For each={history().items}>
@@ -331,7 +331,8 @@ export function ResultWordsHistory(): JSXElement {
                 item.typed && "nocursor",
                 item.error && "error",
                 wordHeat(item)?.inherit && "heatmapInherit",
-                history().joiningScript && "pb-[2px] [overflow-wrap:anywhere]",
+                resultState.joiningScript &&
+                  "pb-[2px] [overflow-wrap:anywhere]",
               )}
               style={{ color: wordHeat(item)?.color }}
               // oxlint-disable-next-line react/no-unknown-property
@@ -353,7 +354,7 @@ export function ResultWordsHistory(): JSXElement {
                     class={cn(
                       letterClass(letter),
                       wordHeat(item)?.inherit && "text-inherit",
-                      history().joiningScript && "inline",
+                      resultState.joiningScript && "inline",
                     )}
                   >
                     {letter.char}

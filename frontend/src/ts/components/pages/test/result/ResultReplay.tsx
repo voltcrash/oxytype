@@ -1,0 +1,105 @@
+import { For, JSXElement } from "solid-js";
+
+import type { ReplayLetter } from "../../../../states/result";
+
+import { createEffectOn } from "../../../../hooks/effects";
+import { useRefWithUtils } from "../../../../hooks/useRefWithUtils";
+import { resultState } from "../../../../states/result";
+import { jumpToLetter, togglePlayback } from "../../../../test/replay";
+import { cn } from "../../../../utils/cn";
+import { Fa } from "../../../common/Fa";
+
+const playbackLabels = {
+  start: "Start replay",
+  playing: "Pause replay",
+  paused: "Resume replay",
+} as const;
+
+function letterClass(letter: ReplayLetter): string {
+  return cn(
+    letter.correct && "correct text-text",
+    letter.incorrect && "incorrect text-error",
+    letter.extra && "extra",
+    letter.incorrect && letter.extra && "text-error-extra",
+    resultState.joiningScript && "inline",
+  );
+}
+
+export function ResultReplay(): JSXElement {
+  const [ref, element] = useRefWithUtils<HTMLDivElement>();
+
+  const replay = () => resultState.replay;
+
+  createEffectOn(
+    () => replay().visible,
+    (visible) => {
+      const el = element();
+      if (el === undefined) return;
+      const duration = replay().slideDuration;
+      if (visible) {
+        void el.slideDown(duration);
+      } else if (duration === 0) {
+        el.hide();
+      } else {
+        void el.slideUp(duration);
+      }
+    },
+    { defer: true },
+  );
+
+  return (
+    <div id="resultReplay" class="mb-4 hidden text-sub" ref={ref}>
+      <div class="title mb-1 flex items-center select-none">
+        watch replay
+        <button
+          type="button"
+          id="playpauseReplayButton"
+          class="textButton ml-[0.5em] inline-block px-[0.25em] py-0"
+          aria-label={playbackLabels[replay().playback]}
+          data-balloon-pos="up"
+          tabIndex={-1}
+          onClick={() => togglePlayback()}
+        >
+          <Fa icon={replay().playback === "playing" ? "fa-pause" : "fa-play"} />
+        </button>
+        <p id="replayStats" class="m-0 ml-[0.5em] inline-block text-main">
+          {replay().stats}
+        </p>
+      </div>
+      <div id="replayWordsWrapper">
+        <div
+          id="replayWords"
+          class={cn(
+            "words flex w-full cursor-pointer flex-wrap content-start select-none",
+            resultState.rightToLeft && "rightToLeftTest [direction:rtl]",
+            resultState.joiningScript && "joiningScript",
+          )}
+        >
+          <For each={replay().words}>
+            {(word, wordIndex) => (
+              <div
+                class={cn(
+                  "word relative m-[0.18rem_0.6rem_0.15rem_0]",
+                  word.error && "error",
+                  resultState.joiningScript &&
+                    "pb-[2px] [overflow-wrap:anywhere]",
+                )}
+              >
+                <For each={word.letters}>
+                  {(letter, letterIndex) => (
+                    <letter
+                      class={letterClass(letter)}
+                      onClick={() => jumpToLetter(wordIndex(), letterIndex())}
+                    >
+                      {letter.char}
+                    </letter>
+                  )}
+                </For>
+              </div>
+            )}
+          </For>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -447,12 +447,10 @@ function updateWordWrapperClasses(): void {
 
   if (isLanguageRightToLeft()) {
     wordsEl.addClass("rightToLeftTest");
-    qs("#resultReplay .words")?.addClass("rightToLeftTest");
   } else {
     wordsEl.removeClass("rightToLeftTest");
-    qs("#resultReplay .words")?.removeClass("rightToLeftTest");
   }
-  setResultState("wordsHistory", "rightToLeft", isLanguageRightToLeft());
+  setResultState("rightToLeft", isLanguageRightToLeft());
 
   const existing =
     wordsEl.native.className
@@ -1224,12 +1222,10 @@ export function setJoiningClass(isEnabled: boolean): void {
     isEnabled || Config.mode === "custom" || Config.mode === "zen";
   if (joiningScript) {
     wordsEl.addClass("joiningScript");
-    qs("#resultReplay .words")?.addClass("joiningScript");
   } else {
     wordsEl.removeClass("joiningScript");
-    qs("#resultReplay .words")?.removeClass("joiningScript");
   }
-  setResultState("wordsHistory", "joiningScript", joiningScript);
+  setResultState("joiningScript", joiningScript);
 }
 
 export function highlightBadWord(index: number): void {

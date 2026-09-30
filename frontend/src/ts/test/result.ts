@@ -655,9 +655,12 @@ export async function update(
     visible: false,
     slideDuration: 0,
   });
-  qs("#result #replayStats")?.setText("");
-  qs("#result #resultReplay")?.hide();
-  qs("#result #replayWords")?.empty();
+  setResultState("replay", {
+    visible: false,
+    slideDuration: 0,
+    stats: "",
+    words: [],
+  });
   updateRetrySaving(false);
   setResultState("quote", { rateVisible: false, rated: false, rating: "" });
   qs("#words")?.removeClass("blurred");
@@ -724,7 +727,7 @@ export async function update(
 
     `);
     setResultState("wordsHistory", { visible: false, slideDuration: 0 });
-    qs("main #result #resultReplay")?.hide();
+    setResultState("replay", { visible: false, slideDuration: 0 });
     qs("main #result #showWordHistoryButton")?.hide();
     qs("main #result #watchReplayButton")?.hide();
     qs("main #result #saveScreenshotButton")?.hide();

@@ -52,6 +52,21 @@ export type ResultChartLegendId =
   | "pbLine"
   | "tagPbLine";
 
+// start = not started or finished
+export type ReplayPlayback = "start" | "playing" | "paused";
+
+export type ReplayLetter = {
+  char: string;
+  correct: boolean;
+  incorrect: boolean;
+  extra: boolean;
+};
+
+export type ReplayWord = {
+  letters: ReplayLetter[];
+  error: boolean;
+};
+
 export type ResultState = {
   stats: ResultStats | undefined;
   crown: {
@@ -90,9 +105,18 @@ export type ResultState = {
     visible: boolean;
     // for the next visibility change, 0 = instant
     slideDuration: number;
-    rightToLeft: boolean;
-    joiningScript: boolean;
   };
+  replay: {
+    visible: boolean;
+    // for the next visibility change, 0 = instant
+    slideDuration: number;
+    playback: ReplayPlayback;
+    stats: string;
+    words: ReplayWord[];
+  };
+  // test language direction/script, for words history and replay
+  rightToLeft: boolean;
+  joiningScript: boolean;
   timeToday: string;
   dailyLeaderboardRank: number | undefined;
   loginTip: boolean;
@@ -130,9 +154,16 @@ export const [resultState, setResultState] = createStore<ResultState>({
     items: [],
     visible: false,
     slideDuration: 0,
-    rightToLeft: false,
-    joiningScript: false,
   },
+  replay: {
+    visible: false,
+    slideDuration: 0,
+    playback: "start",
+    stats: "0s",
+    words: [],
+  },
+  rightToLeft: false,
+  joiningScript: false,
   timeToday: "",
   dailyLeaderboardRank: undefined,
   loginTip: false,

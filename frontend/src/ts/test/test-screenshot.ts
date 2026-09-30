@@ -1,5 +1,5 @@
 import { showLoaderBar, hideLoaderBar } from "../states/loader-bar";
-import * as Replay from "./replay-ui";
+import * as Replay from "./replay";
 import {
   getActivePage,
   isAuthenticated,

@@ -575,77 +575,6 @@
       display: flex;
     }
 
-    #resultReplay {
-      // grid-area: wordsHistory;
-      color: var(--sub-color);
-      // grid-column: 1/3;
-      margin-bottom: 1rem;
-      .textButton {
-        padding: 0 0.25em;
-      }
-      #playpauseReplayButton {
-        margin-left: 0.5em;
-      }
-      .title {
-        user-select: none;
-        margin-bottom: 0.25rem;
-        display: flex;
-        align-items: center;
-      }
-      .words {
-        display: flex;
-        flex-wrap: wrap;
-        width: 100%;
-        align-content: flex-start;
-        .word {
-          position: relative;
-          margin: 0.18rem 0.6rem 0.15rem 0;
-          & letter.corrected {
-            color: var(--text-color);
-            border-bottom: 2px dotted var(--main-color);
-          }
-          & letter.extraCorrected {
-            border-right: 2px dotted var(--main-color);
-          }
-          & letter.correct {
-            color: var(--text-color);
-          }
-          & letter.incorrect {
-            color: var(--error-color);
-          }
-          & letter.incorrect.extra {
-            color: var(--error-extra-color);
-          }
-        }
-        &.rightToLeftTest {
-          //flex-direction: row-reverse; // no need for hacking 😉, CSS fully support right-to-left languages
-          direction: rtl;
-
-          .wordRtl {
-            unicode-bidi: bidi-override;
-          }
-        }
-        &.joiningScript {
-          .word {
-            overflow-wrap: anywhere;
-            padding-bottom: 2px; // compensate for letter border
-
-            .hints {
-              overflow-wrap: initial;
-            }
-
-            letter {
-              display: inline;
-            }
-          }
-        }
-      }
-    }
-
-    #resultReplay .words {
-      user-select: none;
-    }
-
     .loginTip {
       grid-column: 1/3;
       text-align: center;
@@ -666,17 +595,6 @@
 
 #showWordHistoryButton {
   opacity: 1;
-}
-
-#replayWords {
-  cursor: pointer;
-}
-
-#replayStats {
-  color: var(--main-color);
-  display: inline-block;
-  margin: 0;
-  margin-left: 0.5em;
 }
 
 .pageTest {

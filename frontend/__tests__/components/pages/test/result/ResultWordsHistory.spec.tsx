@@ -84,9 +84,8 @@ describe("ResultWordsHistory", () => {
       items: [],
       visible: false,
       slideDuration: 0,
-      rightToLeft: false,
-      joiningScript: false,
     });
+    setResultState({ rightToLeft: false, joiningScript: false });
   });
 
   it("renders words with legacy classes and attributes", () => {
@@ -143,7 +142,7 @@ describe("ResultWordsHistory", () => {
     const wordsEl = container.querySelector(".words") as HTMLElement;
     expect(wordsEl).not.toHaveClass("rightToLeftTest");
 
-    setResultState("wordsHistory", { rightToLeft: true, joiningScript: true });
+    setResultState({ rightToLeft: true, joiningScript: true });
     expect(wordsEl).toHaveClass("rightToLeftTest", "joiningScript");
   });
 
