@@ -37,3 +37,6 @@ export const sharedLint = loadConfig(new URL("./index.jsonc", import.meta.url));
 export const pluginLint = loadConfig(
   new URL("./plugin.jsonc", import.meta.url),
 );
+export const applicationDefaults = loadConfig(
+  new URL("./application-defaults.jsonc", import.meta.url),
+);

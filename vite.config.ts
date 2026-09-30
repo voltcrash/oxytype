@@ -1,5 +1,35 @@
-import { sharedLint } from "./packages/oxlint-config/config";
+import {
+  sharedLint,
+  pluginLint,
+  applicationDefaults,
+} from "./packages/oxlint-config/config";
+import { frontendLint } from "./frontend/lint.config";
+import { backendLint } from "./backend/lint.config";
 import { defineConfig } from "vite-plus";
+import type { OxlintConfig, OxlintOverride } from "vite-plus/lint";
+
+function applicationOverrides(
+  directory: string,
+  config: OxlintConfig,
+): OxlintOverride[] {
+  return [
+    {
+      files: [`${directory}/**`],
+      jsPlugins: [...(pluginLint.jsPlugins ?? []), ...(config.jsPlugins ?? [])],
+      rules: {
+        ...applicationDefaults.rules,
+        ...pluginLint.rules,
+        ...config.rules,
+      },
+    },
+    ...[...(pluginLint.overrides ?? []), ...(config.overrides ?? [])].map(
+      (override) => ({
+        ...override,
+        files: override.files.map((pattern) => `${directory}/${pattern}`),
+      }),
+    ),
+  ];
+}
 
 export default defineConfig({
   test: {
@@ -51,8 +81,19 @@ export default defineConfig({
     ],
   },
   lint: {
-    ignorePatterns: ["node_modules", "dist", ".turbo"],
+    ignorePatterns: [
+      "node_modules",
+      "dist",
+      ".turbo",
+      "coverage",
+      "frontend/.firebase",
+      "backend/__migration__",
+    ],
     extends: [sharedLint],
+    overrides: [
+      ...applicationOverrides("frontend", frontendLint),
+      ...applicationOverrides("backend", backendLint),
+    ],
     options: {
       typeAware: true,
       typeCheck: true,
