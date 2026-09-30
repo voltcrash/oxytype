@@ -66,10 +66,8 @@ describe("Result", () => {
     const result = container.querySelector("#result");
     expect(result).toHaveClass("hidden");
     expect(result).toHaveAttribute("tabindex", "-1");
-    expect(getResultElement()?.native).toBe(result);
-    expect(getResultWrapperElement()?.native).toBe(
-      result?.querySelector(".wrapper"),
-    );
+    expect(getResultElement()).toBe(result);
+    expect(getResultWrapperElement()).toBe(result?.querySelector(".wrapper"));
     expect(
       [...container.querySelectorAll("[data-stub]")].map((e) =>
         e.getAttribute("data-stub"),

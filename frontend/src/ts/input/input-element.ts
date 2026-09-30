@@ -1,7 +1,7 @@
 import { getWordsInputElement } from "../states/test-dom";
 
 export function getInputElement(): HTMLTextAreaElement {
-  return getWordsInputElement().native;
+  return getWordsInputElement();
 }
 
 export function setInputElementValue(value: string): void {

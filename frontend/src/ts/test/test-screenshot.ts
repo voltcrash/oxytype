@@ -1,3 +1,4 @@
+import { updateClassNames } from "../utils/cn";
 import { showLoaderBar, hideLoaderBar } from "../states/loader-bar";
 import * as Replay from "./replay";
 import { setIsScreenshotting } from "../states/core";
@@ -25,7 +26,10 @@ function revert(): void {
   hideLoaderBar();
   qs("noscript")?.show();
   qs("#nocss")?.show();
-  getResultElement()?.removeClass("noBalloons");
+  const result = getResultElement();
+  if (result) {
+    result.className = updateClassNames(result.className, "noBalloons", false);
+  }
   document.documentElement.style.scrollBehavior = "smooth";
   for (const fb of getActiveFunboxesWithFunction("applyGlobalCSS")) {
     fb.functions.applyGlobalCSS();
@@ -63,7 +67,10 @@ async function generateCanvas(): Promise<HTMLCanvasElement | null> {
   setIsScreenshotting(true);
   qs("noscript")?.hide();
   qs("#nocss")?.hide();
-  getResultElement()?.addClass("noBalloons");
+  const result = getResultElement();
+  if (result) {
+    result.className = updateClassNames(result.className, "noBalloons", true);
+  }
 
   for (const fb of getActiveFunboxesWithFunction("clearGlobal")) {
     fb.functions.clearGlobal();
@@ -83,11 +90,17 @@ async function generateCanvas(): Promise<HTMLCanvasElement | null> {
   // Wait a frame to ensure all UI changes are rendered
   await new Promise((resolve) => requestAnimationFrame(resolve));
 
-  const sourceX = src.screenBounds().left ?? 0;
-  const sourceY = src.screenBounds().top ?? 0;
+  const sourceX = src.getBoundingClientRect().left ?? 0;
+  const sourceY = src.getBoundingClientRect().top ?? 0;
 
-  const sourceWidth = src.getOuterWidth();
-  const sourceHeight = src.getOuterHeight();
+  const style = getComputedStyle(src);
+  const bounds = src.getBoundingClientRect();
+  const sourceWidth =
+    bounds.width + parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+  const sourceHeight =
+    bounds.height +
+    parseFloat(style.marginTop) +
+    parseFloat(style.marginBottom);
   const paddingX = convertRemToPixels(2);
   const paddingY = convertRemToPixels(2);
 

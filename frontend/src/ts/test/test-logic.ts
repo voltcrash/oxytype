@@ -1,3 +1,5 @@
+import { animateAsync } from "../anim";
+import { updateClassNames } from "../utils/cn";
 import Ape from "../ape";
 import * as TestUI from "./test-ui";
 import * as Strings from "../utils/strings";
@@ -362,7 +364,12 @@ async function init(): Promise<boolean> {
         ? `${lastInitError.name}: ${lastInitError.message}`
         : undefined,
     });
-    getTypingTestElement()?.hide();
+    const typingTest = getTypingTestElement();
+    typingTest.className = updateClassNames(
+      typingTest.className,
+      "hidden",
+      true,
+    );
     setIsTestRestarting(false);
     return false;
   }
@@ -818,11 +825,12 @@ export async function finish(difficultyFailed = false): Promise<void> {
   // fade out the test and show loading
   // because the css animation has a delay,
   // if the test calculation is fast the loading will not show
-  await getTypingTestElement().promiseAnimate({
+  await animateAsync(getTypingTestElement(), {
     opacity: 0,
     duration: Misc.applyReducedMotion(125),
   });
-  getTypingTestElement()?.hide();
+  const typingTest = getTypingTestElement();
+  typingTest.className = updateClassNames(typingTest.className, "hidden", true);
   setResultLoading(true);
   await Misc.sleep(0); //allow ui update
 

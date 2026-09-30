@@ -1,4 +1,5 @@
-//TODO: use Format
+import { animateAsync } from "../anim";
+import { updateClassNames } from "../utils/cn";
 import { Chart, type PluginChartOptions } from "chart.js";
 
 import { Config } from "../config/store";
@@ -43,7 +44,7 @@ import { LocalStorageWithSchema } from "../utils/local-storage-with-schema";
 import { z } from "zod";
 import { blurInputElement } from "../input/input-element";
 import * as ConnectionState from "../states/connection";
-import { qs } from "../utils/dom";
+import { getWordsElement } from "../states/test-dom";
 import { getTheme } from "../states/theme";
 import {
   getLastEventLog,
@@ -663,7 +664,7 @@ export async function update(
   });
   updateRetrySaving(false);
   setResultState("quote", { rateVisible: false, rated: false, rating: "" });
-  qs("#words")?.removeClass("blurred");
+  setClass(getWordsElement(), "blurred", false);
   blurInputElement();
 
   if (!ConnectionState.get()) {
@@ -761,21 +762,21 @@ export async function update(
 
   setResultLoading(false);
   const resultEl = getResultElement();
-  resultEl?.show();
+  setClass(resultEl, "hidden", false);
 
   resultEl?.focus({
     preventScroll: true,
   });
 
-  await resultEl?.promiseAnimate({
+  await animateAsync(resultEl, {
     opacity: [0, 1],
     duration: Misc.applyReducedMotion(125),
   });
 
-  Misc.scrollToCenterOrTop(resultEl?.native ?? null);
+  Misc.scrollToCenterOrTop(resultEl ?? null);
   void AdController.renderResult();
   setResultCalculating(false);
-  qs("#words")?.empty();
+  getWordsElement().innerHTML = "";
   getResultChart().resize();
 }
 
@@ -995,3 +996,17 @@ configEvent.subscribe(async ({ key }) => {
     getResultChart().resize();
   }
 });
+
+function setClass(
+  element: HTMLElement | undefined | null,
+  names: string | string[],
+  enabled: boolean,
+): void {
+  if (element) {
+    element.className = updateClassNames(
+      element.className,
+      Array.isArray(names) ? names.join(" ") : names,
+      enabled,
+    );
+  }
+}

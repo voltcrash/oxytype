@@ -1,5 +1,3 @@
-import { ElementWithUtils } from "../utils/dom";
-
 type TestElements = {
   words: HTMLDivElement;
   wordsWrapper: HTMLDivElement;
@@ -9,42 +7,29 @@ type TestElements = {
   typingTest: HTMLDivElement;
 };
 
-type WrappedElements = {
-  [K in keyof TestElements]: ElementWithUtils<TestElements[K]>;
-};
+let elements: TestElements | undefined;
 
-let elements: WrappedElements | undefined;
-
-// TestPage owns the nodes; legacy consumers retain their DOM utility API.
+// TestPage owns these native nodes for its lifetime.
 export function setTestElements(refs: TestElements): void {
-  elements = {
-    words: new ElementWithUtils(refs.words),
-    wordsWrapper: new ElementWithUtils(refs.wordsWrapper),
-    wordsInput: new ElementWithUtils(refs.wordsInput),
-    caret: new ElementWithUtils(refs.caret),
-    paceCaret: new ElementWithUtils(refs.paceCaret),
-    typingTest: new ElementWithUtils(refs.typingTest),
-  };
+  elements = refs;
 }
 
 export function areTestElementsMounted(): boolean {
   return elements !== undefined;
 }
 
-function getElement<K extends keyof TestElements>(key: K): WrappedElements[K] {
+function getElement<K extends keyof TestElements>(key: K): TestElements[K] {
   if (elements === undefined) throw new Error("Test page is not mounted");
   return elements[key];
 }
 
-export const getWordsElement = (): ElementWithUtils<HTMLDivElement> =>
-  getElement("words");
-export const getWordsWrapperElement = (): ElementWithUtils<HTMLDivElement> =>
+export const getWordsElement = (): HTMLDivElement => getElement("words");
+export const getWordsWrapperElement = (): HTMLDivElement =>
   getElement("wordsWrapper");
-export const getWordsInputElement = (): ElementWithUtils<HTMLTextAreaElement> =>
+export const getWordsInputElement = (): HTMLTextAreaElement =>
   getElement("wordsInput");
-export const getCaretElement = (): ElementWithUtils<HTMLDivElement> =>
-  getElement("caret");
-export const getPaceCaretElement = (): ElementWithUtils<HTMLDivElement> =>
+export const getCaretElement = (): HTMLDivElement => getElement("caret");
+export const getPaceCaretElement = (): HTMLDivElement =>
   getElement("paceCaret");
-export const getTypingTestElement = (): ElementWithUtils<HTMLDivElement> =>
+export const getTypingTestElement = (): HTMLDivElement =>
   getElement("typingTest");

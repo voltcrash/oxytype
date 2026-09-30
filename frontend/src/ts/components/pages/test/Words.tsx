@@ -1,6 +1,8 @@
 import * as Numbers from "@monkeytype/util/numbers";
+import { animate } from "animejs";
 import { JSXElement, onCleanup, onMount } from "solid-js";
 
+import { animateAsync } from "../../../anim";
 import { Config } from "../../../config/store";
 import * as AdController from "../../../controllers/ad-controller";
 import * as SoundController from "../../../controllers/sound-controller";
@@ -62,12 +64,11 @@ import {
   buildInitialWordMarkup,
   buildLiveWordMarkup,
 } from "../../../test/word-markup";
-import { cn } from "../../../utils/cn";
+import { cn, updateClassNames } from "../../../utils/cn";
 import {
   cancelPendingAnimationFramesStartingWith,
   requestDebouncedAnimationFrame,
 } from "../../../utils/debounced-animation-frame";
-import { ElementsWithUtils, ElementWithUtils } from "../../../utils/dom";
 import * as Misc from "../../../utils/misc";
 import { convertRemToPixels } from "../../../utils/numbers";
 import * as Strings from "../../../utils/strings";
@@ -93,7 +94,7 @@ export function focusWords(force = false): void {
   if (isTestActive()) {
     keepWordsInputInTheCenter(true);
   } else {
-    const typingTest = getTypingTestElement().native;
+    const typingTest = getTypingTestElement();
     Misc.scrollToCenterOrTop(typingTest);
   }
 }
@@ -102,12 +103,14 @@ export function keepWordsInputInTheCenter(force = false): void {
   centerWordsInputEvent.dispatch(force);
 }
 
-export function getWordElement(index: number): ElementWithUtils | null {
-  const el = getWordsEl().qs(`.word[data-wordindex='${index}']`);
+export function getWordElement(index: number): HTMLElement | null {
+  const el = getWordsEl().querySelector<HTMLElement>(
+    `.word[data-wordindex='${index}']`,
+  );
   return el;
 }
 
-export function getActiveWordElement(): ElementWithUtils | null {
+export function getActiveWordElement(): HTMLElement | null {
   return getWordElement(getActiveWordIndex());
 }
 
@@ -121,17 +124,18 @@ export function updateActiveElement(
 
     let previousActiveWordTop: number | null = null;
     if (initial === undefined) {
-      const previousActiveWord = getWordsEl().qs(".active");
+      const previousActiveWord =
+        getWordsEl().querySelector<HTMLElement>(".active");
       // in zen mode, because of the animation frame, previousActiveWord will be removed at this point, so check for null
       if (previousActiveWord !== null) {
         if (direction === "forward") {
-          previousActiveWord.addClass("typed");
+          setClass(previousActiveWord, "typed", true);
           setWordJoining(previousActiveWord, true);
         } else if (direction === "back") {
           //
         }
-        previousActiveWord.removeClass("active");
-        previousActiveWordTop = previousActiveWord.getOffsetTop();
+        setClass(previousActiveWord, "active", false);
+        previousActiveWordTop = previousActiveWord.offsetTop;
       }
     }
 
@@ -140,13 +144,13 @@ export function updateActiveElement(
       throw new Error("activeWord is null - can't update active element");
     }
 
-    newActiveWord.addClass("active");
-    newActiveWord.removeClass("error");
-    newActiveWord.removeClass("typed");
+    setClass(newActiveWord, "active", true);
+    setClass(newActiveWord, "error", false);
+    setClass(newActiveWord, "typed", false);
     setWordJoining(newActiveWord, false);
 
-    activeWordTop = newActiveWord.getOffsetTop();
-    activeWordHeight = newActiveWord.getOffsetHeight();
+    activeWordTop = newActiveWord.offsetTop;
+    activeWordHeight = newActiveWord.offsetHeight;
 
     if (previousActiveWordTop !== null) {
       const isTimedTest =
@@ -155,7 +159,7 @@ export function updateActiveElement(
         (Config.mode === "custom" && CustomText.getLimitValue() === 0);
 
       if (isTimedTest || !Config.showAllLines) {
-        const newActiveWordTop = newActiveWord.getOffsetTop();
+        const newActiveWordTop = newActiveWord.offsetTop;
         if (newActiveWordTop > previousActiveWordTop) {
           await lineJump(previousActiveWordTop);
         }
@@ -172,7 +176,7 @@ export function updateActiveElement(
 
 function createHintsHtml(
   incorrectLettersIndices: number[][],
-  activeWordLetters: ElementsWithUtils,
+  activeWordLetters: HTMLElement[],
   input: string | string[],
   wrapWithDiv: boolean = true,
 ): string {
@@ -186,14 +190,14 @@ function createHintsHtml(
 
   for (const adjacentLetters of incorrectLettersIndices) {
     for (const letterIndex of adjacentLetters) {
-      const letter = activeWordLetters[letterIndex] as ElementWithUtils;
+      const letter = activeWordLetters[letterIndex] as HTMLElement;
       const blockIndices = `${letterIndex}`;
       const blockChars = isFullWord
         ? inputChars[letterIndex]
         : inputChars[currentHint++];
 
       hintsHtml += `<hint data-chars-index=${blockIndices} style="left:${
-        letter.getOffsetLeft() + letter.getOffsetWidth() / 2
+        letter.offsetLeft + letter.offsetWidth / 2
       }px;">${blockChars}</hint>`;
     }
   }
@@ -203,7 +207,7 @@ function createHintsHtml(
 
 async function joinOverlappingHints(
   incorrectLettersIndices: number[][],
-  activeWordLetters: ElementsWithUtils,
+  activeWordLetters: HTMLElement[],
   hintElements: HTMLCollection,
 ): Promise<void> {
   const currentWord = TestWords.words.getCurrent();
@@ -240,15 +244,10 @@ async function joinOverlappingHints(
       continue;
     }
 
-    const block1Letter1 = activeWordLetters[
-      block1Letter1Indx
-    ] as ElementWithUtils;
-    const block2Letter1 = activeWordLetters[
-      block2Letter1Indx
-    ] as ElementWithUtils;
+    const block1Letter1 = activeWordLetters[block1Letter1Indx] as HTMLElement;
+    const block2Letter1 = activeWordLetters[block2Letter1Indx] as HTMLElement;
 
-    const sameTop =
-      block1Letter1.getOffsetTop() === block2Letter1.getOffsetTop();
+    const sameTop = block1Letter1.offsetTop === block2Letter1.offsetTop;
 
     const leftBlock = isWordRightToLeft ? hintBlock2 : hintBlock1;
     const rightBlock = isWordRightToLeft ? hintBlock1 : hintBlock2;
@@ -265,8 +264,8 @@ async function joinOverlappingHints(
       ].join(",");
 
       const block1Letter1Pos =
-        block1Letter1.getOffsetLeft() +
-        (isWordRightToLeft ? block1Letter1.getOffsetWidth() : 0);
+        block1Letter1.offsetLeft +
+        (isWordRightToLeft ? block1Letter1.offsetWidth : 0);
       const bothBlocksLettersWidthHalved =
         hintBlock2.offsetLeft - hintBlock1.offsetLeft;
       hintBlock1.style.left = `${block1Letter1Pos + bothBlocksLettersWidthHalved}px`;
@@ -299,7 +298,7 @@ async function updateHintsPosition(): Promise<void> {
   let hintText: string[] = [];
 
   const hintElements =
-    getWordsEl().native.querySelectorAll<HTMLElement>(".hints > hint");
+    getWordsEl().querySelectorAll<HTMLElement>(".hints > hint");
 
   for (const hintEl of hintElements) {
     const hintsContainer = hintEl.parentElement as HTMLElement;
@@ -337,10 +336,10 @@ async function updateHintsPosition(): Promise<void> {
   ): Promise<void> {
     if (!hintsContainer || hintIndices.length === 0) return;
 
-    const wordElement = new ElementWithUtils(
-      hintsContainer.parentElement as HTMLElement,
+    const wordElement = hintsContainer.parentElement as HTMLElement;
+    const letterElements = Array.from(
+      wordElement.querySelectorAll<HTMLElement>("letter"),
     );
-    const letterElements = wordElement.qsa("letter");
 
     hintsContainer.innerHTML = createHintsHtml(
       hintIndices,
@@ -348,7 +347,7 @@ async function updateHintsPosition(): Promise<void> {
       hintText,
       false,
     );
-    const wordHintsElements = wordElement.native.getElementsByTagName("hint");
+    const wordHintsElements = wordElement.getElementsByTagName("hint");
     await joinOverlappingHints(hintIndices, letterElements, wordHintsElements);
   }
 }
@@ -366,68 +365,68 @@ function updateWordWrapperClasses(): void {
   setTestFocusState("focused");
 
   if (Config.tapeMode !== "off") {
-    getWordsEl().addClass("tape");
-    getWordsWrapperEl().addClass("tape");
+    setClass(getWordsEl(), "tape", true);
+    setClass(getWordsWrapperEl(), "tape", true);
   } else {
-    getWordsEl().removeClass("tape");
-    getWordsWrapperEl().removeClass("tape");
+    setClass(getWordsEl(), "tape", false);
+    setClass(getWordsWrapperEl(), "tape", false);
   }
 
   if (Config.blindMode) {
-    getWordsEl().addClass("blind");
-    getWordsWrapperEl().addClass("blind");
+    setClass(getWordsEl(), "blind", true);
+    setClass(getWordsWrapperEl(), "blind", true);
   } else {
-    getWordsEl().removeClass("blind");
-    getWordsWrapperEl().removeClass("blind");
+    setClass(getWordsEl(), "blind", false);
+    setClass(getWordsWrapperEl(), "blind", false);
   }
 
   if (Config.indicateTypos === "below" || Config.indicateTypos === "both") {
-    getWordsEl().addClass("indicateTyposBelow");
-    getWordsWrapperEl().addClass("indicateTyposBelow");
+    setClass(getWordsEl(), "indicateTyposBelow", true);
+    setClass(getWordsWrapperEl(), "indicateTyposBelow", true);
   } else {
-    getWordsEl().removeClass("indicateTyposBelow");
-    getWordsWrapperEl().removeClass("indicateTyposBelow");
+    setClass(getWordsEl(), "indicateTyposBelow", false);
+    setClass(getWordsWrapperEl(), "indicateTyposBelow", false);
   }
 
   if (Config.hideExtraLetters) {
-    getWordsEl().addClass("hideExtraLetters");
-    getWordsWrapperEl().addClass("hideExtraLetters");
+    setClass(getWordsEl(), "hideExtraLetters", true);
+    setClass(getWordsWrapperEl(), "hideExtraLetters", true);
   } else {
-    getWordsEl().removeClass("hideExtraLetters");
-    getWordsWrapperEl().removeClass("hideExtraLetters");
+    setClass(getWordsEl(), "hideExtraLetters", false);
+    setClass(getWordsWrapperEl(), "hideExtraLetters", false);
   }
 
   if (Config.flipTestColors) {
-    getWordsEl().addClass("flipped");
+    setClass(getWordsEl(), "flipped", true);
   } else {
-    getWordsEl().removeClass("flipped");
+    setClass(getWordsEl(), "flipped", false);
   }
 
   if (Config.colorfulMode) {
-    getWordsEl().addClass("colorfulMode");
+    setClass(getWordsEl(), "colorfulMode", true);
   } else {
-    getWordsEl().removeClass("colorfulMode");
+    setClass(getWordsEl(), "colorfulMode", false);
   }
 
-  new ElementsWithUtils<HTMLElement>(
+  for (const element of [
     getCaretElement(),
     getPaceCaretElement(),
     getTypingTestElement(),
     getWordsInputElement(),
-  ).setStyle({
-    fontSize: `${Config.fontSize}rem`,
-  });
+  ]) {
+    element.style.fontSize = `${Config.fontSize}rem`;
+  }
 
   if (isLanguageRightToLeft()) {
-    getWordsEl().addClass("rightToLeftTest");
+    setClass(getWordsEl(), "rightToLeftTest", true);
   } else {
-    getWordsEl().removeClass("rightToLeftTest");
+    setClass(getWordsEl(), "rightToLeftTest", false);
   }
   setResultState("rightToLeft", isLanguageRightToLeft());
 
   const existing =
     getWordsEl()
-      .native.className.split(/\s+/)
+      .className.split(/\s+/)
       .filter(
         (className) =>
           !className.startsWith("highlight-") &&
@@ -440,7 +439,7 @@ function updateWordWrapperClasses(): void {
     existing.push(`typed-effect-${Config.typedEffect.replaceAll("_", "-")}`);
   }
 
-  getWordsEl().native.className = existing.join(" ");
+  getWordsEl().className = existing.join(" ");
 
   updateWordsWidth();
   updateWordsWrapperHeight(true);
@@ -458,7 +457,7 @@ function updateWordWrapperClasses(): void {
 }
 
 function showWords(): void {
-  getWordsEl().setHtml("");
+  getWordsEl().innerHTML = "";
 
   if (Config.mode === "zen") {
     appendEmptyWordElement(0);
@@ -469,7 +468,7 @@ function showWords(): void {
       if (word === undefined) continue; // won't happen, but ts complains
       wordsHTML += buildWordHTML(word.display, i);
     }
-    getWordsEl().setHtml(wordsHTML);
+    getWordsEl().innerHTML = wordsHTML;
   }
 
   updateActiveElement({
@@ -480,7 +479,8 @@ function showWords(): void {
 }
 
 export function appendEmptyWordElement(index: number): void {
-  getWordsEl().appendHtml(
+  getWordsEl().insertAdjacentHTML(
+    "beforeend",
     `<div class='word' data-wordindex='${index}'><letter class='invisible'>_</letter></div>`,
   );
 }
@@ -508,15 +508,15 @@ export function updateWordsInputPosition(): void {
 
   const letterHeight = convertRemToPixels(Config.fontSize);
   const targetTop =
-    activeWord.getOffsetTop() + letterHeight / 2 - el.offsetHeight / 2 + 1; //+1 for half of border
+    activeWord.offsetTop + letterHeight / 2 - el.offsetHeight / 2 + 1; //+1 for half of border
 
-  const wordWidth = activeWord.getOffsetWidth();
+  const wordWidth = activeWord.offsetWidth;
   const left =
     Config.tapeMode !== "off"
-      ? getWordsWrapperEl().getOffsetWidth() * (Config.tapeMargin / 100)
+      ? getWordsWrapperEl().offsetWidth * (Config.tapeMargin / 100)
       : wordWidth < letterHeight && isTestRightToLeft
-        ? activeWord.getOffsetLeft() - letterHeight
-        : Math.max(0, activeWord.getOffsetLeft());
+        ? activeWord.offsetLeft - letterHeight
+        : Math.max(0, activeWord.offsetLeft);
 
   // Publish one layout update so input styles settle before scrolling.
   setWordsInputStyle({
@@ -544,11 +544,11 @@ export async function centerActiveLine(): Promise<void> {
     resolve();
     return;
   }
-  const currentTop = activeWordEl.getOffsetTop();
+  const currentTop = activeWordEl.offsetTop;
 
   let previousLineTop = currentTop;
   for (let i = getActiveWordIndex() - 1; i >= 0; i--) {
-    previousLineTop = getWordElement(i)?.getOffsetTop() ?? currentTop;
+    previousLineTop = getWordElement(i)?.offsetTop ?? currentTop;
     if (previousLineTop < currentTop) {
       await lineJump(previousLineTop, true);
       resolve();
@@ -567,11 +567,11 @@ export function updateWordsWrapperHeight(force = false): void {
 
   setWordsWrapperVisible(true);
 
-  const wordComputedStyle = window.getComputedStyle(activeWordEl.native);
+  const wordComputedStyle = window.getComputedStyle(activeWordEl);
   const wordMargin =
     parseInt(wordComputedStyle.marginTop) +
     parseInt(wordComputedStyle.marginBottom);
-  const wordHeight = activeWordEl.getOffsetHeight() + wordMargin;
+  const wordHeight = activeWordEl.offsetHeight + wordMargin;
 
   const timedTest =
     Config.mode === "time" ||
@@ -589,7 +589,9 @@ export function updateWordsWrapperHeight(force = false): void {
   } else {
     if (Config.tapeMode === "off") {
       //tape off, showAllLines off, non-zen mode
-      const wordElements = getWordsEl().qsa(".word");
+      const wordElements = Array.from(
+        getWordsEl().querySelectorAll<HTMLElement>(".word"),
+      );
       let lines = 0;
       let lastTop = 0;
       let wordIndex = 0;
@@ -598,10 +600,10 @@ export function updateWordsWrapperHeight(force = false): void {
       while (lines < 3) {
         const word = wordElements[wordIndex];
         if (!word) break;
-        const top = word.getOffsetTop();
+        const top = word.offsetTop;
         if (top > lastTop) {
           lines++;
-          wrapperHeight += word.getOffsetHeight() + wordMargin;
+          wrapperHeight += word.offsetHeight + wordMargin;
           lastTop = top;
         }
         wordIndex++;
@@ -615,7 +617,7 @@ export function updateWordsWrapperHeight(force = false): void {
       if (wordsHaveNewline()) {
         setWordsWrapperHeight(`${wordHeight * 3}px`);
       } else {
-        const wordsHeight = getWordsEl().getOffsetHeight() ?? wordHeight;
+        const wordsHeight = getWordsEl().offsetHeight ?? wordHeight;
         setWordsWrapperHeight(`${wordsHeight}px`);
       }
     }
@@ -626,13 +628,15 @@ export function updateWordsWrapperHeight(force = false): void {
 
 function updateWordsMargin(): void {
   if (Config.tapeMode !== "off") {
-    getWordsEl().setStyle({ marginLeft: "0" });
+    Object.assign(getWordsEl().style, { marginLeft: "0" });
     void scrollTape(true);
   } else {
-    const afterNewlineEls = getWordsEl().qsa(".afterNewline");
-    getWordsEl().setStyle({ marginLeft: "0", marginTop: "0" });
+    const afterNewlineEls = Array.from(
+      getWordsEl().querySelectorAll<HTMLElement>(".afterNewline"),
+    );
+    Object.assign(getWordsEl().style, { marginLeft: "0", marginTop: "0" });
     for (const afterNewline of afterNewlineEls) {
-      afterNewline.setStyle({
+      Object.assign(afterNewline.style, {
         marginLeft: "0",
       });
     }
@@ -648,11 +652,17 @@ export function addWord(
   // if the current active word is the last word, we need to NOT use raf
   // because other ui parts depend on the word existing
   if (getActiveWordIndex() === wordIndex - 1) {
-    getWordsEl().appendHtml(buildWordHTML(word, wordIndex));
+    getWordsEl().insertAdjacentHTML(
+      "beforeend",
+      buildWordHTML(word, wordIndex),
+    );
   } else {
     const frame = requestAnimationFrame(() => {
       appendFrames.delete(frame);
-      getWordsEl().appendHtml(buildWordHTML(word, wordIndex));
+      getWordsEl().insertAdjacentHTML(
+        "beforeend",
+        buildWordHTML(word, wordIndex),
+      );
     });
     appendFrames.add(frame);
   }
@@ -717,10 +727,12 @@ export async function updateWordLetters({
             .getWordHtml,
       });
 
-      wordAtIndex.setHtml(ret);
+      wordAtIndex.innerHTML = ret;
 
       if (hintIndices?.length) {
-        const wordAtIndexLetters = wordAtIndex.qsa("letter");
+        const wordAtIndexLetters = Array.from(
+          wordAtIndex.querySelectorAll<HTMLElement>("letter"),
+        );
         let hintsHtml;
         if (Config.indicateTypos === "both") {
           hintsHtml = createHintsHtml(
@@ -731,8 +743,8 @@ export async function updateWordLetters({
         } else {
           hintsHtml = createHintsHtml(hintIndices, wordAtIndexLetters, input);
         }
-        wordAtIndex.appendHtml(hintsHtml);
-        const hintElements = wordAtIndex.native.getElementsByTagName("hint");
+        wordAtIndex.insertAdjacentHTML("beforeend", hintsHtml);
+        const hintElements = wordAtIndex.getElementsByTagName("hint");
         await joinOverlappingHints(
           hintIndices,
           wordAtIndexLetters,
@@ -741,7 +753,7 @@ export async function updateWordLetters({
       }
 
       if (newlineafter) {
-        wordAtIndex.native.insertAdjacentHTML(
+        wordAtIndex.insertAdjacentHTML(
           "afterend",
           "<div class='beforeNewline'></div><div class='newline'></div><div class='afterNewline'></div>",
         );
@@ -755,7 +767,7 @@ export async function updateWordLetters({
         // unless slow timer is on, then it needs to happen
         // because the word jump check is disabled
         if (!Config.showAllLines) {
-          const wordTopAfterUpdate = wordAtIndex.getOffsetTop();
+          const wordTopAfterUpdate = wordAtIndex.offsetTop;
           if (wordTopAfterUpdate > activeWordTop) {
             let jump = false;
             if (!lineTransition) {
@@ -776,22 +788,26 @@ export async function updateWordLetters({
 // and sometimes we want it to be shifted to the left
 // (for example if the newline is typed incorrectly, or there are any extra letters after it)
 function getNlCharWidth(
-  lastWordInLine?: ElementWithUtils,
+  lastWordInLine?: HTMLElement,
   checkIfIncorrect = true,
 ): number {
-  let nlChar: ElementWithUtils | null;
+  let nlChar: HTMLElement | null;
   if (lastWordInLine) {
-    nlChar = lastWordInLine.qs("letter.nlChar");
+    nlChar = lastWordInLine.querySelector<HTMLElement>("letter.nlChar");
   } else {
-    nlChar = getWordsEl().qs(":scope > .word > letter.nlChar");
+    nlChar = getWordsEl().querySelector<HTMLElement>(
+      ":scope > .word > letter.nlChar",
+    );
   }
   if (!nlChar) return 0;
-  if (checkIfIncorrect && nlChar.hasClass("incorrect")) return 0;
-  const letterComputedStyle = window.getComputedStyle(nlChar.native);
+  if (checkIfIncorrect && nlChar.className.split(/\s+/).includes("incorrect")) {
+    return 0;
+  }
+  const letterComputedStyle = window.getComputedStyle(nlChar);
   const letterMargin =
     parseFloat(letterComputedStyle.marginLeft) +
     parseFloat(letterComputedStyle.marginRight);
-  return nlChar.getOffsetWidth() + letterMargin;
+  return nlChar.offsetWidth + letterMargin;
 }
 
 export async function scrollTape(noAnimation = false): Promise<void> {
@@ -803,11 +819,15 @@ export async function scrollTape(noAnimation = false): Promise<void> {
     ? !isLanguageRightToLeft()
     : isLanguageRightToLeft();
 
-  const wordsWrapperWidth = getWordsWrapperEl().getOffsetWidth();
-  const wordsChildrenArr = getWordsEl().getChildren();
+  const wordsWrapperWidth = getWordsWrapperEl().offsetWidth;
+  const wordsChildrenArr = Array.from(
+    getWordsEl().children ?? [],
+  ) as HTMLElement[];
   const activeWordEl = getActiveWordElement();
   if (!activeWordEl) return;
-  const afterNewLineEls = getWordsEl().qsa(".afterNewline");
+  const afterNewLineEls = Array.from(
+    getWordsEl().querySelectorAll<HTMLElement>(".afterNewline"),
+  );
 
   let wordsWidthBeforeActive = 0;
   let fullLineWidths = 0;
@@ -816,20 +836,18 @@ export async function scrollTape(noAnimation = false): Promise<void> {
   let widthRemoved = 0;
   const widthRemovedFromLine: number[] = [];
   const afterNewlinesNewMargins: number[] = [];
-  const toRemove: ElementWithUtils[] = [];
+  const toRemove: HTMLElement[] = [];
   let removedAfterNewlines = 0;
 
   /* remove leading `.afterNewline` elements */
   for (const child of wordsChildrenArr) {
-    if (child.hasClass("word")) {
+    if (child.className.split(/\s+/).includes("word")) {
       // only last leading `.afterNewline` element pushes `.word`s to right
       if (lastAfterNewLineElement) {
-        widthRemoved += parseFloat(
-          lastAfterNewLineElement.getStyle().marginLeft,
-        );
+        widthRemoved += parseFloat(lastAfterNewLineElement.style.marginLeft);
       }
       break;
-    } else if (child.hasClass("afterNewline")) {
+    } else if (child.className.split(/\s+/).includes("afterNewline")) {
       toRemove.push(child);
       leadingNewLine = true;
       lastAfterNewLineElement = child;
@@ -845,7 +863,9 @@ export async function scrollTape(noAnimation = false): Promise<void> {
   // this will between 0 and 2
   const newLinesBeforeActiveWord = wordsChildrenArr
     .slice(0, activeWordIndex)
-    .filter((child) => child.hasClass("afterNewline")).length;
+    .filter((child) =>
+      child.className.split(/\s+/).includes("afterNewline"),
+    ).length;
   // the second `.afterNewline` after active word is visible during line jump
   let lastVisibleAfterNewline = afterNewLineEls[newLinesBeforeActiveWord + 1];
   if (lastVisibleAfterNewline) {
@@ -860,17 +880,17 @@ export async function scrollTape(noAnimation = false): Promise<void> {
   }
 
   const wordRightMargin = parseFloat(
-    window.getComputedStyle(activeWordEl.native).marginRight,
+    window.getComputedStyle(activeWordEl).marginRight,
   );
 
   /*calculate .afterNewline & #words new margins + determine elements to remove*/
   for (let i = 0; i <= lastElementIndex; i++) {
-    const child = wordsChildrenArr[i] as ElementWithUtils;
-    if (child.hasClass("word")) {
+    const child = wordsChildrenArr[i] as HTMLElement;
+    if (child.className.split(/\s+/).includes("word")) {
       leadingNewLine = false;
-      const wordOuterWidth = child.getOuterWidth();
-      const wordLeft = Math.floor(child.getOffsetLeft());
-      const wordWidth = Math.floor(child.getOffsetWidth());
+      const wordOuterWidth = outerWidth(child);
+      const wordLeft = Math.floor(child.offsetLeft);
+      const wordWidth = Math.floor(child.offsetWidth);
       if (
         (!isTestRightToLeft && wordLeft < 0 - wordWidth) ||
         (isTestRightToLeft && wordLeft > wordsWrapperWidth)
@@ -881,7 +901,7 @@ export async function scrollTape(noAnimation = false): Promise<void> {
         fullLineWidths += wordOuterWidth;
         if (i < activeWordIndex) wordsWidthBeforeActive = fullLineWidths;
       }
-    } else if (child.hasClass("afterNewline")) {
+    } else if (child.className.split(/\s+/).includes("afterNewline")) {
       if (leadingNewLine) continue;
       const nlCharWidth = getNlCharWidth(wordsChildrenArr[i - 3]);
       fullLineWidths -= nlCharWidth + wordRightMargin;
@@ -891,7 +911,7 @@ export async function scrollTape(noAnimation = false): Promise<void> {
        * increase limit if that ever happens, but keep the limit because browsers hate
        * ridiculously wide margins which may cause the words to not be displayed
        */
-      const limit = 3 * getWordsEl().getOffsetWidth();
+      const limit = 3 * getWordsEl().offsetWidth;
       if (fullLineWidths < limit) {
         afterNewlinesNewMargins.push(fullLineWidths);
         widthRemovedFromLine.push(widthRemoved);
@@ -913,17 +933,16 @@ export async function scrollTape(noAnimation = false): Promise<void> {
     for (const el of toRemove) el.remove();
     afterNewLineEls.splice(0, removedAfterNewlines);
     for (let i = 0; i < widthRemovedFromLine.length; i++) {
-      const afterNewlineEl = afterNewLineEls[i] as ElementWithUtils;
+      const afterNewlineEl = afterNewLineEls[i] as HTMLElement;
       const currentLineIndent =
-        parseFloat(afterNewlineEl.getStyle().marginLeft) || 0;
-      afterNewlineEl.setStyle({
+        parseFloat(afterNewlineEl.style.marginLeft) || 0;
+      Object.assign(afterNewlineEl.style, {
         marginLeft: `${currentLineIndent - (widthRemovedFromLine[i] ?? 0)}px`,
       });
     }
     if (isTestRightToLeft) widthRemoved *= -1;
-    const currentWordsMargin =
-      parseFloat(getWordsEl().native.style.marginLeft) || 0;
-    getWordsEl().setStyle({
+    const currentWordsMargin = parseFloat(getWordsEl().style.marginLeft) || 0;
+    Object.assign(getWordsEl().style, {
       marginLeft: `${currentWordsMargin + widthRemoved}px`,
     });
     Caret.getCaret().handleTapeWordsRemoved(widthRemoved);
@@ -934,22 +953,24 @@ export async function scrollTape(noAnimation = false): Promise<void> {
   let currentWordWidth = 0;
   const inputLength = getCurrentInput().length;
   if (Config.tapeMode === "letter" && inputLength > 0) {
-    const letters = activeWordEl.qsa("letter");
+    const letters = Array.from(
+      activeWordEl.querySelectorAll<HTMLElement>("letter"),
+    );
     let lastPositiveLetterWidth = 0;
     for (let i = 0; i < inputLength; i++) {
       const letter = letters[i];
       if (
         (Config.blindMode || Config.hideExtraLetters) &&
-        letter?.hasClass("extra")
+        letter?.className.split(/\s+/).includes("extra")
       ) {
         continue;
       }
-      const letterOuterWidth = letter?.getOffsetWidth() ?? 0;
+      const letterOuterWidth = letter?.offsetWidth ?? 0;
       currentWordWidth += letterOuterWidth;
       if (letterOuterWidth > 0) lastPositiveLetterWidth = letterOuterWidth;
     }
     // if current letter has zero width move the tape to previous positive width letter
-    if (letters[inputLength]?.getOffsetWidth() === 0) {
+    if (letters[inputLength]?.offsetWidth === 0) {
       currentWordWidth -= lastPositiveLetterWidth;
     }
   }
@@ -976,7 +997,7 @@ export async function scrollTape(noAnimation = false): Promise<void> {
   PaceCaret.getCaret().handleTapeScroll(caretScrollOptions);
 
   if (Config.smoothLineScroll) {
-    getWordsEl().animate({
+    animate(getWordsEl(), {
       marginLeft: newMargin,
       duration,
       ease,
@@ -984,29 +1005,34 @@ export async function scrollTape(noAnimation = false): Promise<void> {
 
     for (let i = 0; i < afterNewlinesNewMargins.length; i++) {
       const newMargin = afterNewlinesNewMargins[i] ?? 0;
-      (afterNewLineEls[i] as ElementWithUtils)?.animate({
+      animate(afterNewLineEls[i] as HTMLElement, {
         marginLeft: newMargin,
         duration,
         ease,
       });
     }
   } else {
-    getWordsEl().setStyle({ marginLeft: `${newMargin}px` });
+    Object.assign(getWordsEl().style, { marginLeft: `${newMargin}px` });
     for (let i = 0; i < afterNewlinesNewMargins.length; i++) {
       const newMargin = afterNewlinesNewMargins[i] ?? 0;
-      afterNewLineEls[i]?.setStyle({ marginLeft: `${newMargin}px` });
+      const afterNewline = afterNewLineEls[i];
+      if (afterNewline) {
+        Object.assign(afterNewline.style, { marginLeft: `${newMargin}px` });
+      }
     }
   }
 }
 
 function removeTestElements(lastElementIndexToRemove: number): void {
-  const wordsChildren = getWordsEl().getChildren();
+  const wordsChildren = Array.from(
+    getWordsEl().children ?? [],
+  ) as HTMLElement[];
 
   if (wordsChildren === undefined) return;
 
   for (let i = lastElementIndexToRemove; i >= 0; i--) {
     const child = wordsChildren[i];
-    if (!child || !child.native.isConnected) continue;
+    if (!child || !child.isConnected) continue;
     child.remove();
   }
 }
@@ -1023,18 +1049,20 @@ async function lineJump(currentTop: number, force = false): Promise<void> {
 
     // index of the active word in all #words.children
     // (which contains .word/.newline/.beforeNewline/.afterNewline elements)
-    const wordsChildren = getWordsEl().getChildren();
+    const wordsChildren = Array.from(
+      getWordsEl().children ?? [],
+    ) as HTMLElement[];
     const activeWordElementIndex = wordsChildren.indexOf(activeWordEl);
 
     let lastElementIndexToRemove: number | undefined = undefined;
     for (let i = activeWordElementIndex - 1; i >= 0; i--) {
-      const child = wordsChildren[i] as ElementWithUtils;
-      if (child.hasClass("hidden")) continue;
-      if (Math.floor(child.getOffsetTop()) < hideBound) {
-        if (child.hasClass("word")) {
+      const child = wordsChildren[i] as HTMLElement;
+      if (child.className.split(/\s+/).includes("hidden")) continue;
+      if (Math.floor(child.offsetTop) < hideBound) {
+        if (child.className.split(/\s+/).includes("word")) {
           lastElementIndexToRemove = i;
           break;
-        } else if (child.hasClass("beforeNewline")) {
+        } else if (child.className.split(/\s+/).includes("beforeNewline")) {
           // set it to .newline but check .beforeNewline.offsetTop
           // because it's more reliable
           lastElementIndexToRemove = i + 1;
@@ -1051,7 +1079,7 @@ async function lineJump(currentTop: number, force = false): Promise<void> {
 
     currentLinesJumping++;
 
-    const wordHeight = activeWordEl.getOuterHeight();
+    const wordHeight = outerHeight(activeWordEl);
     const newMarginTop = -1 * wordHeight * currentLinesJumping;
     const duration = 125;
 
@@ -1064,15 +1092,15 @@ async function lineJump(currentTop: number, force = false): Promise<void> {
 
     if (Config.smoothLineScroll) {
       lineTransition = true;
-      await getWordsEl().promiseAnimate({
+      await animateAsync(getWordsEl(), {
         marginTop: newMarginTop,
         duration,
       });
       currentLinesJumping = 0;
-      activeWordTop = activeWordEl.getOffsetTop();
-      activeWordHeight = activeWordEl.getOffsetHeight();
+      activeWordTop = activeWordEl.offsetTop;
+      activeWordHeight = activeWordEl.offsetHeight;
       removeTestElements(lastElementIndexToRemove);
-      getWordsEl().setStyle({ marginTop: "0" });
+      Object.assign(getWordsEl().style, { marginTop: "0" });
       lineTransition = false;
     } else {
       currentLinesJumping = 0;
@@ -1088,16 +1116,16 @@ export function setJoiningClass(isEnabled: boolean): void {
   const joiningScript =
     isEnabled || Config.mode === "custom" || Config.mode === "zen";
   if (joiningScript) {
-    getWordsEl().addClass("joiningScript");
+    setClass(getWordsEl(), "joiningScript", true);
   } else {
-    getWordsEl().removeClass("joiningScript");
+    setClass(getWordsEl(), "joiningScript", false);
   }
   setResultState("joiningScript", joiningScript);
 }
 
 export function highlightBadWord(index: number): void {
   requestDebouncedAnimationFrame(`test-ui.highlightBadWord.${index}`, () => {
-    getWordElement(index)?.addClass("error");
+    setClass(getWordElement(index), "error", true);
   });
 }
 
@@ -1105,9 +1133,11 @@ export function highlightAllLettersAsCorrect(wordIndex: number): void {
   requestDebouncedAnimationFrame(
     `test-ui.highlightAllLettersAsCorrect.${wordIndex}`,
     () => {
-      const letters = getWordElement(wordIndex)?.getChildren();
+      const letters = Array.from(
+        getWordElement(wordIndex)?.children ?? [],
+      ) as HTMLElement[];
       for (const letter of letters ?? []) {
-        letter.addClass("correct");
+        setClass(letter, "correct", true);
       }
     },
   );
@@ -1137,11 +1167,17 @@ function updateWordsWidth(): void {
     }
   }
   const el = getTypingTestElement();
-  el?.setStyle(css);
-  if (Config.maxLineWidth === 0) {
-    el?.removeClass("full-width-padding").addClass("content");
+  if (Object.keys(css).length === 0) {
+    el.style.cssText = "";
   } else {
-    el?.removeClass("content").addClass("full-width-padding");
+    Object.assign(el.style, css);
+  }
+  if (Config.maxLineWidth === 0) {
+    setClass(el, "full-width-padding", false);
+    setClass(el, "content", true);
+  } else {
+    setClass(el, "content", false);
+    setClass(el, "full-width-padding", true);
   }
 }
 
@@ -1153,7 +1189,9 @@ export function getActiveWordTopAndHeightWithDifferentData(data: string): {
 
   if (!activeWord) throw new Error("No active word element found");
 
-  const lettersEls = activeWord.qsa("letter");
+  const lettersEls = Array.from(
+    activeWord.querySelectorAll<HTMLElement>("letter"),
+  );
   const domLettersCount = lettersEls.length;
   const nodes = [];
   for (let i = domLettersCount; i < data.length; i++) {
@@ -1163,10 +1201,10 @@ export function getActiveWordTopAndHeightWithDifferentData(data: string): {
     nodes.push(tempLetter);
   }
 
-  lettersEls[domLettersCount - 1]?.native.after(...nodes);
+  lettersEls[domLettersCount - 1]?.after(...nodes);
 
-  const top = activeWord.getOffsetTop();
-  const height = activeWord.getOffsetHeight();
+  const top = activeWord.offsetTop;
+  const height = activeWord.offsetHeight;
   for (const node of nodes) {
     node.remove();
   }
@@ -1305,7 +1343,9 @@ export async function afterTestWordChange(
       // because we need to delete newline, beforenewline and afternewline elements which dont have wordindex attributes
       // we need to do this loop thingy and delete all elements after the active word
       let deleteElements = false;
-      for (const child of getWordsEl().getChildren()) {
+      for (const child of Array.from(
+        getWordsEl().children ?? [],
+      ) as HTMLElement[]) {
         if (deleteElements) {
           child.remove();
           continue;
@@ -1342,7 +1382,7 @@ export async function fadeOutForRestart(
 ): Promise<void> {
   const el =
     source === "resultPage" ? getResultElement() : getTypingTestElement();
-  await el?.promiseAnimate({
+  await animateAsync(el, {
     opacity: 0,
     duration: getRestartAnimationTime(noAnim),
   });
@@ -1350,18 +1390,19 @@ export async function fadeOutForRestart(
 
 export async function fadeInAfterRestart(noAnim: boolean): Promise<void> {
   const typingTestEl = getTypingTestElement();
-  await typingTestEl?.promiseAnimate({
+  await animateAsync(typingTestEl, {
     opacity: [0, 1],
     onBegin: () => {
-      typingTestEl.removeClass("hidden");
+      setClass(typingTestEl, "hidden", false);
     },
     duration: getRestartAnimationTime(noAnim),
   });
 }
 
 export function onTestRestart(source: "testPage" | "resultPage"): void {
-  getResultElement()?.hide();
-  getTypingTestElement()?.setStyle({ opacity: "0" }).show();
+  setClass(getResultElement(), "hidden", true);
+  Object.assign(getTypingTestElement().style, { opacity: "0" });
+  setClass(getTypingTestElement(), "hidden", false);
   setWordsInputStyle((previous) => ({ ...previous, left: "0" }));
   Focus.set(false);
   setCurrentLiveStats({
@@ -1490,52 +1531,52 @@ export function Words(props: {
   );
 }
 
-function canBreak(wordEl: ElementWithUtils): boolean {
+function canBreak(wordEl: HTMLElement): boolean {
   if (Config.typedEffect !== "dots") return false;
-  if (wordEl.hasClass("broken-joining")) return false;
+  if (wordEl.className.split(/\s+/).includes("broken-joining")) return false;
 
-  return wordEl.getParent()?.hasClass("joiningScript") ?? false;
+  return (
+    wordEl.parentElement?.className.split(/\s+/).includes("joiningScript") ??
+    false
+  );
 }
 
-function applyIfNeeded(wordEl: ElementWithUtils): void {
+function applyIfNeeded(wordEl: HTMLElement): void {
   if (!canBreak(wordEl)) return;
 
-  const letters = wordEl.qsa("letter");
-  const firstTop = Math.floor(letters[0]?.getOffsetTop() ?? 0);
-  const isWrapped = letters.some(
-    (l) => Math.floor(l.getOffsetTop()) !== firstTop,
-  );
+  const letters = Array.from(wordEl.querySelectorAll<HTMLElement>("letter"));
+  const firstTop = Math.floor(letters[0]?.offsetTop ?? 0);
+  const isWrapped = letters.some((l) => Math.floor(l.offsetTop) !== firstTop);
 
   if (!isWrapped) {
-    const { width } = wordEl.screenBounds();
-    wordEl.setStyle({ width: `${width}px` });
-    wordEl.removeClass("needs-wrap");
+    const { width } = wordEl.getBoundingClientRect();
+    Object.assign(wordEl.style, { width: `${width}px` });
+    setClass(wordEl, "needs-wrap", false);
   } else {
-    wordEl.setStyle({ width: "" });
-    wordEl.addClass("needs-wrap");
+    Object.assign(wordEl.style, { width: "" });
+    setClass(wordEl, "needs-wrap", true);
   }
-  wordEl.addClass("broken-joining");
+  setClass(wordEl, "broken-joining", true);
 }
 
-function reset(wordEl: ElementWithUtils): void {
-  if (!wordEl.hasClass("broken-joining")) return;
-  wordEl.removeClass("broken-joining");
-  wordEl.removeClass("needs-wrap");
-  wordEl.setStyle({ width: "" });
+function reset(wordEl: HTMLElement): void {
+  if (!wordEl.className.split(/\s+/).includes("broken-joining")) return;
+  setClass(wordEl, "broken-joining", false);
+  setClass(wordEl, "needs-wrap", false);
+  Object.assign(wordEl.style, { width: "" });
 }
 
-function setWordJoining(
-  wordEl: ElementWithUtils,
-  joiningBroken: boolean,
-): void {
+function setWordJoining(wordEl: HTMLElement, joiningBroken: boolean): void {
   joiningBroken ? applyIfNeeded(wordEl) : reset(wordEl);
 }
 
-function updateWordJoining(key: string, wordsEl: ElementWithUtils): void {
-  const words = wordsEl.qsa(".word.typed");
+function updateWordJoining(key: string, wordsEl: HTMLElement): void {
+  const words = Array.from(
+    wordsEl.querySelectorAll<HTMLElement>(".word.typed"),
+  );
 
   const shouldReset =
-    !wordsEl.hasClass("joiningScript") ||
+    !wordsEl.className.split(/\s+/).includes("joiningScript") ||
     Config.typedEffect !== "dots" ||
     key === "fontFamily" ||
     key === "fontSize";
@@ -1544,4 +1585,35 @@ function updateWordJoining(key: string, wordsEl: ElementWithUtils): void {
     words.forEach(reset);
   }
   words.forEach(applyIfNeeded);
+}
+
+function setClass(
+  element: HTMLElement | undefined | null,
+  names: string | string[],
+  enabled: boolean,
+): void {
+  if (element) {
+    element.className = updateClassNames(
+      element.className,
+      Array.isArray(names) ? names.join(" ") : names,
+      enabled,
+    );
+  }
+}
+
+function outerWidth(element: HTMLElement): number {
+  const style = getComputedStyle(element);
+  return (
+    element.getBoundingClientRect().width +
+    parseFloat(style.marginLeft) +
+    parseFloat(style.marginRight)
+  );
+}
+function outerHeight(element: HTMLElement): number {
+  const style = getComputedStyle(element);
+  return (
+    element.getBoundingClientRect().height +
+    parseFloat(style.marginTop) +
+    parseFloat(style.marginBottom)
+  );
 }

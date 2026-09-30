@@ -6,7 +6,6 @@ import { TypingSpeedUnit } from "@monkeytype/schemas/configs";
 import type { WordsHistoryItem } from "../test/word-markup";
 import { createEvent } from "../hooks/createEvent";
 import type { SupportsFlags } from "../controllers/user-flag-controller";
-import { ElementWithUtils } from "../utils/dom";
 
 export type ResultCrownType =
   | "normal"
@@ -225,27 +224,23 @@ export const [getScreenshotWatermark, setScreenshotWatermark] =
 
 // set by Result once mounted; result.ts, test-ui and test-screenshot still
 // show/hide, animate and measure these imperatively
-let resultElement: ElementWithUtils<HTMLDivElement> | undefined;
-let resultWrapperElement: ElementWithUtils<HTMLDivElement> | undefined;
+let resultElement: HTMLDivElement | undefined;
+let resultWrapperElement: HTMLDivElement | undefined;
 
 export function setResultElements(
   result: HTMLDivElement,
   wrapper: HTMLDivElement,
 ): void {
-  resultElement = new ElementWithUtils(result);
-  resultWrapperElement = new ElementWithUtils(wrapper);
+  resultElement = result;
+  resultWrapperElement = wrapper;
 }
 
 // #result
-export function getResultElement():
-  | ElementWithUtils<HTMLDivElement>
-  | undefined {
+export function getResultElement(): HTMLDivElement | undefined {
   return resultElement;
 }
 
 // #result .wrapper, the screenshot area
-export function getResultWrapperElement():
-  | ElementWithUtils<HTMLDivElement>
-  | undefined {
+export function getResultWrapperElement(): HTMLDivElement | undefined {
   return resultWrapperElement;
 }

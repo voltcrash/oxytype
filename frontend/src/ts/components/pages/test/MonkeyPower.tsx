@@ -218,7 +218,7 @@ export function MonkeyPower(): JSXElement {
 
   onMount(() => {
     if (canvas === undefined) return;
-    ctx.caret = getCaretElement().native;
+    ctx.caret = getCaretElement();
     ctx.canvas = canvas;
     ctx.context2d = canvas.getContext("2d") as CanvasRenderingContext2D;
     resize();

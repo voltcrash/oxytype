@@ -1,4 +1,3 @@
-import { ElementWithUtils } from "../utils/dom";
 import { cancelPendingAnimationFrame } from "../utils/debounced-animation-frame";
 import { Config } from "../config/store";
 import { getCurrentInput } from "./events/data";
@@ -50,7 +49,7 @@ let caret: Caret | undefined;
 
 // The component owns the node and cancels its animations on disposal.
 export function bindCaret(element: HTMLDivElement): () => void {
-  const instance = new Caret(new ElementWithUtils(element), Config.caretStyle);
+  const instance = new Caret(element, Config.caretStyle);
   caret = instance;
   return () => {
     instance.stopAllAnimations();
