@@ -11,7 +11,12 @@ import {
 } from "../states/notifications";
 import { convertRemToPixels } from "../utils/numbers";
 import { qs } from "../utils/dom";
-import { resultState, setScreenshotWatermark } from "../states/result";
+import {
+  getResultElement,
+  getResultWrapperElement,
+  resultState,
+  setScreenshotWatermark,
+} from "../states/result";
 import { getTheme } from "../states/theme";
 import { download as downloadFile } from "../utils/misc";
 
@@ -20,7 +25,7 @@ function revert(): void {
   hideLoaderBar();
   qs("noscript")?.show();
   qs("#nocss")?.show();
-  qs("#result")?.removeClass("noBalloons");
+  getResultElement()?.removeClass("noBalloons");
   document.documentElement.style.scrollBehavior = "smooth";
   for (const fb of getActiveFunboxesWithFunction("applyGlobalCSS")) {
     fb.functions.applyGlobalCSS();
@@ -58,7 +63,7 @@ async function generateCanvas(): Promise<HTMLCanvasElement | null> {
   setIsScreenshotting(true);
   qs("noscript")?.hide();
   qs("#nocss")?.hide();
-  qs("#result")?.addClass("noBalloons");
+  getResultElement()?.addClass("noBalloons");
 
   for (const fb of getActiveFunboxesWithFunction("clearGlobal")) {
     fb.functions.clearGlobal();
@@ -68,8 +73,8 @@ async function generateCanvas(): Promise<HTMLCanvasElement | null> {
   window.scrollTo({ top: 0, behavior: "auto" });
 
   // --- Target Element Calculation ---
-  const src = qs("#result .wrapper");
-  if (src === null) {
+  const src = getResultWrapperElement();
+  if (src === undefined) {
     console.error("Result wrapper not found for screenshot");
     showErrorNotification("Screenshot target element not found");
     revert();

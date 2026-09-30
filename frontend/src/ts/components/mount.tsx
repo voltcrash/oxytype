@@ -3,7 +3,6 @@ import { JSXElement } from "solid-js";
 import { render } from "solid-js/web";
 
 import { queryClient } from "../queries";
-import { resultWordHighlightEvent } from "../states/result";
 import { qsa } from "../utils/dom";
 import { Advertisement } from "./common/Advertisement";
 import { Theme } from "./core/Theme";
@@ -39,13 +38,7 @@ import { MonkeyPower } from "./pages/test/MonkeyPower";
 import { OutOfFocusWarning } from "./pages/test/OutOfFocusWarning";
 import { Premid } from "./pages/test/Premid";
 import { RestartTestButton } from "./pages/test/RestartTestButton";
-import { ResultButtons } from "./pages/test/result/ResultButtons";
-import { ResultChart } from "./pages/test/result/ResultChart";
-import { ResultLoginTip } from "./pages/test/result/ResultLoginTip";
-import { ResultReplay } from "./pages/test/result/ResultReplay";
-import { ResultStats } from "./pages/test/result/ResultStats";
-import { ResultWatermark } from "./pages/test/result/ResultWatermark";
-import { ResultWordsHistory } from "./pages/test/result/ResultWordsHistory";
+import { Result } from "./pages/test/result/Result";
 import { TestConfig } from "./pages/test/TestConfig";
 import { TestInitFailed } from "./pages/test/TestInitFailed";
 import { TestLoading } from "./pages/test/TestLoading";
@@ -89,30 +82,7 @@ const components: Record<string, () => JSXElement> = {
   restarttestbutton: () => <RestartTestButton />,
   testloading: () => <TestLoading />,
   monkeypower: () => <MonkeyPower />,
-  resultstats: () => <ResultStats />,
-  resultwordshistory: () => <ResultWordsHistory />,
-  resultreplay: () => <ResultReplay />,
-  resultbuttons: () => <ResultButtons />,
-  resultfooter: () => (
-    <>
-      <ResultLoginTip />
-      <ResultWatermark />
-    </>
-  ),
-  resultchart: () => (
-    <ResultChart
-      onHighlightWords={(firstWordIndex, lastWordIndex) =>
-        resultWordHighlightEvent.dispatch({
-          type: "highlight",
-          firstWordIndex,
-          lastWordIndex,
-        })
-      }
-      onHoverChange={(hovering) =>
-        resultWordHighlightEvent.dispatch({ type: "hoverChart", hovering })
-      }
-    />
-  ),
+  result: () => <Result />,
   verticalads: () => (
     <>
       <Advertisement
@@ -139,15 +109,6 @@ const components: Record<string, () => JSXElement> = {
       focus
       class="col-[full-width]"
       smallClass="col-[content]"
-    />
-  ),
-  resultad: () => (
-    <Advertisement
-      id="ad-result"
-      visible={["result", "on", "sellout"]}
-      staticVisibility
-      withText
-      hideWhileScreenshotting
     />
   ),
 };

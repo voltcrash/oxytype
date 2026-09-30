@@ -40,7 +40,7 @@ import {
   qsa,
   qsr,
 } from "../utils/dom";
-import { setResultState } from "../states/result";
+import { getResultElement, setResultState } from "../states/result";
 import { skipBreakdownEvent } from "../states/header";
 import {
   isDirectionReversed,
@@ -1473,8 +1473,8 @@ export async function fadeOutForRestart(
   source: "testPage" | "resultPage",
   noAnim: boolean,
 ): Promise<void> {
-  const selector = source === "resultPage" ? "#result" : "#typingTest";
-  await qs(selector)?.promiseAnimate({
+  const el = source === "resultPage" ? getResultElement() : qs("#typingTest");
+  await el?.promiseAnimate({
     opacity: 0,
     duration: getRestartAnimationTime(noAnim),
   });
@@ -1492,7 +1492,7 @@ export async function fadeInAfterRestart(noAnim: boolean): Promise<void> {
 }
 
 export function onTestRestart(source: "testPage" | "resultPage"): void {
-  qs("#result")?.hide();
+  getResultElement()?.hide();
   qs("#typingTest")?.setStyle({ opacity: "0" }).show();
   getInputElement().style.left = "0";
   Focus.set(false);

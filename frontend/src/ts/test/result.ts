@@ -68,6 +68,7 @@ import {
   getResultChart,
   getResultChartDataset,
   getResultChartScale,
+  getResultElement,
   resultState,
   setResultState,
   type ResultChartLegendId,
@@ -664,11 +665,6 @@ export async function update(
   setResultState("quote", { rateVisible: false, rated: false, rating: "" });
   qs("#words")?.removeClass("blurred");
   blurInputElement();
-  if (Config.ads === "off" || Config.ads === "result") {
-    qs("#result #watchVideoAdButton")?.hide();
-  } else {
-    qs("#result #watchVideoAdButton")?.show();
-  }
 
   if (!ConnectionState.get()) {
     ConnectionState.showOfflineBanner();
@@ -707,19 +703,6 @@ export async function update(
   });
 
   if (noStress) {
-    qs("main #result .noStressMessage")?.remove();
-    qs("main #result")?.prependHtml(`
-
-      <div class='noStressMessage' style="
-        text-align: center;
-        grid-column: 1/3;
-        font-size: 2rem;
-        padding-bottom: 2rem;
-      ">
-      <i class="fas fa-check"></i>
-      </div>
-
-    `);
     setResultState("wordsHistory", { visible: false, slideDuration: 0 });
     setResultState("replay", { visible: false, slideDuration: 0 });
 
@@ -777,14 +760,14 @@ export async function update(
   void Funbox.clear();
 
   setResultLoading(false);
-  qs("#result")?.show();
+  const resultEl = getResultElement();
+  resultEl?.show();
 
-  const resultEl = qs("#result");
   resultEl?.focus({
     preventScroll: true,
   });
 
-  await Misc.promiseAnimate("#result", {
+  await resultEl?.promiseAnimate({
     opacity: [0, 1],
     duration: Misc.applyReducedMotion(125),
   });

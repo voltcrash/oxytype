@@ -510,43 +510,10 @@
 }
 
 #result {
-  &:focus-visible {
-    outline: none;
-  }
-
   &.noBalloons {
     [aria-label][data-balloon-pos]::before,
     [aria-label][data-balloon-pos]::after {
       display: none;
-    }
-  }
-
-  &:focus {
-    outline: none;
-  }
-
-  .wrapper {
-    display: grid;
-    // height: 200px;
-    gap: 1rem;
-    // grid-template-columns: auto 1fr;
-    // justify-content: center;
-    align-items: center;
-    grid-template-columns: auto 1fr;
-    grid-template-areas:
-      "stats chart"
-      "morestats morestats";
-    // "wordsHistory wordsHistory"
-    // "buttons buttons"
-    // "login login"
-    // "ssw ssw";
-
-    button {
-      padding: 1em 2em;
-    }
-
-    .bottom {
-      grid-column: 1/-1;
     }
   }
 }

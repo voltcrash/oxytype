@@ -2,14 +2,6 @@
 @use "./media.scss" as *;
 
 @include media-query(brown) {
-  .pageTest {
-    #result .wrapper {
-      grid-template-columns: 1fr;
-      grid-template-areas:
-        "stats" "chart"
-        "morestats";
-    }
-  }
   .testActivity {
     display: none;
   }

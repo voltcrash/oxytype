@@ -4,12 +4,4 @@
   .content-grid {
     --content-max-width: 640px;
   }
-  .pageTest {
-    #result .wrapper {
-      grid-template-columns: 1fr;
-      grid-template-areas:
-        "stats" "chart"
-        "morestats";
-    }
-  }
 }
