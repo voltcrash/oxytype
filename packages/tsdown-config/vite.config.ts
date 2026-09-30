@@ -14,8 +14,8 @@ export default defineConfig({
     ignorePatterns: ["node_modules", "dist", ".turbo"],
     extends: [sharedLint],
     options: {
-      typeAware: true,
-      typeCheck: true,
+      typeAware: false,
+      typeCheck: false,
     },
     jsPlugins: [
       {

@@ -1,4 +1,4 @@
-import { sharedLint, pluginLint } from "../packages/oxlint-config/config";
+import { backendLint } from "./lint.config";
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({
@@ -9,29 +9,5 @@ export default defineConfig({
     // https://vitest.dev/guide/migration/#clearmocks-is-enabled-by-default
     clearMocks: false,
   },
-  lint: {
-    ignorePatterns: ["node_modules", "__migration__", "dist", ".turbo"],
-    extends: [sharedLint, pluginLint],
-    overrides: [
-      {
-        files: ["src/**/*.ts"],
-        rules: {
-          "import/no-cycle": "off",
-        },
-      },
-    ],
-    options: {
-      typeAware: true,
-      typeCheck: true,
-    },
-    jsPlugins: [
-      {
-        name: "vite-plus",
-        specifier: "vite-plus/oxlint-plugin",
-      },
-    ],
-    rules: {
-      "vite-plus/prefer-vite-plus-imports": "error",
-    },
-  },
+  lint: { ...backendLint },
 });
