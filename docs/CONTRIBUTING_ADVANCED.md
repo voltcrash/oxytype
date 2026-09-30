@@ -34,6 +34,8 @@ Git is optional but we recommend you utilize it. Monkeytype uses the Git source 
 
 Currently, the project is using version `24.11.0 LTS`.
 
+Vite+ reads `.node-version`; nvm reads `.nvmrc`. Keep both version pins equal.
+
 If you use `nvm` (if you use Windows, use [nvm-windows](https://github.com/coreybutler/nvm-windows)) then you can run `nvm install` and `nvm use` (you might need to specify the exact version eg: `nvm install 24.11.0` then `nvm use 24.11.0`) to use the version of Node.js in the `.nvmrc` file.
 
 Alternatively, you can navigate to the NodeJS [website](https://nodejs.org/en/) to download it from there.
@@ -151,6 +153,10 @@ If you are on a UNIX system and you get a spawn error, run npm with `sudo`.
 ## Standards and Guidelines
 
 Code formatting and linting is enforced by [Oxc (Oxfmt and Oxlint)](https://github.com/oxc-project/oxc), which automatically runs every time you make a commit.
+
+`pnpm lint-fast` runs without type checking; `pnpm lint` includes type-aware rules and TypeScript diagnostics. `pnpm exec vp check` applies workspace rules, including frontend and backend overrides.
+
+After upgrading Vite+, run `pnpm lint-check-config --write` to refresh the application category exclusions. CI verifies that these match the package configurations.
 
 For guidelines on commit messages, adding themes, languages, or quotes, please refer to [CONTRIBUTING.md](./CONTRIBUTING.md). Following these guidelines will increase the chances of getting your change accepted.
 
