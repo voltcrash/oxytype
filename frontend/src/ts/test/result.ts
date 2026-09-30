@@ -1,6 +1,5 @@
-import { clearWords } from "./test-ui";
-import { animateAsync } from "../anim";
-import { updateClassNames } from "../utils/cn";
+import { clearWords, clearWordsBlur } from "./test-ui";
+import { showResultScreen } from "../components/pages/test/result/useResultScreen";
 import { Chart, type PluginChartOptions } from "chart.js";
 
 import { Config } from "../config/store";
@@ -45,7 +44,6 @@ import { LocalStorageWithSchema } from "../utils/local-storage-with-schema";
 import { z } from "zod";
 import { blurInputElement } from "../input/input-element";
 import * as ConnectionState from "../states/connection";
-import { getWordsElement } from "../states/test-dom";
 import { getTheme } from "../states/theme";
 import {
   getLastEventLog,
@@ -70,7 +68,6 @@ import {
   getResultChart,
   getResultChartDataset,
   getResultChartScale,
-  getResultElement,
   resultState,
   setResultState,
   type ResultChartLegendId,
@@ -665,7 +662,7 @@ export async function update(
   });
   updateRetrySaving(false);
   setResultState("quote", { rateVisible: false, rated: false, rating: "" });
-  setClass(getWordsElement(), "blurred", false);
+  clearWordsBlur();
   blurInputElement();
 
   if (!ConnectionState.get()) {
@@ -762,19 +759,8 @@ export async function update(
   void Funbox.clear();
 
   setResultLoading(false);
-  const resultEl = getResultElement();
-  setClass(resultEl, "hidden", false);
+  await showResultScreen(Misc.applyReducedMotion(125));
 
-  resultEl?.focus({
-    preventScroll: true,
-  });
-
-  await animateAsync(resultEl, {
-    opacity: [0, 1],
-    duration: Misc.applyReducedMotion(125),
-  });
-
-  scrollToCenterOrTop(resultEl ?? null);
   void AdController.renderResult();
   setResultCalculating(false);
   clearWords();
@@ -997,28 +983,3 @@ configEvent.subscribe(async ({ key }) => {
     getResultChart().resize();
   }
 });
-
-function setClass(
-  element: HTMLElement | undefined | null,
-  names: string | string[],
-  enabled: boolean,
-): void {
-  if (element) {
-    element.className = updateClassNames(
-      element.className,
-      Array.isArray(names) ? names.join(" ") : names,
-      enabled,
-    );
-  }
-}
-
-function scrollToCenterOrTop(el: HTMLElement | null): void {
-  if (!el) return;
-
-  const elementHeight = el.offsetHeight;
-  const windowHeight = window.innerHeight;
-
-  el.scrollIntoView({
-    block: elementHeight < windowHeight ? "center" : "start",
-  });
-}

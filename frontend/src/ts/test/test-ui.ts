@@ -14,6 +14,7 @@ export {
   updateWordsWrapperHeight,
   addWord,
   clearWords,
+  clearWordsBlur,
   pendingWordData,
   updateWordLetters,
   scrollTape,

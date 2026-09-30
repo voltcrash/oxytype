@@ -54,7 +54,10 @@ vi.mock("../../../src/ts/config/store", () => ({
 vi.mock("../../../src/ts/states/core", async () => {
   const { createSignal } = await import("solid-js");
   const [getGlobalOffsetTop, setGlobalOffsetTop] = createSignal(0);
+  const [getIsScreenshotting, setIsScreenshotting] = createSignal(false);
   return {
+    getIsScreenshotting,
+    setIsScreenshotting,
     getGlobalOffsetTop,
     setGlobalOffsetTop,
     getActivePage: () => guards.page,
@@ -109,11 +112,6 @@ vi.mock("animejs", () => ({
   },
 }));
 
-import {
-  setCrt,
-  setFunboxBodyClasses,
-  setFunboxReducedMotionIgnored,
-} from "../../../src/ts/states/funbox";
 import { AppEffects } from "../../../src/ts/components/core/AppEffects";
 import { configEvent } from "../../../src/ts/events/config";
 import {
@@ -123,7 +121,15 @@ import {
   setFocusCursorHidden,
   setMediaQueryDebugLevel,
 } from "../../../src/ts/states/app";
-import { setGlobalOffsetTop } from "../../../src/ts/states/core";
+import {
+  setGlobalOffsetTop,
+  setIsScreenshotting,
+} from "../../../src/ts/states/core";
+import {
+  setCrt,
+  setFunboxBodyClasses,
+  setFunboxReducedMotionIgnored,
+} from "../../../src/ts/states/funbox";
 
 let element: HTMLDivElement;
 beforeEach(() => {
@@ -146,6 +152,7 @@ beforeEach(() => {
   setFontFamily(undefined);
   setMediaQueryDebugLevel(0);
   setGlobalOffsetTop(0);
+  setIsScreenshotting(false);
   element = document.createElement("div");
   element.className = "content-grid focus hidden";
   element.innerHTML = "<input />";
@@ -164,6 +171,7 @@ afterEach(() => {
   document.body.className = "";
   document.body.style.removeProperty("transition");
   document.documentElement.style.removeProperty("--font");
+  document.documentElement.style.removeProperty("scroll-behavior");
   Reflect.deleteProperty(navigator, "serviceWorker");
   vi.useRealTimers();
 });
@@ -186,6 +194,33 @@ async function ready(): Promise<void> {
 }
 
 describe("App effects", () => {
+  it("hides owned fallbacks during screenshots and stops reacting on disposal", () => {
+    const noscript = document.createElement("noscript");
+    noscript.className = "fallback";
+    document.body.append(noscript);
+    const warning = document.createElement("div");
+    warning.className = "warning";
+    const { unmount } = render(() => (
+      <AppEffects
+        element={element}
+        body={document.body as HTMLBodyElement}
+        noCssWarning={warning}
+      />
+    ));
+    setIsScreenshotting(true);
+    expect(noscript).toHaveClass("fallback", "hidden");
+    expect(warning).toHaveClass("warning", "hidden");
+    expect(document.documentElement.style.scrollBehavior).toBe("auto");
+    setIsScreenshotting(false);
+    expect(noscript).not.toHaveClass("hidden");
+    expect(warning).not.toHaveClass("hidden");
+    expect(document.documentElement.style.scrollBehavior).toBe("smooth");
+    unmount();
+    setIsScreenshotting(true);
+    expect(warning).not.toHaveClass("hidden");
+    noscript.remove();
+  });
+
   it("waits for config and auth before revealing the shell", async () => {
     mount();
     expect(element).toHaveClass("hidden", "focus");

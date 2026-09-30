@@ -126,7 +126,9 @@ export async function getSection(
 }
 
 function htmlToText(html: string): string {
-  const el = document.createElement("div");
-  el.innerHTML = html;
-  return el.textContent || el.innerText || "";
+  const parsed = new DOMParser().parseFromString(
+    `<body>${html}</body>`,
+    "text/html",
+  );
+  return parsed.body.textContent ?? "";
 }

@@ -14,10 +14,15 @@ import { ResultReplay } from "./ResultReplay";
 import { ResultStats } from "./ResultStats";
 import { ResultWatermark } from "./ResultWatermark";
 import { ResultWordsHistory } from "./ResultWordsHistory";
+import { useResultScreen } from "./useResultScreen";
+import { useScreenshotCanvas } from "./useScreenshotCanvas";
 
 export function Result(): JSXElement {
   let resultEl: HTMLDivElement | undefined;
   let wrapperEl: HTMLDivElement | undefined;
+
+  useScreenshotCanvas();
+  useResultScreen(() => resultEl);
 
   onMount(() => {
     setResultElements(resultEl as HTMLDivElement, wrapperEl as HTMLDivElement);

@@ -30,6 +30,7 @@ import {
   getActivePage,
   getCustomTextIndicator,
   getGlobalOffsetTop,
+  getIsScreenshotting,
 } from "../../states/core";
 import {
   getCrt,
@@ -43,7 +44,7 @@ import * as Caret from "../../test/caret";
 import * as CustomText from "../../test/custom-text";
 import * as TestUI from "../../test/test-ui";
 import { applyFontFamily } from "../../ui";
-import { cn } from "../../utils/cn";
+import { cn, updateClassNames } from "../../utils/cn";
 import { isColorDark } from "../../utils/colors";
 import { onDOMReady } from "../../utils/dom-ready";
 import { isDevEnvironment } from "../../utils/env";
@@ -140,6 +141,22 @@ export function AppEffects(props: AppElements): JSXElement {
   });
 
   onMount(() => {
+    const noscript = body.querySelector<HTMLElement>("noscript");
+    createEffect(() => {
+      const screenshotting = getIsScreenshotting();
+      for (const fallback of [noscript, props.noCssWarning]) {
+        if (fallback) {
+          fallback.className = updateClassNames(
+            fallback.className,
+            "hidden",
+            screenshotting,
+          );
+        }
+      }
+      document.documentElement.style.scrollBehavior = screenshotting
+        ? "auto"
+        : "smooth";
+    });
     // Local config starts loading before render; catch its initial font events.
     void applyFontFamily();
     if (isDevEnvironment()) document.title = `${document.title} (localhost)`;

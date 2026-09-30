@@ -1636,3 +1636,7 @@ function scrollToCenterOrTop(el: HTMLElement | null): void {
 export function clearWords(): void {
   getWordsEl().replaceChildren();
 }
+
+export function clearWordsBlur(): void {
+  setClass(getWordsEl(), "blurred", false);
+}

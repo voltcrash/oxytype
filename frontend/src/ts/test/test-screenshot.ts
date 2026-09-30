@@ -1,4 +1,4 @@
-import { updateClassNames } from "../utils/cn";
+import { createCroppedScreenshot } from "../components/pages/test/result/useScreenshotCanvas";
 import { showLoaderBar, hideLoaderBar } from "../states/loader-bar";
 import * as Replay from "./replay";
 import { setIsScreenshotting } from "../states/core";
@@ -12,7 +12,6 @@ import {
 } from "../states/notifications";
 import { convertRemToPixels } from "../utils/numbers";
 import {
-  getResultElement,
   getResultWrapperElement,
   resultState,
   setScreenshotWatermark,
@@ -23,13 +22,6 @@ import { download as downloadFile } from "../components/common/Download";
 function revert(): void {
   setIsScreenshotting(false);
   hideLoaderBar();
-  setClass(document.querySelector<HTMLElement>("noscript"), "hidden", false);
-  setClass(document.querySelector<HTMLElement>("#nocss"), "hidden", false);
-  const result = getResultElement();
-  if (result) {
-    result.className = updateClassNames(result.className, "noBalloons", false);
-  }
-  document.documentElement.style.scrollBehavior = "smooth";
   for (const fb of getActiveFunboxesWithFunction("applyGlobalCSS")) {
     fb.functions.applyGlobalCSS();
   }
@@ -64,18 +56,11 @@ async function generateCanvas(): Promise<HTMLCanvasElement | null> {
   });
 
   setIsScreenshotting(true);
-  setClass(document.querySelector<HTMLElement>("noscript"), "hidden", true);
-  setClass(document.querySelector<HTMLElement>("#nocss"), "hidden", true);
-  const result = getResultElement();
-  if (result) {
-    result.className = updateClassNames(result.className, "noBalloons", true);
-  }
 
   for (const fb of getActiveFunboxesWithFunction("clearGlobal")) {
     fb.functions.clearGlobal();
   }
 
-  document.documentElement.style.scrollBehavior = "auto";
   window.scrollTo({ top: 0, behavior: "auto" });
 
   // --- Target Element Calculation ---
@@ -167,36 +152,21 @@ async function generateCanvas(): Promise<HTMLCanvasElement | null> {
     const scaledPaddedWForCrop = Math.ceil(paddedWidth * scale);
     const scaledPaddedHForCrop = Math.ceil(paddedHeight * scale);
 
-    const canvas = document.createElement("canvas");
-    canvas.width = scaledPaddedWCanvas;
-    canvas.height = scaledPaddedHCanvas;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) {
-      showErrorNotification("Failed to get canvas context for screenshot");
-      return null;
-    }
-
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
-
     // Calculate crop coordinates with proper clamping
     const cropX = Math.max(0, Math.floor((sourceX - paddingX) * scale));
     const cropY = Math.max(0, Math.floor((sourceY - paddingY) * scale));
     const cropW = Math.min(scaledPaddedWForCrop, fullCanvas.width - cropX);
     const cropH = Math.min(scaledPaddedHForCrop, fullCanvas.height - cropY);
 
-    ctx.drawImage(
-      fullCanvas,
-      cropX,
-      cropY,
-      cropW,
-      cropH,
-      0,
-      0,
-      canvas.width,
-      canvas.height,
-    );
-    return canvas;
+    return createCroppedScreenshot({
+      source: fullCanvas,
+      width: scaledPaddedWCanvas,
+      height: scaledPaddedHCanvas,
+      x: cropX,
+      y: cropY,
+      cropWidth: cropW,
+      cropHeight: cropH,
+    });
   } catch (e) {
     showErrorNotification("Error creating screenshot canvas", { error: e });
     return null;
@@ -312,15 +282,5 @@ export async function download(): Promise<void> {
   } catch (error) {
     console.error("Error downloading screenshot:", error);
     showErrorNotification("Failed to download screenshot");
-  }
-}
-
-function setClass(
-  element: HTMLElement | null | undefined,
-  names: string,
-  enabled: boolean,
-): void {
-  if (element) {
-    element.className = updateClassNames(element.className, names, enabled);
   }
 }
