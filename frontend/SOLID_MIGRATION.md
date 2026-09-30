@@ -170,7 +170,9 @@ Perf critical: per-keystroke work must not regress. Measure with `utils/profiler
   > Note: internal anchors use `Link` (including Button, logo and result login); removed delegated clicks and `Page.element`. Custom router/guards/history and modified-click behavior retained; added Link/Button routing tests. Full smoke/frontend checks pass with the documented Knip baseline exception.
 - [x] **P5.4** `legacy-states/*` → move to `states/` as signals (composition, connection, glarses-mode, page-transition, remember-lazy-mode, slow-timer). Delete `legacy-states/`.
   > Note: all six modules now use signals in `states/`; APIs, offline-banner debounce and lazy validated storage reads/writes preserved. Added reactivity/transition/slow-timer/persistence tests. Full frontend checks pass; root Knip retains the documented Storybook error, scoped findings match baseline.
-- [ ] **P5.5** `ui.ts` / `ready.ts` / `elements/no-css.ts` / `event-handlers/global.ts` DOM bits → App effects or `onMount`. `body.loading` class → App.
+- [x] **P5.5** `ui.ts` / `ready.ts` / `elements/no-css.ts` / `event-handlers/global.ts` DOM bits → App effects or `onMount`. `body.loading` class → App.
+
+  > Note: `AppEffects` owns host-ref bindings, fonts, startup fade/readiness, resize/unload and service workers; `GlobalEvents` owns keyboard/error listeners with cleanup. `ui.ts` is a signal API; deleted ready/global/no-css modules and dev-indicator SCSS. No-CSS static/inline fallback retained per §2. Added startup, class preservation and listener-disposal tests; full smoke/frontend checks pass with the documented Knip baseline exception.
 
 ### Phase 6 — Utils + cleanup (deps: all above)
 

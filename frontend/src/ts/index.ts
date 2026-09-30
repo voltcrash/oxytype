@@ -4,13 +4,11 @@ import "./dev/signal-tracker";
 //enable solidjs-devtools
 import "solid-devtools";
 
-import "./event-handlers/global";
 import "./event-handlers/test";
 
 import { init } from "./firebase";
 import * as Logger from "./utils/logger";
 import * as DB from "./db";
-import "./ui";
 import "./controllers/ad-controller";
 import { Config } from "./config/store";
 import * as TestTimer from "./test/test-timer";
@@ -19,7 +17,6 @@ import { onAuthStateChanged } from "./auth";
 import { enable } from "./states/glarses-mode";
 import "./input/listeners";
 import "./controllers/route-controller";
-import "./elements/no-css";
 import { egVideoListener } from "./components/popups/VideoAdPopup";
 import "./states/connection";
 import "./test/tts";
@@ -34,7 +31,6 @@ import { applyEngineSettings } from "./anim";
 import { qs, qsa, qsr } from "./utils/dom";
 import { render } from "solid-js/web";
 import { App } from "./components/App";
-import "./ready";
 import { setVersion } from "./states/core";
 import { loadFromLocalStorage } from "./config/lifecycle";
 
@@ -97,4 +93,13 @@ addToGlobal({
   currentEventLog: buildEventLog,
 });
 
-render(App, qsr("#app").native);
+const appElement = qsr("#app").native;
+render(
+  () =>
+    App({
+      element: appElement,
+      body: document.body as HTMLBodyElement,
+      noCssWarning: document.getElementById("nocss"),
+    }),
+  appElement,
+);

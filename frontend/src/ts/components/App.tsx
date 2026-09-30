@@ -4,6 +4,7 @@ import { Portal } from "solid-js/web";
 
 import { queryClient } from "../queries";
 import { Advertisement } from "./common/Advertisement";
+import { AppEffects, AppElements } from "./core/AppEffects";
 import { Theme } from "./core/Theme";
 import { DevTools } from "./dev/DevTools";
 import { Footer } from "./layout/footer/Footer";
@@ -15,10 +16,11 @@ import { BarTimerProgress } from "./pages/test/live-stats/BarTimerProgress";
 import { MonkeyPower } from "./pages/test/MonkeyPower";
 import { Popups } from "./popups/Popups";
 
-export function App(): JSXElement {
+export function App(props: AppElements): JSXElement {
   return (
     <QueryClientProvider client={queryClient}>
-      <Portal mount={document.body}>
+      <Portal mount={props.body}>
+        <AppEffects {...props} />
         <Overlays />
         <Theme />
         <BarTimerProgress />

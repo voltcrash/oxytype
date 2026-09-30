@@ -1,3 +1,4 @@
+import { setAppLoading } from "../states/app";
 import * as PageController from "./page-controller";
 import * as PageTransition from "../states/page-transition";
 import { isAuthAvailable } from "../firebase";
@@ -265,7 +266,7 @@ authEvent.subscribe((event) => {
         keyframes: keyframes,
       },
     }).finally(() => {
-      document.body.classList.remove("loading");
+      setAppLoading(false);
     });
   }
 });
