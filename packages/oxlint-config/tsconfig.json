@@ -3,5 +3,5 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "include": ["config.ts"]
+  "include": ["config.ts", "check-application-defaults.ts"]
 }
