@@ -1,11 +1,16 @@
 /* oxlint-disable no-unsafe-member-access */
-import { updateClassNames } from "../utils/cn";
+import {
+  removeAdSlots,
+  setAdMessage,
+  setAdWithLeft,
+  setShellAdsVisible,
+} from "../states/ads";
 import { debounce } from "throttle-debounce";
 import { configEvent } from "../events/config";
 import { Config } from "../config/store";
 import * as EG from "./eg-ad-controller";
 import * as PW from "./pw-ad-controller";
-import { onDOMReady } from "../utils/dom-ready";
+import { onCleanup, onMount } from "solid-js";
 import { isTestActive } from "../states/test";
 // import { createEffect } from "solid-js";
 
@@ -16,6 +21,7 @@ const breakpoint2 = 1330;
 let widerThanBreakpoint2 = true;
 
 let initialised = false;
+let refreshInterval: ReturnType<typeof setInterval> | undefined;
 
 export let adBlock: boolean;
 export let cookieBlocker: boolean;
@@ -41,7 +47,7 @@ function init(): void {
     PW.init();
   }
 
-  setInterval(() => {
+  refreshInterval = setInterval(() => {
     if (isTestActive()) {
       return;
     }
@@ -62,28 +68,20 @@ function removeAll(): void {
 }
 
 function removeSellout(): void {
-  document.querySelector<HTMLElement>("#ad-footer-wrapper")?.remove();
-  document.querySelector<HTMLElement>("#ad-footer-small-wrapper")?.remove();
-  document.querySelector<HTMLElement>("#ad-settings-1-wrapper")?.remove();
-  document.querySelector<HTMLElement>("#ad-settings-1-small-wrapper")?.remove();
-  document.querySelector<HTMLElement>("#ad-settings-2-wrapper")?.remove();
-  document.querySelector<HTMLElement>("#ad-settings-2-small-wrapper")?.remove();
-  document.querySelector<HTMLElement>("#ad-settings-3-wrapper")?.remove();
-  document.querySelector<HTMLElement>("#ad-settings-3-small-wrapper")?.remove();
-  document.querySelector<HTMLElement>("#ad-account-1-wrapper")?.remove();
-  document.querySelector<HTMLElement>("#ad-account-1-small-wrapper")?.remove();
-  document.querySelector<HTMLElement>("#ad-account-2-wrapper")?.remove();
-  document.querySelector<HTMLElement>("#ad-account-2-small-wrapper")?.remove();
+  removeAdSlots.dispatch([
+    "ad-footer",
+    "ad-settings-1",
+    "ad-settings-2",
+    "ad-settings-3",
+    "ad-account-1",
+    "ad-account-2",
+  ]);
 }
-
 function removeOn(): void {
-  document.querySelector<HTMLElement>("#ad-vertical-right-wrapper")?.remove();
-  document.querySelector<HTMLElement>("#ad-vertical-left-wrapper")?.remove();
+  removeAdSlots.dispatch(["ad-vertical-right", "ad-vertical-left"]);
 }
-
 function removeResult(): void {
-  document.querySelector<HTMLElement>("#ad-result-wrapper")?.remove();
-  document.querySelector<HTMLElement>("#ad-result-small-wrapper")?.remove();
+  removeAdSlots.dispatch(["ad-result"]);
 }
 
 function updateBreakpoint(noReinstate = false): void {
@@ -209,40 +207,11 @@ export async function renderResult(): Promise<void> {
   await checkCookieblocker();
 
   if (adBlock) {
-    setHtml(
-      document.querySelector<HTMLElement>(
-        "#ad-result-wrapper .iconAndText .text",
-      ),
-      `
-    Using an ad blocker? No worries
-    <div class="smalltext">
-      We understand ads can be annoying
-      <br />
-      You can
-      <i>disable all ads</i>
-      in the settings
-    </div>
-    `,
-    );
+    setAdMessage("adblock");
     return;
   }
-
   if (cookieBlocker) {
-    setHtml(
-      document.querySelector<HTMLElement>(
-        "#ad-result-wrapper .iconAndText .text",
-      ),
-      `
-    Ads not working? Ooops
-    <div class="smalltext">
-      You may have a cookie popup blocker enabled - ads will not show without your consent
-      <br />
-      You can also 
-      <i>disable all ads</i>
-      in the settings if you wish
-    </div>
-    `,
-    );
+    setAdMessage("cookies");
     return;
   }
 
@@ -254,49 +223,7 @@ export async function renderResult(): Promise<void> {
 }
 
 export function updateFooterAndVerticalAds(visible: boolean): void {
-  if (visible) {
-    setClass(
-      document.querySelector<HTMLElement>("#ad-vertical-left-wrapper"),
-      "testPage",
-      false,
-    );
-    setClass(
-      document.querySelector<HTMLElement>("#ad-vertical-right-wrapper"),
-      "testPage",
-      false,
-    );
-    setClass(
-      document.querySelector<HTMLElement>("#ad-footer-wrapper"),
-      "testPage",
-      false,
-    );
-    setClass(
-      document.querySelector<HTMLElement>("#ad-footer-small-wrapper"),
-      "testPage",
-      false,
-    );
-  } else {
-    setClass(
-      document.querySelector<HTMLElement>("#ad-vertical-left-wrapper"),
-      "testPage",
-      true,
-    );
-    setClass(
-      document.querySelector<HTMLElement>("#ad-vertical-right-wrapper"),
-      "testPage",
-      true,
-    );
-    setClass(
-      document.querySelector<HTMLElement>("#ad-footer-wrapper"),
-      "testPage",
-      true,
-    );
-    setClass(
-      document.querySelector<HTMLElement>("#ad-footer-small-wrapper"),
-      "testPage",
-      true,
-    );
-  }
+  setShellAdsVisible(visible);
 }
 
 export function showConsentPopup(): void {
@@ -324,11 +251,6 @@ export function destroyResult(): void {
 const debouncedBreakpointUpdate = debounce(500, updateBreakpoint);
 const debouncedBreakpoint2Update = debounce(500, updateBreakpoint2);
 
-window.addEventListener("resize", () => {
-  debouncedBreakpointUpdate();
-  debouncedBreakpoint2Update();
-});
-
 configEvent.subscribe(({ key, newValue }) => {
   if (key === "ads") {
     if (newValue === "off") {
@@ -342,34 +264,31 @@ configEvent.subscribe(({ key, newValue }) => {
   }
 });
 
-onDOMReady(() => {
-  updateBreakpoint(true);
-  updateBreakpoint2();
-});
-
-window.onerror = function (error): void {
-  //@ts-expect-error ---
-  if (choice === "eg") {
-    if (typeof error === "string" && error.startsWith("EG APS")) {
-      setClass(
-        document.querySelector<HTMLElement>("#ad-result-wrapper .iconAndText"),
-        "withLeft",
-        true,
-      );
-    }
-  }
-};
-
-function setClass(
-  element: HTMLElement | null | undefined,
-  names: string,
-  enabled: boolean,
-): void {
-  if (element) {
-    element.className = updateClassNames(element.className, names, enabled);
-  }
-}
-
-function setHtml(element: HTMLElement | null, html: string): void {
-  if (element) element.innerHTML = html;
+export function useAdLifecycle(): void {
+  onMount(() => {
+    updateBreakpoint(true);
+    updateBreakpoint2();
+    const resize = (): void => {
+      debouncedBreakpointUpdate();
+      debouncedBreakpoint2Update();
+    };
+    window.addEventListener("resize", resize);
+    const previousError = window.onerror;
+    window.onerror = (error): void => {
+      if (
+        choice === "eg" &&
+        typeof error === "string" &&
+        error.startsWith("EG APS")
+      ) {
+        setAdWithLeft(true);
+      }
+    };
+    onCleanup(() => {
+      window.removeEventListener("resize", resize);
+      debouncedBreakpointUpdate.cancel();
+      debouncedBreakpoint2Update.cancel();
+      window.onerror = previousError;
+      clearInterval(refreshInterval);
+    });
+  });
 }

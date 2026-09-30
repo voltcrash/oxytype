@@ -14,6 +14,7 @@ export function get(): boolean {
 type PageView = {
   id: PageName | null;
   phase: "idle" | "prepared" | "in" | "out" | "active";
+  revealed?: true;
   animation?: { duration: number; complete: () => void };
 };
 
@@ -56,3 +57,11 @@ export async function transitionPage(
 }
 
 export { getPageView };
+
+export function revealPreparedTestPage(): void {
+  setPageView((view) =>
+    view.id === "test" && view.phase === "prepared"
+      ? { ...view, revealed: true }
+      : view,
+  );
+}

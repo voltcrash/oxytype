@@ -1,5 +1,4 @@
-import { onDOMReady } from "../../utils/dom-ready";
-import { getInputElement } from "../input-element";
+import { useInputListener } from "../../hooks/useInputListener";
 import * as CompositionState from "../../states/composition";
 import * as TestLogic from "../../test/test-logic";
 import { setLastInsertCompositionTextData } from "../state";
@@ -13,10 +12,8 @@ import {
   setCompositionText,
 } from "../../states/test";
 
-onDOMReady(() => {
-  const inputEl = getInputElement();
-
-  inputEl.addEventListener("compositionstart", (event) => {
+export function bindCompositionListeners(inputEl: HTMLTextAreaElement): void {
+  useInputListener(inputEl, "compositionstart", (event) => {
     console.debug("wordsInput event compositionstart", {
       event,
       data: event.data,
@@ -38,7 +35,7 @@ onDOMReady(() => {
     });
   });
 
-  inputEl.addEventListener("compositionupdate", (event) => {
+  useInputListener(inputEl, "compositionupdate", (event) => {
     console.debug("wordsInput event compositionupdate", {
       event,
       data: event.data,
@@ -57,7 +54,7 @@ onDOMReady(() => {
     });
   });
 
-  inputEl.addEventListener("compositionend", async (event) => {
+  useInputListener(inputEl, "compositionend", async (event) => {
     console.debug("wordsInput event compositionend", {
       event,
       data: event.data,
@@ -85,4 +82,4 @@ onDOMReady(() => {
       wordIndex: getActiveWordIndex(),
     });
   });
-});
+}

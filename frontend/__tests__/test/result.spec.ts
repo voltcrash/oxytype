@@ -49,7 +49,7 @@ vi.mock("../../src/ts/db", () => ({
     state.localPbWpm === 0 ? undefined : { wpm: state.localPbWpm },
   getSnapshot: () => undefined,
 }));
-vi.mock("../../src/ts/test/test-ui", () => ({}));
+vi.mock("../../src/ts/test/test-ui", () => ({ clearWords: vi.fn() }));
 vi.mock("../../src/ts/test/today-tracker", () => ({
   getString: () => "",
 }));

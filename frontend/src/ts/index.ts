@@ -13,7 +13,6 @@ import * as TestTimer from "./test/test-timer";
 import * as Result from "./test/result";
 import { onAuthStateChanged } from "./auth";
 import { enable } from "./states/glarses-mode";
-import "./input/listeners";
 import "./controllers/route-controller";
 import { egVideoListener } from "./components/popups/VideoAdPopup";
 import "./states/connection";

@@ -1,3 +1,4 @@
+import { openFilePicker } from "../../components/common/FilePicker";
 import { Command } from "../types";
 import { buildCommandForConfigKey } from "../util";
 import FileStorage from "../../utils/file-storage";
@@ -25,47 +26,38 @@ const customBackgroundCommand: Command = {
           return !(await FileStorage.hasFile("LocalBackgroundFile"));
         },
         exec: async (): Promise<void> => {
-          const inputElement = document.createElement("input");
-          inputElement.type = "file";
-          inputElement.accept = "image/*";
-          inputElement.style.display = "none";
-          document.body.appendChild(inputElement);
-
-          const cleanup = (): void => {
-            document.body.removeChild(inputElement);
-          };
-
-          inputElement.onchange = async (event) => {
-            const file = (event.target as HTMLInputElement).files?.[0];
-            if (!file) {
-              cleanup();
-              return;
-            }
-
-            // check type
-            if (!/image\/(jpeg|jpg|png|gif|webp)/.exec(file.type)) {
-              showNoticeNotification("Unsupported image format");
-              cleanup();
-              return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = async (readerEvent) => {
-              const dataUrl = readerEvent.target?.result as string;
-              try {
-                await FileStorage.storeFile("LocalBackgroundFile", dataUrl);
-                await applyCustomBackground();
-              } catch (e) {
-                showNoticeNotification(
-                  `Error uploading background: ${(e as Error).message}`,
-                );
+          openFilePicker({
+            accept: "image/*",
+            onFile: async (file, cleanup) => {
+              if (!file) {
+                cleanup();
+                return;
               }
-              cleanup();
-            };
-            reader.onerror = cleanup;
-            reader.readAsDataURL(file);
-          };
-          inputElement.click();
+
+              // check type
+              if (!/image\/(jpeg|jpg|png|gif|webp)/.exec(file.type)) {
+                showNoticeNotification("Unsupported image format");
+                cleanup();
+                return;
+              }
+
+              const reader = new FileReader();
+              reader.onload = async (readerEvent) => {
+                const dataUrl = readerEvent.target?.result as string;
+                try {
+                  await FileStorage.storeFile("LocalBackgroundFile", dataUrl);
+                  await applyCustomBackground();
+                } catch (e) {
+                  showNoticeNotification(
+                    `Error uploading background: ${(e as Error).message}`,
+                  );
+                }
+                cleanup();
+              };
+              reader.onerror = cleanup;
+              reader.readAsDataURL(file);
+            },
+          });
         },
       },
       {

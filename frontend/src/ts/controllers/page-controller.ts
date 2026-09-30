@@ -1,3 +1,4 @@
+import { highlightSetting } from "../states/settings-highlight";
 import { isDevEnvironment } from "../utils/env";
 import * as Misc from "../utils/misc";
 import * as Strings from "../utils/strings";
@@ -49,28 +50,9 @@ const pages = {
   test: PageTest.page,
   settings: solidPage("settings", {
     beforeShow: async () => {
-      // clear any previous highlight
-      const prev = document.querySelector<HTMLElement>(
-        "#pageSettings .settings-highlight",
+      highlightSetting(
+        new URLSearchParams(window.location.search).get("highlight"),
       );
-      if (prev !== null) {
-        prev.classList.remove("settings-highlight");
-      }
-
-      const highlight = new URLSearchParams(window.location.search).get(
-        "highlight",
-      );
-      if (highlight === null) return;
-
-      const element = document.querySelector<HTMLElement>(
-        `#pageSettings [data-setting-key="${CSS.escape(highlight)}"]`,
-      );
-      if (element === null) return;
-
-      setTimeout(() => {
-        element.scrollIntoView({ block: "center", behavior: "auto" });
-        element.classList.add("settings-highlight");
-      }, 250);
     },
   }),
   about: solidPage("about"),

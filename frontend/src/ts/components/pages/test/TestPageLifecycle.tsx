@@ -2,6 +2,7 @@ import { onCleanup, onMount } from "solid-js";
 
 import { Config } from "../../../config/store";
 import { isInputElementFocused } from "../../../input/input-element";
+import { bindInputListenersTo } from "../../../input/listeners";
 import {
   getResultVisible,
   isTestActive,
@@ -38,6 +39,7 @@ export function TestPageLifecycle(props: { input: HTMLTextAreaElement }): null {
       if (document.visibilityState === "visible") windowFocus();
     };
     const input = props.input;
+    bindInputListenersTo(input);
     input.addEventListener("focus", focus);
     input.addEventListener("focusout", focusout);
     window.addEventListener("blur", windowBlur);

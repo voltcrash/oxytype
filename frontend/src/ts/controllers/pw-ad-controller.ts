@@ -3,6 +3,7 @@
 // oxlint-disable ban-ts-comment
 //@ts-nocheck too many errors from 3rd party ad code
 
+import { getAdSlot } from "../states/ads";
 import { Config } from "../config/store";
 import { getActivePage } from "../states/core";
 import { getResultVisible } from "../states/test";
@@ -180,7 +181,7 @@ function getUnits(): unknown {
   for (const unit of units) {
     // const isSky = unit.type === "sky_btf";
 
-    const element = document.querySelector(`#${unit.selectorId}`);
+    const element = getAdSlot(unit.selectorId);
 
     if (
       element &&

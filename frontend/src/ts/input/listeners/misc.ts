@@ -1,26 +1,21 @@
-import { onDOMReady } from "../../utils/dom-ready";
-import {
-  getInputElement,
-  moveInputElementCaretToTheEnd,
-} from "../input-element";
+import { useInputListener } from "../../hooks/useInputListener";
+import { moveInputElementCaretToTheEnd } from "../input-element";
 
-onDOMReady(() => {
-  const inputEl = getInputElement();
-
-  inputEl.addEventListener("focus", () => {
+export function bindMiscListeners(inputEl: HTMLTextAreaElement): void {
+  useInputListener(inputEl, "focus", () => {
     moveInputElementCaretToTheEnd();
   });
 
-  inputEl.addEventListener("copy paste", (event) => {
+  useInputListener(inputEl, "copy paste", (event) => {
     event.preventDefault();
   });
 
   //this might not do anything
-  inputEl.addEventListener("select selectstart", (event) => {
+  useInputListener(inputEl, "select selectstart", (event) => {
     event.preventDefault();
   });
 
-  inputEl.addEventListener("selectionchange", (event) => {
+  useInputListener(inputEl, "selectionchange", (event) => {
     const selection = window.getSelection();
 
     console.debug("wordsInput event selectionchange", {
@@ -37,4 +32,4 @@ onDOMReady(() => {
       moveInputElementCaretToTheEnd();
     }
   });
-});
+}

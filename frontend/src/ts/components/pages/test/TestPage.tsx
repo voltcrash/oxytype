@@ -65,6 +65,7 @@ export function TestPage(
         "page pageTest full-width content-grid relative col-[full-width] grid h-full grid-rows-[1fr_auto_1fr]",
         getPageView().id === "test" &&
           getPageView().phase === "prepared" &&
+          !getPageView().revealed &&
           "hidden",
         getPageView().id === "test" &&
           getPageView().phase === "active" &&

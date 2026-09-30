@@ -1632,3 +1632,7 @@ function scrollToCenterOrTop(el: HTMLElement | null): void {
     block: elementHeight < windowHeight ? "center" : "start",
   });
 }
+
+export function clearWords(): void {
+  getWordsEl().replaceChildren();
+}

@@ -1,12 +1,9 @@
-import { onDOMReady } from "../../utils/dom-ready";
-import { getInputElement } from "../input-element";
+import { useInputListener } from "../../hooks/useInputListener";
 import { onKeyup } from "../handlers/keyup";
 import { onKeydown } from "../handlers/keydown";
 
-onDOMReady(() => {
-  const inputEl = getInputElement();
-
-  inputEl.addEventListener("keyup", async (event) => {
+export function bindKeyListeners(inputEl: HTMLTextAreaElement): void {
+  useInputListener(inputEl, "keyup", async (event) => {
     console.debug("wordsInput event keyup", {
       event,
       key: event.key,
@@ -16,7 +13,7 @@ onDOMReady(() => {
     await onKeyup(event);
   });
 
-  inputEl.addEventListener("keydown", async (event) => {
+  useInputListener(inputEl, "keydown", async (event) => {
     console.debug("wordsInput event keydown", {
       event,
       key: event.key,
@@ -25,4 +22,4 @@ onDOMReady(() => {
 
     await onKeydown(event);
   });
-});
+}

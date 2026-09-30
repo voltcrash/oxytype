@@ -1,8 +1,7 @@
-import { onDOMReady } from "../../utils/dom-ready";
+import { useInputListener } from "../../hooks/useInputListener";
 import { onDelete } from "../handlers/delete";
 import { onInsertText } from "../handlers/insert-text";
 import { isSupportedInputType } from "../helpers/input-type";
-import { getInputElement } from "../input-element";
 import {
   getLastInsertCompositionTextData,
   setLastInsertCompositionTextData,
@@ -20,10 +19,8 @@ import {
 import { getCurrentInput } from "../../test/events/data";
 import { areAllWordsGenerated } from "../../test/words-generator";
 
-onDOMReady(() => {
-  const inputEl = getInputElement();
-
-  inputEl.addEventListener("beforeinput", async (event) => {
+export function bindInputListeners(inputEl: HTMLTextAreaElement): void {
+  useInputListener(inputEl, "beforeinput", async (event) => {
     if (!(event instanceof InputEvent)) {
       //beforeinput is typed as inputevent but input is not?
       //@ts-expect-error just doing this as a sanity check
@@ -77,7 +74,7 @@ onDOMReady(() => {
     }
   });
 
-  inputEl.addEventListener("input", async (event) => {
+  useInputListener(inputEl, "input", async (event) => {
     if (!(event instanceof InputEvent)) {
       //since the listener is on an input element, this should never trigger
       //but its here to narrow the type of "event"
@@ -145,7 +142,7 @@ onDOMReady(() => {
         allWordsTyped &&
         inputPlusCompositionIsCorrect
       ) {
-        getInputElement().dispatchEvent(
+        inputEl.dispatchEvent(
           new CompositionEvent("compositionend", { data: event.data ?? "" }),
         );
       }
@@ -159,4 +156,4 @@ onDOMReady(() => {
       throw new Error(`Unhandled input type: ${inputType}`);
     }
   });
-});
+}

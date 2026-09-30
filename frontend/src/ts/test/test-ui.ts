@@ -13,6 +13,7 @@ export {
   centerActiveLine,
   updateWordsWrapperHeight,
   addWord,
+  clearWords,
   pendingWordData,
   updateWordLetters,
   scrollTape,

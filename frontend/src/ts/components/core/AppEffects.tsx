@@ -15,6 +15,7 @@ import { debounce, throttle } from "throttle-debounce";
 import * as ServerConfiguration from "../../ape/server-configuration";
 import { configLoadPromise } from "../../config/lifecycle";
 import { Config } from "../../config/store";
+import { useAdLifecycle } from "../../controllers/ad-controller";
 import * as MerchBanner from "../../elements/merch-banner";
 import { configEvent } from "../../events/config";
 import { authPromise } from "../../firebase";
@@ -58,6 +59,7 @@ export type AppElements = {
 };
 
 export function AppEffects(props: AppElements): JSXElement {
+  useAdLifecycle();
   const [isReady, setReady] = createSignal(false);
   // Bootstrap supplies stable host refs for the lifetime of this root.
   const { element, body } = untrack(() => props);

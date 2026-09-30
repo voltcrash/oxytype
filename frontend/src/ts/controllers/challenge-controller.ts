@@ -1,4 +1,4 @@
-import { updateClassNames } from "../utils/cn";
+import { revealPreparedTestPage } from "../states/page-transition";
 import {
   showErrorNotification,
   showNoticeNotification,
@@ -214,16 +214,7 @@ export async function setup(challengeName: ChallengeName): Promise<boolean> {
     if (challenge === undefined || settings === undefined) {
       showNoticeNotification("Challenge not found or missing settings");
       setTimeout(() => {
-        setClass(
-          document.querySelector<HTMLElement>("header .config"),
-          "hidden",
-          false,
-        );
-        setClass(
-          document.querySelector<HTMLElement>(".page.pageTest"),
-          "hidden",
-          false,
-        );
+        revealPreparedTestPage();
       }, 250);
       return false;
     }
@@ -357,16 +348,7 @@ export async function setup(challengeName: ChallengeName): Promise<boolean> {
       }
     }
     notitext = settings.message;
-    setClass(
-      document.querySelector<HTMLElement>("header .config"),
-      "hidden",
-      false,
-    );
-    setClass(
-      document.querySelector<HTMLElement>(".page.pageTest"),
-      "hidden",
-      false,
-    );
+    revealPreparedTestPage();
 
     if (notitext === undefined) {
       showSuccessNotification(`Challenge '${challenge.display}' loaded.`);
@@ -406,13 +388,3 @@ configEvent.subscribe(({ key }) => {
     clearActive();
   }
 });
-
-function setClass(
-  element: HTMLElement | null | undefined,
-  names: string,
-  enabled: boolean,
-): void {
-  if (element) {
-    element.className = updateClassNames(element.className, names, enabled);
-  }
-}

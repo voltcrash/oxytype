@@ -7,6 +7,7 @@ import { getFocus } from "../states/test";
 import { cn } from "../utils/cn";
 import { Advertisement } from "./common/Advertisement";
 import { Download } from "./common/Download";
+import { FilePicker } from "./common/FilePicker";
 import { AppEffects, AppElements } from "./core/AppEffects";
 import { CustomBackground } from "./core/CustomBackground";
 import { FunboxEffects } from "./core/FunboxEffects";
@@ -27,6 +28,7 @@ export function App(props: AppElements): JSXElement {
       <Portal mount={props.body}>
         <AppEffects {...props} />
         <Download />
+        <FilePicker />
         <Overlays />
         <Theme />
         <CustomBackground />

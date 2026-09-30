@@ -1,3 +1,4 @@
+import { clearWords } from "./test-ui";
 import { animateAsync } from "../anim";
 import { updateClassNames } from "../utils/cn";
 import { Chart, type PluginChartOptions } from "chart.js";
@@ -776,7 +777,7 @@ export async function update(
   scrollToCenterOrTop(resultEl ?? null);
   void AdController.renderResult();
   setResultCalculating(false);
-  getWordsElement().innerHTML = "";
+  clearWords();
   getResultChart().resize();
 }
 
