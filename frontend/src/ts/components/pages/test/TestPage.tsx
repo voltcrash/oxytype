@@ -1,5 +1,5 @@
-import { spread } from "solid-js/web";
 import { JSXElement, onMount } from "solid-js";
+import { spread } from "solid-js/web";
 
 import { useWordsFocus } from "../../../hooks/useWordsFocus";
 import { isWordsWrapperVisible } from "../../../states/funbox";
@@ -8,6 +8,7 @@ import { setTestElements } from "../../../states/test-dom";
 import { focusWords } from "../../../test/test-ui";
 import { cn } from "../../../utils/cn";
 import { CapsWarning } from "./CapsWarning";
+import { Caret } from "./Caret";
 import { CompositionDisplay } from "./CompositionDisplay";
 import { FunboxTimers } from "./FunboxTimer";
 import { Keymap } from "./Keymap";
@@ -22,8 +23,8 @@ import { RestartTestButton } from "./RestartTestButton";
 import { Result } from "./result/Result";
 import { TestConfig } from "./TestConfig";
 import { TestInitFailed } from "./TestInitFailed";
-import { TestPageLifecycle } from "./TestPageLifecycle";
 import { TestLoading } from "./TestLoading";
+import { TestPageLifecycle } from "./TestPageLifecycle";
 
 export function TestPage(
   props: { ref?: (el: HTMLDivElement) => void } = {},
@@ -109,16 +110,8 @@ export function TestPage(
             spellcheck={false}
           ></textarea>
           <OutOfFocusWarning />
-          <div
-            id="paceCaret"
-            ref={(el) => (refs.paceCaret = el)}
-            class="full-width default hidden"
-          ></div>
-          <div
-            id="caret"
-            ref={(el) => (refs.caret = el)}
-            class="full-width default"
-          ></div>
+          <Caret pace ref={(el) => (refs.paceCaret = el)} />
+          <Caret ref={(el) => (refs.caret = el)} />
           <div
             id="words"
             ref={(el) => (refs.words = el)}

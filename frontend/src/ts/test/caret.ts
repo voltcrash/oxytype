@@ -1,3 +1,5 @@
+import { ElementWithUtils } from "../utils/dom";
+import { cancelPendingAnimationFrame } from "../utils/debounced-animation-frame";
 import { Config } from "../config/store";
 import { getCurrentInput } from "./events/data";
 import {
@@ -45,6 +47,17 @@ export function updatePosition(noAnim = false): void {
 }
 
 let caret: Caret | undefined;
+
+// The component owns the node and cancels its animations on disposal.
+export function bindCaret(element: HTMLDivElement): () => void {
+  const instance = new Caret(new ElementWithUtils(element), Config.caretStyle);
+  caret = instance;
+  return () => {
+    instance.stopAllAnimations();
+    cancelPendingAnimationFrame(`caret.${element.id}.goTo`);
+    if (caret === instance) caret = undefined;
+  };
+}
 
 export function getCaret(): Caret {
   return (caret ??= new Caret(getCaretElement(), Config.caretStyle));

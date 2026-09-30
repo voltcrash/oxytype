@@ -1,3 +1,5 @@
+import { ElementWithUtils } from "../utils/dom";
+import { cancelPendingAnimationFrame } from "../utils/debounced-animation-frame";
 import * as TestWords from "./test-words";
 import { Config } from "../config/store";
 import * as DB from "../db";
@@ -41,6 +43,20 @@ let startTimestamp = 0;
 let settings: Settings | null = null;
 
 let caret: Caret | undefined;
+
+// The component owns the node and cancels its animations on disposal.
+export function bindCaret(element: HTMLDivElement): () => void {
+  const instance = new Caret(
+    new ElementWithUtils(element),
+    Config.paceCaretStyle,
+  );
+  caret = instance;
+  return () => {
+    instance.stopAllAnimations();
+    cancelPendingAnimationFrame(`caret.${element.id}.goTo`);
+    if (caret === instance) caret = undefined;
+  };
+}
 
 export function getCaret(): Caret {
   return (caret ??= new Caret(getPaceCaretElement(), Config.paceCaretStyle));
