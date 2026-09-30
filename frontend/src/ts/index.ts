@@ -32,7 +32,8 @@ import "./elements/psa";
 import "./controllers/url-handler";
 import { applyEngineSettings } from "./anim";
 import { qs, qsa, qsr } from "./utils/dom";
-import { mountComponents } from "./components/mount";
+import { render } from "solid-js/web";
+import { App } from "./components/App";
 import "./ready";
 import { setVersion } from "./states/core";
 import { loadFromLocalStorage } from "./config/lifecycle";
@@ -96,4 +97,4 @@ addToGlobal({
   currentEventLog: buildEventLog,
 });
 
-mountComponents();
+render(App, qsr("#app").native);

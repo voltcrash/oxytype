@@ -23,10 +23,7 @@ export function remove(id: string): void {
 
 export type SkeletonAppendParents = keyof typeof parents;
 
-const parents = {
-  popups: document.getElementById("popups") as HTMLElement,
-  main: document.querySelector("main") as HTMLElement,
-};
+const parents = { popups: "#popups", main: "main" };
 
 export function append(id: string, parent: SkeletonAppendParents): void {
   let popup = skeletons.get(id) as HTMLElement;
@@ -34,9 +31,15 @@ export function append(id: string, parent: SkeletonAppendParents): void {
   if (popup === undefined) {
     console.error(`Skeleton with id ${id} not found`);
   }
-  parents[parent].append(popup);
+  document.querySelector(parents[parent])?.append(popup);
 }
 
 export function has(id: string): boolean {
   return skeletons.has(id);
+}
+
+export function get(id: string): HTMLElement {
+  const element = skeletons.get(id) ?? document.getElementById(id);
+  if (element === null) throw new Error(`Element with id ${id} not found`);
+  return element;
 }

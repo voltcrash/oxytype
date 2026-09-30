@@ -18,7 +18,7 @@ import Page, {
   UrlParamsSchema,
   OptionsWithUrlParams,
 } from "../pages/page";
-import { onDOMReady, qsa, qsr } from "../utils/dom";
+import { onDOMReady, qsa, ElementWithUtils } from "../utils/dom";
 import * as Skeleton from "../utils/skeleton";
 import {
   LeaderboardUrlParamsSchema,
@@ -52,7 +52,7 @@ const pages = {
     beforeShow: async () => {
       // clear any previous highlight
       const prev = document.querySelector<HTMLElement>(
-        '[data-component="settingspage"] .settings-highlight',
+        "#pageSettings .settings-highlight",
       );
       if (prev !== null) {
         prev.classList.remove("settings-highlight");
@@ -64,7 +64,7 @@ const pages = {
       if (highlight === null) return;
 
       const element = document.querySelector<HTMLElement>(
-        `[data-component="settingspage"] [data-setting-key="${CSS.escape(highlight)}"]`,
+        `#pageSettings [data-setting-key="${CSS.escape(highlight)}"]`,
       );
       if (element === null) return;
 
@@ -446,7 +446,7 @@ function solidPage<U extends UrlParamsSchema>(
   const shared = {
     id,
     path,
-    element: qsr(`#${internalId}`),
+    element: () => new ElementWithUtils(Skeleton.get(internalId)),
     loadingOptions: props?.loadingOptions,
     afterHide: async () => {
       Skeleton.remove(internalId);

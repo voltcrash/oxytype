@@ -1,6 +1,6 @@
 import Page from "./page";
 import * as Skeleton from "../utils/skeleton";
-import { qsr } from "../utils/dom";
+import { ElementWithUtils } from "../utils/dom";
 
 export {
   updateBar,
@@ -12,7 +12,7 @@ export {
 
 export const page = new Page({
   id: "loading",
-  element: qsr(".page.pageLoading"),
+  element: () => new ElementWithUtils(Skeleton.get("pageLoading")),
   path: "/",
   afterHide: async (): Promise<void> => {
     Skeleton.remove("pageLoading");

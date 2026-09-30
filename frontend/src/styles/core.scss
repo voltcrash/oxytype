@@ -44,16 +44,6 @@
   color: var(--sub-alt-color);
 }
 
-#app {
-  min-height: 100vh;
-  grid-template-rows: [top-start] auto [content-start] 1fr [content-end] auto [top-end];
-  overflow: hidden;
-  row-gap: 2rem;
-  padding-top: 2rem;
-  padding-bottom: 2rem;
-  width: 100%;
-}
-
 // from an amazing guide by Kevin Powell https://www.youtube.com/watch?v=c13gpBrnGEw
 .content-grid {
   --padding-inline: 2rem;
@@ -114,10 +104,6 @@
 #ad-vertical-right-wrapper {
   grid-column: content-end/full-width-end;
   right: -2rem;
-}
-
-main {
-  display: grid; //stupid fix for stupid safari
 }
 
 #nocss {
