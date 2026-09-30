@@ -42,6 +42,7 @@ vi.mock("../../src/ts/states/test", async (importOriginal) => ({
   getLastEventLog: () => [],
 }));
 
+import { setTestElements } from "../../src/ts/states/test-dom";
 import { __testing } from "../../src/ts/config/testing";
 import type { Config as ConfigType } from "@monkeytype/schemas/configs";
 import { words as TestWords } from "../../src/ts/test/test-words";
@@ -123,6 +124,14 @@ beforeAll(async () => {
       <textarea id="wordsInput"></textarea>
       <div id="wordsWrapper"><div id="words"></div></div>
     </div>`;
+  setTestElements({
+    words: document.querySelector("#words") as HTMLDivElement,
+    wordsWrapper: document.querySelector("#wordsWrapper") as HTMLDivElement,
+    wordsInput: document.querySelector("#wordsInput") as HTMLTextAreaElement,
+    caret: document.createElement("div"),
+    paceCaret: document.createElement("div"),
+    typingTest: document.createElement("div"),
+  });
   TestUI = await import("../../src/ts/test/test-ui");
 });
 

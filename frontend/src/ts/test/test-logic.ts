@@ -96,7 +96,7 @@ import { showLoaderBar, hideLoaderBar } from "../states/loader-bar";
 import { canQuickRestart } from "../utils/quick-restart";
 import { setInputElementValue } from "../input/input-element";
 import { debounce } from "throttle-debounce";
-import { qs } from "../utils/dom";
+import { getTypingTestElement } from "../states/test-dom";
 import { setAccountButtonSpinner } from "../states/header";
 import { Config } from "../config/store";
 import { setQuoteLengthAll, toggleFunbox, setConfig } from "../config/setters";
@@ -362,7 +362,7 @@ async function init(): Promise<boolean> {
         ? `${lastInitError.name}: ${lastInitError.message}`
         : undefined,
     });
-    qs(".pageTest #typingTest")?.hide();
+    getTypingTestElement()?.hide();
     setIsTestRestarting(false);
     return false;
   }
@@ -818,11 +818,11 @@ export async function finish(difficultyFailed = false): Promise<void> {
   // fade out the test and show loading
   // because the css animation has a delay,
   // if the test calculation is fast the loading will not show
-  await Misc.promiseAnimate("#typingTest", {
+  await getTypingTestElement().promiseAnimate({
     opacity: 0,
     duration: Misc.applyReducedMotion(125),
   });
-  qs(".pageTest #typingTest")?.hide();
+  getTypingTestElement()?.hide();
   setResultLoading(true);
   await Misc.sleep(0); //allow ui update
 

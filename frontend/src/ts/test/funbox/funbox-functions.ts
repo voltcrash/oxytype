@@ -1,3 +1,4 @@
+import { getWordsElement, getWordsWrapperElement } from "../../states/test-dom";
 import { FunboxWordsFrequency, Wordset } from "../wordset";
 import * as GetText from "../../utils/generate";
 import { Config } from "../../config/store";
@@ -73,9 +74,9 @@ async function readAheadHandleKeydown(event: KeyboardEvent): Promise<void> {
         TestWords.words.get(getActiveWordIndex() - 1)?.textWithCommit ||
       Config.freedomMode)
   ) {
-    qs("#words")?.addClass("read_ahead_disabled");
+    getWordsElement()?.addClass("read_ahead_disabled");
   } else if (event.key === " ") {
-    qs("#words")?.removeClass("read_ahead_disabled");
+    getWordsElement()?.removeClass("read_ahead_disabled");
   }
 }
 
@@ -473,7 +474,7 @@ const list: Partial<Record<FunboxName, FunboxFunctions>> = {
   },
   memory: {
     applyConfig(): void {
-      qs("#wordsWrapper")?.hide();
+      getWordsWrapperElement()?.hide();
       setConfig("showAllLines", true, {
         nosave: true,
       });
@@ -492,11 +493,11 @@ const list: Partial<Record<FunboxName, FunboxFunctions>> = {
     },
     start(): void {
       MemoryTimer.reset();
-      qs("#words")?.hide();
+      getWordsElement()?.hide();
     },
     restart(): void {
       MemoryTimer.start(Math.round(Math.pow(TestWords.words.length, 1.2)));
-      qs("#words")?.show();
+      getWordsElement()?.show();
       if (Config.keymapMode === "next") {
         setConfig("keymapMode", "react");
       }

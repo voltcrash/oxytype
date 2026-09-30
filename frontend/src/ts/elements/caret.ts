@@ -4,19 +4,12 @@ import { getTotalInlineMargin } from "../utils/misc";
 import { isWordRightToLeft } from "../utils/strings";
 import { requestDebouncedAnimationFrame } from "../utils/debounced-animation-frame";
 import { EasingParam, JSAnimation } from "animejs";
-import { ElementWithUtils, qsr } from "../utils/dom";
+import { ElementWithUtils } from "../utils/dom";
+import {
+  getWordsElement as getWordsCache,
+  getWordsWrapperElement as getWordsWrapperCache,
+} from "../states/test-dom";
 import * as TestWords from "../test/test-words";
-
-let wordsCache: ElementWithUtils | undefined;
-let wordsWrapperCache: ElementWithUtils | undefined;
-
-function getWordsCache(): ElementWithUtils {
-  return (wordsCache ??= qsr("#words"));
-}
-
-function getWordsWrapperCache(): ElementWithUtils {
-  return (wordsWrapperCache ??= qsr("#wordsWrapper"));
-}
 
 let lockedMainCaretInTape = true;
 let caretDebug = false;

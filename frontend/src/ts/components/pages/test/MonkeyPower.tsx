@@ -3,9 +3,9 @@ import { JSXElement, onCleanup, onMount } from "solid-js";
 
 import { Config } from "../../../config/store";
 import * as SlowTimer from "../../../legacy-states/slow-timer";
+import { getCaretElement } from "../../../states/test-dom";
 import { getTheme } from "../../../states/theme";
 import { requestDebouncedAnimationFrame } from "../../../utils/debounced-animation-frame";
-import { qsr } from "../../../utils/dom";
 
 type Particle = {
   x: number;
@@ -218,8 +218,7 @@ export function MonkeyPower(): JSXElement {
 
   onMount(() => {
     if (canvas === undefined) return;
-    // #caret is still legacy markup (P4.4)
-    ctx.caret = qsr("#caret").native;
+    ctx.caret = getCaretElement().native;
     ctx.canvas = canvas;
     ctx.context2d = canvas.getContext("2d") as CanvasRenderingContext2D;
     resize();

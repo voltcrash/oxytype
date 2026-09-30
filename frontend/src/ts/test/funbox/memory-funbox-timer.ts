@@ -1,4 +1,4 @@
-import { qs } from "../../utils/dom";
+import { getWordsWrapperElement } from "../../states/test-dom";
 import {
   setMemoryTimerText,
   setMemoryTimerVisibility,
@@ -35,7 +35,7 @@ export function start(time: number): void {
     memoryTimer === 0 ? hide() : update(memoryTimer);
     if (memoryTimer <= 0) {
       reset();
-      qs("#wordsWrapper")?.hide();
+      getWordsWrapperElement()?.hide();
     }
   }, 1000);
 }

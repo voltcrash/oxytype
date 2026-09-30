@@ -1,10 +1,7 @@
-let el: HTMLTextAreaElement | undefined;
+import { getWordsInputElement } from "../states/test-dom";
 
 export function getInputElement(): HTMLTextAreaElement {
-  el ??=
-    document.querySelector<HTMLTextAreaElement>("#wordsInput") ?? undefined;
-  if (el === undefined) throw new Error("Words input element not found");
-  return el;
+  return getWordsInputElement().native;
 }
 
 export function setInputElementValue(value: string): void {

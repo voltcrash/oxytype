@@ -1,6 +1,7 @@
 import { JSXElement, onMount } from "solid-js";
 
 import { page } from "../../../pages/test";
+import { setTestElements } from "../../../states/test-dom";
 import { cn } from "../../../utils/cn";
 import { ElementWithUtils } from "../../../utils/dom";
 import { CapsWarning } from "./CapsWarning";
@@ -23,7 +24,10 @@ import { TestLoading } from "./TestLoading";
 export function TestPage(): JSXElement {
   let pageEl: HTMLDivElement | undefined;
 
+  const refs = {} as Parameters<typeof setTestElements>[0];
+
   onMount(() => {
+    setTestElements(refs);
     // PageController still owns page visibility/animation until P5.2.
     page.element = new ElementWithUtils(pageEl as HTMLDivElement);
   });
@@ -42,6 +46,7 @@ export function TestPage(): JSXElement {
       <TestInitFailed />
       <div
         id="typingTest"
+        ref={(el) => (refs.typingTest = el)}
         class="content-grid full-width-padding relative mx-auto w-full"
       >
         <CapsWarning />
@@ -49,9 +54,15 @@ export function TestPage(): JSXElement {
         <TestModesNotice />
         <LiveStatsTextTop />
         <LiveStatsMini />
-        <div id="wordsWrapper" class="content-grid full-width" translate="no">
+        <div
+          id="wordsWrapper"
+          ref={(el) => (refs.wordsWrapper = el)}
+          class="content-grid full-width"
+          translate="no"
+        >
           <textarea
             id="wordsInput"
+            ref={(el) => (refs.wordsInput = el)}
             class={cn(
               "full-width pointer-events-none absolute -z-1 mx-auto block h-[1em] w-0 cursor-default resize-none overflow-hidden rounded-none border-none p-0 text-[1em] [caret-color:transparent] opacity-0 [contain:strict] outline-none [text-wrap-mode:nowrap]",
             )}
@@ -71,9 +82,21 @@ export function TestPage(): JSXElement {
             spellcheck={false}
           ></textarea>
           <OutOfFocusWarning />
-          <div id="paceCaret" class="full-width default hidden"></div>
-          <div id="caret" class="full-width default"></div>
-          <div id="words" class="full-width"></div>
+          <div
+            id="paceCaret"
+            ref={(el) => (refs.paceCaret = el)}
+            class="full-width default hidden"
+          ></div>
+          <div
+            id="caret"
+            ref={(el) => (refs.caret = el)}
+            class="full-width default"
+          ></div>
+          <div
+            id="words"
+            ref={(el) => (refs.words = el)}
+            class="full-width"
+          ></div>
         </div>
         <CompositionDisplay />
         <Keymap />

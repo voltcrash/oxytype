@@ -8,7 +8,7 @@ import {
 import { configEvent } from "../events/config";
 import { Caret } from "../elements/caret";
 import * as CompositionState from "../legacy-states/composition";
-import { qsr } from "../utils/dom";
+import { areTestElementsMounted, getCaretElement } from "../states/test-dom";
 
 export function stopAnimation(): void {
   getCaret().stopBlinking();
@@ -47,10 +47,11 @@ export function updatePosition(noAnim = false): void {
 let caret: Caret | undefined;
 
 export function getCaret(): Caret {
-  return (caret ??= new Caret(qsr("#caret"), Config.caretStyle));
+  return (caret ??= new Caret(getCaretElement(), Config.caretStyle));
 }
 
 configEvent.subscribe(({ key }) => {
+  if (!areTestElementsMounted()) return;
   if (key === "caretStyle") {
     getCaret().setStyle(Config.caretStyle);
     updatePosition(true);

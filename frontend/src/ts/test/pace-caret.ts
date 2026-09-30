@@ -6,7 +6,10 @@ import * as Misc from "../utils/misc";
 import { configEvent } from "../events/config";
 import { getActiveFunboxes } from "./funbox/list";
 import { Caret } from "../elements/caret";
-import { qsr } from "../utils/dom";
+import {
+  areTestElementsMounted,
+  getPaceCaretElement,
+} from "../states/test-dom";
 import {
   getUserAverage10Once,
   getUserDailyBestOnce,
@@ -40,7 +43,7 @@ let settings: Settings | null = null;
 let caret: Caret | undefined;
 
 export function getCaret(): Caret {
-  return (caret ??= new Caret(qsr("#paceCaret"), Config.paceCaretStyle));
+  return (caret ??= new Caret(getPaceCaretElement(), Config.paceCaretStyle));
 }
 
 let lastTestWpm = 0;
@@ -262,6 +265,7 @@ export function start(): void {
 }
 
 configEvent.subscribe(({ key }) => {
+  if (!areTestElementsMounted()) return;
   if (key === "paceCaret") void init();
   if (key === "paceCaretStyle") {
     getCaret().setStyle(Config.paceCaretStyle);

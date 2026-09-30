@@ -1,3 +1,4 @@
+import { getWordsWrapperElement } from "../../states/test-dom";
 import {
   showNoticeNotification,
   showErrorNotification,
@@ -68,7 +69,7 @@ export async function clear(): Promise<boolean> {
 
   qsa(".funBoxTheme").remove();
 
-  qs("#wordsWrapper")?.show();
+  getWordsWrapperElement()?.show();
   MemoryTimer.reset();
   return true;
 }
@@ -101,7 +102,7 @@ export async function activate(
   await setFunboxBodyClasses();
   await applyFunboxCSS();
 
-  qs("#wordsWrapper")?.show();
+  getWordsWrapperElement()?.show();
 
   const { data: language, error } = await tryCatch(
     JSONData.getCurrentLanguage(Config.language),

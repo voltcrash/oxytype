@@ -33,14 +33,16 @@ import * as Joining from "./break-joining";
 import * as LayoutfluidFunboxTimer from "../test/funbox/layoutfluid-funbox-timer";
 import * as ThemeController from "../controllers/theme-controller";
 import * as MemoryFunboxTimer from "./funbox/memory-funbox-timer";
+import { ElementsWithUtils, ElementWithUtils, onDOMReady } from "../utils/dom";
 import {
-  ElementsWithUtils,
-  ElementWithUtils,
-  qs,
-  qsa,
-  qsr,
-  onDOMReady,
-} from "../utils/dom";
+  areTestElementsMounted,
+  getWordsElement as getWordsEl,
+  getWordsWrapperElement as getWordsWrapperEl,
+  getWordsInputElement,
+  getCaretElement,
+  getPaceCaretElement,
+  getTypingTestElement,
+} from "../states/test-dom";
 import { getResultElement, setResultState } from "../states/result";
 import { skipBreakdownEvent } from "../states/header";
 import {
@@ -64,17 +66,6 @@ export const updateHintsPositionDebounced = Misc.debounceUntilResolved(
   updateHintsPosition,
   { rejectSkippedCalls: false },
 );
-
-let wordsEl: ElementWithUtils | undefined;
-let wordsWrapperEl: ElementWithUtils | undefined;
-
-function getWordsEl(): ElementWithUtils {
-  return (wordsEl ??= qsr(".pageTest #words"));
-}
-
-function getWordsWrapperEl(): ElementWithUtils {
-  return (wordsWrapperEl ??= qsr(".pageTest #wordsWrapper"));
-}
 
 export let activeWordTop = 0;
 export let activeWordHeight = 0;
@@ -102,14 +93,14 @@ export function focusWords(force = false): void {
   if (isTestActive()) {
     keepWordsInputInTheCenter(true);
   } else {
-    const typingTest = document.querySelector<HTMLElement>("#typingTest");
+    const typingTest = getTypingTestElement().native;
     Misc.scrollToCenterOrTop(typingTest);
   }
 }
 
 export function keepWordsInputInTheCenter(force = false): void {
   const wordsInput = getInputElement();
-  if (wordsInput === null || wordsWrapperEl === null) return;
+  if (wordsInput === null) return;
 
   const wordsWrapperHeight = getWordsWrapperEl().getOffsetHeight();
   const windowHeight = window.innerHeight;
@@ -452,7 +443,12 @@ function updateWordWrapperClasses(): void {
     getWordsEl().removeClass("colorfulMode");
   }
 
-  qsa("#caret, #paceCaret, #typingTest, #wordsInput").setStyle({
+  new ElementsWithUtils<HTMLElement>(
+    getCaretElement(),
+    getPaceCaretElement(),
+    getTypingTestElement(),
+    getWordsInputElement(),
+  ).setStyle({
     fontSize: `${Config.fontSize}rem`,
   });
 
@@ -930,7 +926,7 @@ function getNlCharWidth(
   if (lastWordInLine) {
     nlChar = lastWordInLine.qs("letter.nlChar");
   } else {
-    nlChar = qs("#words > .word > letter.nlChar");
+    nlChar = getWordsEl().qs(":scope > .word > letter.nlChar");
   }
   if (!nlChar) return 0;
   if (checkIfIncorrect && nlChar.hasClass("incorrect")) return 0;
@@ -1283,7 +1279,7 @@ function updateWordsWidth(): void {
       };
     }
   }
-  const el = qs("#typingTest");
+  const el = getTypingTestElement();
   el?.setStyle(css);
   if (Config.maxLineWidth === 0) {
     el?.removeClass("full-width-padding").addClass("content");
@@ -1487,7 +1483,8 @@ export async function fadeOutForRestart(
   source: "testPage" | "resultPage",
   noAnim: boolean,
 ): Promise<void> {
-  const el = source === "resultPage" ? getResultElement() : qs("#typingTest");
+  const el =
+    source === "resultPage" ? getResultElement() : getTypingTestElement();
   await el?.promiseAnimate({
     opacity: 0,
     duration: getRestartAnimationTime(noAnim),
@@ -1495,7 +1492,7 @@ export async function fadeOutForRestart(
 }
 
 export async function fadeInAfterRestart(noAnim: boolean): Promise<void> {
-  const typingTestEl = qs("#typingTest");
+  const typingTestEl = getTypingTestElement();
   await typingTestEl?.promiseAnimate({
     opacity: [0, 1],
     onBegin: () => {
@@ -1507,7 +1504,7 @@ export async function fadeInAfterRestart(noAnim: boolean): Promise<void> {
 
 export function onTestRestart(source: "testPage" | "resultPage"): void {
   getResultElement()?.hide();
-  qs("#typingTest")?.setStyle({ opacity: "0" }).show();
+  getTypingTestElement()?.setStyle({ opacity: "0" }).show();
   getInputElement().style.left = "0";
   Focus.set(false);
   setCurrentLiveStats({
@@ -1557,7 +1554,7 @@ export function onTestFinish(): void {
 }
 
 onDOMReady(() => {
-  qs("#wordsInput")?.on("focus", (e) => {
+  getWordsInputElement()?.on("focus", (e) => {
     if (!isInputElementFocused()) return;
     if (!getResultVisible() && Config.showOutOfFocusWarning) {
       setTestFocusState("focused");
@@ -1565,14 +1562,14 @@ onDOMReady(() => {
     Caret.show(true);
   });
 
-  qs("#wordsInput")?.on("focusout", () => {
+  getWordsInputElement()?.on("focusout", () => {
     if (!isInputElementFocused()) {
       setTestFocusState("unfocused");
     }
     Caret.hide();
   });
 
-  qs("#wordsWrapper")?.on("click", () => {
+  getWordsWrapperEl()?.on("click", () => {
     focusWords();
   });
 });
@@ -1588,6 +1585,7 @@ document.addEventListener("visibilitychange", () => {
 });
 
 configEvent.subscribe(({ key, newValue }) => {
+  if (!areTestElementsMounted()) return;
   if (key === "showOutOfFocusWarning" && !newValue) {
     setTestFocusState("focused");
   }
