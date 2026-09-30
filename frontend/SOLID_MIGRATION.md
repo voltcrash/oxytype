@@ -163,6 +163,7 @@ Perf critical: per-keystroke work must not regress. Measure with `utils/profiler
 ### Phase 5 — App shell + routing (deps: P1.1, P1.8, P4.1)
 
 - [ ] **P5.1** `components/App.tsx`: render header, `<main>`, all pages, footer, overlays, modals, popups, theme, devtools, bartimerprogress. `index.html` body → `<load src="html/warnings.html" />`, `.customBackground`, `<div id="app">` mount, funbox css link, scripts. Replace `mountComponents()` with single `render(<App/>)`. Delete `components/mount.tsx`.
+  > BLOCKED: Required words/quote browser verification could not finish: T3 preview repeatedly timed out and lost its automation host. Shell draft withheld; typecheck, 1,216 tests and build passed, scoped Knip matched baseline.
 - [ ] **P5.2** Page switching: `states/core.ts` already has `getActivePage`. Make pages render via `<Show>`/`<Switch>` on active page + existing `components/common/Page.tsx`; move page transition animation (`page-controller.ts`, `legacy-states/page-transition.ts`) into component. Keep `PageController.change()` API as a thin wrapper setting signal + running lifecycle hooks (`beforeShow` etc.).
 - [ ] **P5.3** Router: `route-controller.ts` → keep own router (D2; no `@solidjs/router`); replace `[router-link]` delegated handler with `<A>`-like `Link` component; remove `pages/page.ts` `element: ElementWithUtils` field.
 - [ ] **P5.4** `legacy-states/*` → move to `states/` as signals (composition, connection, glarses-mode, page-transition, remember-lazy-mode, slow-timer). Delete `legacy-states/`.
