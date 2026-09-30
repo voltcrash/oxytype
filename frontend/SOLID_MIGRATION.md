@@ -158,6 +158,7 @@ Perf critical: per-keystroke work must not regress. Measure with `utils/profiler
 - [ ] **P4.8** Remove remaining `qs`/`qsa` DOM calls from `test-logic.ts`, `funbox/*.ts` (funbox DOM effects → signals consumed by TestPage, e.g. classes on `#words`/body), `event-handlers/test.ts` (delegate listeners → JSX `onClick`).
   > BLOCKED: Body funbox data/CRT classes still belong to the static app shell; P5.1 ownership is needed to replace global body writes while preserving other body classes. Shared-host verification/perf blocker (P4.4) also applies.
 - [ ] **P4.9** `test.scss` cleanup for converted pieces (keep selectors themes rely on).
+  > BLOCKED: Shared-host verification/perf blocker (P4.4) prevents validating CSS cleanup against theme/funbox selectors; retry when contention clears.
 
 ### Phase 5 — App shell + routing (deps: P1.1, P1.8, P4.1)
 
