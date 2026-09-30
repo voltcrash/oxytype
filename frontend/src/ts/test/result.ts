@@ -13,8 +13,8 @@ import {
 } from "../states/notifications";
 import { getCustomTextIndicator, isAuthenticated } from "../states/core";
 import { getQuoteStats } from "../states/quote-rate";
-import * as GlarsesMode from "../legacy-states/glarses-mode";
-import * as SlowTimer from "../legacy-states/slow-timer";
+import * as GlarsesMode from "../states/glarses-mode";
+import * as SlowTimer from "../states/slow-timer";
 import * as Misc from "../utils/misc";
 import * as Numbers from "@monkeytype/util/numbers";
 import * as Arrays from "../utils/arrays";
@@ -42,7 +42,7 @@ import { canQuickRestart as canQuickRestartFn } from "../utils/quick-restart";
 import { LocalStorageWithSchema } from "../utils/local-storage-with-schema";
 import { z } from "zod";
 import { blurInputElement } from "../input/input-element";
-import * as ConnectionState from "../legacy-states/connection";
+import * as ConnectionState from "../states/connection";
 import { qs } from "../utils/dom";
 import { getTheme } from "../states/theme";
 import {

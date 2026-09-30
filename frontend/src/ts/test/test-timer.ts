@@ -11,7 +11,7 @@ import {
   removeNotification,
 } from "../states/notifications";
 import * as Caret from "./caret";
-import * as SlowTimer from "../legacy-states/slow-timer";
+import * as SlowTimer from "../states/slow-timer";
 import { timerEvent } from "../events/timer";
 import { highlight } from "../events/keymap";
 import * as LayoutfluidFunboxTimer from "../test/funbox/layoutfluid-funbox-timer";

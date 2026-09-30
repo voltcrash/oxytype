@@ -1,11 +1,13 @@
-let glarsesMode = false;
+import { createSignal } from "solid-js";
+
+const [getGlarsesMode, setGlarsesMode] = createSignal(false);
 
 export function get(): boolean {
-  return glarsesMode;
+  return getGlarsesMode();
 }
 
 export function enable(): void {
-  glarsesMode = true;
+  setGlarsesMode(true);
   console.log(
     "Glarses Mode On - test result will be hidden. You can check the stats in the console (here)",
   );

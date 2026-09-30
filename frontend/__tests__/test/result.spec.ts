@@ -130,11 +130,11 @@ vi.mock("../../src/ts/test/funbox/funbox", () => ({ clear: vi.fn() }));
 vi.mock("../../src/ts/input/input-element", () => ({
   blurInputElement: vi.fn(),
 }));
-vi.mock("../../src/ts/legacy-states/connection", () => ({
+vi.mock("../../src/ts/states/connection", () => ({
   get: () => true,
   showOfflineBanner: vi.fn(),
 }));
-vi.mock("../../src/ts/legacy-states/glarses-mode", () => ({
+vi.mock("../../src/ts/states/glarses-mode", () => ({
   get: () => false,
 }));
 vi.mock("../../src/ts/collections/tags", () => ({

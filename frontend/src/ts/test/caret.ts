@@ -7,7 +7,7 @@ import {
 } from "../states/test";
 import { configEvent } from "../events/config";
 import { Caret } from "../elements/caret";
-import * as CompositionState from "../legacy-states/composition";
+import * as CompositionState from "../states/composition";
 import { areTestElementsMounted, getCaretElement } from "../states/test-dom";
 
 export function stopAnimation(): void {

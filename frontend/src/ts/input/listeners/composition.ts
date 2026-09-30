@@ -1,6 +1,6 @@
 import { onDOMReady } from "../../utils/dom";
 import { getInputElement } from "../input-element";
-import * as CompositionState from "../../legacy-states/composition";
+import * as CompositionState from "../../states/composition";
 import * as TestLogic from "../../test/test-logic";
 import { setLastInsertCompositionTextData } from "../state";
 import { onInsertText } from "../handlers/insert-text";

@@ -6,7 +6,7 @@ import * as CustomText from "./custom-text";
 import * as Caret from "./caret";
 import * as Misc from "../utils/misc";
 import * as Strings from "../utils/strings";
-import * as CompositionState from "../legacy-states/composition";
+import * as CompositionState from "../states/composition";
 import { configEvent } from "../events/config";
 import { getActivePage } from "../states/core";
 import { convertRemToPixels } from "../utils/numbers";
@@ -27,7 +27,7 @@ import {
   isInputElementFocused,
 } from "../input/input-element";
 import * as MonkeyPower from "../components/pages/test/MonkeyPower";
-import * as SlowTimer from "../legacy-states/slow-timer";
+import * as SlowTimer from "../states/slow-timer";
 import * as AdController from "../controllers/ad-controller";
 import * as Joining from "./break-joining";
 import * as LayoutfluidFunboxTimer from "../test/funbox/layoutfluid-funbox-timer";
@@ -60,7 +60,7 @@ import {
   setTestInitError,
 } from "../states/test";
 import { createEffect } from "solid-js";
-import * as ConnectionState from "../legacy-states/connection";
+import * as ConnectionState from "../states/connection";
 
 export const updateHintsPositionDebounced = Misc.debounceUntilResolved(
   updateHintsPosition,

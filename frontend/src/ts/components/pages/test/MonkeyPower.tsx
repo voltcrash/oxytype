@@ -2,7 +2,7 @@ import { isSafeNumber } from "@monkeytype/util/numbers";
 import { JSXElement, onCleanup, onMount } from "solid-js";
 
 import { Config } from "../../../config/store";
-import * as SlowTimer from "../../../legacy-states/slow-timer";
+import * as SlowTimer from "../../../states/slow-timer";
 import { getCaretElement } from "../../../states/test-dom";
 import { getTheme } from "../../../states/theme";
 import { requestDebouncedAnimationFrame } from "../../../utils/debounced-animation-frame";

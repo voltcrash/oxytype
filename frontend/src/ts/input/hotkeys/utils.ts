@@ -7,7 +7,7 @@ import {
 } from "@tanstack/solid-hotkeys";
 import { isAnyPopupVisible } from "../../utils/misc";
 import { isInputElementFocused } from "../input-element";
-import * as CompositionState from "../../legacy-states/composition";
+import * as CompositionState from "../../states/composition";
 
 export const NoKey = "" as Hotkey;
 

@@ -1,5 +1,5 @@
 import * as PageController from "./page-controller";
-import * as PageTransition from "../legacy-states/page-transition";
+import * as PageTransition from "../states/page-transition";
 import { isAuthAvailable } from "../firebase";
 import { isAuthenticated } from "../states/core";
 import { isFunboxActive } from "../test/funbox/list";

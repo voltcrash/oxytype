@@ -1,5 +1,5 @@
 import * as Misc from "../utils/misc";
-import * as PageTransition from "../legacy-states/page-transition";
+import * as PageTransition from "../states/page-transition";
 import { Config } from "../config/store";
 import { showErrorNotification } from "../states/notifications";
 import { getActivePage } from "../states/core";
