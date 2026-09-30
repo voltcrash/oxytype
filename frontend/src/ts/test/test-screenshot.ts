@@ -11,7 +11,6 @@ import {
   showSuccessNotification,
 } from "../states/notifications";
 import { convertRemToPixels } from "../utils/numbers";
-import { qs } from "../utils/dom";
 import {
   getResultElement,
   getResultWrapperElement,
@@ -24,8 +23,8 @@ import { download as downloadFile } from "../utils/misc";
 function revert(): void {
   setIsScreenshotting(false);
   hideLoaderBar();
-  qs("noscript")?.show();
-  qs("#nocss")?.show();
+  setClass(document.querySelector<HTMLElement>("noscript"), "hidden", false);
+  setClass(document.querySelector<HTMLElement>("#nocss"), "hidden", false);
   const result = getResultElement();
   if (result) {
     result.className = updateClassNames(result.className, "noBalloons", false);
@@ -65,8 +64,8 @@ async function generateCanvas(): Promise<HTMLCanvasElement | null> {
   });
 
   setIsScreenshotting(true);
-  qs("noscript")?.hide();
-  qs("#nocss")?.hide();
+  setClass(document.querySelector<HTMLElement>("noscript"), "hidden", true);
+  setClass(document.querySelector<HTMLElement>("#nocss"), "hidden", true);
   const result = getResultElement();
   if (result) {
     result.className = updateClassNames(result.className, "noBalloons", true);
@@ -313,5 +312,15 @@ export async function download(): Promise<void> {
   } catch (error) {
     console.error("Error downloading screenshot:", error);
     showErrorNotification("Failed to download screenshot");
+  }
+}
+
+function setClass(
+  element: HTMLElement | null | undefined,
+  names: string,
+  enabled: boolean,
+): void {
+  if (element) {
+    element.className = updateClassNames(element.className, names, enabled);
   }
 }

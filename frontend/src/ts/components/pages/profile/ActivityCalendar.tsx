@@ -9,7 +9,7 @@ import {
   update,
 } from "../../../elements/test-activity";
 import { TestActivityCalendar } from "../../../elements/test-activity-calendar";
-import { useRefWithUtils } from "../../../hooks/useRefWithUtils";
+import { useRef } from "../../../hooks/useRef";
 import { getFirstDayOfTheWeek } from "../../../utils/date-and-time";
 import SlimSelect, { SlimSelectProps } from "../../ui/SlimSelect";
 
@@ -20,7 +20,7 @@ export function ActivityCalendar(props: {
   testActivity?: TestActivity;
 }): JSXElement {
   // Refs are assigned by SolidJS via the ref attribute
-  const [elementRef, element] = useRefWithUtils<HTMLElement>();
+  const [elementRef, element] = useRef<HTMLElement>();
 
   let calendar: TestActivityCalendar | undefined;
 
@@ -32,7 +32,7 @@ export function ActivityCalendar(props: {
         element() === undefined
       ) {
         calendar = undefined;
-        clearTestActivity(element()?.native);
+        clearTestActivity(element());
         return;
       }
 
@@ -50,14 +50,14 @@ export function ActivityCalendar(props: {
 
       initTestActivity(
         // oxlint-disable-next-line typescript/no-non-null-assertion
-        element()!.native,
+        element()!,
         calendar,
       );
 
       if (!props.isAccountPage) {
         // oxlint-disable-next-line typescript/no-non-null-assertion
-        const title = element()!.qsr(".top .title");
-        title.appendHtml(" last 12 months");
+        const title = element()!.querySelector(".top .title");
+        title?.insertAdjacentText("beforeend", " last 12 months");
       }
     })(),
   );
@@ -108,7 +108,7 @@ export function ActivityCalendar(props: {
                       newVal[0]?.value as string,
                     );
                     // oxlint-disable-next-line typescript/no-non-null-assertion
-                    update(element()!.native, activity);
+                    update(element()!, activity);
                   },
                 }}
               />

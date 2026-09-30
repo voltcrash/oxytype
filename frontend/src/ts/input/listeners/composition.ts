@@ -1,4 +1,4 @@
-import { onDOMReady } from "../../utils/dom";
+import { onDOMReady } from "../../utils/dom-ready";
 import { getInputElement } from "../input-element";
 import * as CompositionState from "../../states/composition";
 import * as TestLogic from "../../test/test-logic";

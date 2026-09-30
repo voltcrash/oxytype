@@ -1,10 +1,11 @@
 /* oxlint-disable no-unsafe-member-access */
+import { updateClassNames } from "../utils/cn";
 import { debounce } from "throttle-debounce";
 import { configEvent } from "../events/config";
 import { Config } from "../config/store";
 import * as EG from "./eg-ad-controller";
 import * as PW from "./pw-ad-controller";
-import { onDOMReady, qs } from "../utils/dom";
+import { onDOMReady } from "../utils/dom-ready";
 import { isTestActive } from "../states/test";
 // import { createEffect } from "solid-js";
 
@@ -61,28 +62,28 @@ function removeAll(): void {
 }
 
 function removeSellout(): void {
-  qs("#ad-footer-wrapper")?.remove();
-  qs("#ad-footer-small-wrapper")?.remove();
-  qs("#ad-settings-1-wrapper")?.remove();
-  qs("#ad-settings-1-small-wrapper")?.remove();
-  qs("#ad-settings-2-wrapper")?.remove();
-  qs("#ad-settings-2-small-wrapper")?.remove();
-  qs("#ad-settings-3-wrapper")?.remove();
-  qs("#ad-settings-3-small-wrapper")?.remove();
-  qs("#ad-account-1-wrapper")?.remove();
-  qs("#ad-account-1-small-wrapper")?.remove();
-  qs("#ad-account-2-wrapper")?.remove();
-  qs("#ad-account-2-small-wrapper")?.remove();
+  document.querySelector<HTMLElement>("#ad-footer-wrapper")?.remove();
+  document.querySelector<HTMLElement>("#ad-footer-small-wrapper")?.remove();
+  document.querySelector<HTMLElement>("#ad-settings-1-wrapper")?.remove();
+  document.querySelector<HTMLElement>("#ad-settings-1-small-wrapper")?.remove();
+  document.querySelector<HTMLElement>("#ad-settings-2-wrapper")?.remove();
+  document.querySelector<HTMLElement>("#ad-settings-2-small-wrapper")?.remove();
+  document.querySelector<HTMLElement>("#ad-settings-3-wrapper")?.remove();
+  document.querySelector<HTMLElement>("#ad-settings-3-small-wrapper")?.remove();
+  document.querySelector<HTMLElement>("#ad-account-1-wrapper")?.remove();
+  document.querySelector<HTMLElement>("#ad-account-1-small-wrapper")?.remove();
+  document.querySelector<HTMLElement>("#ad-account-2-wrapper")?.remove();
+  document.querySelector<HTMLElement>("#ad-account-2-small-wrapper")?.remove();
 }
 
 function removeOn(): void {
-  qs("#ad-vertical-right-wrapper")?.remove();
-  qs("#ad-vertical-left-wrapper")?.remove();
+  document.querySelector<HTMLElement>("#ad-vertical-right-wrapper")?.remove();
+  document.querySelector<HTMLElement>("#ad-vertical-left-wrapper")?.remove();
 }
 
 function removeResult(): void {
-  qs("#ad-result-wrapper")?.remove();
-  qs("#ad-result-small-wrapper")?.remove();
+  document.querySelector<HTMLElement>("#ad-result-wrapper")?.remove();
+  document.querySelector<HTMLElement>("#ad-result-small-wrapper")?.remove();
 }
 
 function updateBreakpoint(noReinstate = false): void {
@@ -208,7 +209,11 @@ export async function renderResult(): Promise<void> {
   await checkCookieblocker();
 
   if (adBlock) {
-    qs("#ad-result-wrapper .iconAndText .text")?.setHtml(`
+    setHtml(
+      document.querySelector<HTMLElement>(
+        "#ad-result-wrapper .iconAndText .text",
+      ),
+      `
     Using an ad blocker? No worries
     <div class="smalltext">
       We understand ads can be annoying
@@ -217,12 +222,17 @@ export async function renderResult(): Promise<void> {
       <i>disable all ads</i>
       in the settings
     </div>
-    `);
+    `,
+    );
     return;
   }
 
   if (cookieBlocker) {
-    qs("#ad-result-wrapper .iconAndText .text")?.setHtml(`
+    setHtml(
+      document.querySelector<HTMLElement>(
+        "#ad-result-wrapper .iconAndText .text",
+      ),
+      `
     Ads not working? Ooops
     <div class="smalltext">
       You may have a cookie popup blocker enabled - ads will not show without your consent
@@ -231,7 +241,8 @@ export async function renderResult(): Promise<void> {
       <i>disable all ads</i>
       in the settings if you wish
     </div>
-    `);
+    `,
+    );
     return;
   }
 
@@ -244,15 +255,47 @@ export async function renderResult(): Promise<void> {
 
 export function updateFooterAndVerticalAds(visible: boolean): void {
   if (visible) {
-    qs("#ad-vertical-left-wrapper")?.removeClass("testPage");
-    qs("#ad-vertical-right-wrapper")?.removeClass("testPage");
-    qs("#ad-footer-wrapper")?.removeClass("testPage");
-    qs("#ad-footer-small-wrapper")?.removeClass("testPage");
+    setClass(
+      document.querySelector<HTMLElement>("#ad-vertical-left-wrapper"),
+      "testPage",
+      false,
+    );
+    setClass(
+      document.querySelector<HTMLElement>("#ad-vertical-right-wrapper"),
+      "testPage",
+      false,
+    );
+    setClass(
+      document.querySelector<HTMLElement>("#ad-footer-wrapper"),
+      "testPage",
+      false,
+    );
+    setClass(
+      document.querySelector<HTMLElement>("#ad-footer-small-wrapper"),
+      "testPage",
+      false,
+    );
   } else {
-    qs("#ad-vertical-left-wrapper")?.addClass("testPage");
-    qs("#ad-vertical-right-wrapper")?.addClass("testPage");
-    qs("#ad-footer-wrapper")?.addClass("testPage");
-    qs("#ad-footer-small-wrapper")?.addClass("testPage");
+    setClass(
+      document.querySelector<HTMLElement>("#ad-vertical-left-wrapper"),
+      "testPage",
+      true,
+    );
+    setClass(
+      document.querySelector<HTMLElement>("#ad-vertical-right-wrapper"),
+      "testPage",
+      true,
+    );
+    setClass(
+      document.querySelector<HTMLElement>("#ad-footer-wrapper"),
+      "testPage",
+      true,
+    );
+    setClass(
+      document.querySelector<HTMLElement>("#ad-footer-small-wrapper"),
+      "testPage",
+      true,
+    );
   }
 }
 
@@ -299,15 +342,6 @@ configEvent.subscribe(({ key, newValue }) => {
   }
 });
 
-// createEffect(() => {
-//   qs("#ad-vertical-left-wrapper")?.setStyle({
-//     marginTop: getGlobalOffsetTop() + "px",
-//   });
-//   qs("#ad-vertical-right-wrapper")?.setStyle({
-//     marginTop: getGlobalOffsetTop() + "px",
-//   });
-// });
-
 onDOMReady(() => {
   updateBreakpoint(true);
   updateBreakpoint2();
@@ -317,7 +351,25 @@ window.onerror = function (error): void {
   //@ts-expect-error ---
   if (choice === "eg") {
     if (typeof error === "string" && error.startsWith("EG APS")) {
-      qs("#ad-result-wrapper .iconAndText")?.addClass("withLeft");
+      setClass(
+        document.querySelector<HTMLElement>("#ad-result-wrapper .iconAndText"),
+        "withLeft",
+        true,
+      );
     }
   }
 };
+
+function setClass(
+  element: HTMLElement | null | undefined,
+  names: string,
+  enabled: boolean,
+): void {
+  if (element) {
+    element.className = updateClassNames(element.className, names, enabled);
+  }
+}
+
+function setHtml(element: HTMLElement | null, html: string): void {
+  if (element) element.innerHTML = html;
+}

@@ -41,7 +41,7 @@ import * as CustomText from "../../test/custom-text";
 import * as TestUI from "../../test/test-ui";
 import { applyFontFamily } from "../../ui";
 import { cn } from "../../utils/cn";
-import { onDOMReady } from "../../utils/dom";
+import { onDOMReady } from "../../utils/dom-ready";
 import { isDevEnvironment } from "../../utils/env";
 import { applyReducedMotion } from "../../utils/misc";
 import { convertRemToPixels } from "../../utils/numbers";

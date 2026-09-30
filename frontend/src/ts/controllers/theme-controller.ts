@@ -1,3 +1,4 @@
+import { updateClassNames } from "../utils/cn";
 import * as Arrays from "../utils/arrays";
 import { isColorDark, isColorLight } from "../utils/colors";
 
@@ -10,7 +11,6 @@ import { debounce } from "throttle-debounce";
 import { CustomThemeColors, ThemeName } from "@monkeytype/schemas/configs";
 import { Theme, themes, ThemesList } from "../constants/themes";
 import fileStorage from "../utils/file-storage";
-import { qs } from "../utils/dom";
 import { setThemeIndicator } from "../states/core";
 import { setTheme, ThemeIdentifier } from "../states/theme";
 
@@ -74,9 +74,9 @@ async function apply(
   updateThemeIndicator(isPreview ? themeName : undefined);
 
   if (isColorDark(themeColors.bg)) {
-    qs("body")?.addClass("darkMode");
+    setClass(document.body, "darkMode", true);
   } else {
-    qs("body")?.removeClass("darkMode");
+    setClass(document.body, "darkMode", false);
   }
 }
 
@@ -248,11 +248,11 @@ async function clearRandom(): Promise<void> {
 
 function applyCustomBackgroundSize(): void {
   if (Config.customBackgroundSize === "max") {
-    qs(".customBackground img")?.setStyle({
+    setStyle(document.querySelector<HTMLElement>(".customBackground img"), {
       objectFit: "",
     });
   } else {
-    qs(".customBackground img")?.setStyle({
+    setStyle(document.querySelector<HTMLElement>(".customBackground img"), {
       objectFit: Config.customBackgroundSize,
     });
   }
@@ -269,17 +269,37 @@ export async function applyCustomBackground(): Promise<void> {
   }
 
   // hide the filter section initially and always
-  qs(
-    ".pageSettings .section[data-config-name='customBackgroundFilter']",
-  )?.hide();
+  setClass(
+    document.querySelector<HTMLElement>(
+      ".pageSettings .section[data-config-name='customBackgroundFilter']",
+    ),
+    "hidden",
+    true,
+  );
 
   if (backgroundUrl === "") {
-    qs("#words")?.removeClass("noErrorBorder");
-    qs("#resultWordsHistory")?.removeClass("noErrorBorder");
-    qs(".customBackground img")?.remove();
+    setClass(
+      document.querySelector<HTMLElement>("#words"),
+      "noErrorBorder",
+      false,
+    );
+    setClass(
+      document.querySelector<HTMLElement>("#resultWordsHistory"),
+      "noErrorBorder",
+      false,
+    );
+    document.querySelector<HTMLElement>(".customBackground img")?.remove();
   } else {
-    qs("#words")?.addClass("noErrorBorder");
-    qs("#resultWordsHistory")?.addClass("noErrorBorder");
+    setClass(
+      document.querySelector<HTMLElement>("#words"),
+      "noErrorBorder",
+      true,
+    );
+    setClass(
+      document.querySelector<HTMLElement>("#resultWordsHistory"),
+      "noErrorBorder",
+      true,
+    );
 
     //use setAttribute for possible unsafe customBackground value
     const container = document.querySelector(".customBackground");
@@ -292,9 +312,13 @@ export async function applyCustomBackground(): Promise<void> {
     );
     img.onload = () => {
       // show the filter section only if the image loads successfully
-      qs(
-        ".pageSettings .section[data-config-name='customBackgroundFilter']",
-      )?.show();
+      setClass(
+        document.querySelector<HTMLElement>(
+          ".pageSettings .section[data-config-name='customBackgroundFilter']",
+        ),
+        "hidden",
+        false,
+      );
     };
 
     container?.replaceChildren(img);
@@ -335,7 +359,7 @@ export function applyCustomBackgroundFilters(
     top: `-${valuesToApply[0] * 4}rem`,
     position: "absolute",
   };
-  qs(".customBackground img")?.setStyle(css);
+  setStyle(document.querySelector<HTMLElement>(".customBackground img"), css);
 }
 
 window
@@ -448,4 +472,21 @@ window.addEventListener("customBackgroundFailed", () => {
 
 function prefersColorSchemeDark(): boolean {
   return window.matchMedia?.("(prefers-color-scheme: dark)").matches;
+}
+
+function setClass(
+  element: HTMLElement | null | undefined,
+  names: string,
+  enabled: boolean,
+): void {
+  if (element) {
+    element.className = updateClassNames(element.className, names, enabled);
+  }
+}
+
+function setStyle(
+  element: HTMLElement | null,
+  values: Partial<CSSStyleDeclaration>,
+): void {
+  if (element) Object.assign(element.style, values);
 }

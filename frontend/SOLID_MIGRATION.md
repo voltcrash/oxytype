@@ -176,9 +176,10 @@ Perf critical: per-keystroke work must not regress. Measure with `utils/profiler
 
 ### Phase 6 — Utils + cleanup (deps: all above)
 
-- [ ] **P6.1** Remove `ElementWithUtils`, `qs`, `qsa`, `qsr` from `utils/dom.ts` (keep pure helpers if any). Delete `hooks/useRefWithUtils.ts` (replace with `hooks/useRef.ts`). Delete `utils/skeleton.ts`. Remove `qs/qsa/qsr` from `addToGlobal` in `index.ts`.
+- [x] **P6.1** Remove `ElementWithUtils`, `qs`, `qsa`, `qsr` from `utils/dom.ts` (keep pure helpers if any). Delete `hooks/useRefWithUtils.ts` (replace with `hooks/useRef.ts`). Delete `utils/skeleton.ts`. Remove `qs/qsa/qsr` from `addToGlobal` in `index.ts`.
   > Progress P6.1a: common/modal/chart/header/banner/captcha/config/result refs use native nodes; slide animations retain layout classes and cleanup. Remaining word/caret/controller wrappers follow in P6.1b/c. Checks/smoke pass with the documented Knip baseline exception.
   > Progress P6.1b: word/caret/input/result refs now native; positioning/tape/joining math and empty-style clearing preserved. Added native caret assertions. Full frontend checks and smoke pass; Knip baseline exception remains.
+  > Note P6.1c: deleted DOM wrappers/global selectors/useRefWithUtils and dead swapElements; kept DOM-ready lifecycle in dom-ready.ts. Native table/theme/calendar refs and scoped email-handler nodes replace remaining wrapper consumers. Standalone auth entry was missing from the inventory; markup/controller ownership remains for P6.3. Deleted obsolete delegated-wrapper tests; P0.3 word/result assertions retained. 1,254 tests, typecheck/build and smoke pass with the documented Knip exception.
 - [ ] **P6.2** Move remaining DOM helpers in `utils/misc.ts` into their single consumer or delete.
 - [ ] **P6.3** Sweep: `grep -rnE "document\.(querySelector|getElementById)|innerHTML|insertAdjacentHTML|createElement" src/ts` → only §2 exceptions remain. Sweep `<i class="fa` in `.tsx` → `Fa`.
 - [ ] **P6.4** SCSS (leftovers only; per D3 most removed during each task): delete files/sections no longer referenced (`popups.scss`, `commandline.scss`, `loading.scss`, `test.scss` parts, `media-queries-*.scss` parts). Keep selectors used by `static/themes` & `static/funbox`.

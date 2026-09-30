@@ -1,4 +1,4 @@
-import { onDOMReady } from "../../utils/dom";
+import { onDOMReady } from "../../utils/dom-ready";
 import {
   getInputElement,
   moveInputElementCaretToTheEnd,

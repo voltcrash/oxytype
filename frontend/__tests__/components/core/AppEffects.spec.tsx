@@ -78,7 +78,7 @@ vi.mock("../../../src/ts/test/test-ui", () => ({
   focusWords: ui.focus,
 }));
 vi.mock("../../../src/ts/ui", () => ({ applyFontFamily: ui.applyFont }));
-vi.mock("../../../src/ts/utils/dom", () => ({
+vi.mock("../../../src/ts/utils/dom-ready", () => ({
   onDOMReady: (callback: () => void) => callback(),
 }));
 vi.mock("../../../src/ts/utils/env", () => ({

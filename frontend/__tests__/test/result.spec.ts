@@ -5,78 +5,6 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 // ResultStats.tsx from the result store; the rest is still legacy DOM, recorded
 // per selector until it moves to Solid components (P3.x).
 
-type FakeEl = {
-  text?: string;
-  html?: string;
-  hidden?: boolean;
-  attrs: Record<string, string>;
-};
-
-const dom = vi.hoisted(() => {
-  const els = new Map<string, FakeEl>();
-  const get = (selector: string): FakeEl => {
-    let el = els.get(selector);
-    if (el === undefined) {
-      el = { attrs: {} };
-      els.set(selector, el);
-    }
-    return el;
-  };
-  // chainable stand-in for ElementWithUtils that records the interesting calls
-  const wrap = (selector: string): unknown => {
-    const el = get(selector);
-    const proxy: unknown = new Proxy(
-      {},
-      {
-        get(_target, prop) {
-          if (prop === Symbol.iterator) return [][Symbol.iterator];
-          if (prop === "native") return undefined;
-          return (...args: unknown[]) => {
-            switch (prop) {
-              case "setText":
-                el.text = args[0] as string;
-                el.html = undefined;
-                break;
-              case "setHtml":
-                el.html = args[0] as string;
-                el.text = undefined;
-                break;
-              case "appendHtml":
-                el.html = (el.html ?? "") + (args[0] as string);
-                break;
-              case "setAttribute":
-                el.attrs[args[0] as string] = args[1] as string;
-                break;
-              case "removeAttribute":
-                Reflect.deleteProperty(el.attrs, args[0] as string);
-                break;
-              case "show":
-                el.hidden = false;
-                break;
-              case "hide":
-                el.hidden = true;
-                break;
-              case "hasClass":
-                return args[0] === "hidden" && el.hidden === true;
-              case "getParent":
-                return wrap(`${selector} < parent`);
-            }
-            return proxy;
-          };
-        },
-      },
-    );
-    return proxy;
-  };
-  return { els, get, wrap };
-});
-
-vi.mock("../../src/ts/utils/dom", async (importOriginal) => ({
-  ...(await importOriginal<object>()),
-  qs: (selector: string) => dom.wrap(selector),
-  qsa: (selector: string) => dom.wrap(selector),
-}));
-
 const state = vi.hoisted(() => ({
   authenticated: true,
   testInvalid: false,
@@ -261,7 +189,6 @@ function config(partial: Partial<ConfigType> = {}): void {
 describe("result update", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    dom.els.clear();
     state.authenticated = true;
     state.testInvalid = false;
     state.localPbWpm = 0;

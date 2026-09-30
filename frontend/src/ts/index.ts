@@ -26,7 +26,6 @@ import * as Cookies from "./cookies";
 import "./elements/psa";
 import "./controllers/url-handler";
 import { applyEngineSettings } from "./anim";
-import { qs, qsa, qsr } from "./utils/dom";
 import { render } from "solid-js/web";
 import { App } from "./components/App";
 import { setVersion } from "./states/core";
@@ -84,14 +83,12 @@ addToGlobal({
   egVideoListener: egVideoListener,
   toggleDebugLogs: Logger.toggleDebugLogs,
   toggleSentryDebug: Sentry.toggleDebug,
-  qs: qs,
-  qsa: qsa,
-  qsr: qsr,
   lastEventLog: () => getLastEventLog(),
   currentEventLog: buildEventLog,
 });
 
-const appElement = qsr("#app").native;
+const appElement = document.getElementById("app");
+if (!appElement) throw new Error("App mount not found");
 render(
   () =>
     App({

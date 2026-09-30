@@ -9,11 +9,11 @@ import { Accessor, createMemo, JSXElement, Show } from "solid-js";
 
 import { hasConnection } from "../../../collections/connections";
 import { createEffectOn } from "../../../hooks/effects";
+import { useRef } from "../../../hooks/useRef";
 import { bp, BreakpointKey } from "../../../states/breakpoints";
 import { getFormatting, getUserId } from "../../../states/core";
 import { cn } from "../../../utils/cn";
 import { secondsToString } from "../../../utils/date-and-time";
-import { qs } from "../../../utils/dom";
 import { Formatting } from "../../../utils/format";
 import { abbreviateNumber } from "../../../utils/numbers";
 import { Fa } from "../../common/Fa";
@@ -43,8 +43,10 @@ export function Table(
       }
   ),
 ): JSXElement {
+  const [tableRef, tableElement] = useRef<HTMLTableElement>();
   const commonProps = createMemo(() => ({
     id: "leaderboardTable",
+    ref: tableRef,
     hideHeader: props.hideHeader,
     class: cn(
       "table-auto [&>tbody>tr>td]:py-3 [&>tbody>tr>td]:whitespace-nowrap [&>thead>tr>th]:align-middle",
@@ -87,9 +89,11 @@ export function Table(
     (enabled) => {
       if (enabled) {
         requestAnimationFrame(() => {
-          qs("#leaderboardTable tr[data-state='selected']")?.scrollIntoView({
-            block: "center",
-          });
+          tableElement()
+            ?.querySelector("tr[data-state='selected']")
+            ?.scrollIntoView({
+              block: "center",
+            });
           props.onScrolledToUser?.();
         });
       }

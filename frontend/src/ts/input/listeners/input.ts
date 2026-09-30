@@ -1,4 +1,4 @@
-import { onDOMReady } from "../../utils/dom";
+import { onDOMReady } from "../../utils/dom-ready";
 import { onDelete } from "../handlers/delete";
 import { onInsertText } from "../handlers/insert-text";
 import { isSupportedInputType } from "../helpers/input-type";

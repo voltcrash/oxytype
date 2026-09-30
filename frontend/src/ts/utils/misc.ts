@@ -5,7 +5,6 @@ import { Result } from "@monkeytype/schemas/results";
 import { RankAndCount } from "@monkeytype/schemas/users";
 import { roundTo2 } from "@monkeytype/util/numbers";
 import { animate, AnimationParams } from "animejs";
-import { ElementWithUtils } from "./dom";
 import { isDevEnvironment } from "./env";
 
 export function whorf(speed: number, wordlen: number): number {
@@ -174,65 +173,6 @@ type LastIndex = {
 };
 
 export const trailingComposeChars = /[\u02B0-\u02FF`´^¨~]+$|⎄.*$/;
-
-export async function swapElements(
-  el1: ElementWithUtils | null,
-  el2: ElementWithUtils | null,
-  totalDuration: number,
-  callback = async function (): Promise<void> {
-    return Promise.resolve();
-  },
-  middleCallback = async function (): Promise<void> {
-    return Promise.resolve();
-  },
-): Promise<boolean | undefined> {
-  if (el1 === null || el2 === null) {
-    return;
-  }
-
-  totalDuration = applyReducedMotion(totalDuration);
-  if (
-    (el1.hasClass("hidden") && !el2.hasClass("hidden")) ||
-    (!el1.hasClass("hidden") && el2.hasClass("hidden"))
-  ) {
-    //one of them is hidden and the other is visible
-    if (el1.hasClass("hidden")) {
-      await middleCallback();
-      await callback();
-      return false;
-    }
-
-    el1.show();
-    await el1.promiseAnimate({
-      opacity: [1, 0],
-      duration: totalDuration / 2,
-    });
-    el1.hide();
-    await middleCallback();
-    el2.show();
-    await el2.promiseAnimate({
-      opacity: [0, 1],
-      duration: totalDuration / 2,
-    });
-    await callback();
-  } else if (el1.hasClass("hidden") && el2.hasClass("hidden")) {
-    //both are hidden, only fade in the second
-    await middleCallback();
-
-    el2.show();
-    await el2.promiseAnimate({
-      opacity: [0, 1],
-      duration: totalDuration / 2,
-    });
-
-    await callback();
-  } else {
-    await middleCallback();
-    await callback();
-  }
-
-  return;
-}
 
 export function getMode2<M extends keyof PersonalBests>(
   config: Config,

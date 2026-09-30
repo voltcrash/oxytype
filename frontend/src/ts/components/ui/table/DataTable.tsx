@@ -49,6 +49,7 @@ export type DataTableColumnDef<TData, TValue = any> =
 
 export type DataTableProps<TData, TValue> = {
   id: string;
+  ref?: (element: HTMLTableElement) => void;
   columns: DataTableColumnDef<TData, TValue>[];
   data: TData[];
   fallback?: JSXElement;
@@ -193,7 +194,7 @@ export function DataTable<TData extends Object, TValue = any>(
       when={table().getRowModel().rows?.length || props.noDataRow !== undefined}
       fallback={props.fallback}
     >
-      <Table id={props.id} class={props.class}>
+      <Table id={props.id} class={props.class} ref={props.ref}>
         <Show when={!props.hideHeader}>
           <TableHeader>
             <For each={table().getHeaderGroups()}>

@@ -1,3 +1,4 @@
+import { updateClassNames } from "../utils/cn";
 import {
   showErrorNotification,
   showNoticeNotification,
@@ -21,7 +22,6 @@ import {
   setLoadedChallenge,
 } from "../states/test";
 import { areUnsortedArraysEqual } from "../utils/arrays";
-import { qs } from "../utils/dom";
 
 let challengeLoading = false;
 
@@ -214,8 +214,16 @@ export async function setup(challengeName: ChallengeName): Promise<boolean> {
     if (challenge === undefined || settings === undefined) {
       showNoticeNotification("Challenge not found or missing settings");
       setTimeout(() => {
-        qs("header .config")?.show();
-        qs(".page.pageTest")?.show();
+        setClass(
+          document.querySelector<HTMLElement>("header .config"),
+          "hidden",
+          false,
+        );
+        setClass(
+          document.querySelector<HTMLElement>(".page.pageTest"),
+          "hidden",
+          false,
+        );
       }, 250);
       return false;
     }
@@ -349,8 +357,16 @@ export async function setup(challengeName: ChallengeName): Promise<boolean> {
       }
     }
     notitext = settings.message;
-    qs("header .config")?.show();
-    qs(".page.pageTest")?.show();
+    setClass(
+      document.querySelector<HTMLElement>("header .config"),
+      "hidden",
+      false,
+    );
+    setClass(
+      document.querySelector<HTMLElement>(".page.pageTest"),
+      "hidden",
+      false,
+    );
 
     if (notitext === undefined) {
       showSuccessNotification(`Challenge '${challenge.display}' loaded.`);
@@ -390,3 +406,13 @@ configEvent.subscribe(({ key }) => {
     clearActive();
   }
 });
+
+function setClass(
+  element: HTMLElement | null | undefined,
+  names: string,
+  enabled: boolean,
+): void {
+  if (element) {
+    element.className = updateClassNames(element.className, names, enabled);
+  }
+}

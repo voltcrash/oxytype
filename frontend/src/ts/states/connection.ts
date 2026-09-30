@@ -3,7 +3,7 @@ import { createSignal } from "solid-js";
 import { debounce } from "throttle-debounce";
 import { showSuccessNotification } from "../states/notifications";
 import { connectionEvent } from "../events/connection";
-import { onDOMReady } from "../utils/dom";
+import { onDOMReady } from "../utils/dom-ready";
 import { addBanner, removeBanner } from "../states/banners";
 import { isTestActive } from "../states/test";
 

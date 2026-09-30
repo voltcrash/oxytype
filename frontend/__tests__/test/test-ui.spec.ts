@@ -6,19 +6,6 @@ import { describe, it, expect, beforeAll, beforeEach, vi } from "vitest";
 // markup moved to test/word-markup.ts + ResultWordsHistory.tsx (P3.8), see
 // word-markup.spec.ts and ResultWordsHistory.spec.tsx.
 
-// real dom helpers against a real (happy-dom) fixture instead of the global
-// mock; required elements outside the fixture fall back to detached divs
-vi.mock("../../src/ts/utils/dom", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("../../src/ts/utils/dom")>();
-  return {
-    ...actual,
-    qsr: (selector: string) =>
-      actual.qs(selector) ??
-      new actual.ElementWithUtils(document.createElement("div")),
-  };
-});
-
 // run animation frames synchronously and let tests await the async callbacks
 const frames = vi.hoisted(() => ({ pending: [] as unknown[] }));
 vi.mock("../../src/ts/utils/debounced-animation-frame", () => ({
