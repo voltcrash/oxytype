@@ -1,10 +1,6 @@
 import { showLoaderBar, hideLoaderBar } from "../states/loader-bar";
 import * as Replay from "./replay";
-import {
-  getActivePage,
-  isAuthenticated,
-  setIsScreenshotting,
-} from "../states/core";
+import { isAuthenticated, setIsScreenshotting } from "../states/core";
 import { getActiveFunboxesWithFunction } from "./funbox/list";
 import * as DB from "../db";
 import { format } from "date-fns/format";
@@ -18,7 +14,6 @@ import { convertRemToPixels } from "../utils/numbers";
 import { qs, qsa } from "../utils/dom";
 import { getTheme } from "../states/theme";
 import { download as downloadFile } from "../utils/misc";
-import { getResultVisible } from "../states/test";
 
 let revealReplay = false;
 
@@ -328,32 +323,3 @@ export async function download(): Promise<void> {
     showErrorNotification("Failed to download screenshot");
   }
 }
-
-qs(".pageTest")?.onChild("click", "#saveScreenshotButton", (event) => {
-  if (event.shiftKey) {
-    void download();
-  } else {
-    void copyToClipboard();
-  }
-
-  // reset save screenshot button icon
-  qs("#saveScreenshotButton i")
-    ?.removeClass(["fas", "fa-download"])
-    ?.addClass(["far", "fa-image"]);
-});
-
-document.addEventListener("keydown", (event) => {
-  if (!(getResultVisible() && getActivePage() === "test")) return;
-  if (event.key !== "Shift") return;
-  qs("#result #saveScreenshotButton i")
-    ?.removeClass(["far", "fa-image"])
-    ?.addClass(["fas", "fa-download"]);
-});
-
-document.addEventListener("keyup", (event) => {
-  if (!(getResultVisible() && getActivePage() === "test")) return;
-  if (event.key !== "Shift") return;
-  qs("#result #saveScreenshotButton i")
-    ?.removeClass(["fas", "fa-download"])
-    ?.addClass(["far", "fa-image"]);
-});

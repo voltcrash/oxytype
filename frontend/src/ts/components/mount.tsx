@@ -39,6 +39,7 @@ import { MonkeyPower } from "./pages/test/MonkeyPower";
 import { OutOfFocusWarning } from "./pages/test/OutOfFocusWarning";
 import { Premid } from "./pages/test/Premid";
 import { RestartTestButton } from "./pages/test/RestartTestButton";
+import { ResultButtons } from "./pages/test/result/ResultButtons";
 import { ResultChart } from "./pages/test/result/ResultChart";
 import { ResultReplay } from "./pages/test/result/ResultReplay";
 import { ResultStats } from "./pages/test/result/ResultStats";
@@ -89,6 +90,7 @@ const components: Record<string, () => JSXElement> = {
   resultstats: () => <ResultStats />,
   resultwordshistory: () => <ResultWordsHistory />,
   resultreplay: () => <ResultReplay />,
+  resultbuttons: () => <ResultButtons />,
   resultchart: () => (
     <ResultChart
       onHighlightWords={(firstWordIndex, lastWordIndex) =>

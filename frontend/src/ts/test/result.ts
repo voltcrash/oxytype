@@ -634,7 +634,6 @@ export function updateDailyLeaderboardRank(rank: number | undefined): void {
 
 export function updateRetrySaving(visible: boolean): void {
   setResultState("retrySaving", visible);
-  qs("#retrySavingResultButton")?.toggleClass("hidden", !visible);
 }
 
 export async function update(
@@ -728,9 +727,6 @@ export async function update(
     `);
     setResultState("wordsHistory", { visible: false, slideDuration: 0 });
     setResultState("replay", { visible: false, slideDuration: 0 });
-    qs("main #result #showWordHistoryButton")?.hide();
-    qs("main #result #watchReplayButton")?.hide();
-    qs("main #result #saveScreenshotButton")?.hide();
 
     console.log(
       `Test Completed: ${result.wpm} wpm ${result.acc}% acc ${result.rawWpm} raw ${result.consistency}% consistency`,
@@ -743,9 +739,6 @@ export async function update(
       setResultState("quote", "reportVisible", true);
     }
     updateDailyLeaderboardRank(undefined);
-    qs("main #result #showWordHistoryButton")?.show();
-    qs("main #result #watchReplayButton")?.show();
-    qs("main #result #saveScreenshotButton")?.show();
   }
 
   if (res.wpm === 0 && !difficultyFailed && res.testDuration >= 5) {
@@ -979,7 +972,6 @@ function loadWordsHistory(): boolean {
     }),
   );
 
-  qs("#showWordHistoryButton")?.addClass("loaded");
   return true;
 }
 
@@ -996,10 +988,6 @@ export function toggleResultWords(noAnimation = false): void {
     setResultState("wordsHistory", { visible: false, slideDuration });
   }
 }
-
-qs(".pageTest")?.onChild("click", "#showWordHistoryButton", () => {
-  toggleResultWords();
-});
 
 configEvent.subscribe(async ({ key }) => {
   if (

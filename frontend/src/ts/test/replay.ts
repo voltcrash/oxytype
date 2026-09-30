@@ -1,6 +1,5 @@
 import * as Sound from "../controllers/sound-controller";
 import * as Arrays from "../utils/arrays";
-import { qs } from "../utils/dom";
 import { Config } from "../config/store";
 import * as TestWords from "./test-words";
 import {
@@ -365,7 +364,3 @@ export function jumpToLetter(wordIndex: number, letterIndex: number): void {
   initializeReplayPrompt();
   loadOldReplay();
 }
-
-qs(".pageTest")?.onChild("click", "#watchReplayButton", () => {
-  toggleReplayDisplay();
-});

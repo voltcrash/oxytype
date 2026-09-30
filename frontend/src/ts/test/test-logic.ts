@@ -1233,26 +1233,6 @@ const debouncedZipfCheck = debounce(250, async () => {
   }
 });
 
-qs(".pageTest")?.onChild(
-  "click",
-  "#retrySavingResultButton",
-  retrySavingResult,
-);
-
-qs(".pageTest")?.onChild("click", "#nextTestButton", () => {
-  void restart();
-});
-
-qs(".pageTest")?.onChild("click", "#restartTestButtonWithSameWordset", () => {
-  if (Config.mode === "zen") {
-    showNoticeNotification("Repeat test disabled in zen mode");
-    return;
-  }
-  void restart({
-    withSameWordset: true,
-  });
-});
-
 // little roadblock for basic cheating
 window.addEventListener("focus", () => {
   if (

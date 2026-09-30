@@ -5,76 +5,7 @@
     <div class="bottom">
       <mount data-component="resultwordshistory" class="contents"></mount>
       <mount data-component="resultreplay" class="contents"></mount>
-      <button id="retrySavingResultButton" class="danger hidden">
-        <i class="fas fa-redo"></i>
-        Retry saving result
-      </button>
-      <div class="buttons">
-        <button
-          class="text"
-          id="nextTestButton"
-          aria-label="Next test"
-          role="button"
-          data-balloon-pos="down"
-        >
-          <i class="fas fa-fw fa-chevron-right"></i>
-        </button>
-        <button
-          class="text"
-          id="restartTestButtonWithSameWordset"
-          aria-label="Repeat test"
-          role="button"
-          data-balloon-pos="down"
-        >
-          <i class="fas fa-fw fa-sync-alt"></i>
-        </button>
-        <button
-          class="text"
-          id="practiseWordsButton"
-          aria-label="Practice words"
-          role="button"
-          data-balloon-pos="down"
-        >
-          <i class="fas fa-fw fa-exclamation-triangle"></i>
-        </button>
-        <button
-          class="text"
-          id="showWordHistoryButton"
-          aria-label="Toggle words history"
-          role="button"
-          data-balloon-pos="down"
-        >
-          <i class="fas fa-fw fa-align-left"></i>
-        </button>
-        <button
-          class="text"
-          id="watchReplayButton"
-          aria-label="Watch replay"
-          role="button"
-          data-balloon-pos="down"
-        >
-          <i class="fas fa-fw fa-backward"></i>
-        </button>
-        <button
-          class="text"
-          id="saveScreenshotButton"
-          aria-label="Copy screenshot to clipboard&#10;(shift click to download)"
-          role="button"
-          data-balloon-pos="down"
-          data-balloon-break
-        >
-          <i class="far fa-fw fa-image"></i>
-        </button>
-        <!-- <button
-          class="text"
-          id="watchVideoAdButton"
-          aria-label="Watch video ad"
-          role="button"
-          data-balloon-pos="down"
-        >
-          <i class="fas fa-fw fa-ad"></i>
-        </button> -->
-      </div>
+      <mount data-component="resultbuttons" class="contents"></mount>
     </div>
     <div class="loginTip">
       <a href="/login" router-link>Sign in</a>
