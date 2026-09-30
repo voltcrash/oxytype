@@ -5,14 +5,14 @@ import { getActivePage } from "../../../states/core";
 import { getFocus } from "../../../states/test";
 import { cn } from "../../../utils/cn";
 import { isDevEnvironment } from "../../../utils/env";
+import { Link } from "../../common/Link";
 
 export function Logo(): JSXElement {
   return (
-    <a
+    <Link
       href={`${location.origin}/`}
       class="-m-2 flex h-6 w-max gap-2 rounded-[0.8rem] p-2 focus-visible:**:data-[ui-element='logoSubtext']:text-transparent"
       aria-label="Monkeytype Home"
-      router-link
       style={{
         "box-sizing": "content-box",
         "font-family": "Lexend Deca ,sans-serif",
@@ -62,6 +62,6 @@ export function Logo(): JSXElement {
           monkeytype
         </h1>
       </div>
-    </a>
+    </Link>
   );
 }

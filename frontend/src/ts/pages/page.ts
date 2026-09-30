@@ -3,7 +3,6 @@ import {
   safeParse as parseUrlSearchParams,
   serialize as serializeUrlSearchParams,
 } from "zod-urlsearchparams";
-import { ElementWithUtils } from "../utils/dom";
 
 export type PageName =
   | "loading"
@@ -70,7 +69,6 @@ export type LoadingOptions = {
 export type PageProperties<T> = {
   id: PageName;
   display?: string;
-  element: ElementWithUtils | (() => ElementWithUtils);
   path: string;
   loadingOptions?: LoadingOptions;
   beforeHide?: () => Promise<void>;
@@ -85,16 +83,6 @@ async function empty(): Promise<void> {
 export default class Page<T> {
   public id: PageName;
   public display: string | undefined;
-  private _element: ElementWithUtils | (() => ElementWithUtils);
-
-  public get element(): ElementWithUtils {
-    if (typeof this._element === "function") this._element = this._element();
-    return this._element;
-  }
-
-  public set element(value: ElementWithUtils) {
-    this._element = value;
-  }
   public pathname: string;
   public loadingOptions: LoadingOptions | undefined;
 
@@ -106,7 +94,6 @@ export default class Page<T> {
   constructor(options: PageProperties<T>) {
     this.id = options.id;
     this.display = options.display;
-    this._element = options.element;
     this.pathname = options.path;
     this.loadingOptions = options.loadingOptions;
     this.beforeHide = options.beforeHide ?? empty;

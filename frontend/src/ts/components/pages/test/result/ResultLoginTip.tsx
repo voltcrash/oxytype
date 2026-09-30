@@ -3,6 +3,7 @@ import { JSXElement } from "solid-js";
 import { getIsScreenshotting } from "../../../../states/core";
 import { resultState } from "../../../../states/result";
 import { cn } from "../../../../utils/cn";
+import { Link } from "../../../common/Link";
 
 export function ResultLoginTip(): JSXElement {
   return (
@@ -12,10 +13,7 @@ export function ResultLoginTip(): JSXElement {
         (!resultState.loginTip || getIsScreenshotting()) && "hidden",
       )}
     >
-      <a href="/login" router-link>
-        Sign in
-      </a>{" "}
-      to save your result
+      <Link href="/login">Sign in</Link> to save your result
     </div>
   );
 }

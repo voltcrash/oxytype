@@ -233,16 +233,6 @@ window.addEventListener("popstate", () => {
   void router();
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-  document.body.addEventListener("click", (e) => {
-    const target = e?.target as HTMLLinkElement;
-    if (target.matches("[router-link]") && target?.href) {
-      e.preventDefault();
-      void navigate(target.href);
-    }
-  });
-});
-
 navigationEvent.subscribe(({ url, options }) => {
   void navigate(url, options);
 });

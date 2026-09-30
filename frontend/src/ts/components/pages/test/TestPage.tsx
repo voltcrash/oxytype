@@ -1,10 +1,8 @@
 import { JSXElement, onMount } from "solid-js";
 
-import { page } from "../../../pages/test";
 import { getPageView } from "../../../states/page-transition";
 import { setTestElements } from "../../../states/test-dom";
 import { cn } from "../../../utils/cn";
-import { ElementWithUtils } from "../../../utils/dom";
 import { CapsWarning } from "./CapsWarning";
 import { CompositionDisplay } from "./CompositionDisplay";
 import { FunboxTimers } from "./FunboxTimer";
@@ -25,20 +23,15 @@ import { TestLoading } from "./TestLoading";
 export function TestPage(
   props: { ref?: (el: HTMLDivElement) => void } = {},
 ): JSXElement {
-  let pageEl: HTMLDivElement | undefined;
-
   const refs = {} as Parameters<typeof setTestElements>[0];
 
   onMount(() => {
     setTestElements(refs);
-    // PageController still owns page visibility/animation until P5.2.
-    page.element = new ElementWithUtils(pageEl as HTMLDivElement);
   });
 
   return (
     <div
       ref={(el) => {
-        pageEl = el;
         props.ref?.(el);
       }}
       class={cn(

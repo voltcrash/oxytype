@@ -18,7 +18,6 @@ import Page, {
   UrlParamsSchema,
   OptionsWithUrlParams,
 } from "../pages/page";
-import { qsr } from "../utils/dom";
 import {
   LeaderboardUrlParamsSchema,
   readLeaderboardGetParameters,
@@ -426,12 +425,10 @@ function solidPage<U extends UrlParamsSchema>(
   },
 ): Page<undefined> | PageWithUrlParams<undefined, U> {
   const path = props?.path ?? `/${id}`;
-  const internalId = `page${Strings.capitalizeFirstLetter(id)}`;
 
   const shared = {
     id,
     path,
-    element: () => qsr(`#${internalId}`),
     loadingOptions: props?.loadingOptions,
     afterHide: async () => {
       await props?.afterHide?.();
