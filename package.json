@@ -87,7 +87,7 @@
       "oxfmt --no-error-on-unmatched-pattern"
     ],
     "*.{ts,tsx,js}": [
-      "oxlint --type-aware --type-check"
+      "oxlint --type-aware --type-check --format agent"
     ],
     "*.{scss,css}": [
       "stylelint"

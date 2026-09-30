@@ -193,7 +193,9 @@ Perf critical: per-keystroke work must not regress. Measure with `utils/profiler
   > Note: deleted obsolete popup/login responsive rules, empty breakpoints, avatar/FPS/notification/checkbox wrappers and unused animations. Mobile commandline media rule moved to its Solid button; shared inputs, layout, word/history/debug/theme/funbox selectors retained. 1,284 tests, frontend checks and typing/result/restart smoke pass with the documented Knip exception.
 - [x] **P6.5** Update `CLAUDE.md` / `AGENTS.md`: drop "partially migrated" + legacy `i` tag rule. Update `docs/CONTRIBUTING_ADVANCED.md` if it mentions HTML partials.
   > Note: contributor rules now describe Solid UI, component-owned imperative exceptions and Fa icons. Advanced contribution guide contains no HTML-partial instructions; unchanged.
-- [ ] **P6.6** Full check: `pnpm full-check` from root. Keep this file (D4); tick all boxes.
+- [x] **P6.6** Full check: `pnpm full-check` from root. Keep this file (D4); tick all boxes.
+
+  > Note: all 28 full-check tasks pass (final run --concurrency=1 avoids host-load timeouts), including 1,285 frontend tests and 207 backend integration tests; direct lint/test/build and root Knip pass. Knip covers TSX/standalone/Storybook explicitly, retaining the P0.2 non-UI baseline and existing tooling/CSS/virtual-module exceptions via narrow allowlists. Removed obsolete Storybook patches; lint scripts/checker use agent format, and madge includes TSX.
 
 ---
 

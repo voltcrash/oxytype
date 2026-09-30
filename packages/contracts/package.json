@@ -19,8 +19,8 @@
     "test": "vitest run",
     "madge": " madge --circular --extensions ts ./src",
     "ts-check": "tsc --noEmit",
-    "lint": "oxlint . --type-aware --type-check",
-    "lint-fast": "oxlint ."
+    "lint": "oxlint . --type-aware --type-check --format agent",
+    "lint-fast": "oxlint . --format agent"
   },
   "dependencies": {
     "@monkeytype/schemas": "workspace:*"

@@ -69,7 +69,10 @@ export function oxlintChecker(options: OxlintCheckerOptions = {}): Plugin {
         errorCount: parseInt(summaryMatch[2], 10),
       };
     }
-    return { errorCount: 0, warningCount: 0 };
+    return {
+      errorCount: (output.match(/^.+:\d+:\d+: error\b/gm) ?? []).length,
+      warningCount: (output.match(/^.+:\d+:\d+: warning\b/gm) ?? []).length,
+    };
   };
 
   const sendLintResult = (result: Partial<LintResult>): void => {
@@ -118,11 +121,15 @@ export function oxlintChecker(options: OxlintCheckerOptions = {}): Plugin {
     args: string[],
   ): Promise<{ code: number | null; output: string }> => {
     return new Promise((resolve) => {
-      const childProcess = spawn("npx", ["oxlint", ".", ...args], {
-        cwd: process.cwd(),
-        shell: true,
-        env: { ...process.env, FORCE_COLOR: "3" },
-      });
+      const childProcess = spawn(
+        "npx",
+        ["oxlint", ".", "--format", "agent", ...args],
+        {
+          cwd: process.cwd(),
+          shell: true,
+          env: { ...process.env, FORCE_COLOR: "3" },
+        },
+      );
 
       currentProcess = childProcess;
       let output = "";
@@ -275,9 +282,11 @@ export function oxlintChecker(options: OxlintCheckerOptions = {}): Plugin {
       console.log("\n\x1b[1mRunning oxlint...\x1b[0m");
 
       try {
-        const commands = ["npx oxlint ."];
+        const commands = ["npx oxlint . --format agent"];
         if (typeAware) {
-          commands.push("npx oxlint . --type-aware --type-check");
+          commands.push(
+            "npx oxlint . --type-aware --type-check --format agent",
+          );
         }
 
         const output = execSync(commands.join(" && "), {
