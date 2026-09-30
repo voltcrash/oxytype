@@ -15,9 +15,9 @@ import type {
 
 import { setConfig } from "../../../../config/setters";
 import { getConfig } from "../../../../config/store";
-import * as ResultWordHighlight from "../../../../elements/result-word-highlight";
 import { createEffectOn } from "../../../../hooks/effects";
 import { useRefWithUtils } from "../../../../hooks/useRefWithUtils";
+import { useResultWordHighlight } from "../../../../hooks/useResultWordHighlight";
 import Format from "../../../../singletons/format";
 import {
   showErrorNotification,
@@ -53,7 +53,7 @@ declare module "solid-js" {
     }
     // oxlint-disable-next-line typescript/consistent-type-definitions
     interface ExplicitAttributes {
-      // word attributes, read by result-word-highlight
+      // word attributes, read by useResultWordHighlight
       input: string;
       burst: string;
     }
@@ -173,7 +173,7 @@ const titleButtons: {
   label: string;
   icon: FaSolidIcon;
   class?: string;
-  onClick: () => void;
+  onClick: (destroyWordHighlight: () => void) => void;
 }[] = [
   {
     id: "copyWordsListButton",
@@ -199,9 +199,9 @@ const titleButtons: {
     label: "Toggle burst heatmap",
     icon: "fa-fire-alt",
     class: "inline-block",
-    onClick: () => {
+    onClick: (destroyWordHighlight) => {
       setConfig("burstHeatmap", !getConfig.burstHeatmap);
-      ResultWordHighlight.destroy();
+      destroyWordHighlight();
     },
   },
 ];
@@ -228,6 +228,7 @@ export function ResultWordsHistory(): JSXElement {
   const [ref, element] = useRefWithUtils<HTMLDivElement>();
   const [hoveredWord, setHoveredWord] = createSignal<number>();
   const isHovered = createSelector(hoveredWord);
+  const wordHighlight = useResultWordHighlight(() => element()?.native);
 
   const history = () => resultState.wordsHistory;
 
@@ -283,7 +284,7 @@ export function ResultWordsHistory(): JSXElement {
               aria-label={button.label}
               data-balloon-pos="up"
               tabIndex={-1}
-              onClick={() => button.onClick()}
+              onClick={() => button.onClick(wordHighlight.destroy)}
             >
               <Fa icon={button.icon} fixedWidth />
             </button>
@@ -374,6 +375,7 @@ export function ResultWordsHistory(): JSXElement {
           )}
         </For>
       </div>
+      {wordHighlight.component()}
     </div>
   );
 }

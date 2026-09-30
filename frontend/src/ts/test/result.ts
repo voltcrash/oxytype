@@ -63,7 +63,6 @@ import {
   getWordBurstHistory,
 } from "./events/stats";
 import * as TestWords from "./test-words";
-import * as ResultWordHighlight from "../elements/result-word-highlight";
 import { buildWordsHistory } from "./word-markup";
 import {
   getResultChart,
@@ -983,7 +982,6 @@ function loadWordsHistory(): boolean {
 
 export function toggleResultWords(noAnimation = false): void {
   if (!getResultVisible()) return;
-  ResultWordHighlight.updateToggleWordsHistoryTime();
 
   const slideDuration = noAnimation ? 0 : 250;
   if (!resultState.wordsHistory.visible) {

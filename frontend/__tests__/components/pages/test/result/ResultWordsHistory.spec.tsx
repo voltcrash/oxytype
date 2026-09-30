@@ -12,8 +12,11 @@ vi.mock("animejs", () => ({ animate: vi.fn() }));
 vi.mock("../../../../../src/ts/config/setters", () => ({
   setConfig: mocks.setConfig,
 }));
-vi.mock("../../../../../src/ts/elements/result-word-highlight", () => ({
-  destroy: mocks.destroy,
+vi.mock("../../../../../src/ts/hooks/useResultWordHighlight", () => ({
+  useResultWordHighlight: () => ({
+    component: () => null,
+    destroy: mocks.destroy,
+  }),
 }));
 vi.mock("../../../../../src/ts/states/test", () => ({
   getResultVisible: () => true,

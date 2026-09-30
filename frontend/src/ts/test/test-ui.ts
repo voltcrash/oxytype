@@ -8,7 +8,6 @@ import * as Misc from "../utils/misc";
 import * as Strings from "../utils/strings";
 import * as CompositionState from "../legacy-states/composition";
 import { configEvent } from "../events/config";
-import * as ResultWordHighlight from "../elements/result-word-highlight";
 import { getActivePage } from "../states/core";
 import { convertRemToPixels } from "../utils/numbers";
 import { findSingleActiveFunboxWithFunction } from "./funbox/list";
@@ -1510,7 +1509,6 @@ export function onTestRestart(source: "testPage" | "resultPage"): void {
   });
   LayoutfluidFunboxTimer.instantHide();
   focusWords(true);
-  ResultWordHighlight.destroy();
   MonkeyPower.reset();
   MemoryFunboxTimer.reset();
   Caret.resetPosition();
@@ -1547,10 +1545,6 @@ export function onTestFinish(): void {
     void SoundController.playFartReverb();
   }
 }
-
-addEventListener("resize", () => {
-  ResultWordHighlight.destroy();
-});
 
 qs("#wordsInput")?.on("focus", (e) => {
   if (!isInputElementFocused()) return;

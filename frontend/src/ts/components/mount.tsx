@@ -2,8 +2,8 @@ import { QueryClientProvider } from "@tanstack/solid-query";
 import { JSXElement } from "solid-js";
 import { render } from "solid-js/web";
 
-import * as ResultWordHighlight from "../elements/result-word-highlight";
 import { queryClient } from "../queries";
+import { resultWordHighlightEvent } from "../states/result";
 import { qsa } from "../utils/dom";
 import { Advertisement } from "./common/Advertisement";
 import { Theme } from "./core/Theme";
@@ -89,13 +89,16 @@ const components: Record<string, () => JSXElement> = {
   resultwordshistory: () => <ResultWordsHistory />,
   resultchart: () => (
     <ResultChart
-      onHighlightWords={(first, last) =>
-        void ResultWordHighlight.highlightWordsInRange(first, last)
+      onHighlightWords={(firstWordIndex, lastWordIndex) =>
+        resultWordHighlightEvent.dispatch({
+          type: "highlight",
+          firstWordIndex,
+          lastWordIndex,
+        })
       }
-      onHoverChange={(hovering) => {
-        ResultWordHighlight.setIsHoverChart(hovering);
-        if (!hovering) ResultWordHighlight.clear();
-      }}
+      onHoverChange={(hovering) =>
+        resultWordHighlightEvent.dispatch({ type: "hoverChart", hovering })
+      }
     />
   ),
   verticalads: () => (

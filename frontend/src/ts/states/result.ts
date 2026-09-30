@@ -3,6 +3,7 @@ import { createStore } from "solid-js/store";
 import { Language } from "@monkeytype/schemas/languages";
 import { TypingSpeedUnit } from "@monkeytype/schemas/configs";
 import type { WordsHistoryItem } from "../test/word-markup";
+import { createEvent } from "../hooks/createEvent";
 
 export type ResultCrownType =
   | "normal"
@@ -171,3 +172,10 @@ export function getResultChartScale(
 ): CartesianScaleOptions {
   return getResultChart().options.scales?.[id] as CartesianScaleOptions;
 }
+
+export type ResultWordHighlightEvent =
+  | { type: "highlight"; firstWordIndex: number; lastWordIndex: number }
+  | { type: "hoverChart"; hovering: boolean };
+
+// result chart hover -> words history highlight
+export const resultWordHighlightEvent = createEvent<ResultWordHighlightEvent>();

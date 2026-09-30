@@ -122,9 +122,6 @@ vi.mock("../../src/ts/db", () => ({
   getSnapshot: () => undefined,
 }));
 vi.mock("../../src/ts/test/test-ui", () => ({}));
-vi.mock("../../src/ts/elements/result-word-highlight", () => ({
-  updateToggleWordsHistoryTime: vi.fn(),
-}));
 vi.mock("../../src/ts/test/today-tracker", () => ({
   getString: () => "",
 }));
