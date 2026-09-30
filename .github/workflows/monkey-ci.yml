@@ -388,6 +388,10 @@ jobs:
       - name: Build
         run: npm run build-pkg
 
+      - name: Create stub firebase config
+        working-directory: ./frontend/src/ts/constants
+        run: cp ./firebase-config-example.ts ./firebase-config.ts && cp ./firebase-config.ts ./firebase-config-live.ts
+
       - name: Check workspace root lint
         run: pnpm exec vp lint . --type-aware --type-check --format agent
 
