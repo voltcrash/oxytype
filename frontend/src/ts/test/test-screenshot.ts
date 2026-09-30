@@ -1,40 +1,27 @@
 import { showLoaderBar, hideLoaderBar } from "../states/loader-bar";
 import * as Replay from "./replay";
-import { isAuthenticated, setIsScreenshotting } from "../states/core";
+import { setIsScreenshotting } from "../states/core";
 import { getActiveFunboxesWithFunction } from "./funbox/list";
 import * as DB from "../db";
 import { format } from "date-fns/format";
-import { getHtmlByUserFlags } from "../controllers/user-flag-controller";
 import {
   showNoticeNotification,
   showErrorNotification,
   showSuccessNotification,
 } from "../states/notifications";
 import { convertRemToPixels } from "../utils/numbers";
-import { qs, qsa } from "../utils/dom";
+import { qs } from "../utils/dom";
+import { resultState, setScreenshotWatermark } from "../states/result";
 import { getTheme } from "../states/theme";
 import { download as downloadFile } from "../utils/misc";
-
-let revealReplay = false;
 
 function revert(): void {
   setIsScreenshotting(false);
   hideLoaderBar();
-  qs("#ad-result-wrapper")?.show();
-  qs("#ad-result-small-wrapper")?.show();
-  qs(".pageTest .ssWatermark")?.hide();
-  qs(".pageTest .ssWatermark")?.setText("monkeytype.com"); // Reset watermark text
-  qs(".pageTest .buttons")?.show();
   qs("noscript")?.show();
   qs("#nocss")?.show();
   qs("#result")?.removeClass("noBalloons");
-  qs(".wordInputHighlight")?.show();
-  qsa(".highlightContainer")?.show();
-  if (revealReplay) qs("#resultReplay")?.show();
-  if (!isAuthenticated()) {
-    qs(".pageTest .loginTip")?.show();
-  }
-  qs("html")?.setStyle({ scrollBehavior: "smooth" });
+  document.documentElement.style.scrollBehavior = "smooth";
   for (const fb of getActiveFunboxesWithFunction("applyGlobalCSS")) {
     fb.functions.applyGlobalCSS();
   }
@@ -51,46 +38,33 @@ async function generateCanvas(): Promise<HTMLCanvasElement | null> {
   const { domToCanvas } = await import("modern-screenshot");
   showLoaderBar(true);
 
-  if (!qs("#resultReplay")?.hasClass("hidden")) {
-    revealReplay = true;
+  if (resultState.replay.visible) {
     Replay.pauseReplay();
   }
 
   // --- UI Preparation ---
+  // result components hide buttons, login tip, replay, highlights and the
+  // result ad and show the watermark while screenshotting
   const dateNow = new Date(Date.now());
-  qs("#resultReplay")?.hide();
-  qs(".pageTest .ssWatermark")?.show();
-
   const snapshot = DB.getSnapshot();
-  const ssWatermark = [format(dateNow, "dd MMM yyyy HH:mm"), "monkeytype.com"];
-  if (snapshot?.name !== undefined) {
-    const userText = `${snapshot?.name}${getHtmlByUserFlags(snapshot, {
-      iconsOnly: true,
-    })}`;
-    ssWatermark.unshift(userText);
-  }
-  qs(".pageTest .ssWatermark")?.setHtml(
-    ssWatermark
-      .map((el) => `<span>${el}</span>`)
-      .join("<span class='pipe'>|</span>"),
-  );
+  setScreenshotWatermark({
+    date: format(dateNow, "dd MMM yyyy HH:mm"),
+    user:
+      snapshot?.name !== undefined
+        ? { name: snapshot.name, flags: snapshot }
+        : undefined,
+  });
 
   setIsScreenshotting(true);
-  qs(".pageTest .buttons")?.hide();
-  qs(".pageTest .loginTip")?.hide();
   qs("noscript")?.hide();
   qs("#nocss")?.hide();
-  qs("#ad-result-wrapper")?.hide();
-  qs("#ad-result-small-wrapper")?.hide();
   qs("#result")?.addClass("noBalloons");
-  qs(".wordInputHighlight")?.hide();
-  qsa(".highlightContainer")?.hide();
 
   for (const fb of getActiveFunboxesWithFunction("clearGlobal")) {
     fb.functions.clearGlobal();
   }
 
-  (document.querySelector("html") as HTMLElement).style.scrollBehavior = "auto";
+  document.documentElement.style.scrollBehavior = "auto";
   window.scrollTo({ top: 0, behavior: "auto" });
 
   // --- Target Element Calculation ---

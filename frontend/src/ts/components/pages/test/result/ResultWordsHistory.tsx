@@ -19,6 +19,7 @@ import { createEffectOn } from "../../../../hooks/effects";
 import { useRefWithUtils } from "../../../../hooks/useRefWithUtils";
 import { useResultWordHighlight } from "../../../../hooks/useResultWordHighlight";
 import Format from "../../../../singletons/format";
+import { getIsScreenshotting } from "../../../../states/core";
 import {
   showErrorNotification,
   showNoticeNotification,
@@ -361,7 +362,7 @@ export function ResultWordsHistory(): JSXElement {
                   </letter>
                 )}
               </For>
-              <Show when={isHovered(index())}>
+              <Show when={isHovered(index()) && !getIsScreenshotting()}>
                 <div class="wordInputHighlight withSpeed">
                   <div class="text">
                     {item.input.replace(/\t/g, "_").replace(/\n/g, "_")}

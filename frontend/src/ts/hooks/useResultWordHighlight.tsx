@@ -12,6 +12,7 @@ import {
   onMount,
 } from "solid-js";
 
+import { getIsScreenshotting } from "../states/core";
 import { resultState, resultWordHighlightEvent } from "../states/result";
 import { isLanguageRightToLeft } from "../states/test";
 import { cn } from "../utils/cn";
@@ -570,7 +571,10 @@ export function useResultWordHighlight(
           return (
             <div
               ref={(el) => (highlightContainerEls[lineIndex()] = el)}
-              class="highlightContainer pointer-events-none absolute overflow-hidden"
+              class={cn(
+                "highlightContainer pointer-events-none absolute overflow-hidden",
+                getIsScreenshotting() && "hidden",
+              )}
               style={line.container}
             >
               <div

@@ -2,6 +2,7 @@ import { Ads } from "@monkeytype/schemas/configs";
 import { JSXElement, Show, untrack } from "solid-js";
 
 import { Config, getConfig } from "../../config/store";
+import { getIsScreenshotting } from "../../states/core";
 import { cn } from "../../utils/cn";
 
 export function Advertisement(props: {
@@ -24,6 +25,8 @@ export function Advertisement(props: {
   withText?: true;
   // toggled by test/focus.ts
   focus?: true;
+  // result ad, left out of result screenshots
+  hideWhileScreenshotting?: true;
   class?: string;
   smallClass?: string;
 }): JSXElement {
@@ -34,6 +37,8 @@ export function Advertisement(props: {
   const initiallyVisible = untrack(() => matches(Config.ads));
   const shown = () =>
     props.staticVisibility ? initiallyVisible : matches(getConfig.ads);
+  const screenshotHidden = () =>
+    props.hideWhileScreenshotting === true && getIsScreenshotting();
 
   return (
     <Show when={shown()}>
@@ -57,6 +62,7 @@ export function Advertisement(props: {
             "ad full-width advertisement ad-h place-self-center",
             props.focus && "focus",
             props.class,
+            screenshotHidden() && "hidden",
           )}
         >
           <Show
@@ -82,6 +88,7 @@ export function Advertisement(props: {
             "ad advertisement ad-h-s place-self-center",
             props.focus && "focus",
             props.smallClass,
+            screenshotHidden() && "hidden",
           )}
         >
           <div class="icon small">

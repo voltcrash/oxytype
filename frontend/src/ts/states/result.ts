@@ -1,9 +1,11 @@
 import type { CartesianScaleOptions, Chart, ChartDataset } from "chart.js";
+import { createSignal } from "solid-js";
 import { createStore } from "solid-js/store";
 import { Language } from "@monkeytype/schemas/languages";
 import { TypingSpeedUnit } from "@monkeytype/schemas/configs";
 import type { WordsHistoryItem } from "../test/word-markup";
 import { createEvent } from "../hooks/createEvent";
+import type { SupportsFlags } from "../controllers/user-flag-controller";
 
 export type ResultCrownType =
   | "normal"
@@ -210,3 +212,12 @@ export type ResultWordHighlightEvent =
 
 // result chart hover -> words history highlight
 export const resultWordHighlightEvent = createEvent<ResultWordHighlightEvent>();
+
+export type ScreenshotWatermark = {
+  date: string;
+  user: { name: string; flags: SupportsFlags } | undefined;
+};
+
+// shown under the result while screenshotting
+export const [getScreenshotWatermark, setScreenshotWatermark] =
+  createSignal<ScreenshotWatermark>();

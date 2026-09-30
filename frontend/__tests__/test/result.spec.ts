@@ -243,7 +243,6 @@ async function runUpdate(
   );
 }
 
-const el = (selector: string): FakeEl => dom.get(selector);
 const s = (): ResultStats => resultState.stats as ResultStats;
 
 function config(partial: Partial<ConfigType> = {}): void {
@@ -567,12 +566,10 @@ describe("result update", () => {
   describe("login tip", () => {
     it("is shown only when logged out", async () => {
       await runUpdate(completedEvent());
-      expect(el("#result .loginTip").hidden).toBe(true);
       expect(resultState.loginTip).toBe(false);
 
       state.authenticated = false;
       await runUpdate(completedEvent());
-      expect(el("#result .loginTip").hidden).toBe(false);
       expect(resultState.loginTip).toBe(true);
     });
   });

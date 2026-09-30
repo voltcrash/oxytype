@@ -35,12 +35,19 @@ vi.mock("../../../../../src/ts/states/notifications", () => ({
 vi.mock("../../../../../src/ts/states/test", () => ({
   getResultVisible: () => true,
 }));
-vi.mock("../../../../../src/ts/states/core", () => ({
-  getActivePage: () => "test",
-}));
+vi.mock("../../../../../src/ts/states/core", async () => {
+  const { createSignal } = await import("solid-js");
+  const [getIsScreenshotting, setIsScreenshotting] = createSignal(false);
+  return {
+    getActivePage: () => "test",
+    getIsScreenshotting,
+    setIsScreenshotting,
+  };
+});
 
 import { ResultButtons } from "../../../../../src/ts/components/pages/test/result/ResultButtons";
 import { setConfigStore } from "../../../../../src/ts/config/store";
+import { setIsScreenshotting } from "../../../../../src/ts/states/core";
 import { setResultState } from "../../../../../src/ts/states/result";
 
 function renderButtons(): HTMLElement {
@@ -134,6 +141,14 @@ describe("ResultButtons", () => {
     expect(icon()).toHaveClass("fas", "fa-download");
     fireEvent.keyUp(document, { key: "Shift" });
     expect(icon()).toHaveClass("far", "fa-image");
+  });
+
+  it("hides the buttons while screenshotting", () => {
+    const c = renderButtons();
+    expect(c.querySelector(".buttons")).not.toHaveClass("hidden");
+    setIsScreenshotting(true);
+    expect(c.querySelector(".buttons")).toHaveClass("hidden");
+    setIsScreenshotting(false);
   });
 
   it("shows retry saving from the store", () => {

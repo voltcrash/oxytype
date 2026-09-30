@@ -41,8 +41,10 @@ import { Premid } from "./pages/test/Premid";
 import { RestartTestButton } from "./pages/test/RestartTestButton";
 import { ResultButtons } from "./pages/test/result/ResultButtons";
 import { ResultChart } from "./pages/test/result/ResultChart";
+import { ResultLoginTip } from "./pages/test/result/ResultLoginTip";
 import { ResultReplay } from "./pages/test/result/ResultReplay";
 import { ResultStats } from "./pages/test/result/ResultStats";
+import { ResultWatermark } from "./pages/test/result/ResultWatermark";
 import { ResultWordsHistory } from "./pages/test/result/ResultWordsHistory";
 import { TestConfig } from "./pages/test/TestConfig";
 import { TestInitFailed } from "./pages/test/TestInitFailed";
@@ -91,6 +93,12 @@ const components: Record<string, () => JSXElement> = {
   resultwordshistory: () => <ResultWordsHistory />,
   resultreplay: () => <ResultReplay />,
   resultbuttons: () => <ResultButtons />,
+  resultfooter: () => (
+    <>
+      <ResultLoginTip />
+      <ResultWatermark />
+    </>
+  ),
   resultchart: () => (
     <ResultChart
       onHighlightWords={(firstWordIndex, lastWordIndex) =>
@@ -139,6 +147,7 @@ const components: Record<string, () => JSXElement> = {
       visible={["result", "on", "sellout"]}
       staticVisibility
       withText
+      hideWhileScreenshotting
     />
   ),
 };

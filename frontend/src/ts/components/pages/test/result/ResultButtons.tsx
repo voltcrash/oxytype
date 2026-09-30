@@ -8,7 +8,7 @@ import {
 } from "solid-js";
 
 import { getConfig } from "../../../../config/store";
-import { getActivePage } from "../../../../states/core";
+import { getActivePage, getIsScreenshotting } from "../../../../states/core";
 import { showModal } from "../../../../states/modals";
 import { showNoticeNotification } from "../../../../states/notifications";
 import { resultState } from "../../../../states/result";
@@ -130,7 +130,12 @@ export function ResultButtons(): JSXElement {
           Retry saving result
         </button>
       </Show>
-      <div class="buttons col-[1/3] grid grid-flow-col justify-center gap-4 max-sm:grid-flow-row max-sm:grid-cols-[1fr_1fr]">
+      <div
+        class={cn(
+          "buttons col-[1/3] grid grid-flow-col justify-center gap-4 max-sm:grid-flow-row max-sm:grid-cols-[1fr_1fr]",
+          getIsScreenshotting() && "hidden",
+        )}
+      >
         <For each={buttons}>
           {(button) => (
             <button

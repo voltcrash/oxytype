@@ -705,11 +705,6 @@ export async function update(
     noStress,
     loginTip: !isAuthenticated() && !noStress,
   });
-  if (resultState.loginTip) {
-    qs("#result .loginTip")?.show();
-  } else {
-    qs("#result .loginTip")?.hide();
-  }
 
   if (noStress) {
     qs("main #result .noStressMessage")?.remove();
