@@ -277,3 +277,48 @@ describe("test-ui word markup", () => {
     });
   });
 });
+
+describe("joining word layout", () => {
+  beforeEach(async () => {
+    config({ typedEffect: "dots" });
+    setWords("hello ", "world");
+    addWords();
+    wordsEl().className = "joiningScript";
+    TestUI.updateActiveElement({ initial: true });
+    await flushFrames();
+  });
+
+  it("freezes an unwrapped typed word width and resets it on return", async () => {
+    vi.spyOn(wordEl(0), "getBoundingClientRect").mockReturnValue({
+      width: 101.25,
+    } as DOMRect);
+    testState.activeWordIndex = 1;
+    TestUI.updateActiveElement({ direction: "forward" });
+    await flushFrames();
+    expect(wordEl(0).className).toContain("broken-joining");
+    expect(wordEl(0).style.width).toBe("101.25px");
+    testState.activeWordIndex = 0;
+    TestUI.updateActiveElement({ direction: "back" });
+    await flushFrames();
+    expect(wordEl(0).className).not.toContain("broken-joining");
+    expect(wordEl(0).style.width).toBe("");
+  });
+
+  it("keeps wrapped joining words flexible", async () => {
+    const secondLetter = wordEl(0).querySelectorAll("letter")[1] as HTMLElement;
+    Object.defineProperty(secondLetter, "offsetTop", { value: 20 });
+    testState.activeWordIndex = 1;
+    TestUI.updateActiveElement({ direction: "forward" });
+    await flushFrames();
+    expect(wordEl(0).className).toContain("needs-wrap");
+    expect(wordEl(0).style.width).toBe("");
+  });
+
+  it("leaves ordinary typed words joined", async () => {
+    config({ typedEffect: "keep" });
+    testState.activeWordIndex = 1;
+    TestUI.updateActiveElement({ direction: "forward" });
+    await flushFrames();
+    expect(wordEl(0).className).not.toContain("broken-joining");
+  });
+});

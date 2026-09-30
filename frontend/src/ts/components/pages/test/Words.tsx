@@ -48,7 +48,6 @@ import {
   setWordsInputStyle,
   setWordsWrapperHeight,
 } from "../../../states/words-layout";
-import * as Joining from "../../../test/break-joining";
 import * as Caret from "../../../test/caret";
 import * as CustomText from "../../../test/custom-text";
 import { getCurrentInput } from "../../../test/events/data";
@@ -127,7 +126,7 @@ export function updateActiveElement(
       if (previousActiveWord !== null) {
         if (direction === "forward") {
           previousActiveWord.addClass("typed");
-          Joining.set(previousActiveWord, true);
+          setWordJoining(previousActiveWord, true);
         } else if (direction === "back") {
           //
         }
@@ -144,7 +143,7 @@ export function updateActiveElement(
     newActiveWord.addClass("active");
     newActiveWord.removeClass("error");
     newActiveWord.removeClass("typed");
-    Joining.set(newActiveWord, false);
+    setWordJoining(newActiveWord, false);
 
     activeWordTop = newActiveWord.getOffsetTop();
     activeWordHeight = newActiveWord.getOffsetHeight();
@@ -299,7 +298,8 @@ async function updateHintsPosition(): Promise<void> {
   let hintIndices: number[][] = [];
   let hintText: string[] = [];
 
-  const hintElements = document.querySelectorAll<HTMLElement>(".hints > hint");
+  const hintElements =
+    getWordsEl().native.querySelectorAll<HTMLElement>(".hints > hint");
 
   for (const hintEl of hintElements) {
     const hintsContainer = hintEl.parentElement as HTMLElement;
@@ -1456,7 +1456,7 @@ function onWordsConfigChange({
   ) {
     if (key !== "fontFamily") updateWordWrapperClasses();
     if (["typedEffect", "fontFamily", "fontSize"].includes(key)) {
-      Joining.update(key, getWordsEl());
+      updateWordJoining(key, getWordsEl());
     }
   }
 }
@@ -1488,4 +1488,60 @@ export function Words(props: {
       )}
     ></div>
   );
+}
+
+function canBreak(wordEl: ElementWithUtils): boolean {
+  if (Config.typedEffect !== "dots") return false;
+  if (wordEl.hasClass("broken-joining")) return false;
+
+  return wordEl.getParent()?.hasClass("joiningScript") ?? false;
+}
+
+function applyIfNeeded(wordEl: ElementWithUtils): void {
+  if (!canBreak(wordEl)) return;
+
+  const letters = wordEl.qsa("letter");
+  const firstTop = Math.floor(letters[0]?.getOffsetTop() ?? 0);
+  const isWrapped = letters.some(
+    (l) => Math.floor(l.getOffsetTop()) !== firstTop,
+  );
+
+  if (!isWrapped) {
+    const { width } = wordEl.screenBounds();
+    wordEl.setStyle({ width: `${width}px` });
+    wordEl.removeClass("needs-wrap");
+  } else {
+    wordEl.setStyle({ width: "" });
+    wordEl.addClass("needs-wrap");
+  }
+  wordEl.addClass("broken-joining");
+}
+
+function reset(wordEl: ElementWithUtils): void {
+  if (!wordEl.hasClass("broken-joining")) return;
+  wordEl.removeClass("broken-joining");
+  wordEl.removeClass("needs-wrap");
+  wordEl.setStyle({ width: "" });
+}
+
+function setWordJoining(
+  wordEl: ElementWithUtils,
+  joiningBroken: boolean,
+): void {
+  joiningBroken ? applyIfNeeded(wordEl) : reset(wordEl);
+}
+
+function updateWordJoining(key: string, wordsEl: ElementWithUtils): void {
+  const words = wordsEl.qsa(".word.typed");
+
+  const shouldReset =
+    !wordsEl.hasClass("joiningScript") ||
+    Config.typedEffect !== "dots" ||
+    key === "fontFamily" ||
+    key === "fontSize";
+
+  if (shouldReset) {
+    words.forEach(reset);
+  }
+  words.forEach(applyIfNeeded);
 }
