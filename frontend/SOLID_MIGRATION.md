@@ -152,6 +152,7 @@ Perf critical: per-keystroke work must not regress. Measure with `utils/profiler
 - [ ] **P4.5** Words wrapper sizing (`updateWordsWrapperHeight`, `centerActiveLine`, `keepWordsInputInTheCenter`, `updateWordsInputPosition`) → reactive styles on TestPage from signals.
   > BLOCKED: Shared-host verification/perf blocker (P4.4) prevents validating wrapper sizing and textarea positioning; retry when contention clears.
 - [ ] **P4.6** Word rendering (D1 = A): keep imperative `updateWordLetters`/`addWord`/`scrollTape` inside a `Words.tsx` component's module; only lifecycle + container are Solid. Extract pure markup builders to `test/word-markup.ts` with tests. Do NOT convert to reactive `<For>` in this PR.
+  > BLOCKED: Shared-host verification/perf blocker (P4.4) prevents validating the keystroke hot path and its before/after benchmark; retry when contention clears.
 - [ ] **P4.7** Break joining / hints (`break-joining.ts`, `updateHintsPositionDebounced`, `setJoiningClass`) into Words component module.
 - [ ] **P4.8** Remove remaining `qs`/`qsa` DOM calls from `test-logic.ts`, `funbox/*.ts` (funbox DOM effects → signals consumed by TestPage, e.g. classes on `#words`/body), `event-handlers/test.ts` (delegate listeners → JSX `onClick`).
 - [ ] **P4.9** `test.scss` cleanup for converted pieces (keep selectors themes rely on).
