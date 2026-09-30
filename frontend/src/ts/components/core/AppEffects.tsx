@@ -36,6 +36,7 @@ import {
   getFunboxBodyClasses,
   isFunboxReducedMotionIgnored,
 } from "../../states/funbox";
+import { isFixingSkillIssue } from "../../states/skill-issue";
 import { getResultVisible, isTestActive } from "../../states/test";
 import { getTheme } from "../../states/theme";
 import * as Caret from "../../test/caret";
@@ -76,6 +77,7 @@ export function AppEffects(props: AppElements): JSXElement {
       },
       get style() {
         return {
+          display: isFixingSkillIssue() ? "none" : undefined,
           "padding-top": `${getGlobalOffsetTop() + convertRemToPixels(2)}px`,
         };
       },
@@ -245,7 +247,7 @@ export function AppEffects(props: AppElements): JSXElement {
       </MetaProvider>
       <GlobalEvents />
       <NoCssFallback element={props.noCssWarning} />
-      <Show when={isDevEnvironment()}>
+      <Show when={isDevEnvironment() && !isFixingSkillIssue()}>
         <div
           class={cn(
             "devIndicator tl fixed top-8 left-8 -z-1 text-[3rem] text-sub opacity-25",

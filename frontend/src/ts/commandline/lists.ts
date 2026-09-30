@@ -1,3 +1,4 @@
+import { setFixingSkillIssue } from "../states/skill-issue";
 import MinBurstCommands from "./lists/min-burst";
 import BailOutCommands from "./lists/bail-out";
 import QuoteFavoriteCommands from "./lists/quote-favorites";
@@ -25,7 +26,7 @@ import {
 } from "../states/notifications";
 import { showVideoAdPopup } from "../components/popups/VideoAdPopup";
 import { Command, CommandlineListKey, CommandsSubgroup } from "./types";
-import { buildCommandForConfigKey } from "./util";
+import { COMMAND_SEPARATOR_HTML, buildCommandForConfigKey } from "./util";
 import { CommandlineConfigMetadataObject } from "./commandline-metadata";
 import { isAuthAvailable, signOut } from "../firebase";
 import { isAuthenticated } from "../states/core";
@@ -325,21 +326,7 @@ export const commands: CommandsSubgroup = {
       icon: "fa-wrench",
       visible: false,
       exec: async (): Promise<void> => {
-        // window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-        (document.querySelector("body") as HTMLElement).innerHTML = `
-          <div class="centerbox" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events: none;width: 100%; max-width: 800px;">
-            <h1 style="font-size:3rem;margin-bottom:1rem;">Fixing skill issue...</h1>
-            <iframe style="width: 100%; aspect-ratio: 4 / 3" src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=Kr48u8WHcwvX95G7&amp;controls=0&autoplay=1&mute=0&disablekb=1&fs=0&modestbranding=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-          </div>
-        `;
-        setTimeout(() => {
-          document
-            .querySelector(".centerbox")
-            ?.insertAdjacentHTML(
-              "beforeend",
-              `<p style="margin-top:1rem;font-size:1.5rem;">If your skill issue is not fixed yet, please wait a bit longer...</p>`,
-            );
-        }, 5000);
+        setFixingSkillIssue(true);
       },
     },
     {
@@ -472,9 +459,7 @@ function buildSingleListCommands(
       );
       const singleListDisplay = `${
         parentCommandDisplay
-      }<i class="fas fa-fw fa-chevron-right chevronIcon"></i>${
-        command.display
-      }`;
+      }${COMMAND_SEPARATOR_HTML}${command.display}`;
 
       const singleListDisplayNoIcon = `${parentCommandDisplay} ${command.display}`;
 

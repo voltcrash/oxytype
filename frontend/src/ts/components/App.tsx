@@ -1,8 +1,9 @@
 import { QueryClientProvider } from "@tanstack/solid-query";
-import { JSXElement } from "solid-js";
+import { JSXElement, Show } from "solid-js";
 import { Portal } from "solid-js/web";
 
 import { queryClient } from "../queries";
+import { isFixingSkillIssue } from "../states/skill-issue";
 import { getFocus } from "../states/test";
 import { cn } from "../utils/cn";
 import { Advertisement } from "./common/Advertisement";
@@ -11,7 +12,10 @@ import { FilePicker } from "./common/FilePicker";
 import { AppEffects, AppElements } from "./core/AppEffects";
 import { CustomBackground } from "./core/CustomBackground";
 import { FunboxEffects } from "./core/FunboxEffects";
+import { PageHead } from "./core/PageHead";
+import { SkillIssue } from "./core/SkillIssue";
 import { Theme } from "./core/Theme";
+import { ThirdPartyEffects } from "./core/ThirdPartyEffects";
 import { DevTools } from "./dev/DevTools";
 import { Footer } from "./layout/footer/Footer";
 import { Header } from "./layout/header/Header";
@@ -26,50 +30,65 @@ export function App(props: AppElements): JSXElement {
   return (
     <QueryClientProvider client={queryClient}>
       <Portal mount={props.body}>
+        <PageHead />
         <AppEffects {...props} />
-        <Download />
-        <FilePicker />
-        <Overlays />
         <Theme />
-        <CustomBackground />
-        <FunboxEffects />
-        <BarTimerProgress />
-        <div id="solidmodals">
-          <Modals />
-        </div>
-        <div id="solidpopups">
-          <Popups />
-        </div>
-        <DevTools />
-        <MonkeyPower />
+        <ThirdPartyEffects />
       </Portal>
-      <Header />
-      <main class={cn("full-width content-grid h-full", getFocus() && "focus")}>
+      <Show
+        when={!isFixingSkillIssue()}
+        fallback={
+          <Portal mount={props.body}>
+            <SkillIssue />
+          </Portal>
+        }
+      >
+        <Portal mount={props.body}>
+          <Download />
+          <FilePicker />
+          <Overlays />
+          <CustomBackground />
+          <FunboxEffects />
+          <BarTimerProgress />
+          <div id="solidmodals">
+            <Modals />
+          </div>
+          <div id="solidpopups">
+            <Popups />
+          </div>
+          <DevTools />
+          <MonkeyPower />
+        </Portal>
+        <Header />
+        <main
+          class={cn("full-width content-grid h-full", getFocus() && "focus")}
+        >
+          <Advertisement
+            id="ad-vertical-left"
+            visible={["on", "sellout"]}
+            staticVisibility
+            vertical
+            focus
+          />
+          <Advertisement
+            id="ad-vertical-right"
+            visible={["on", "sellout"]}
+            staticVisibility
+            vertical
+            focus
+          />
+          <AppPages />
+        </main>
+        <Footer />
         <Advertisement
-          id="ad-vertical-left"
-          visible={["on", "sellout"]}
+          id="ad-footer"
+          visible="sellout"
           staticVisibility
-          vertical
           focus
+          class="col-[full-width]"
+          smallClass="col-[content]"
         />
-        <Advertisement
-          id="ad-vertical-right"
-          visible={["on", "sellout"]}
-          staticVisibility
-          vertical
-          focus
-        />
-        <AppPages />
-      </main>
-      <Footer />
-      <Advertisement
-        id="ad-footer"
-        visible="sellout"
-        staticVisibility
-        focus
-        class="col-[full-width]"
-        smallClass="col-[content]"
-      />
+      </Show>
     </QueryClientProvider>
   );
 }

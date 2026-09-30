@@ -1,3 +1,4 @@
+import { setAnalyticsMarkupEnabled } from "../states/third-party";
 import {
   Analytics as AnalyticsType,
   logEvent,
@@ -28,23 +29,7 @@ export function activateAnalytics(): void {
   try {
     analytics = getAnalytics();
     setAnalyticsCollectionEnabled(analytics, true);
-    document.body?.insertAdjacentHTML(
-      "beforeend",
-      `
-    <script
-    async
-    src="https://www.googletagmanager.com/gtag/js?id=UA-165993088-1"
-  ></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() {
-      dataLayer.push(arguments);
-    }
-    gtag("js", new Date());
-
-    gtag("config", "UA-165993088-1");
-  </script>`,
-    );
+    setAnalyticsMarkupEnabled(true);
   } catch (e) {
     console.error(createErrorMessage(e, "Failed to activate analytics"));
   }

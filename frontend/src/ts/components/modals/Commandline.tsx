@@ -11,6 +11,7 @@ import {
   onSuggestionMouseMove,
   prepareCommandline,
 } from "../../commandline/commandline";
+import { COMMAND_SEPARATOR_HTML } from "../../commandline/util";
 import {
   commandlineState,
   type CommandlineSuggestion,
@@ -18,8 +19,6 @@ import {
 import { cn } from "../../utils/cn";
 import { AnimatedModal } from "../common/AnimatedModal";
 import { Fa, type FaProps } from "../common/Fa";
-
-const CHEVRON = '<i class="fas fa-fw fa-chevron-right chevronIcon"></i>';
 
 function CommandIcon(props: { command: CommandlineSuggestion }): JSXElement {
   const showConfigIcon = (): boolean =>
@@ -74,7 +73,7 @@ function CommandDisplay(props: { command: CommandlineSuggestion }): JSXElement {
         ? props.command.display
         : props.command.singleListDisplay
       : props.command.display
-    ).split(CHEVRON);
+    ).split(COMMAND_SEPARATOR_HTML);
 
   return (
     <div class="pointer-events-none">

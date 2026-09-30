@@ -3,6 +3,7 @@
 // oxlint-disable ban-ts-comment
 //@ts-nocheck too many errors from 3rd party ad code
 
+import { setRampScriptUrl } from "../states/third-party";
 import { getAdSlot } from "../states/ads";
 import { Config } from "../config/store";
 import { getActivePage } from "../states/core";
@@ -138,13 +139,7 @@ export function init(): void {
     },
   };
 
-  const headOfDocument = document.getElementsByTagName("head")[0];
-
-  // Step 2: Creates the Ramp Scripts
-  const rampScript = document.createElement("script");
-  rampScript.setAttribute("async", true);
-  rampScript.src = `//cdn.intergient.com/${pubId}/${websiteId}/ramp.js`;
-  headOfDocument.appendChild(rampScript);
+  setRampScriptUrl(`//cdn.intergient.com/${pubId}/${websiteId}/ramp.js`);
 
   window._pwGA4PageviewId = "".concat(Date.now());
   // oxlint-disable-next-line strict-boolean-expressions, no-unsafe-assignment, typescript/prefer-nullish-coalescing

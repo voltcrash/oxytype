@@ -242,3 +242,6 @@ function buildInputCommand<K extends keyof ConfigSchemas.Config>({
 }
 
 export const __testing = { _buildCommandForConfigKey };
+
+export const COMMAND_SEPARATOR_HTML =
+  '<i class="fas fa-fw fa-chevron-right chevronIcon"></i>';

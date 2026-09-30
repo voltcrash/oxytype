@@ -1,3 +1,4 @@
+import { setOpenGraphUrl, setPageTitle } from "../states/page-head";
 import { highlightSetting } from "../states/settings-highlight";
 import { isDevEnvironment } from "../utils/env";
 import * as Misc from "../utils/misc";
@@ -136,30 +137,16 @@ const pages = {
   }),
 };
 
-function updateOpenGraphUrl(): void {
-  const ogUrlTag = document.querySelector('meta[property="og:url"]');
-  const currentUrl = window.location.href;
-
-  if (ogUrlTag) {
-    // Update existing tag
-    ogUrlTag.setAttribute("content", currentUrl);
-  } else {
-    // Create and append new tag if it doesn't exist
-    const newOgUrlTag = document.createElement("meta");
-    newOgUrlTag.setAttribute("property", "og:url");
-    newOgUrlTag.content = currentUrl;
-    document.head.appendChild(newOgUrlTag);
-  }
-}
-
 function updateTitle(nextPage: { id: string; display?: string }): void {
   const local = isDevEnvironment() ? "localhost - " : "";
   if (nextPage.id === "test") {
-    document.title = `${local}Monkeytype | A minimalistic, customizable typing test`;
+    setPageTitle(
+      `${local}Monkeytype | A minimalistic, customizable typing test`,
+    );
   } else {
     const titleString =
       nextPage.display ?? Strings.capitalizeFirstLetterOfEachWord(nextPage.id);
-    document.title = `${local}${titleString} | Monkeytype`;
+    setPageTitle(`${local}${titleString} | Monkeytype`);
   }
 }
 
@@ -348,7 +335,7 @@ export async function change(
   //between
   updateTitle(nextPage);
   setActivePage(nextPage.id);
-  updateOpenGraphUrl();
+  setOpenGraphUrl(window.location.href);
   Focus.set(false);
 
   //next page
