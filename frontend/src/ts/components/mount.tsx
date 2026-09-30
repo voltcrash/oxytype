@@ -24,24 +24,9 @@ import { LoginPage } from "./pages/login/LoginPage";
 import { ProfilePage } from "./pages/profile/ProfilePage";
 import { ProfileSearchPage } from "./pages/profile/ProfileSearchPage";
 import { SettingsPage } from "./pages/settings/SettingsPage";
-import { CapsWarning } from "./pages/test/CapsWarning";
-import { CompositionDisplay } from "./pages/test/CompositionDisplay";
-import { FunboxTimers } from "./pages/test/FunboxTimer";
-import { Keymap } from "./pages/test/Keymap";
 import { BarTimerProgress } from "./pages/test/live-stats/BarTimerProgress";
-import { LiveStatsMini } from "./pages/test/live-stats/LiveStatsMini";
-import { LiveStatsTextBottom } from "./pages/test/live-stats/LiveStatsTextBottom";
-import { LiveStatsTextTop } from "./pages/test/live-stats/LiveStatsTextTop";
-import { TestModesNotice } from "./pages/test/modes-notice/TestModesNotice";
-import { Monkey } from "./pages/test/Monkey";
 import { MonkeyPower } from "./pages/test/MonkeyPower";
-import { OutOfFocusWarning } from "./pages/test/OutOfFocusWarning";
-import { Premid } from "./pages/test/Premid";
-import { RestartTestButton } from "./pages/test/RestartTestButton";
-import { Result } from "./pages/test/result/Result";
-import { TestConfig } from "./pages/test/TestConfig";
-import { TestInitFailed } from "./pages/test/TestInitFailed";
-import { TestLoading } from "./pages/test/TestLoading";
+import { TestPage } from "./pages/test/TestPage";
 import { Popups } from "./popups/Popups";
 
 const components: Record<string, () => JSXElement> = {
@@ -60,29 +45,14 @@ const components: Record<string, () => JSXElement> = {
   theme: () => <Theme />,
   header: () => <Header />,
   devtools: () => <DevTools />,
-  testconfig: () => <TestConfig />,
+  testpage: () => <TestPage />,
   commandlinehotkey: () => <CommandlineHotkey />,
-  testmodesnotice: () => <TestModesNotice />,
-  capswarning: () => <CapsWarning />,
-  compositiondisplay: () => <CompositionDisplay />,
   friendspage: () => <FriendsPage />,
   notfoundpage: () => <NotFoundPage />,
   accountsettingspage: () => <AccountSettingsPage />,
-  keymap: () => <Keymap />,
-  monkey: () => <Monkey />,
-  outoffocuswarning: () => <OutOfFocusWarning />,
-  livestatsmini: () => <LiveStatsMini />,
-  livestatstexttop: () => <LiveStatsTextTop />,
-  livestatstextbottom: () => <LiveStatsTextBottom />,
   bartimerprogress: () => <BarTimerProgress />,
-  premid: () => <Premid />,
   loadingpage: () => <LoadingPage />,
-  testinitfailed: () => <TestInitFailed />,
-  funboxtimers: () => <FunboxTimers />,
-  restarttestbutton: () => <RestartTestButton />,
-  testloading: () => <TestLoading />,
   monkeypower: () => <MonkeyPower />,
-  result: () => <Result />,
   verticalads: () => (
     <>
       <Advertisement

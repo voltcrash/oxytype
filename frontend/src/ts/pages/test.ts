@@ -8,7 +8,7 @@ import { resetIncompleteTests } from "../states/test";
 
 export const page = new Page({
   id: "test",
-  element: qsr(".page.pageTest"),
+  element: qsr("mount[data-component=testpage]"),
   path: "/",
   beforeHide: async (): Promise<void> => {
     blurInputElement();

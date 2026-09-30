@@ -11,21 +11,21 @@ import * as CompositionState from "../legacy-states/composition";
 import { qsr } from "../utils/dom";
 
 export function stopAnimation(): void {
-  caret.stopBlinking();
+  getCaret().stopBlinking();
 }
 
 export function startAnimation(): void {
-  caret.startBlinking();
+  getCaret().startBlinking();
 }
 
 export function hide(): void {
-  caret.hide();
+  getCaret().hide();
 }
 
 export function resetPosition(): void {
-  caret.stopAllAnimations();
-  caret.clearMargins();
-  caret.goTo({
+  getCaret().stopAllAnimations();
+  getCaret().clearMargins();
+  getCaret().goTo({
     wordIndex: 0,
     letterIndex: 0,
     isLanguageRightToLeft: isLanguageRightToLeft(),
@@ -35,7 +35,7 @@ export function resetPosition(): void {
 }
 
 export function updatePosition(noAnim = false): void {
-  caret.goTo({
+  getCaret().goTo({
     wordIndex: getActiveWordIndex(),
     letterIndex: getCurrentInput().length + CompositionState.getData().length,
     isLanguageRightToLeft: isLanguageRightToLeft(),
@@ -44,20 +44,24 @@ export function updatePosition(noAnim = false): void {
   });
 }
 
-export const caret = new Caret(qsr("#caret"), Config.caretStyle);
+let caret: Caret | undefined;
+
+export function getCaret(): Caret {
+  return (caret ??= new Caret(qsr("#caret"), Config.caretStyle));
+}
 
 configEvent.subscribe(({ key }) => {
   if (key === "caretStyle") {
-    caret.setStyle(Config.caretStyle);
+    getCaret().setStyle(Config.caretStyle);
     updatePosition(true);
   }
   if (key === "smoothCaret") {
-    caret.updateBlinkingAnimation();
+    getCaret().updateBlinkingAnimation();
   }
 });
 
 export function show(noAnim = false): void {
-  caret.show();
+  getCaret().show();
   updatePosition(noAnim);
   startAnimation();
 }

@@ -37,7 +37,11 @@ let startTimestamp = 0;
 
 let settings: Settings | null = null;
 
-export const caret = new Caret(qsr("#paceCaret"), Config.paceCaretStyle);
+let caret: Caret | undefined;
+
+export function getCaret(): Caret {
+  return (caret ??= new Caret(qsr("#paceCaret"), Config.paceCaretStyle));
+}
 
 let lastTestWpm = 0;
 
@@ -51,11 +55,11 @@ export function resetCaretPosition(): void {
   if (Config.paceCaret === "off" && !isPaceRepeat()) return;
   if (Config.mode === "zen") return;
 
-  caret.hide();
-  caret.stopAllAnimations();
-  caret.clearMargins();
+  getCaret().hide();
+  getCaret().stopAllAnimations();
+  getCaret().clearMargins();
 
-  caret.goTo({
+  getCaret().goTo({
     wordIndex: 0,
     letterIndex: 0,
     isLanguageRightToLeft: isLanguageRightToLeft(),
@@ -65,7 +69,7 @@ export function resetCaretPosition(): void {
 }
 
 export async function init(): Promise<void> {
-  caret.hide();
+  getCaret().hide();
   const mode2 = Misc.getMode2(Config, getCurrentQuote());
   let wpm = 0;
   if (Config.paceCaret === "pb") {
@@ -128,8 +132,8 @@ export async function update(expectedStepEnd: number): Promise<void> {
     return;
   }
 
-  if (caret.isHidden()) {
-    caret.show();
+  if (getCaret().isHidden()) {
+    getCaret().show();
   }
 
   incrementLetterIndex();
@@ -139,7 +143,7 @@ export async function update(expectedStepEnd: number): Promise<void> {
     const absoluteStepEnd = startTimestamp + expectedStepEnd;
     const duration = absoluteStepEnd - now;
 
-    caret.goTo({
+    getCaret().goTo({
       wordIndex: currentSettings.currentWordIndex,
       letterIndex: currentSettings.currentLetterIndex,
       isLanguageRightToLeft: isLanguageRightToLeft(),
@@ -164,7 +168,7 @@ export async function update(expectedStepEnd: number): Promise<void> {
     );
   } catch (e) {
     console.error(e);
-    caret.hide();
+    getCaret().hide();
     return;
   }
 }
@@ -225,7 +229,7 @@ function incrementLetterIndex(): void {
     //out of words
     settings = null;
     console.log("pace caret out of words");
-    caret.hide();
+    getCaret().hide();
     return;
   }
 }
@@ -260,6 +264,6 @@ export function start(): void {
 configEvent.subscribe(({ key }) => {
   if (key === "paceCaret") void init();
   if (key === "paceCaretStyle") {
-    caret.setStyle(Config.paceCaretStyle);
+    getCaret().setStyle(Config.paceCaretStyle);
   }
 });
