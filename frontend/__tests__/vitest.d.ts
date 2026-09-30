@@ -11,11 +11,9 @@ interface ActivityDayMatchers<R = TestActivityDay> {
 
 declare module "vitest" {
   interface Assertion<R extends void | Promise<void> = void, T = unknown>
-    extends ActivityDayMatchers<T>, TestingLibraryMatchers<R, T> {}
+    extends ActivityDayMatchers<T>, TestingLibraryMatchers<unknown, R> {}
   interface AsymmetricMatchersContaining
-    extends
-      ActivityDayMatchers,
-      TestingLibraryMatchers<MatcherResult, unknown> {}
+    extends ActivityDayMatchers, TestingLibraryMatchers<unknown, unknown> {}
 }
 
 interface MatcherResult {
