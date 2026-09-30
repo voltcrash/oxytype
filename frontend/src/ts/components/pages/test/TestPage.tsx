@@ -1,8 +1,11 @@
+import { spread } from "solid-js/web";
 import { JSXElement, onMount } from "solid-js";
 
 import { useWordsFocus } from "../../../hooks/useWordsFocus";
+import { isWordsWrapperVisible } from "../../../states/funbox";
 import { getPageView } from "../../../states/page-transition";
 import { setTestElements } from "../../../states/test-dom";
+import { focusWords } from "../../../test/test-ui";
 import { cn } from "../../../utils/cn";
 import { CapsWarning } from "./CapsWarning";
 import { CompositionDisplay } from "./CompositionDisplay";
@@ -19,6 +22,7 @@ import { RestartTestButton } from "./RestartTestButton";
 import { Result } from "./result/Result";
 import { TestConfig } from "./TestConfig";
 import { TestInitFailed } from "./TestInitFailed";
+import { TestPageLifecycle } from "./TestPageLifecycle";
 import { TestLoading } from "./TestLoading";
 
 export function TestPage(
@@ -29,6 +33,21 @@ export function TestPage(
   onMount(() => {
     setTestElements(refs);
     useWordsFocus(refs.words);
+    spread(
+      refs.wordsWrapper,
+      {
+        get class() {
+          return cn(
+            refs.wordsWrapper.className
+              .split(/\s+/)
+              .filter((name) => name !== "hidden"),
+            !isWordsWrapperVisible() && "hidden",
+          );
+        },
+      },
+      false,
+      true,
+    );
   });
 
   return (
@@ -66,6 +85,7 @@ export function TestPage(
           ref={(el) => (refs.wordsWrapper = el)}
           class="content-grid full-width"
           translate="no"
+          onClick={() => focusWords()}
         >
           <textarea
             id="wordsInput"
@@ -112,6 +132,7 @@ export function TestPage(
         <LiveStatsTextBottom />
         <Premid />
       </div>
+      <TestPageLifecycle input={refs.wordsInput} />
       <TestLoading />
       <Result />
     </div>

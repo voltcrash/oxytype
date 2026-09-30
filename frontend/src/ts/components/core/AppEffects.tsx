@@ -1,3 +1,8 @@
+import {
+  getCrt,
+  getFunboxBodyClasses,
+  isFunboxReducedMotionIgnored,
+} from "../../states/funbox";
 import { MetaProvider, Style } from "@solidjs/meta";
 import { animate } from "animejs";
 import {
@@ -83,8 +88,11 @@ export function AppEffects(props: AppElements): JSXElement {
             .split(/\s+/)
             .filter(
               (name) =>
+                !name.startsWith("fb-") &&
                 ![
                   "loading",
+                  "crtmode",
+                  "ignore-reduced-motion",
                   "mediaQueryDebugLevel1",
                   "mediaQueryDebugLevel2",
                   "mediaQueryDebugLevel3",
@@ -93,6 +101,9 @@ export function AppEffects(props: AppElements): JSXElement {
                   "[&_a]:cursor-none!",
                 ].includes(name),
             ),
+          getFunboxBodyClasses(),
+          getCrt() !== null && "crtmode",
+          isFunboxReducedMotionIgnored() && "ignore-reduced-motion",
           isAppLoading() && "loading",
           isFocusCursorHidden() &&
             "cursor-none [&_button]:cursor-none! [&_a]:cursor-none!",

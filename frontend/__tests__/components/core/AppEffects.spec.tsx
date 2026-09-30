@@ -109,6 +109,11 @@ vi.mock("animejs", () => ({
   },
 }));
 
+import {
+  setCrt,
+  setFunboxBodyClasses,
+  setFunboxReducedMotionIgnored,
+} from "../../../src/ts/states/funbox";
 import { AppEffects } from "../../../src/ts/components/core/AppEffects";
 import { configEvent } from "../../../src/ts/events/config";
 import {
@@ -132,6 +137,9 @@ beforeEach(() => {
     quickRestart: false,
     dev: true,
   });
+  setCrt(null);
+  setFunboxBodyClasses([]);
+  setFunboxReducedMotionIgnored(false);
   setAppLoading(true);
   setFocusCursorHidden(false);
   setFontFace("");
@@ -207,6 +215,24 @@ describe("App effects", () => {
     setMediaQueryDebugLevel(2);
     setAppLoading(false);
     setFocusCursorHidden(true);
+    setFunboxBodyClasses(["fb-read-ahead"]);
+    setCrt({});
+    setFunboxReducedMotionIgnored(true);
+    expect(document.body).toHaveClass(
+      "fb-read-ahead",
+      "crtmode",
+      "ignore-reduced-motion",
+      "extra-funbox",
+    );
+    setFunboxBodyClasses([]);
+    setCrt(null);
+    expect(document.body).not.toHaveClass("fb-read-ahead", "crtmode");
+    expect(document.body).toHaveClass("ignore-reduced-motion", "extra-funbox");
+    expect(
+      document.body.className
+        .split(/\s+/)
+        .filter((name) => name === "ignore-reduced-motion"),
+    ).toHaveLength(1);
     setGlobalOffsetTop(40);
     setFontFamily('"LOCALCUSTOM",monospace');
     setFontFace("@font-face { font-family: LOCALCUSTOM; }");

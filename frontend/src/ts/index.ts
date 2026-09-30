@@ -4,8 +4,6 @@ import "./dev/signal-tracker";
 //enable solidjs-devtools
 import "solid-devtools";
 
-import "./event-handlers/test";
-
 import { init } from "./firebase";
 import * as Logger from "./utils/logger";
 import * as DB from "./db";

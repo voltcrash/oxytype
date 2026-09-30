@@ -7,6 +7,7 @@ import { cn } from "../utils/cn";
 import { queryClient } from "../queries";
 import { Advertisement } from "./common/Advertisement";
 import { AppEffects, AppElements } from "./core/AppEffects";
+import { FunboxEffects } from "./core/FunboxEffects";
 import { Theme } from "./core/Theme";
 import { DevTools } from "./dev/DevTools";
 import { Footer } from "./layout/footer/Footer";
@@ -25,6 +26,7 @@ export function App(props: AppElements): JSXElement {
         <AppEffects {...props} />
         <Overlays />
         <Theme />
+        <FunboxEffects />
         <BarTimerProgress />
         <div id="solidmodals">
           <Modals />

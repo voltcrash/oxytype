@@ -1233,33 +1233,6 @@ const debouncedZipfCheck = debounce(250, async () => {
   }
 });
 
-// little roadblock for basic cheating
-window.addEventListener("focus", () => {
-  if (
-    !isTestActive() &&
-    !getResultVisible() &&
-    (Config.mode === "time" || Config.mode === "words")
-  ) {
-    void restart({
-      noAnim: true,
-    });
-  }
-});
-
-// little roadblock for basic cheating
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState !== "visible") return;
-  if (
-    !isTestActive() &&
-    !getResultVisible() &&
-    (Config.mode === "time" || Config.mode === "words")
-  ) {
-    void restart({
-      noAnim: true,
-    });
-  }
-});
-
 restartTestEvent.subscribe((event) => void restart(event));
 
 // ===============================

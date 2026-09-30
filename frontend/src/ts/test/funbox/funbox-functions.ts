@@ -1,4 +1,9 @@
-import { getWordsElement, getWordsWrapperElement } from "../../states/test-dom";
+import {
+  setCrt,
+  setReadAheadDisabled,
+  setWordsVisible,
+  setWordsWrapperVisible,
+} from "../../states/funbox";
 import { FunboxWordsFrequency, Wordset } from "../wordset";
 import * as GetText from "../../utils/generate";
 import { Config } from "../../config/store";
@@ -28,7 +33,6 @@ import { getActiveWordIndex } from "../../states/test";
 import { WordGenError } from "../../utils/word-gen-error";
 import { FunboxName, KeymapLayout, Layout } from "@monkeytype/schemas/configs";
 import { Language, LanguageObject } from "@monkeytype/schemas/languages";
-import { qs } from "../../utils/dom";
 
 export type FunboxFunctions = {
   getWord?: (wordset?: Wordset, wordIndex?: number) => string;
@@ -74,9 +78,9 @@ async function readAheadHandleKeydown(event: KeyboardEvent): Promise<void> {
         TestWords.words.get(getActiveWordIndex() - 1)?.textWithCommit ||
       Config.freedomMode)
   ) {
-    getWordsElement()?.addClass("read_ahead_disabled");
+    setReadAheadDisabled(true);
   } else if (event.key === " ") {
-    getWordsElement()?.removeClass("read_ahead_disabled");
+    setReadAheadDisabled(false);
   }
 }
 
@@ -474,7 +478,7 @@ const list: Partial<Record<FunboxName, FunboxFunctions>> = {
   },
   memory: {
     applyConfig(): void {
-      getWordsWrapperElement()?.hide();
+      setWordsWrapperVisible(false);
       setConfig("showAllLines", true, {
         nosave: true,
       });
@@ -493,11 +497,11 @@ const list: Partial<Record<FunboxName, FunboxFunctions>> = {
     },
     start(): void {
       MemoryTimer.reset();
-      getWordsElement()?.hide();
+      setWordsVisible(false);
     },
     restart(): void {
       MemoryTimer.start(Math.round(Math.pow(TestWords.words.length, 1.2)));
-      getWordsElement()?.show();
+      setWordsVisible(true);
       if (Config.keymapMode === "next") {
         setConfig("keymapMode", "react");
       }
@@ -635,15 +639,10 @@ const list: Partial<Record<FunboxName, FunboxFunctions>> = {
           return;
         }
       }
-      qs("#scanline")?.remove();
-      qs("body")?.appendHtml('<div id="scanline" />');
-      qs("body")?.addClass("crtmode");
-      qs("#globalFunBoxTheme")?.setAttribute("href", `funbox/crt.css`);
+      setCrt({});
     },
     clearGlobal(): void {
-      qs("#scanline")?.remove();
-      qs("body")?.removeClass("crtmode");
-      qs("#globalFunBoxTheme")?.setAttribute("href", ``);
+      setCrt(null);
     },
   },
   ALL_CAPS: {

@@ -1,4 +1,4 @@
-import { getWordsWrapperElement } from "../../states/test-dom";
+import { setWordsWrapperVisible } from "../../states/funbox";
 import {
   setMemoryTimerText,
   setMemoryTimerVisibility,
@@ -35,7 +35,7 @@ export function start(time: number): void {
     memoryTimer === 0 ? hide() : update(memoryTimer);
     if (memoryTimer <= 0) {
       reset();
-      getWordsWrapperElement()?.hide();
+      setWordsWrapperVisible(false);
     }
   }, 1000);
 }

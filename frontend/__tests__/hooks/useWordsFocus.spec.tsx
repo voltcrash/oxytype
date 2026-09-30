@@ -10,11 +10,17 @@ vi.mock("../../src/ts/states/test", async () => {
   state.setWarning = setWarning;
   return { showOutOfFocusWarning };
 });
+import {
+  setReadAheadDisabled,
+  setWordsVisible,
+} from "../../src/ts/states/funbox";
 import { useWordsFocus } from "../../src/ts/hooks/useWordsFocus";
 
 afterEach(() => {
   cleanup();
   state.setWarning?.(false);
+  setReadAheadDisabled(false);
+  setWordsVisible(true);
 });
 
 it("binds blur without replacing legacy classes, children or styles", () => {
@@ -26,7 +32,8 @@ it("binds blur without replacing legacy classes, children or styles", () => {
     useWordsFocus(element);
     return null;
   });
-  element.className += " read_ahead_disabled";
+  element.className += " funbox-custom-class";
+  setReadAheadDisabled(true);
   state.setWarning?.(true);
   expect(element).toHaveClass(
     "tape",
@@ -43,4 +50,10 @@ it("binds blur without replacing legacy classes, children or styles", () => {
   expect(element).not.toHaveClass("blurred", "opacity-25", "blur-[4px]");
   expect(element).toHaveClass("tape", "read_ahead_disabled");
   expect(element.style.transition).toBe("none");
+  setWordsVisible(false);
+  expect(element).toHaveClass("hidden", "funbox-custom-class");
+  setReadAheadDisabled(false);
+  expect(element).not.toHaveClass("read_ahead_disabled");
+  setWordsVisible(true);
+  expect(element).not.toHaveClass("hidden");
 });

@@ -1,3 +1,4 @@
+import { setWordsWrapperVisible } from "../states/funbox";
 import { Config } from "../config/store";
 import * as TestWords from "./test-words";
 import { getCurrentInput } from "./events/data";
@@ -33,7 +34,7 @@ import * as Joining from "./break-joining";
 import * as LayoutfluidFunboxTimer from "../test/funbox/layoutfluid-funbox-timer";
 import * as ThemeController from "../controllers/theme-controller";
 import * as MemoryFunboxTimer from "./funbox/memory-funbox-timer";
-import { ElementsWithUtils, ElementWithUtils, onDOMReady } from "../utils/dom";
+import { ElementsWithUtils, ElementWithUtils } from "../utils/dom";
 import {
   areTestElementsMounted,
   getWordsElement as getWordsEl,
@@ -592,7 +593,7 @@ export function updateWordsWrapperHeight(force = false): void {
   const activeWordEl = getActiveWordElement();
   if (!activeWordEl) return;
 
-  getWordsWrapperEl().show();
+  setWordsWrapperVisible(true);
 
   const wordComputedStyle = window.getComputedStyle(activeWordEl.native);
   const wordMargin =
@@ -1539,37 +1540,6 @@ export function onTestFinish(): void {
     void SoundController.playFartReverb();
   }
 }
-
-onDOMReady(() => {
-  getWordsInputElement()?.on("focus", (e) => {
-    if (!isInputElementFocused()) return;
-    if (!getResultVisible() && Config.showOutOfFocusWarning) {
-      setTestFocusState("focused");
-    }
-    Caret.show(true);
-  });
-
-  getWordsInputElement()?.on("focusout", () => {
-    if (!isInputElementFocused()) {
-      setTestFocusState("unfocused");
-    }
-    Caret.hide();
-  });
-
-  getWordsWrapperEl()?.on("click", () => {
-    focusWords();
-  });
-});
-
-window.addEventListener("blur", () => {
-  setTestFocusState("unfocusedWindow");
-});
-
-// little roadblock for basic cheating
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState !== "hidden") return;
-  setTestFocusState("unfocusedWindow");
-});
 
 configEvent.subscribe(({ key, newValue }) => {
   if (!areTestElementsMounted()) return;
