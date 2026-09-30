@@ -403,6 +403,9 @@ jobs:
       - name: Build
         run: npm run build-pkg
 
+      - name: Check workspace root lint
+        run: pnpm exec vp lint . --type-aware --type-check --format agent
+
       - name: Test
         run: npm run test-pkg
 
