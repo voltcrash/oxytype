@@ -1,7 +1,6 @@
 import { JSXElement, onMount } from "solid-js";
 import { spread } from "solid-js/web";
 
-import { useWordsFocus } from "../../../hooks/useWordsFocus";
 import { useWordsInputScroll } from "../../../hooks/useWordsInputScroll";
 import { isWordsWrapperVisible } from "../../../states/funbox";
 import { getPageView } from "../../../states/page-transition";
@@ -30,6 +29,7 @@ import { TestConfig } from "./TestConfig";
 import { TestInitFailed } from "./TestInitFailed";
 import { TestLoading } from "./TestLoading";
 import { TestPageLifecycle } from "./TestPageLifecycle";
+import { Words } from "./Words";
 
 export function TestPage(
   props: { ref?: (el: HTMLDivElement) => void } = {},
@@ -38,7 +38,6 @@ export function TestPage(
 
   onMount(() => {
     setTestElements(refs);
-    useWordsFocus(refs.words);
     useWordsInputScroll(refs.wordsWrapper, refs.wordsInput);
     spread(
       refs.wordsWrapper,
@@ -120,11 +119,7 @@ export function TestPage(
           <OutOfFocusWarning />
           <Caret pace ref={(el) => (refs.paceCaret = el)} />
           <Caret ref={(el) => (refs.caret = el)} />
-          <div
-            id="words"
-            ref={(el) => (refs.words = el)}
-            class="full-width"
-          ></div>
+          <Words ref={(el) => (refs.words = el)} />
         </div>
         <CompositionDisplay />
         <Keymap />
