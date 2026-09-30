@@ -5,3 +5,5 @@ export const [getFontFamily, setFontFamily] = createSignal<string>();
 export const [getFontFace, setFontFace] = createSignal("");
 export const [getMediaQueryDebugLevel, setMediaQueryDebugLevel] =
   createSignal(0);
+
+export const [isFocusCursorHidden, setFocusCursorHidden] = createSignal(false);

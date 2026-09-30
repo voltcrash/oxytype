@@ -1,5 +1,6 @@
 import { JSXElement, onMount } from "solid-js";
 
+import { useWordsFocus } from "../../../hooks/useWordsFocus";
 import { getPageView } from "../../../states/page-transition";
 import { setTestElements } from "../../../states/test-dom";
 import { cn } from "../../../utils/cn";
@@ -27,6 +28,7 @@ export function TestPage(
 
   onMount(() => {
     setTestElements(refs);
+    useWordsFocus(refs.words);
   });
 
   return (

@@ -2,6 +2,8 @@ import { QueryClientProvider } from "@tanstack/solid-query";
 import { JSXElement } from "solid-js";
 import { Portal } from "solid-js/web";
 
+import { getFocus } from "../states/test";
+import { cn } from "../utils/cn";
 import { queryClient } from "../queries";
 import { Advertisement } from "./common/Advertisement";
 import { AppEffects, AppElements } from "./core/AppEffects";
@@ -34,7 +36,7 @@ export function App(props: AppElements): JSXElement {
         <MonkeyPower />
       </Portal>
       <Header />
-      <main class="full-width content-grid h-full">
+      <main class={cn("full-width content-grid h-full", getFocus() && "focus")}>
         <Advertisement
           id="ad-vertical-left"
           visible={["on", "sellout"]}

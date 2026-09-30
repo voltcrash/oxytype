@@ -6,7 +6,8 @@ import { isInputElementFocused } from "../../input/input-element";
 import { getActivePage } from "../../states/core";
 import { showErrorNotification } from "../../states/notifications";
 import * as PageTransition from "../../states/page-transition";
-import { getResultVisible } from "../../states/test";
+import { getFocus, getResultVisible } from "../../states/test";
+import * as Focus from "../../test/focus";
 import { focusWords } from "../../test/test-ui";
 import { isDevEnvironment } from "../../utils/env";
 import { isAnyPopupVisible } from "../../utils/misc";
@@ -51,6 +52,12 @@ export function GlobalEvents(): null {
       }
     };
 
+    const mousemove = (event: MouseEvent): void => {
+      if (PageTransition.get() || !getFocus()) return;
+      // Ignore small desk/mouse vibrations, preserving the >3px guard.
+      if (event.movementX > 3 || event.movementY > 3) Focus.set(false);
+    };
+
     const previousError = window.onerror;
     const previousRejection = window.onunhandledrejection;
     const onError: OnErrorEventHandlerNonNull = (
@@ -83,11 +90,13 @@ export function GlobalEvents(): null {
     };
 
     document.addEventListener("keydown", autofocus);
+    document.addEventListener("mousemove", mousemove);
     window.addEventListener("keydown", preventSpaceScroll);
     window.onerror = onError;
     window.onunhandledrejection = onRejection;
     onCleanup(() => {
       document.removeEventListener("keydown", autofocus);
+      document.removeEventListener("mousemove", mousemove);
       window.removeEventListener("keydown", preventSpaceScroll);
       if (window.onerror === onError) window.onerror = previousError;
       if (window.onunhandledrejection === onRejection) {

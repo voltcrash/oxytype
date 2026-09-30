@@ -1,9 +1,10 @@
 import { cleanup, render } from "@solidjs/testing-library";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { state, focusWords, popupVisible, notify } = vi.hoisted(() => ({
+const { state, focusWords, unfocus, popupVisible, notify } = vi.hoisted(() => ({
   state: {
     transition: false,
+    focus: false,
     page: "test",
     result: false,
     inputFocused: false,
@@ -11,6 +12,7 @@ const { state, focusWords, popupVisible, notify } = vi.hoisted(() => ({
     warning: true,
   },
   focusWords: vi.fn(),
+  unfocus: vi.fn(),
   popupVisible: vi.fn(),
   notify: vi.fn(),
 }));
@@ -29,6 +31,7 @@ vi.mock("../../../src/ts/states/page-transition", () => ({
 }));
 vi.mock("../../../src/ts/states/test", () => ({
   getResultVisible: () => state.result,
+  getFocus: () => state.focus,
 }));
 vi.mock("../../../src/ts/input/input-element", () => ({
   isInputElementFocused: () => state.inputFocused,
@@ -45,12 +48,15 @@ vi.mock("../../../src/ts/states/notifications", () => ({
   showErrorNotification: notify,
 }));
 
+vi.mock("../../../src/ts/test/focus", () => ({ set: unfocus }));
+
 import { GlobalEvents } from "../../../src/ts/components/core/GlobalEvents";
 
 beforeEach(() => {
   vi.clearAllMocks();
   Object.assign(state, {
     transition: false,
+    focus: false,
     page: "test",
     result: false,
     inputFocused: false,
@@ -75,6 +81,28 @@ function press(
 }
 
 describe("Global events", () => {
+  it("unfocuses only for positive mouse movement above the legacy threshold", () => {
+    const { unmount } = render(() => <GlobalEvents />);
+    state.focus = true;
+    const move = (x: number, y: number): void => {
+      const event = new MouseEvent("mousemove");
+      Object.defineProperties(event, {
+        movementX: { value: x },
+        movementY: { value: y },
+      });
+      document.dispatchEvent(event);
+    };
+    move(3, 3);
+    move(-10, -10);
+    expect(unfocus).not.toHaveBeenCalled();
+    move(4, 0);
+    expect(unfocus).toHaveBeenCalledWith(false);
+    state.transition = true;
+    move(10, 10);
+    unmount();
+    move(10, 10);
+    expect(unfocus).toHaveBeenCalledOnce();
+  });
   it("autofocuses eligible keys and preserves warning/modifier behavior", () => {
     render(() => <GlobalEvents />);
     expect(press("a").defaultPrevented).toBe(true);

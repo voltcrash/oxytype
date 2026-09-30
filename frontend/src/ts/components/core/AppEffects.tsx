@@ -23,6 +23,7 @@ import {
   getFontFamily,
   getMediaQueryDebugLevel,
   isAppLoading,
+  isFocusCursorHidden,
 } from "../../states/app";
 import {
   getActivePage,
@@ -87,9 +88,14 @@ export function AppEffects(props: AppElements): JSXElement {
                   "mediaQueryDebugLevel1",
                   "mediaQueryDebugLevel2",
                   "mediaQueryDebugLevel3",
+                  "cursor-none",
+                  "[&_button]:cursor-none!",
+                  "[&_a]:cursor-none!",
                 ].includes(name),
             ),
           isAppLoading() && "loading",
+          isFocusCursorHidden() &&
+            "cursor-none [&_button]:cursor-none! [&_a]:cursor-none!",
           getMediaQueryDebugLevel() > 0 &&
             `mediaQueryDebugLevel${getMediaQueryDebugLevel()}`,
         );

@@ -115,6 +115,7 @@ import {
   setAppLoading,
   setFontFace,
   setFontFamily,
+  setFocusCursorHidden,
   setMediaQueryDebugLevel,
 } from "../../../src/ts/states/app";
 import { setGlobalOffsetTop } from "../../../src/ts/states/core";
@@ -132,6 +133,7 @@ beforeEach(() => {
     dev: true,
   });
   setAppLoading(true);
+  setFocusCursorHidden(false);
   setFontFace("");
   setFontFamily(undefined);
   setMediaQueryDebugLevel(0);
@@ -204,6 +206,7 @@ describe("App effects", () => {
     document.body.className += " extra-funbox";
     setMediaQueryDebugLevel(2);
     setAppLoading(false);
+    setFocusCursorHidden(true);
     setGlobalOffsetTop(40);
     setFontFamily('"LOCALCUSTOM",monospace');
     setFontFace("@font-face { font-family: LOCALCUSTOM; }");
@@ -214,6 +217,13 @@ describe("App effects", () => {
       "mediaQueryDebugLevel2",
     );
     expect(document.body).not.toHaveClass("loading");
+    expect(document.body).toHaveClass(
+      "cursor-none",
+      "[&_button]:cursor-none!",
+      "[&_a]:cursor-none!",
+    );
+    setFocusCursorHidden(false);
+    expect(document.body).not.toHaveClass("cursor-none");
     expect(element.style.paddingTop).toBe("72px");
     expect(document.documentElement.style.getPropertyValue("--font")).toBe(
       '"LOCALCUSTOM",monospace',

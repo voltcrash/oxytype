@@ -147,11 +147,6 @@
       padding-bottom: 0.05em;
     }
   }
-  &.blurred {
-    opacity: 0.25;
-    filter: blur(4px);
-  }
-
   &.blind {
     .word {
       & letter.extra {

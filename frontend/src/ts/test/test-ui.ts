@@ -55,11 +55,9 @@ import {
   setOutOfFocusMaxHeight,
   wordsHaveNewline,
   setTestFocusState,
-  showOutOfFocusWarning,
   getResultVisible,
   setTestInitError,
 } from "../states/test";
-import { createEffect } from "solid-js";
 import * as ConnectionState from "../states/connection";
 
 export const updateHintsPositionDebounced = Misc.debounceUntilResolved(
@@ -72,17 +70,6 @@ export let activeWordHeight = 0;
 let wordTopBeforeLineJump = 0;
 let lineTransition = false;
 
-// #words is still vanilla; the warning itself is Solid (OutOfFocusWarning.tsx).
-// show/hideOutOfFocus live in states/test so commandline needn't import test-ui.
-onDOMReady(() =>
-  createEffect(() => {
-    if (showOutOfFocusWarning()) {
-      getWordsEl().setStyle({ transition: "0.25s" })?.addClass("blurred");
-    } else {
-      getWordsEl().setStyle({ transition: "none" })?.removeClass("blurred");
-    }
-  }),
-);
 let currentTestLine = 0;
 
 export function focusWords(force = false): void {

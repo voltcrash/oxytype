@@ -2,6 +2,7 @@ import { Ads } from "@monkeytype/schemas/configs";
 import { JSXElement, Show, untrack } from "solid-js";
 
 import { Config, getConfig } from "../../config/store";
+import { getFocus } from "../../states/test";
 import { getIsScreenshotting } from "../../states/core";
 import { cn } from "../../utils/cn";
 
@@ -23,7 +24,7 @@ export function Advertisement(props: {
   vertical?: true;
   // text slot ad-controller fills when ads are blocked
   withText?: true;
-  // toggled by test/focus.ts
+  // shell slots hidden while the test is focused
   focus?: true;
   // result ad, left out of result screenshots
   hideWhileScreenshotting?: true;
@@ -47,7 +48,10 @@ export function Advertisement(props: {
         fallback={
           <div
             id={`${props.id}-wrapper`}
-            class={cn("ad advertisement ad-v", props.focus && "focus")}
+            class={cn(
+              "ad advertisement ad-v",
+              props.focus && getFocus() && "focus opacity-0",
+            )}
           >
             <div class="icon">
               <i class="fas fa-ad"></i>
@@ -60,7 +64,7 @@ export function Advertisement(props: {
           id={`${props.id}-wrapper`}
           class={cn(
             "ad full-width advertisement ad-h place-self-center",
-            props.focus && "focus",
+            props.focus && getFocus() && "focus opacity-0",
             props.class,
             screenshotHidden() && "hidden",
           )}
@@ -86,7 +90,7 @@ export function Advertisement(props: {
           id={`${props.id}-small-wrapper`}
           class={cn(
             "ad advertisement ad-h-s place-self-center",
-            props.focus && "focus",
+            props.focus && getFocus() && "focus opacity-0",
             props.smallClass,
             screenshotHidden() && "hidden",
           )}
