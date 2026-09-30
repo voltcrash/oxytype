@@ -29,23 +29,7 @@
   .modalWrapper .modal {
     padding: 1rem;
   }
-  .testActivity {
-    .wrapper {
-      width: 100%;
-      .top {
-        grid-template-columns: 8rem 1fr 8rem;
-      }
-    }
-    // .activity {
-    //   gap: 0.1em;
-    // }
-    .activity div,
-    .legend div {
-      width: 100%;
-      height: unset;
-      aspect-ratio: 1;
-    }
-  }
+
   .popupWrapper .modal .inputs.withLabel,
   .modalWrapper .modal .inputs.withLabel {
     grid-template-columns: 1fr;

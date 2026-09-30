@@ -2,7 +2,4 @@
 @use "./media.scss" as *;
 
 @include media-query(brown) {
-  .testActivity {
-    display: none;
-  }
 }

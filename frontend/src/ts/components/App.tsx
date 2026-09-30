@@ -8,6 +8,7 @@ import { cn } from "../utils/cn";
 import { Advertisement } from "./common/Advertisement";
 import { Download } from "./common/Download";
 import { AppEffects, AppElements } from "./core/AppEffects";
+import { CustomBackground } from "./core/CustomBackground";
 import { FunboxEffects } from "./core/FunboxEffects";
 import { Theme } from "./core/Theme";
 import { DevTools } from "./dev/DevTools";
@@ -28,6 +29,7 @@ export function App(props: AppElements): JSXElement {
         <Download />
         <Overlays />
         <Theme />
+        <CustomBackground />
         <FunboxEffects />
         <BarTimerProgress />
         <div id="solidmodals">

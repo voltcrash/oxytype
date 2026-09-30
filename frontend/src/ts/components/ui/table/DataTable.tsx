@@ -280,7 +280,7 @@ export function DataTable<TData extends Object, TValue = any>(
                               )}
                             </Show>
 
-                            <Switch fallback={<i class="fa-fw"></i>}>
+                            <Switch fallback={<span class="fa-fw"></span>}>
                               <Match
                                 when={header.column.getIsSorted() === "asc"}
                               >

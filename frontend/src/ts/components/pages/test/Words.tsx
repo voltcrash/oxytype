@@ -1,6 +1,6 @@
 import * as Numbers from "@monkeytype/util/numbers";
 import { animate } from "animejs";
-import { JSXElement, onCleanup, onMount } from "solid-js";
+import { createEffect, JSXElement, onCleanup, onMount } from "solid-js";
 
 import { animateAsync } from "../../../anim";
 import { Config } from "../../../config/store";
@@ -16,6 +16,7 @@ import {
   getInputElement,
   isInputElementFocused,
 } from "../../../input/input-element";
+import { getBackground } from "../../../states/background";
 import * as CompositionState from "../../../states/composition";
 import * as ConnectionState from "../../../states/connection";
 import { getActivePage } from "../../../states/core";
@@ -1508,6 +1509,9 @@ export function Words(props: {
 }): JSXElement {
   let element!: HTMLDivElement;
   onMount(() => {
+    createEffect(() =>
+      setClass(element, "noErrorBorder", getBackground().url !== ""),
+    );
     useWordsFocus(element);
     configEvent.useListener(onWordsConfigChange);
     onCleanup(() => {

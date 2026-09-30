@@ -1,5 +1,6 @@
 import {
   createMemo,
+  createEffect,
   createSelector,
   createSignal,
   For,
@@ -19,6 +20,7 @@ import { useRef } from "../../../../hooks/useRef";
 import { useResultWordHighlight } from "../../../../hooks/useResultWordHighlight";
 import { useSlideAnimation } from "../../../../hooks/useSlideAnimation";
 import Format from "../../../../singletons/format";
+import { getBackground } from "../../../../states/background";
 import { getIsScreenshotting } from "../../../../states/core";
 import {
   showErrorNotification,
@@ -39,7 +41,7 @@ import {
 } from "../../../../test/result-view-model";
 import * as TestWords from "../../../../test/test-words";
 import { FaSolidIcon } from "../../../../types/font-awesome";
-import { cn } from "../../../../utils/cn";
+import { cn, updateClassNames } from "../../../../utils/cn";
 import { get as getTypingSpeedUnit } from "../../../../utils/typing-speed-units";
 import { Fa } from "../../../common/Fa";
 
@@ -227,6 +229,16 @@ function formatHoverSpeed(burst: number): string {
 
 export function ResultWordsHistory(): JSXElement {
   const [ref, element] = useRef<HTMLDivElement>();
+  createEffect(() => {
+    const node = element();
+    if (node) {
+      node.className = updateClassNames(
+        node.className,
+        "noErrorBorder",
+        getBackground().url !== "",
+      );
+    }
+  });
   const [hoveredWord, setHoveredWord] = createSignal<number>();
   const isHovered = createSelector(hoveredWord);
   const wordHighlight = useResultWordHighlight(element);

@@ -1,4 +1,8 @@
-import { updateClassNames } from "../utils/cn";
+import {
+  setBackground,
+  setBackgroundStyle,
+  setBackgroundSize,
+} from "../states/background";
 import * as Arrays from "../utils/arrays";
 import { isColorDark, isColorLight } from "../utils/colors";
 
@@ -72,12 +76,6 @@ async function apply(
   setTheme({ ...themeColors, name: themeName });
 
   updateThemeIndicator(isPreview ? themeName : undefined);
-
-  if (isColorDark(themeColors.bg)) {
-    setClass(document.body, "darkMode", true);
-  } else {
-    setClass(document.body, "darkMode", false);
-  }
 }
 
 function updateThemeIndicator(nameOverride?: string): void {
@@ -247,82 +245,16 @@ async function clearRandom(): Promise<void> {
 }
 
 function applyCustomBackgroundSize(): void {
-  if (Config.customBackgroundSize === "max") {
-    setStyle(document.querySelector<HTMLElement>(".customBackground img"), {
-      objectFit: "",
-    });
-  } else {
-    setStyle(document.querySelector<HTMLElement>(".customBackground img"), {
-      objectFit: Config.customBackgroundSize,
-    });
-  }
+  setBackgroundSize(
+    Config.customBackgroundSize === "max" ? "" : Config.customBackgroundSize,
+  );
 }
 
 export async function applyCustomBackground(): Promise<void> {
-  let backgroundUrl = Config.customBackground;
-
-  //if there is a localBackgroundFile available, use it.
   const localBackgroundFile = await fileStorage.getFile("LocalBackgroundFile");
-
-  if (localBackgroundFile !== undefined) {
-    backgroundUrl = localBackgroundFile;
-  }
-
-  // hide the filter section initially and always
-  setClass(
-    document.querySelector<HTMLElement>(
-      ".pageSettings .section[data-config-name='customBackgroundFilter']",
-    ),
-    "hidden",
-    true,
-  );
-
-  if (backgroundUrl === "") {
-    setClass(
-      document.querySelector<HTMLElement>("#words"),
-      "noErrorBorder",
-      false,
-    );
-    setClass(
-      document.querySelector<HTMLElement>("#resultWordsHistory"),
-      "noErrorBorder",
-      false,
-    );
-    document.querySelector<HTMLElement>(".customBackground img")?.remove();
-  } else {
-    setClass(
-      document.querySelector<HTMLElement>("#words"),
-      "noErrorBorder",
-      true,
-    );
-    setClass(
-      document.querySelector<HTMLElement>("#resultWordsHistory"),
-      "noErrorBorder",
-      true,
-    );
-
-    //use setAttribute for possible unsafe customBackground value
-    const container = document.querySelector(".customBackground");
-    const img = document.createElement("img");
-
-    img.setAttribute("src", backgroundUrl);
-    img.setAttribute(
-      "onError",
-      "javascript:this.style.display='none'; window.dispatchEvent(new Event('customBackgroundFailed'))",
-    );
-    img.onload = () => {
-      // show the filter section only if the image loads successfully
-      setClass(
-        document.querySelector<HTMLElement>(
-          ".pageSettings .section[data-config-name='customBackgroundFilter']",
-        ),
-        "hidden",
-        false,
-      );
-    };
-
-    container?.replaceChildren(img);
-
+  const url = localBackgroundFile ?? Config.customBackground;
+  setBackground({ url });
+  if (url !== "") {
     applyCustomBackgroundFilters();
     applyCustomBackgroundSize();
   }
@@ -357,9 +289,9 @@ export function applyCustomBackgroundFilters(
     height: `calc(100% + ${valuesToApply[0] * 8}rem)`,
     transform: `scale(${1 + valuesToApply[0] / 100})`,
     top: `-${valuesToApply[0] * 4}rem`,
-    position: "absolute",
+    position: "absolute" as const,
   };
-  setStyle(document.querySelector<HTMLElement>(".customBackground img"), css);
+  setBackgroundStyle(css);
 }
 
 window
@@ -472,21 +404,4 @@ window.addEventListener("customBackgroundFailed", () => {
 
 function prefersColorSchemeDark(): boolean {
   return window.matchMedia?.("(prefers-color-scheme: dark)").matches;
-}
-
-function setClass(
-  element: HTMLElement | null | undefined,
-  names: string,
-  enabled: boolean,
-): void {
-  if (element) {
-    element.className = updateClassNames(element.className, names, enabled);
-  }
-}
-
-function setStyle(
-  element: HTMLElement | null,
-  values: Partial<CSSStyleDeclaration>,
-): void {
-  if (element) Object.assign(element.style, values);
 }

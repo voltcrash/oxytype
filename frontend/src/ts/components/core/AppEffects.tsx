@@ -1,8 +1,3 @@
-import {
-  getCrt,
-  getFunboxBodyClasses,
-  isFunboxReducedMotionIgnored,
-} from "../../states/funbox";
 import { MetaProvider, Style } from "@solidjs/meta";
 import { animate } from "animejs";
 import {
@@ -35,12 +30,19 @@ import {
   getCustomTextIndicator,
   getGlobalOffsetTop,
 } from "../../states/core";
+import {
+  getCrt,
+  getFunboxBodyClasses,
+  isFunboxReducedMotionIgnored,
+} from "../../states/funbox";
 import { getResultVisible, isTestActive } from "../../states/test";
+import { getTheme } from "../../states/theme";
 import * as Caret from "../../test/caret";
 import * as CustomText from "../../test/custom-text";
 import * as TestUI from "../../test/test-ui";
 import { applyFontFamily } from "../../ui";
 import { cn } from "../../utils/cn";
+import { isColorDark } from "../../utils/colors";
 import { onDOMReady } from "../../utils/dom-ready";
 import { isDevEnvironment } from "../../utils/env";
 import { applyReducedMotion } from "../../utils/misc";
@@ -91,6 +93,7 @@ export function AppEffects(props: AppElements): JSXElement {
                 !name.startsWith("fb-") &&
                 ![
                   "loading",
+                  "darkMode",
                   "crtmode",
                   "ignore-reduced-motion",
                   "mediaQueryDebugLevel1",
@@ -102,11 +105,12 @@ export function AppEffects(props: AppElements): JSXElement {
                 ].includes(name),
             ),
           getFunboxBodyClasses(),
+          isColorDark(getTheme().bg) && "darkMode",
           getCrt() !== null && "crtmode",
           isFunboxReducedMotionIgnored() && "ignore-reduced-motion",
           isAppLoading() && "loading",
           isFocusCursorHidden() &&
-            "cursor-none [&_button]:cursor-none! [&_a]:cursor-none!",
+            "cursor-none [&_a]:cursor-none! [&_button]:cursor-none!",
           getMediaQueryDebugLevel() > 0 &&
             `mediaQueryDebugLevel${getMediaQueryDebugLevel()}`,
         );
