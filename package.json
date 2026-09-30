@@ -11,6 +11,7 @@
     "pre-commit": "lint-staged",
     "ts-check": "turbo run ts-check",
     "lint": "turbo run lint",
+    "lint-check-config": "node packages/oxlint-config/check-application-defaults.mjs",
     "lint-be": "turbo run lint --filter @monkeytype/backend",
     "lint-fe": "turbo run lint --filter @monkeytype/frontend",
     "lint-pkg": "turbo run lint --filter=\"./packages/*\"",

@@ -394,6 +394,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Check shared lint configuration
+        run: npm run lint-check-config
+
       - name: Check lint
         run: npm run lint-fast-pkg && npm run lint-pkg
 
