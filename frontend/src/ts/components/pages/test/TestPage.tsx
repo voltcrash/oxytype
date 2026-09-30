@@ -2,9 +2,14 @@ import { JSXElement, onMount } from "solid-js";
 import { spread } from "solid-js/web";
 
 import { useWordsFocus } from "../../../hooks/useWordsFocus";
+import { useWordsInputScroll } from "../../../hooks/useWordsInputScroll";
 import { isWordsWrapperVisible } from "../../../states/funbox";
 import { getPageView } from "../../../states/page-transition";
 import { setTestElements } from "../../../states/test-dom";
+import {
+  getWordsWrapperHeight,
+  getWordsInputStyle,
+} from "../../../states/words-layout";
 import { focusWords } from "../../../test/test-ui";
 import { cn } from "../../../utils/cn";
 import { CapsWarning } from "./CapsWarning";
@@ -34,6 +39,7 @@ export function TestPage(
   onMount(() => {
     setTestElements(refs);
     useWordsFocus(refs.words);
+    useWordsInputScroll(refs.wordsWrapper, refs.wordsInput);
     spread(
       refs.wordsWrapper,
       {
@@ -85,6 +91,7 @@ export function TestPage(
           id="wordsWrapper"
           ref={(el) => (refs.wordsWrapper = el)}
           class="content-grid full-width"
+          style={{ height: getWordsWrapperHeight() }}
           translate="no"
           onClick={() => focusWords()}
         >
@@ -94,6 +101,7 @@ export function TestPage(
             class={cn(
               "full-width pointer-events-none absolute -z-1 mx-auto block h-[1em] w-0 cursor-default resize-none overflow-hidden rounded-none border-none p-0 text-[1em] [caret-color:transparent] opacity-0 [contain:strict] outline-none [text-wrap-mode:nowrap]",
             )}
+            style={getWordsInputStyle()}
             autocomplete="off"
             autoCapitalize="none"
             // oxlint-disable-next-line react/no-unknown-property -- Solid uses lowercase autocorrect

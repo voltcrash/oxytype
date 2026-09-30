@@ -1,3 +1,8 @@
+import {
+  centerWordsInputEvent,
+  setWordsInputStyle,
+  setWordsWrapperHeight,
+} from "../states/words-layout";
 import { setWordsWrapperVisible } from "../states/funbox";
 import { Config } from "../config/store";
 import * as TestWords from "./test-words";
@@ -87,24 +92,7 @@ export function focusWords(force = false): void {
 }
 
 export function keepWordsInputInTheCenter(force = false): void {
-  const wordsInput = getInputElement();
-  if (wordsInput === null) return;
-
-  const wordsWrapperHeight = getWordsWrapperEl().getOffsetHeight();
-  const windowHeight = window.innerHeight;
-
-  // dont do anything if the wrapper can fit on screen
-  if (wordsWrapperHeight < windowHeight) return;
-
-  const wordsInputRect = wordsInput.getBoundingClientRect();
-  const wordsInputBelowCenter = wordsInputRect.top > windowHeight / 2;
-
-  // dont do anything if its above or at the center unless forced
-  if (!wordsInputBelowCenter && !force) return;
-
-  wordsInput.scrollIntoView({
-    block: "center",
-  });
+  centerWordsInputEvent.dispatch(force);
 }
 
 export function getWordElement(index: number): ElementWithUtils | null {
@@ -520,8 +508,11 @@ export function updateWordsInputPosition(): void {
   const activeWord = getActiveWordElement();
 
   if (!activeWord) {
-    el.style.top = "0px";
-    el.style.left = "0px";
+    setWordsInputStyle((previous) => ({
+      ...previous,
+      top: "0px",
+      left: "0px",
+    }));
     return;
   }
 
@@ -529,30 +520,21 @@ export function updateWordsInputPosition(): void {
   const targetTop =
     activeWord.getOffsetTop() + letterHeight / 2 - el.offsetHeight / 2 + 1; //+1 for half of border
 
-  if (Config.tapeMode !== "off") {
-    el.style.maxWidth = `${100 - Config.tapeMargin}%`;
-  } else {
-    el.style.maxWidth = "";
-  }
-  if (activeWord.getOffsetWidth() < letterHeight) {
-    el.style.width = `${letterHeight}px`;
-  } else {
-    el.style.width = `${activeWord.getOffsetWidth()}px`;
-  }
+  const wordWidth = activeWord.getOffsetWidth();
+  const left =
+    Config.tapeMode !== "off"
+      ? getWordsWrapperEl().getOffsetWidth() * (Config.tapeMargin / 100)
+      : wordWidth < letterHeight && isTestRightToLeft
+        ? activeWord.getOffsetLeft() - letterHeight
+        : Math.max(0, activeWord.getOffsetLeft());
 
-  el.style.top = `${targetTop}px`;
-
-  if (Config.tapeMode !== "off") {
-    el.style.left = `${
-      getWordsWrapperEl().getOffsetWidth() * (Config.tapeMargin / 100)
-    }px`;
-  } else {
-    if (activeWord.getOffsetWidth() < letterHeight && isTestRightToLeft) {
-      el.style.left = `${activeWord.getOffsetLeft() - letterHeight}px`;
-    } else {
-      el.style.left = `${Math.max(0, activeWord.getOffsetLeft())}px`;
-    }
-  }
+  // Publish one layout update so input styles settle before scrolling.
+  setWordsInputStyle({
+    "max-width": Config.tapeMode !== "off" ? `${100 - Config.tapeMargin}%` : "",
+    width: `${Math.max(letterHeight, wordWidth)}px`,
+    top: `${targetTop}px`,
+    left: `${left}px`,
+  });
 
   keepWordsInputInTheCenter();
 }
@@ -610,10 +592,10 @@ export function updateWordsWrapperHeight(force = false): void {
 
   if (showAllLines) {
     //allow the wrapper to grow and shink with the words
-    getWordsWrapperEl().setStyle({ height: "" });
+    setWordsWrapperHeight("");
   } else if (Config.mode === "zen") {
     //zen mode, showAllLines off
-    getWordsWrapperEl().setStyle({ height: `${wordHeight * 2}px` });
+    setWordsWrapperHeight(`${wordHeight * 2}px`);
   } else {
     if (Config.tapeMode === "off") {
       //tape off, showAllLines off, non-zen mode
@@ -637,14 +619,14 @@ export function updateWordsWrapperHeight(force = false): void {
       if (lines < 3) wrapperHeight = wrapperHeight * (3 / lines);
 
       //limit to 3 lines
-      getWordsWrapperEl().setStyle({ height: `${wrapperHeight}px` });
+      setWordsWrapperHeight(`${wrapperHeight}px`);
     } else {
       //show 3 lines if tape mode is on and has newlines, otherwise use words height (because of indicate typos: below)
       if (wordsHaveNewline()) {
-        getWordsWrapperEl().setStyle({ height: `${wordHeight * 3}px` });
+        setWordsWrapperHeight(`${wordHeight * 3}px`);
       } else {
         const wordsHeight = getWordsEl().getOffsetHeight() ?? wordHeight;
-        getWordsWrapperEl().setStyle({ height: `${wordsHeight}px` });
+        setWordsWrapperHeight(`${wordsHeight}px`);
       }
     }
   }
@@ -1493,7 +1475,7 @@ export async function fadeInAfterRestart(noAnim: boolean): Promise<void> {
 export function onTestRestart(source: "testPage" | "resultPage"): void {
   getResultElement()?.hide();
   getTypingTestElement()?.setStyle({ opacity: "0" }).show();
-  getInputElement().style.left = "0";
+  setWordsInputStyle((previous) => ({ ...previous, left: "0" }));
   Focus.set(false);
   setCurrentLiveStats({
     wpm: undefined,
