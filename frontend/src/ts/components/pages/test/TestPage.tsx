@@ -89,7 +89,10 @@ export function TestPage(
         <div
           id="wordsWrapper"
           ref={(el) => (refs.wordsWrapper = el)}
-          class="content-grid full-width"
+          class={cn(
+            "content-grid full-width relative [overflow:visible_clip] [--c-dot--error:var(--error-color)] [--c-dot:var(--text-color)]",
+            "[&.tape]:overflow-hidden [&.tape]:[mask-image:linear-gradient(90deg,transparent_1%,black_10%,black_90%,transparent_99%)]",
+          )}
           style={{ height: getWordsWrapperHeight() }}
           translate="no"
           onClick={() => focusWords()}

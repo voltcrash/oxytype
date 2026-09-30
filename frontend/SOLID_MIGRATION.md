@@ -157,8 +157,8 @@ Perf critical: per-keystroke work must not regress. Measure with `utils/profiler
   > Note: joining width/wrap/reset helpers now live in `Words.tsx`; hint lookups use its container ref. Added wrapped/unwrapped/return-to-word assertions. Full checks and time/words/quote/Arabic hints smoke pass with the documented Knip exception. Matched fixed-word median/p95: 0.8/1.5 → 0.9/1.9 ms; repeated host-loaded samples range up to 2.3/3.9 ms (30 warmup + 300 inserts). Positioning/joining math unchanged.
 - [x] **P4.8** Remove remaining `qs`/`qsa` DOM calls from `test-logic.ts`, `funbox/*.ts` (funbox DOM effects → signals consumed by TestPage, e.g. classes on `#words`/body), `event-handlers/test.ts` (delegate listeners → JSX `onClick`).
   > Note: P5 ownership resolved: funbox classes, links, CRT scanline and words visibility use signals; TestPage owns input/window lifecycle and wrapper click. Removed global test listeners/inert ad delegate; kept body CSS precedence, sticky reduced-motion and memory-timer quirks. Full smoke/checks pass with the Knip baseline exception. Profiled keystroke CPU median/p95: 0.7/1.2 → 0.7/1.3 ms (visible preview, settled watcher, 30 warmup + 300 samples).
-- [ ] **P4.9** `test.scss` cleanup for converted pieces (keep selectors themes rely on).
-  > BLOCKED: Shared-host verification/perf blocker (P4.4) prevents validating CSS cleanup against theme/funbox selectors; retry when contention clears.
+- [x] **P4.9** `test.scss` cleanup for converted pieces (keep selectors themes rely on).
+  > Note: wrapper positioning/overflow/tape mask/letter-color variables and result screenshot tooltip hiding moved to Tailwind; removed corresponding `test.scss` sections. Word/letter/shared result-history/funbox selectors retained. Full checks and smoke pass with the documented Knip exception; mask/overflow/pseudo-element styles verified. Profiled median/p95: 1.7/3.3 → 2.4/3.9 ms under variable shared-host load; no keystroke logic changed.
 
 ### Phase 5 — App shell + routing (deps: P1.1, P1.8, P4.1)
 
