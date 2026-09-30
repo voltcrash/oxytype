@@ -10,20 +10,9 @@ import { Footer } from "./layout/footer/Footer";
 import { Header } from "./layout/header/Header";
 import { Overlays } from "./layout/overlays/Overlays";
 import { Modals } from "./modals/Modals";
-import { NotFoundPage } from "./pages/404Page";
-import { AboutPage } from "./pages/AboutPage";
-import { AccountSettingsPage } from "./pages/account-settings/AccountSettingsPage";
-import { AccountPage } from "./pages/account/AccountPage";
-import { FriendsPage } from "./pages/connections/FriendsPage";
-import { LeaderboardPage } from "./pages/leaderboard/LeaderboardPage";
-import { LoadingPage } from "./pages/LoadingPage";
-import { LoginPage } from "./pages/login/LoginPage";
-import { ProfilePage } from "./pages/profile/ProfilePage";
-import { ProfileSearchPage } from "./pages/profile/ProfileSearchPage";
-import { SettingsPage } from "./pages/settings/SettingsPage";
+import { AppPages } from "./pages/AppPages";
 import { BarTimerProgress } from "./pages/test/live-stats/BarTimerProgress";
 import { MonkeyPower } from "./pages/test/MonkeyPower";
-import { TestPage } from "./pages/test/TestPage";
 import { Popups } from "./popups/Popups";
 
 export function App(): JSXElement {
@@ -58,43 +47,7 @@ export function App(): JSXElement {
           vertical
           focus
         />
-        <div
-          class="page pageLoading grid h-full w-full content-center items-center place-self-center"
-          id="pageLoading"
-        >
-          <LoadingPage />
-        </div>
-        <div class="page pageAbout full-width hidden" id="pageAbout">
-          <AboutPage />
-        </div>
-        <div class="page pageSettings hidden" id="pageSettings">
-          <SettingsPage />
-        </div>
-        <div class="page pageAccount hidden" id="pageAccount">
-          <AccountPage />
-        </div>
-        <div class="page pageLogin hidden" id="pageLogin">
-          <LoginPage />
-        </div>
-        <div class="page pageProfile hidden" id="pageProfile">
-          <ProfilePage />
-        </div>
-        <div class="page pageProfileSearch hidden" id="pageProfileSearch">
-          <ProfileSearchPage />
-        </div>
-        <TestPage />
-        <div class="page page404 hidden" id="page404">
-          <NotFoundPage />
-        </div>
-        <div class="page pageAccountSettings hidden" id="pageAccountSettings">
-          <AccountSettingsPage />
-        </div>
-        <div class="page pageFriends hidden" id="pageFriends">
-          <FriendsPage />
-        </div>
-        <div class="page pageLeaderboards hidden" id="pageLeaderboards">
-          <LeaderboardPage />
-        </div>
+        <AppPages />
       </main>
       <Footer />
       <Advertisement

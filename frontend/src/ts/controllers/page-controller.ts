@@ -18,8 +18,7 @@ import Page, {
   UrlParamsSchema,
   OptionsWithUrlParams,
 } from "../pages/page";
-import { onDOMReady, qsa, ElementWithUtils } from "../utils/dom";
-import * as Skeleton from "../utils/skeleton";
+import { qsr } from "../utils/dom";
 import {
   LeaderboardUrlParamsSchema,
   readLeaderboardGetParameters,
@@ -188,17 +187,14 @@ async function showSyncLoading({
   loadingOptions: LoadingOptions[];
   totalDuration: number;
 }): Promise<void> {
-  PageLoading.page.element.show().setStyle({ opacity: "0" });
+  PageTransition.preparePage("loading");
   await PageLoading.page.beforeShow({});
 
   const fillDivider = loadingOptions.length;
   const fillOffset = 100 / fillDivider;
 
   //void here to run the loading promise as soon as possible
-  void PageLoading.page.element.promiseAnimate({
-    opacity: "1",
-    duration: totalDuration / 2,
-  });
+  void PageTransition.transitionPage("loading", true, totalDuration / 2, false);
 
   for (let i = 0; i < loadingOptions.length; i++) {
     const currentOffset = fillOffset * i;
@@ -226,13 +222,9 @@ async function showSyncLoading({
     }
   }
 
-  await PageLoading.page.element.promiseAnimate({
-    opacity: "0",
-    duration: totalDuration / 2,
-  });
+  await PageTransition.transitionPage("loading", false, totalDuration / 2);
 
   await PageLoading.page.afterHide();
-  PageLoading.page.element.hide();
 }
 
 // Global abort controller for keyframe promises
@@ -316,16 +308,14 @@ export async function change(
 
   //start
   PageTransition.set(true);
-  qsa(".page")?.removeClass("active");
 
   //previous page
   await previousPage?.beforeHide?.();
-  previousPage.element.show().setStyle({ opacity: "1" });
-  await previousPage.element.promiseAnimate({
-    opacity: "0",
-    duration: totalDuration / 2,
-  });
-  previousPage.element.hide();
+  await PageTransition.transitionPage(
+    previousPage.id,
+    false,
+    totalDuration / 2,
+  );
   await previousPage?.afterHide();
 
   // we need to evaluate and store next page loading mode in case options.loadingOptions.loadingMode is sync
@@ -359,7 +349,7 @@ export async function change(
       keyframeAbortController = null;
     }
 
-    pages.loading.element.addClass("active");
+    PageTransition.activatePage("loading");
     setActivePage(pages.loading.id);
     Focus.set(false);
     PageLoading.showError();
@@ -379,6 +369,7 @@ export async function change(
   Focus.set(false);
 
   //next page
+  PageTransition.preparePage(nextPage.id);
   await nextPage?.beforeShow({
     params: options.params,
     // @ts-expect-error for the future (i think)
@@ -395,12 +386,7 @@ export async function change(
     });
   }
 
-  nextPage.element.show().setStyle({ opacity: "0" });
-  await nextPage.element.promiseAnimate({
-    opacity: "1",
-    duration: totalDuration / 2,
-  });
-  nextPage.element.addClass("active");
+  await PageTransition.transitionPage(nextPage.id, true, totalDuration / 2);
   await nextPage?.afterShow();
 
   //wrapup
@@ -441,15 +427,13 @@ function solidPage<U extends UrlParamsSchema>(
 ): Page<undefined> | PageWithUrlParams<undefined, U> {
   const path = props?.path ?? `/${id}`;
   const internalId = `page${Strings.capitalizeFirstLetter(id)}`;
-  onDOMReady(() => Skeleton.save(internalId));
 
   const shared = {
     id,
     path,
-    element: () => new ElementWithUtils(Skeleton.get(internalId)),
+    element: () => qsr(`#${internalId}`),
     loadingOptions: props?.loadingOptions,
     afterHide: async () => {
-      Skeleton.remove(internalId);
       await props?.afterHide?.();
     },
   };
@@ -459,7 +443,6 @@ function solidPage<U extends UrlParamsSchema>(
       ...shared,
       urlParamsSchema: props.urlParamsSchema,
       beforeShow: async (options) => {
-        Skeleton.append(internalId, "main");
         await props.beforeShow?.(options);
       },
     });
@@ -468,7 +451,6 @@ function solidPage<U extends UrlParamsSchema>(
   return new Page({
     ...shared,
     beforeShow: async (options) => {
-      Skeleton.append(internalId, "main");
       await props?.beforeShow?.(options);
     },
   });

@@ -1,6 +1,7 @@
 import { JSXElement, onMount } from "solid-js";
 
 import { page } from "../../../pages/test";
+import { getPageView } from "../../../states/page-transition";
 import { setTestElements } from "../../../states/test-dom";
 import { cn } from "../../../utils/cn";
 import { ElementWithUtils } from "../../../utils/dom";
@@ -21,7 +22,9 @@ import { TestConfig } from "./TestConfig";
 import { TestInitFailed } from "./TestInitFailed";
 import { TestLoading } from "./TestLoading";
 
-export function TestPage(): JSXElement {
+export function TestPage(
+  props: { ref?: (el: HTMLDivElement) => void } = {},
+): JSXElement {
   let pageEl: HTMLDivElement | undefined;
 
   const refs = {} as Parameters<typeof setTestElements>[0];
@@ -34,9 +37,18 @@ export function TestPage(): JSXElement {
 
   return (
     <div
-      ref={(el) => (pageEl = el)}
+      ref={(el) => {
+        pageEl = el;
+        props.ref?.(el);
+      }}
       class={cn(
-        "page pageTest full-width content-grid relative col-[full-width] grid hidden h-full grid-rows-[1fr_auto_1fr]",
+        "page pageTest full-width content-grid relative col-[full-width] grid h-full grid-rows-[1fr_auto_1fr]",
+        getPageView().id === "test" &&
+          getPageView().phase === "prepared" &&
+          "hidden",
+        getPageView().id === "test" &&
+          getPageView().phase === "active" &&
+          "active",
       )}
       data-nosnippet
     >
