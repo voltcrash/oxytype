@@ -191,7 +191,8 @@ Perf critical: per-keystroke work must not regress. Measure with `utils/profiler
   > Note P6.3f: result reveal/scroll, screenshot crop canvas and fallback visibility now component-owned; Wikipedia HTML conversion uses an inert parser. Sweep leaves mount entry lookups, declarative rich markup and §2 exceptions only. Added lifecycle/crop/parsing regressions; 1,284 tests, frontend checks and time/words/quote/result/restart/hotkey/focus smoke pass with the documented Knip exception.
 - [x] **P6.4** SCSS (leftovers only; per D3 most removed during each task): delete files/sections no longer referenced (`popups.scss`, `commandline.scss`, `loading.scss`, `test.scss` parts, `media-queries-*.scss` parts). Keep selectors used by `static/themes` & `static/funbox`.
   > Note: deleted obsolete popup/login responsive rules, empty breakpoints, avatar/FPS/notification/checkbox wrappers and unused animations. Mobile commandline media rule moved to its Solid button; shared inputs, layout, word/history/debug/theme/funbox selectors retained. 1,284 tests, frontend checks and typing/result/restart smoke pass with the documented Knip exception.
-- [ ] **P6.5** Update `CLAUDE.md` / `AGENTS.md`: drop "partially migrated" + legacy `i` tag rule. Update `docs/CONTRIBUTING_ADVANCED.md` if it mentions HTML partials.
+- [x] **P6.5** Update `CLAUDE.md` / `AGENTS.md`: drop "partially migrated" + legacy `i` tag rule. Update `docs/CONTRIBUTING_ADVANCED.md` if it mentions HTML partials.
+  > Note: contributor rules now describe Solid UI, component-owned imperative exceptions and Fa icons. Advanced contribution guide contains no HTML-partial instructions; unchanged.
 - [ ] **P6.6** Full check: `pnpm full-check` from root. Keep this file (D4); tick all boxes.
 
 ---
