@@ -30,7 +30,7 @@ export const Default = meta.story({
   render: () => {
     const data = {
       uid: "user123",
-      name: "monkeytyper",
+      name: "oxytyper",
       discordId: "102819690287489024",
       discordAvatar: "a_af6c0b8ad26fdd6bcb86ed7bb40ee6e5",
       isPremium: true,
@@ -75,7 +75,7 @@ export const WithBadge = meta.story({
     <User
       user={{
         uid: "user123",
-        name: "monkeytyper",
+        name: "oxytyper",
         discordId: undefined,
         discordAvatar: undefined,
         badgeId: 1,
@@ -89,7 +89,7 @@ export const Premium = meta.story({
     <User
       user={{
         uid: "user123",
-        name: "monkeytyper",
+        name: "oxytyper",
         discordId: undefined,
         discordAvatar: undefined,
         badgeId: 6,
@@ -104,7 +104,7 @@ export const Friend = meta.story({
     <User
       user={{
         uid: "user123",
-        name: "monkeytyper",
+        name: "oxytyper",
         discordId: undefined,
         discordAvatar: undefined,
       }}
@@ -118,7 +118,7 @@ export const Banned = meta.story({
     <User
       user={{
         uid: "user123",
-        name: "monkeytyper",
+        name: "oxytyper",
         discordId: undefined,
         discordAvatar: undefined,
         banned: true,
@@ -132,7 +132,7 @@ export const NoAvatar = meta.story({
     <User
       user={{
         uid: "user123",
-        name: "monkeytyper",
+        name: "oxytyper",
         discordId: undefined,
         discordAvatar: undefined,
         badgeId: 13,
@@ -148,7 +148,7 @@ export const FullyLoaded = meta.story({
     <User
       user={{
         uid: "user123",
-        name: "monkeytyper",
+        name: "oxytyper",
         discordId: undefined,
         discordAvatar: undefined,
         badgeId: 1,
