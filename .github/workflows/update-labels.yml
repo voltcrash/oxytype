@@ -94,7 +94,7 @@ jobs:
         run: echo $LABELS_JSON > write-labels.json
 
       - name: Upload the JSON file
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: labels
           path: ./write-labels.json
