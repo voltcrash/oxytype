@@ -4,8 +4,8 @@
   "private": true,
   "license": "GPL-3.0",
   "scripts": {
-    "lint": "oxlint . --type-aware --type-check",
-    "lint-fast": "oxlint .",
+    "lint": "oxlint . --type-aware --type-check --format agent",
+    "lint-fast": "oxlint . --format agent",
     "build": "npm run gen-docs && tsc --build",
     "watch": "tsc --build --watch",
     "clean": "tsc --build --clean",

@@ -1,29 +1,23 @@
 import { capitalizeFirstLetter } from "../../utils/strings";
-import { applyReducedMotion } from "../../utils/misc";
-import { qs } from "../../utils/dom";
-
-const timerEl = qs("#typingTest #layoutfluidTimer");
+import {
+  setLayoutfluidTimerText,
+  setLayoutfluidTimerVisibility,
+} from "../../states/funbox-timers";
 
 export function show(): void {
-  timerEl?.animate({
-    opacity: 1,
-    duration: applyReducedMotion(125),
-  });
+  setLayoutfluidTimerVisibility("shown");
 }
 
 export function hide(): void {
-  timerEl?.animate({
-    opacity: 0,
-    duration: applyReducedMotion(125),
-  });
+  setLayoutfluidTimerVisibility("hidden");
 }
 
 export function instantHide(): void {
-  timerEl?.setStyle({ opacity: "0" });
+  setLayoutfluidTimerVisibility("instant");
 }
 
 export function updateTime(sec: number, layout: string): void {
-  timerEl?.setText(`${capitalizeFirstLetter(layout)} in: ${sec}s`);
+  setLayoutfluidTimerText(`${capitalizeFirstLetter(layout)} in: ${sec}s`);
 }
 
 export function updateWords(words: number, layout: string): void {
@@ -32,5 +26,5 @@ export function updateWords(words: number, layout: string): void {
   if (words === 1) {
     str = `${layoutName} starting next word`;
   }
-  timerEl?.setText(str);
+  setLayoutfluidTimerText(str);
 }

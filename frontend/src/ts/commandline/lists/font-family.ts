@@ -1,3 +1,4 @@
+import { openFilePicker } from "../../components/common/FilePicker";
 import { FontNameSchema } from "@oxytype/schemas/fonts";
 import { Command, withValidation } from "../types";
 import { buildCommandForConfigKey } from "../util";
@@ -46,52 +47,43 @@ if (fromMeta.subgroup) {
             return !(await FileStorage.hasFile("LocalFontFamilyFile"));
           },
           exec: async (): Promise<void> => {
-            const inputElement = document.createElement("input");
-            inputElement.type = "file";
-            inputElement.accept = "font/woff,font/woff2,font/ttf,font/otf";
-            inputElement.style.display = "none";
-            document.body.appendChild(inputElement);
-
-            const cleanup = (): void => {
-              document.body.removeChild(inputElement);
-            };
-
-            inputElement.onchange = async (event) => {
-              const file = (event.target as HTMLInputElement).files?.[0];
-              if (!file) {
-                cleanup();
-                return;
-              }
-
-              // check type
-              if (
-                !/font\/(woff|woff2|ttf|otf)/.exec(file.type) &&
-                !/\.(woff|woff2|ttf|otf)$/i.exec(file.name)
-              ) {
-                showNoticeNotification(
-                  "Unsupported font format, must be woff, woff2, ttf or otf.",
-                );
-                cleanup();
-                return;
-              }
-
-              const reader = new FileReader();
-              reader.onload = async (readerEvent) => {
-                const dataUrl = readerEvent.target?.result as string;
-                try {
-                  await FileStorage.storeFile("LocalFontFamilyFile", dataUrl);
-                  await applyFontFamily();
-                } catch (e) {
-                  showNoticeNotification(
-                    `Error uploading font: ${(e as Error).message}`,
-                  );
+            openFilePicker({
+              accept: "font/woff,font/woff2,font/ttf,font/otf",
+              onFile: async (file, cleanup) => {
+                if (!file) {
+                  cleanup();
+                  return;
                 }
-                cleanup();
-              };
-              reader.onerror = cleanup;
-              reader.readAsDataURL(file);
-            };
-            inputElement.click();
+
+                // check type
+                if (
+                  !/font\/(woff|woff2|ttf|otf)/.exec(file.type) &&
+                  !/\.(woff|woff2|ttf|otf)$/i.exec(file.name)
+                ) {
+                  showNoticeNotification(
+                    "Unsupported font format, must be woff, woff2, ttf or otf.",
+                  );
+                  cleanup();
+                  return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = async (readerEvent) => {
+                  const dataUrl = readerEvent.target?.result as string;
+                  try {
+                    await FileStorage.storeFile("LocalFontFamilyFile", dataUrl);
+                    await applyFontFamily();
+                  } catch (e) {
+                    showNoticeNotification(
+                      `Error uploading font: ${(e as Error).message}`,
+                    );
+                  }
+                  cleanup();
+                };
+                reader.onerror = cleanup;
+                reader.readAsDataURL(file);
+              },
+            });
           },
         },
         {

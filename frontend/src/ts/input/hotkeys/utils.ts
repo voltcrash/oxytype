@@ -5,9 +5,9 @@ import {
   HotkeyCallbackContext,
   createHotkey as registerHotkey,
 } from "@tanstack/solid-hotkeys";
-import { isAnyPopupVisible } from "../../utils/misc";
+import { isAnyPopupVisible } from "../../states/overlay-visibility";
 import { isInputElementFocused } from "../input-element";
-import * as CompositionState from "../../legacy-states/composition";
+import * as CompositionState from "../../states/composition";
 
 export const NoKey = "" as Hotkey;
 

@@ -1,5 +1,3 @@
-import { onDOMReady, qsa } from "../utils/dom";
-
 // Oxytype has no configured advertising provider.
 export const adBlock = false;
 export const cookieBlocker = false;
@@ -32,8 +30,6 @@ export function destroyResult(): void {
   return;
 }
 
-onDOMReady(() => {
-  for (const element of qsa(".advertisement")) {
-    element.remove();
-  }
-});
+export function useAdLifecycle(): void {
+  return;
+}

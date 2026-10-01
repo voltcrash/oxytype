@@ -1,3 +1,5 @@
+import { animateAsync } from "../anim";
+import { updateClassNames } from "../utils/cn";
 import Ape from "../ape";
 import * as TestUI from "./test-ui";
 import * as Strings from "../utils/strings";
@@ -15,7 +17,7 @@ import * as Funbox from "./funbox/funbox";
 import * as PaceCaret from "./pace-caret";
 import * as TestTimer from "./test-timer";
 import * as DB from "../db";
-import * as Replay from "./replay-ui";
+import * as Replay from "./replay";
 import { __nonReactive } from "../collections/tags";
 import * as TodayTracker from "./today-tracker";
 import * as ChallengeContoller from "../controllers/challenge-controller";
@@ -53,25 +55,26 @@ import {
   setBailedOut,
   setLastSignedOutResult,
   setResultCalculating,
+  setResultLoading,
   setResultVisible,
   setTestActive,
   setWordsHaveNewline,
   setWordsHaveNumbers,
   setWordsHaveTab,
   getResultVisible,
+  setTestInitError,
 } from "../states/test";
 import { restartTestEvent } from "../events/test";
 import * as TestWords from "./test-words";
 import * as WordsGenerator from "./words-generator";
-import * as PageTransition from "../legacy-states/page-transition";
+import * as PageTransition from "../states/page-transition";
 import { configEvent } from "../events/config";
 import { timerEvent } from "../events/timer";
 import objectHash from "object-hash";
 import * as AnalyticsController from "../controllers/analytics-controller";
 import { getAuthenticatedUser } from "../firebase";
 import { highlight } from "../events/keymap";
-import * as LazyModeState from "../legacy-states/remember-lazy-mode";
-import Format from "../singletons/format";
+import * as LazyModeState from "../states/remember-lazy-mode";
 import { Mode } from "@oxytype/schemas/shared";
 import {
   CompletedEvent,
@@ -86,18 +89,16 @@ import {
   isFunboxActiveWithProperty,
 } from "./funbox/list";
 import { getFunbox } from "@oxytype/funbox";
-import * as CompositionState from "../legacy-states/composition";
+import * as CompositionState from "../states/composition";
 import { SnapshotResult } from "../constants/default-snapshot";
 import { WordGenError } from "../utils/word-gen-error";
 import { tryCatch } from "@oxytype/util/trycatch";
 import * as Sentry from "../sentry";
 import { showLoaderBar, hideLoaderBar } from "../states/loader-bar";
-import * as TestInitFailed from "../elements/test-init-failed";
 import { canQuickRestart } from "../utils/quick-restart";
-import { animate } from "animejs";
 import { setInputElementValue } from "../input/input-element";
 import { debounce } from "throttle-debounce";
-import { qs } from "../utils/dom";
+import { getTypingTestElement } from "../states/test-dom";
 import { setAccountButtonSpinner } from "../states/header";
 import { Config } from "../config/store";
 import { setQuoteLengthAll, toggleFunbox, setConfig } from "../config/setters";
@@ -357,11 +358,18 @@ async function init(): Promise<boolean> {
   if (testReinitCount > 3) {
     if (lastInitError) {
       void Sentry.captureException(lastInitError);
-      TestInitFailed.showError(
-        `${lastInitError.name}: ${lastInitError.message}`,
-      );
     }
-    TestInitFailed.show();
+    setTestInitError({
+      message: lastInitError
+        ? `${lastInitError.name}: ${lastInitError.message}`
+        : undefined,
+    });
+    const typingTest = getTypingTestElement();
+    typingTest.className = updateClassNames(
+      typingTest.className,
+      "hidden",
+      true,
+    );
     setIsTestRestarting(false);
     return false;
   }
@@ -687,7 +695,7 @@ export async function retrySavingResult(): Promise<void> {
   }
 
   retrySaving.canRetry = false;
-  qs("#retrySavingResultButton")?.hide();
+  Result.updateRetrySaving(false);
 
   showNoticeNotification("Retrying to save...");
 
@@ -817,12 +825,13 @@ export async function finish(difficultyFailed = false): Promise<void> {
   // fade out the test and show loading
   // because the css animation has a delay,
   // if the test calculation is fast the loading will not show
-  await Misc.promiseAnimate("#typingTest", {
+  await animateAsync(getTypingTestElement(), {
     opacity: 0,
     duration: Misc.applyReducedMotion(125),
   });
-  qs(".pageTest #typingTest")?.hide();
-  qs(".pageTest .loading")?.show();
+  const typingTest = getTypingTestElement();
+  typingTest.className = updateClassNames(typingTest.className, "hidden", true);
+  setResultLoading(true);
   await Misc.sleep(0); //allow ui update
 
   TestUI.onTestFinish();
@@ -1120,7 +1129,7 @@ async function saveResult(
     //only allow retry if status is not in this list
     if (![460, 461, 463, 464, 465, 466].includes(response.status)) {
       retrySaving.canRetry = true;
-      qs("#retrySavingResultButton")?.show();
+      Result.updateRetrySaving(true);
       if (!isRetrying) {
         retrySaving.completedEvent = result;
       }
@@ -1141,11 +1150,7 @@ async function saveResult(
   }
 
   const data = response.body.data;
-  qs("#result .stats .tags .editTagsButton")?.setAttribute(
-    "data-result-id",
-    data.insertedId,
-  );
-  qs("#result .stats .tags .editTagsButton")?.removeClass("invisible");
+  Result.updateSavedResultId(data.insertedId);
 
   const localDataToSave: DB.SaveLocalResultData = {};
 
@@ -1197,27 +1202,9 @@ async function saveResult(
     Result.showErrorCrownIfNeeded();
   }
 
-  const dailyLeaderboardEl = document.querySelector(
-    "#result .stats .dailyLeaderboard",
-  ) as HTMLElement;
+  Result.updateDailyLeaderboardRank(data.dailyLeaderboardRank);
 
-  if (data.dailyLeaderboardRank === undefined) {
-    dailyLeaderboardEl.classList.add("hidden");
-  } else {
-    dailyLeaderboardEl.classList.remove("hidden");
-    dailyLeaderboardEl.style.maxWidth = "13rem";
-
-    animate(dailyLeaderboardEl, {
-      opacity: [0, 1],
-      duration: Misc.applyReducedMotion(250),
-    });
-
-    qs("#result .stats .dailyLeaderboard .bottom")?.setHtml(
-      Format.rank(data.dailyLeaderboardRank, { fallback: "" }),
-    );
-  }
-
-  qs("#retrySavingResultButton")?.hide();
+  Result.updateRetrySaving(false);
   if (isRetrying) {
     showSuccessNotification("Result saved", { important: true });
   }
@@ -1251,72 +1238,6 @@ const debouncedZipfCheck = debounce(250, async () => {
         durationMs: 7000,
       },
     );
-  }
-});
-
-qs(".pageTest")?.onChild("click", "#testInitFailed button.restart", () => {
-  void restart();
-});
-
-qs(".pageTest")?.onChild("click", "#restartTestButton", () => {
-  if (isResultCalculating()) return;
-  if (
-    isTestActive() &&
-    Config.repeatQuotes === "typing" &&
-    Config.mode === "quote"
-  ) {
-    void restart({
-      withSameWordset: true,
-    });
-  } else {
-    void restart();
-  }
-});
-
-qs(".pageTest")?.onChild(
-  "click",
-  "#retrySavingResultButton",
-  retrySavingResult,
-);
-
-qs(".pageTest")?.onChild("click", "#nextTestButton", () => {
-  void restart();
-});
-
-qs(".pageTest")?.onChild("click", "#restartTestButtonWithSameWordset", () => {
-  if (Config.mode === "zen") {
-    showNoticeNotification("Repeat test disabled in zen mode");
-    return;
-  }
-  void restart({
-    withSameWordset: true,
-  });
-});
-
-// little roadblock for basic cheating
-window.addEventListener("focus", () => {
-  if (
-    !isTestActive() &&
-    !getResultVisible() &&
-    (Config.mode === "time" || Config.mode === "words")
-  ) {
-    void restart({
-      noAnim: true,
-    });
-  }
-});
-
-// little roadblock for basic cheating
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState !== "visible") return;
-  if (
-    !isTestActive() &&
-    !getResultVisible() &&
-    (Config.mode === "time" || Config.mode === "words")
-  ) {
-    void restart({
-      noAnim: true,
-    });
   }
 });
 

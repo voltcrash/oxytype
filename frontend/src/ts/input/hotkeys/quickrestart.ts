@@ -1,4 +1,4 @@
-import { isAnyPopupVisible } from "../../utils/misc";
+import { isAnyPopupVisible } from "../../states/overlay-visibility";
 
 import { navigate } from "../../controllers/route-controller";
 import { restartTestEvent } from "../../events/test";

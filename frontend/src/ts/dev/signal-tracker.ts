@@ -35,7 +35,7 @@ function getCallerInfo(): { isUserCode: boolean; source: string } {
   if (stack === undefined) return { isUserCode: false, source: "" };
   const frames = stack.split("\n");
 
-  if (frames.some((f) => f.includes("useRefWithUtils"))) {
+  if (frames.some((f) => f.includes("useRef.ts"))) {
     return { isUserCode: false, source: "" };
   }
 

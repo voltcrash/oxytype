@@ -3,7 +3,7 @@ import { createForm } from "@tanstack/solid-form";
 import { createEffect, createSignal, JSXElement } from "solid-js";
 
 import { navigationEvent } from "../../../events/navigation";
-import { useRefWithUtils } from "../../../hooks/useRefWithUtils";
+import { useRef } from "../../../hooks/useRef";
 import { queryClient } from "../../../queries";
 import { getUserProfile } from "../../../queries/profile";
 import { getActivePage } from "../../../states/core";
@@ -19,7 +19,7 @@ export function ProfileSearchPage(): JSXElement {
   const isOpen = () => getActivePage() === "profileSearch";
 
   // Refs are assigned by SolidJS via the ref attribute
-  const [inputRef, inputEl] = useRefWithUtils<HTMLElement>();
+  const [inputRef, inputEl] = useRef<HTMLElement>();
 
   const form = createForm(() => ({
     defaultValues: {
@@ -44,7 +44,9 @@ export function ProfileSearchPage(): JSXElement {
   createEffect(() => {
     if (isOpen()) {
       requestAnimationFrame(() => {
-        inputEl()?.qs("input")?.focus({ preventScroll: true });
+        inputEl()
+          ?.querySelector<HTMLInputElement>("input")
+          ?.focus({ preventScroll: true });
       });
     } else {
       form.reset();

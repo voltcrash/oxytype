@@ -4,24 +4,18 @@ import "./dev/signal-tracker";
 //enable solidjs-devtools
 import "solid-devtools";
 
-import "./event-handlers/global";
-import "./event-handlers/test";
-
 import { init } from "./firebase";
 import * as Logger from "./utils/logger";
 import * as DB from "./db";
-import "./ui";
 import "./controllers/ad-controller";
 import { Config } from "./config/store";
 import * as TestTimer from "./test/test-timer";
 import * as Result from "./test/result";
 import { onAuthStateChanged } from "./auth";
-import { enable } from "./legacy-states/glarses-mode";
-import "./input/listeners";
+import { enable } from "./states/glarses-mode";
 import "./controllers/route-controller";
-import "./elements/no-css";
-import { egVideoListener } from "./popups/video-ad-popup";
-import "./legacy-states/connection";
+import { egVideoListener } from "./components/popups/VideoAdPopup";
+import "./states/connection";
 import "./test/tts";
 import { addToGlobal } from "./utils/misc";
 import * as Focus from "./test/focus";
@@ -31,9 +25,8 @@ import * as Cookies from "./cookies";
 import "./elements/psa";
 import "./controllers/url-handler";
 import { applyEngineSettings } from "./anim";
-import { qs, qsa, qsr } from "./utils/dom";
-import { mountComponents } from "./components/mount";
-import "./ready";
+import { render } from "solid-js/web";
+import { App } from "./components/App";
 import { setVersion } from "./states/core";
 import { loadFromLocalStorage } from "./config/lifecycle";
 
@@ -89,11 +82,18 @@ addToGlobal({
   egVideoListener: egVideoListener,
   toggleDebugLogs: Logger.toggleDebugLogs,
   toggleSentryDebug: Sentry.toggleDebug,
-  qs: qs,
-  qsa: qsa,
-  qsr: qsr,
   lastEventLog: () => getLastEventLog(),
   currentEventLog: buildEventLog,
 });
 
-mountComponents();
+const appElement = document.getElementById("app");
+if (!appElement) throw new Error("App mount not found");
+render(
+  () =>
+    App({
+      element: appElement,
+      body: document.body as HTMLBodyElement,
+      noCssWarning: document.getElementById("nocss"),
+    }),
+  appElement,
+);

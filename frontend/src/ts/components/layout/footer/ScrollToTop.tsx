@@ -1,7 +1,7 @@
 import { JSXElement, createSignal, onMount, onCleanup } from "solid-js";
 
 import { getActivePage } from "../../../states/core";
-import { scrollToTop } from "../../../utils/misc";
+import { cn } from "../../../utils/cn";
 import { Fa } from "../../common/Fa";
 
 export function ScrollToTop(): JSXElement {
@@ -26,19 +26,20 @@ export function ScrollToTop(): JSXElement {
   return (
     <div class="content-grid ScrollToTop pointer-events-none fixed top-0 left-0 z-999999 h-full w-full">
       <button
-        class="breakout pointer-events-auto mb-8 grid h-16 w-16 place-self-end rounded-full bg-sub-alt text-[2rem] text-sub ring-8 ring-bg hover:bg-text hover:text-bg"
+        class={cn(
+          "breakout pointer-events-auto mb-8 grid h-16 w-16 place-self-end rounded-full bg-sub-alt text-[2rem] text-sub ring-8 ring-bg hover:bg-text hover:text-bg",
+          (getActivePage() === "test" || !visible()) &&
+            "pointer-events-none opacity-0",
+        )}
         style={{
           "grid-column": "content-end/breakout-end",
         }}
         tabIndex="-1"
         type="button"
-        classList={{
-          "opacity-0": getActivePage() === "test" || !visible(),
-          "pointer-events-none": getActivePage() === "test" || !visible(),
-        }}
+
         onClick={() => {
           setVisible(false);
-          scrollToTop();
+          window.scrollTo({ top: 0, behavior: "smooth" });
         }}
       >
         <Fa icon="fa-angle-double-up" />

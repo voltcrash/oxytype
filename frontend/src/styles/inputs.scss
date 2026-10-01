@@ -17,24 +17,6 @@ textarea {
   }
 }
 
-.textareaWithCounter {
-  position: relative;
-
-  .char-counter {
-    position: absolute;
-    top: -1.75rem;
-    right: 0.25rem;
-    color: var(--sub-color);
-    user-select: none;
-    &.error {
-      color: var(--error-color);
-    }
-    &.warning {
-      color: color-mix(in srgb, var(--text-color) 50%, var(--error-color) 50%);
-    }
-  }
-}
-
 textarea {
   resize: vertical;
 }
@@ -80,24 +62,6 @@ input[type="range"] {
     box-shadow:
       0 0 0 0.1rem var(--bg-color),
       0 0 0 0.2rem var(--text-color);
-  }
-}
-
-label.checkbox {
-  display: flex;
-  gap: 0.5em;
-  user-select: none;
-}
-
-label.checkboxWithSub {
-  display: grid;
-  grid-template-columns: max-content auto;
-  gap: 0.5em;
-  align-items: center;
-  .sub {
-    font-size: 0.75em;
-    color: var(--sub-color);
-    grid-column: 2;
   }
 }
 

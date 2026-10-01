@@ -1,14 +1,15 @@
+import { updateClassNames } from "../utils/cn";
 import { CaretStyle } from "@oxytype/schemas/configs";
 import { Config } from "../config/store";
-import { getTotalInlineMargin } from "../utils/misc";
 import { isWordRightToLeft } from "../utils/strings";
 import { requestDebouncedAnimationFrame } from "../utils/debounced-animation-frame";
-import { EasingParam, JSAnimation } from "animejs";
-import { ElementWithUtils, qsr } from "../utils/dom";
-import * as TestWords from "../test/test-words";
+import { animate, EasingParam, JSAnimation } from "animejs";
 
-const wordsCache = qsr("#words");
-const wordsWrapperCache = qsr("#wordsWrapper");
+import {
+  getWordsElement as getWordsCache,
+  getWordsWrapperElement as getWordsWrapperCache,
+} from "../states/test-dom";
+import * as TestWords from "../test/test-words";
 
 let lockedMainCaretInTape = true;
 let caretDebug = false;
@@ -16,21 +17,25 @@ let caretDebug = false;
 export function toggleCaretDebug(): void {
   caretDebug = !caretDebug;
   if (!caretDebug) {
-    for (const l of document.querySelectorAll(".word letter")) {
-      l.classList.remove("debugCaret");
-      l.classList.remove("debugCaretTarget");
-      l.classList.remove("debugCaretTarget2");
+    for (const l of getWordsCache().querySelectorAll<HTMLElement>(
+      ".word letter",
+    )) {
+      setClass(l, "debugCaret", false);
+      setClass(l, "debugCaretTarget", false);
+      setClass(l, "debugCaretTarget2", false);
     }
   } else {
-    for (const l of document.querySelectorAll(".word letter")) {
-      l.classList.add("debugCaret");
+    for (const l of getWordsCache().querySelectorAll<HTMLElement>(
+      ".word letter",
+    )) {
+      setClass(l, "debugCaret", true);
     }
   }
 }
 
 export class Caret {
   private id: string;
-  private element: ElementWithUtils;
+  private element: HTMLElement;
   private style: CaretStyle = "default";
   private readyToResetMarginTop: boolean = false;
   private readyToResetMarginLeft: boolean = false;
@@ -41,8 +46,8 @@ export class Caret {
   private marginTopAnimation: JSAnimation | null = null;
   private marginLeftAnimation: JSAnimation | null = null;
 
-  constructor(element: ElementWithUtils, style: CaretStyle) {
-    this.id = element.native.id;
+  constructor(element: HTMLElement, style: CaretStyle) {
+    this.id = element.id;
     this.element = element;
     this.setStyle(style);
     if (this.id === "caret") {
@@ -53,48 +58,52 @@ export class Caret {
   public setStyle(style: CaretStyle): void {
     this.style = style;
     this.resetWidth();
-    this.element.removeClass([
-      "off",
-      "default",
-      "underline",
-      "outline",
-      "block",
-      "carrot",
-      "banana",
-      "monkey",
-    ]);
-    this.element.addClass(style);
+    setClass(
+      this.element,
+      [
+        "off",
+        "default",
+        "underline",
+        "outline",
+        "block",
+        "carrot",
+        "banana",
+        "monkey",
+      ],
+      false,
+    );
+    setClass(this.element, style, true);
   }
 
   public show(): void {
-    this.element.show();
-    this.element.setStyle({ display: "" });
+    setClass(this.element, "hidden", false);
+    Object.assign(this.element.style, { display: "" });
   }
 
   public hide(): void {
-    this.element.hide();
+    setClass(this.element, "hidden", true);
   }
 
   public isHidden(): boolean {
-    return this.element.hasClass("hidden");
+    return this.element.className.split(/\s+/).includes("hidden");
   }
 
   public getWidth(): number {
-    return this.element.getOffsetWidth();
+    return this.element.offsetWidth;
   }
 
   public resetWidth(): void {
-    this.element.setStyle({ width: "" });
+    Object.assign(this.element.style, { width: "" });
   }
 
   public getHeight(): number {
     if (!this.isHidden()) {
-      return this.element.getOffsetHeight();
+      return this.element.offsetHeight;
     }
 
     let height = 0;
     this.show();
-    height = this.element.getOffsetHeight();
+    height = this.element.offsetHeight;
     this.hide();
     return height;
   }
@@ -116,26 +125,26 @@ export class Caret {
     if (options.width !== undefined) {
       newStyle = { ...newStyle, width: `${options.width}px` };
     }
-    this.element.setStyle(newStyle);
+    Object.assign(this.element.style, newStyle);
   }
 
   public startBlinking(): void {
     if (Config.smoothCaret !== "off") {
-      this.element.setStyle({ animationName: "caretFlashSmooth" });
+      Object.assign(this.element.style, { animationName: "caretFlashSmooth" });
     } else {
-      this.element.setStyle({ animationName: "caretFlashHard" });
+      Object.assign(this.element.style, { animationName: "caretFlashHard" });
     }
   }
 
   public stopBlinking(): void {
-    this.element.setStyle({ animationName: "none", opacity: "1" });
+    Object.assign(this.element.style, { animationName: "none", opacity: "1" });
   }
 
   public updateBlinkingAnimation(): void {
     if (Config.smoothCaret === "off") {
-      this.element.setStyle({ animationName: "caretFlashHard" });
+      Object.assign(this.element.style, { animationName: "caretFlashHard" });
     } else {
-      this.element.setStyle({ animationName: "caretFlashSmooth" });
+      Object.assign(this.element.style, { animationName: "caretFlashSmooth" });
     }
   }
 
@@ -146,7 +155,7 @@ export class Caret {
   }
 
   public clearMargins(): void {
-    this.element.setStyle({ marginTop: "", marginLeft: "" });
+    Object.assign(this.element.style, { marginTop: "", marginLeft: "" });
     this.readyToResetMarginTop = false;
     this.readyToResetMarginLeft = false;
     this.cumulativeTapeMarginCorrection = 0;
@@ -181,12 +190,12 @@ export class Caret {
 
     if (options.duration === 0) {
       this.marginLeftAnimation?.cancel();
-      this.element.setStyle({ marginLeft: `${newMarginLeft}px` });
+      Object.assign(this.element.style, { marginLeft: `${newMarginLeft}px` });
       this.readyToResetMarginLeft = true;
       return;
     }
 
-    this.marginLeftAnimation = this.element.animate({
+    this.marginLeftAnimation = animate(this.element, {
       marginLeft: newMarginLeft,
       duration: options.duration,
       ease: options.ease,
@@ -212,7 +221,7 @@ export class Caret {
 
     // in case we have two line jumps in a row
     if (this.readyToResetMarginTop) {
-      this.element.setStyle({
+      Object.assign(this.element.style, {
         marginTop: "0px",
       });
     }
@@ -221,12 +230,14 @@ export class Caret {
 
     if (options.duration === 0) {
       this.marginTopAnimation?.cancel();
-      this.element.setStyle({ marginTop: `${options.newMarginTop}px` });
+      Object.assign(this.element.style, {
+        marginTop: `${options.newMarginTop}px`,
+      });
       this.readyToResetMarginTop = true;
       return;
     }
 
-    this.marginTopAnimation = this.element.animate({
+    this.marginTopAnimation = animate(this.element, {
       marginTop: options.newMarginTop,
       duration: options.duration,
       onComplete: () => {
@@ -264,7 +275,7 @@ export class Caret {
       animation["width"] = options.width;
     }
 
-    this.posAnimation = this.element.animate({
+    this.posAnimation = animate(this.element, {
       ...animation,
       duration: finalDuration,
       ease: options.easing ?? "inOut(1.25)",
@@ -284,7 +295,7 @@ export class Caret {
   }): void {
     if (this.style === "off") return;
     requestDebouncedAnimationFrame(`caret.${this.id}.goTo`, () => {
-      const word = wordsCache.qs(
+      const word = getWordsCache().querySelector<HTMLElement>(
         `.word[data-wordindex="${options.wordIndex}"]`,
       );
       const wordText = TestWords.words.get(options.wordIndex)?.display ?? "";
@@ -334,14 +345,12 @@ export class Caret {
 
       // if the margin animation finished, we reset it here by removing the margin
       // and offsetting the top by the same amount
-      let currentMarginTop = parseFloat(
-        this.element.getStyle().marginTop || "0",
-      );
+      let currentMarginTop = parseFloat(this.element.style.marginTop || "0");
       if (this.readyToResetMarginTop) {
         this.readyToResetMarginTop = false;
-        const currentTop = parseFloat(this.element.getStyle().top || "0");
+        const currentTop = parseFloat(this.element.style.top || "0");
 
-        this.element.setStyle({
+        Object.assign(this.element.style, {
           marginTop: "0px",
           top: `${currentTop + currentMarginTop}px`,
         });
@@ -349,14 +358,12 @@ export class Caret {
       }
 
       // same for marginLeft
-      let currentMarginLeft = parseFloat(
-        this.element.getStyle().marginLeft || "0",
-      );
+      let currentMarginLeft = parseFloat(this.element.style.marginLeft || "0");
       if (this.readyToResetMarginLeft) {
         this.readyToResetMarginLeft = false;
-        const currentLeft = parseFloat(this.element.getStyle().left || "0");
+        const currentLeft = parseFloat(this.element.style.left || "0");
 
-        this.element.setStyle({
+        Object.assign(this.element.style, {
           marginLeft: "0px",
           left: `${currentLeft + currentMarginLeft}px`,
         });
@@ -387,14 +394,16 @@ export class Caret {
   }
 
   private getTargetPositionAndWidth(options: {
-    word: ElementWithUtils;
+    word: HTMLElement;
     letterIndex: number;
     wordText: string;
     side: "beforeLetter" | "afterLetter";
     isLanguageRightToLeft: boolean;
     isDirectionReversed: boolean;
   }): { left: number; top: number; width: number } {
-    const letters = options.word?.qsa("letter");
+    const letters = Array.from(
+      options.word.querySelectorAll<HTMLElement>("letter"),
+    );
 
     if (letters.length === 0) {
       throw new Error(
@@ -412,16 +421,18 @@ export class Caret {
 
     if (caretDebug) {
       if (this.id === "paceCaret") {
-        for (const l of document.querySelectorAll(".word letter")) {
-          l.classList.remove("debugCaretTarget");
-          l.classList.remove("debugCaretTarget2");
-          l.classList.add("debugCaret");
+        for (const l of getWordsCache().querySelectorAll<HTMLElement>(
+          ".word letter",
+        )) {
+          setClass(l, "debugCaretTarget", false);
+          setClass(l, "debugCaretTarget2", false);
+          setClass(l, "debugCaret", true);
         }
-        letter?.addClass("debugCaretTarget");
-        this.element.addClass("debug");
+        setClass(letter, "debugCaretTarget", true);
+        setClass(this.element, "debug", true);
       }
     } else {
-      this.element.removeClass("debug");
+      setClass(this.element, "debug", false);
     }
 
     // in zen, custom or polyglot mode we need to check per-letter
@@ -430,80 +441,82 @@ export class Caret {
       Config.mode === "custom" ||
       Config.funbox.includes("polyglot");
     const [isWordRTL, isFullMatch] = isWordRightToLeft(
-      checkRtlByLetter ? (letter.native.textContent ?? "") : options.wordText,
+      checkRtlByLetter ? (letter.textContent ?? "") : options.wordText,
       options.isLanguageRightToLeft,
       options.isDirectionReversed,
     );
 
     //if the letter is not visible, use the closest visible letter
-    const isLetterVisible = letter.getOffsetWidth() > 0;
+    const isLetterVisible = letter.offsetWidth > 0;
     if (!isLetterVisible) {
       for (let i = options.letterIndex - 1; i >= 0; i--) {
-        const loopLetter = letters[i] as ElementWithUtils;
+        const loopLetter = letters[i] as HTMLElement;
 
         // find the closest visible letter before the current letter
-        if (loopLetter.getOffsetWidth() > 0) {
+        if (loopLetter.offsetWidth > 0) {
           letter = loopLetter;
           break;
         }
       }
       if (caretDebug) {
-        letter.addClass("debugCaretTarget2");
+        setClass(letter, "debugCaretTarget2", true);
       }
     }
 
-    const spaceWidth = getTotalInlineMargin(options.word.native);
+    const spaceWidth = getTotalInlineMargin(options.word);
     let width = spaceWidth;
     if (this.isFullWidth() && options.side === "beforeLetter") {
-      width = letter.getOffsetWidth();
+      width = letter.offsetWidth;
     }
 
     let left = 0;
     let top = 0;
 
     const tapeOffset =
-      wordsWrapperCache.getOffsetWidth() * (Config.tapeMargin / 100);
+      getWordsWrapperCache().offsetWidth * (Config.tapeMargin / 100);
 
     // yes, this is all super verbose, but its easier to maintain and understand
     if (isWordRTL) {
-      if (!checkRtlByLetter && isFullMatch) options.word.addClass("wordRtl");
+      if (!checkRtlByLetter && isFullMatch) {
+        setClass(options.word, "wordRtl", true);
+      }
       let afterLetterCorrection = 0;
       if (options.side === "afterLetter") {
         if (this.isFullWidth()) {
           afterLetterCorrection += spaceWidth * -1;
         } else {
-          afterLetterCorrection += letter.getOffsetWidth() * -1;
+          afterLetterCorrection += letter.offsetWidth * -1;
         }
       }
       if (Config.tapeMode === "off") {
         if (!this.isFullWidth()) {
-          left += letter.getOffsetWidth();
+          left += letter.offsetWidth;
         }
-        left += letter.getOffsetLeft();
-        left += options.word.getOffsetLeft();
+        left += letter.offsetLeft;
+        left += options.word.offsetLeft;
         left += afterLetterCorrection;
       } else if (Config.tapeMode === "word") {
         if (!this.isFullWidth()) {
-          left += letter.getOffsetWidth();
+          left += letter.offsetWidth;
         }
-        left += options.word.getOffsetWidth() * -1;
-        left += letter.getOffsetLeft();
+        left += options.word.offsetWidth * -1;
+        left += letter.offsetLeft;
         left += afterLetterCorrection;
         if (this.isMainCaret && lockedMainCaretInTape) {
-          left += wordsWrapperCache.getOffsetWidth() - tapeOffset;
+          left += getWordsWrapperCache().offsetWidth - tapeOffset;
         } else {
-          left += options.word.getOffsetLeft();
-          left += options.word.getOffsetWidth();
+          left += options.word.offsetLeft;
+          left += options.word.offsetWidth;
         }
       } else if (Config.tapeMode === "letter") {
         if (this.isFullWidth()) {
           left += width * -1;
         }
         if (this.isMainCaret && lockedMainCaretInTape) {
-          left += wordsWrapperCache.getOffsetWidth() - tapeOffset;
+          left += getWordsWrapperCache().offsetWidth - tapeOffset;
         } else {
-          left += letter.getOffsetLeft();
-          left += options.word.getOffsetLeft();
+          left += letter.offsetLeft;
+          left += options.word.offsetLeft;
           left += afterLetterCorrection;
           left += width;
         }
@@ -511,41 +524,41 @@ export class Caret {
     } else {
       let afterLetterCorrection = 0;
       if (options.side === "afterLetter") {
-        afterLetterCorrection += letter.getOffsetWidth();
+        afterLetterCorrection += letter.offsetWidth;
       }
       if (Config.tapeMode === "off") {
-        left += letter.getOffsetLeft();
-        left += options.word.getOffsetLeft();
+        left += letter.offsetLeft;
+        left += options.word.offsetLeft;
         left += afterLetterCorrection;
       } else if (Config.tapeMode === "word") {
-        left += letter.getOffsetLeft();
+        left += letter.offsetLeft;
         left += afterLetterCorrection;
         if (this.isMainCaret && lockedMainCaretInTape) {
           left += tapeOffset;
         } else {
-          left += options.word.getOffsetLeft();
+          left += options.word.offsetLeft;
         }
       } else if (Config.tapeMode === "letter") {
         if (this.isMainCaret && lockedMainCaretInTape) {
           left += tapeOffset;
         } else {
-          left += letter.getOffsetLeft();
-          left += options.word.getOffsetLeft();
+          left += letter.offsetLeft;
+          left += options.word.offsetLeft;
           left += afterLetterCorrection;
         }
       }
     }
 
     //top position
-    top += letter.getOffsetTop();
-    top += options.word.getOffsetTop();
+    top += letter.offsetTop;
+    top += options.word.offsetTop;
 
     if (this.style === "underline") {
       // if style is underline, add the height of the letter to the top
-      top += letter.getOffsetHeight();
+      top += letter.offsetHeight;
     } else {
       // else center vertically in the letter
-      top += (letter.getOffsetHeight() - this.getHeight()) / 2;
+      top += (letter.offsetHeight - this.getHeight()) / 2;
     }
 
     // also center horizontally
@@ -559,4 +572,25 @@ export class Caret {
       width,
     };
   }
+}
+
+function setClass(
+  element: HTMLElement | undefined | null,
+  names: string | string[],
+  enabled: boolean,
+): void {
+  if (element) {
+    element.className = updateClassNames(
+      element.className,
+      Array.isArray(names) ? names.join(" ") : names,
+      enabled,
+    );
+  }
+}
+
+function getTotalInlineMargin(element: HTMLElement): number {
+  const computedStyle = window.getComputedStyle(element);
+  return (
+    parseInt(computedStyle.marginRight) + parseInt(computedStyle.marginLeft)
+  );
 }

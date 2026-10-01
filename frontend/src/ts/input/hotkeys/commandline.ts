@@ -1,6 +1,6 @@
 import { hotkeys } from "../../states/hotkeys";
 import { showModal } from "../../states/modals";
-import { isAnyPopupVisible } from "../../utils/misc";
+import { isAnyPopupVisible } from "../../states/overlay-visibility";
 import { createHotkey } from "./utils";
 
 function openCommandline(): void {

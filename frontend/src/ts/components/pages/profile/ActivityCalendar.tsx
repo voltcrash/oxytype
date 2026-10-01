@@ -1,15 +1,10 @@
 import { TestActivity } from "@oxytype/schemas/users";
-import { createEffect, createSignal, JSXElement, Show } from "solid-js";
+import { createEffect, createSignal, For, JSXElement, Show } from "solid-js";
 
 import { get as getSeverConfiguration } from "../../../ape/server-configuration";
 import { getSnapshot, getTestActivityCalendar } from "../../../db";
-import {
-  clear as clearTestActivity,
-  init as initTestActivity,
-  update,
-} from "../../../elements/test-activity";
 import { TestActivityCalendar } from "../../../elements/test-activity-calendar";
-import { useRefWithUtils } from "../../../hooks/useRefWithUtils";
+import { cn } from "../../../utils/cn";
 import { getFirstDayOfTheWeek } from "../../../utils/date-and-time";
 import SlimSelect, { SlimSelectProps } from "../../ui/SlimSelect";
 
@@ -19,48 +14,68 @@ export function ActivityCalendar(props: {
   isAccountPage?: true;
   testActivity?: TestActivity;
 }): JSXElement {
-  // Refs are assigned by SolidJS via the ref attribute
-  const [elementRef, element] = useRefWithUtils<HTMLElement>();
+  const [view, setView] = createSignal({
+    shown: false,
+    noData: false,
+    title: "",
+    days: [] as ReturnType<TestActivityCalendar["getDays"]>,
+    months: [] as ReturnType<TestActivityCalendar["getMonths"]>,
+    labels: [] as (string | undefined)[],
+  });
+  const updateCalendar = (
+    calendar: TestActivityCalendar | undefined,
+    initial = false,
+  ): void => {
+    if (calendar === undefined) {
+      setView((prev) => ({
+        ...prev,
+        shown: !initial,
+        noData: !initial,
+        days: [],
+        months: [],
+      }));
+      return;
+    }
+    const names = [
+      "sunday",
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+    ];
+    setView({
+      shown: true,
+      noData: false,
+      title: `${calendar.getTotalTests()} tests${props.isAccountPage ? "" : " last 12 months"}`,
+      days: calendar.getDays(),
+      months: calendar.getMonths(),
+      labels: Array.from({ length: 7 }, (_, i) =>
+        i % 2 !== calendar.firstDayOfWeek % 2
+          ? names[(calendar.firstDayOfWeek + i) % 7]
+          : undefined,
+      ),
+    });
+  };
 
-  let calendar: TestActivityCalendar | undefined;
-
-  createEffect(() =>
-    (() => {
-      if (
-        (!props.isAccountPage && props.testActivity === undefined) ||
-        (props.isAccountPage && getSnapshot()?.testActivity === undefined) ||
-        element() === undefined
-      ) {
-        calendar = undefined;
-        clearTestActivity(element()?.native);
-        return;
-      }
-
-      if (props.isAccountPage) {
-        //signals cannot store classes, use the testActivity from the snapshot for now
-        calendar = getSnapshot()?.testActivity;
-      } else {
-        const testActivity = props.testActivity as TestActivity;
-        calendar = new TestActivityCalendar(
-          testActivity.testsByDays,
-          new Date(testActivity.lastDay),
-          firstDayOfTheWeek,
-        );
-      }
-
-      initTestActivity(
-        // oxlint-disable-next-line typescript/no-non-null-assertion
-        element()!.native,
-        calendar,
-      );
-
-      if (!props.isAccountPage) {
-        // oxlint-disable-next-line typescript/no-non-null-assertion
-        const title = element()!.qsr(".top .title");
-        title.appendHtml(" last 12 months");
-      }
-    })(),
-  );
+  createEffect(() => {
+    const activity = props.isAccountPage
+      ? getSnapshot()?.testActivity
+      : props.testActivity;
+    updateCalendar(
+      activity === undefined
+        ? undefined
+        : props.isAccountPage
+          ? (activity as TestActivityCalendar)
+          : new TestActivityCalendar(
+              (activity as TestActivity).testsByDays,
+              new Date((activity as TestActivity).lastDay),
+              firstDayOfTheWeek,
+            ),
+      true,
+    );
+  });
 
   const yearOptions = () => {
     const startYear =
@@ -92,11 +107,16 @@ export function ActivityCalendar(props: {
   const [selectedYear, setSelectedYear] = createSignal("current");
 
   return (
-    <div class="testActivity" ref={elementRef}>
-      <div class="wrapper">
-        <div class="top">
+    <div
+      class={cn(
+        "testActivity flex justify-center rounded-(--roundness) bg-sub-alt p-4 [--font-size:1em] [--gap-size:0.25em] max-[calc(1024px+5rem)]:[--font-size:0.8em] max-[calc(1024px+5rem)]:[--gap-size:0.1em] max-[425px]:hidden [@media(width<=calc(1280px+5rem))_and_(width>calc(1024px+5rem))]:[--gap-size:0.15em] [@media(width<=calc(1536px+5rem))_and_(width>calc(1280px+5rem))]:[--gap-size:0.2em]",
+        !view().shown && "hidden",
+      )}
+    >
+      <div class="wrapper grid w-full max-w-[80em] grid-cols-[min-content_1fr] grid-rows-[min-content_1fr_min-content] gap-[1em] [grid-template-areas:'top_top'_'day_chart'_'empty_month'] max-[calc(1024px+5rem)]:[grid-template-areas:'top_top'_'chart_chart'_'month_month']">
+        <div class="top grid grid-cols-[15rem_1fr_max-content] gap-4 [grid-area:top] [grid-template-areas:'title_title_legend'] has-[.year]:[grid-template-areas:'year_title_legend'] max-[calc(640px+5rem)]:grid-cols-[8rem_1fr_8rem]">
           <Show when={props.isAccountPage}>
-            <div class="year">
+            <div class="year text-(length:--font-size) [grid-area:year] [&_.ss-main]:border-[0.2em] [&_.ss-main]:border-bg">
               <SlimSelect
                 options={yearOptions()}
                 selected={selectedYear()}
@@ -107,31 +127,141 @@ export function ActivityCalendar(props: {
                     const activity = await getTestActivityCalendar(
                       newVal[0]?.value as string,
                     );
-                    // oxlint-disable-next-line typescript/no-non-null-assertion
-                    update(element()!.native, activity);
+                    updateCalendar(activity);
                   },
                 }}
               />
             </div>
           </Show>
-          <div class="title"></div>
-          <div class="legend">
+          <div class="title self-center text-left text-(length:--font-size) text-sub [grid-area:title]">
+            {view().title}
+          </div>
+          <div class="legend flex items-center justify-end gap-(--gap-size) self-center text-sub [grid-area:legend] [&_span]:text-(length:--font-size) [&_span:first-child]:mr-(--gap-size) [&_span:last-child]:ml-(--gap-size)">
             <span>less</span>
-            <div data-level="0"></div>
-            <div data-level="1"></div>
-            <div data-level="2"></div>
-            <div data-level="3"></div>
-            <div data-level="4"></div>
+            <div
+              data-level="0"
+              class={cn(
+                squareClass,
+                "h-[1em] w-[1em] max-[calc(640px+5rem)]:h-auto max-[calc(640px+5rem)]:w-full",
+                levelClass("0"),
+              )}
+            ></div>
+            <div
+              data-level="1"
+              class={cn(
+                squareClass,
+                "h-[1em] w-[1em] max-[calc(640px+5rem)]:h-auto max-[calc(640px+5rem)]:w-full",
+                levelClass("1"),
+              )}
+            ></div>
+            <div
+              data-level="2"
+              class={cn(
+                squareClass,
+                "h-[1em] w-[1em] max-[calc(640px+5rem)]:h-auto max-[calc(640px+5rem)]:w-full",
+                levelClass("2"),
+              )}
+            ></div>
+            <div
+              data-level="3"
+              class={cn(
+                squareClass,
+                "h-[1em] w-[1em] max-[calc(640px+5rem)]:h-auto max-[calc(640px+5rem)]:w-full",
+                levelClass("3"),
+              )}
+            ></div>
+            <div
+              data-level="4"
+              class={cn(
+                squareClass,
+                "h-[1em] w-[1em] max-[calc(640px+5rem)]:h-auto max-[calc(640px+5rem)]:w-full",
+                levelClass("4"),
+              )}
+            ></div>
             <span>more</span>
           </div>
         </div>
-        <div class="activity"></div>
-        <div class="months"></div>
-        <div class="daysFull"></div>
-        <div class="days"></div>
-        <div class="nodata hidden">No data found.</div>
-        <div class="note">Note: All activity data is using UTC time.</div>
+        <div class="activity grid grid-flow-col grid-cols-[repeat(53,1fr)] grid-rows-[repeat(7,1fr)] gap-(--gap-size) [grid-area:chart]">
+          <For each={view().days}>
+            {(day) => (
+              <div
+                class={cn(
+                  squareClass,
+                  "hover:border-2 hover:border-text data-[level=filler]:hover:border-0",
+                  levelClass(day.level),
+                )}
+                data-level={day.level}
+                aria-label={day.label}
+                data-balloon-pos={day.label !== undefined ? "up" : undefined}
+              ></div>
+            )}
+          </For>
+        </div>
+        <div class="months grid grid-cols-[repeat(53,1fr)] text-(length:--font-size) text-sub [grid-area:month]">
+          <For each={view().months}>
+            {(month) => (
+              <div
+                class="w-full text-center"
+                style={{ "grid-column": `span ${month.weeks}` }}
+              >
+                {month.text}
+              </div>
+            )}
+          </For>
+        </div>
+        <div class="daysFull mr-8 grid grid-rows-[repeat(7,1fr)] items-center text-sub [grid-area:day] max-[calc(1280px+5rem)]:hidden max-[calc(1536px+5rem)]:mr-4">
+          <For each={view().labels}>
+            {(label) => (
+              <div>
+                <Show when={label}>
+                  {(text) => (
+                    <div class="text flex h-0 items-center text-(length:--font-size)">
+                      {text()}
+                    </div>
+                  )}
+                </Show>
+              </div>
+            )}
+          </For>
+        </div>
+        <div class="days hidden grid-rows-[repeat(7,1fr)] items-center text-sub [grid-area:day] [@media(width<=calc(1280px+5rem))_and_(width>calc(1024px+5rem))]:grid">
+          <For each={view().labels}>
+            {(label) => (
+              <div>
+                <Show when={label}>
+                  {(text) => (
+                    <div class="text flex h-0 items-center text-(length:--font-size)">
+                      {text().substring(0, 3)}
+                    </div>
+                  )}
+                </Show>
+              </div>
+            )}
+          </For>
+        </div>
+        <div class={cn("nodata [grid-area:chart]", !view().noData && "hidden")}>
+          No data found.
+        </div>
+        <div class="note col-span-2 text-center text-[0.6em] text-sub">
+          Note: All activity data is using UTC time.
+        </div>
       </div>
     </div>
+  );
+}
+
+const squareClass =
+  "aspect-square w-full place-self-center rounded-(--gap-size)";
+function levelClass(level: string): string {
+  return (
+    (
+      {
+        "0": "bg-bg",
+        "1": "bg-main/20",
+        "2": "bg-main/50",
+        "3": "bg-main/75",
+        "4": "bg-main",
+      } as Record<string, string>
+    )[level] ?? ""
   );
 }

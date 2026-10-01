@@ -94,7 +94,7 @@ describe("DataTable", () => {
 
     // Initial
     expect(ageHeaderCell).toHaveAttribute("aria-sort", "none");
-    expect(ageHeaderCell?.querySelector("i")).toHaveClass("fa-fw");
+    expect(ageHeaderCell?.querySelector(".fa-fw")).toHaveClass("fa-fw");
 
     // Descending
     fireEvent.click(ageHeaderButton);

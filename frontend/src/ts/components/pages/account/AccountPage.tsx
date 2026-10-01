@@ -7,10 +7,10 @@ import {
   useResultsLiveQuery,
 } from "../../../collections/results";
 import { SnapshotResult } from "../../../constants/default-snapshot";
+import { useRef } from "../../../hooks/useRef";
 import { getActivePage, isAuthenticated } from "../../../states/core";
 import { hideLoaderBar, showLoaderBar } from "../../../states/loader-bar";
 import { filters, setFilters } from "../../../states/result-filters";
-import { qs } from "../../../utils/dom";
 import { downloadResultsCSV } from "../../../utils/misc";
 import { Advertisement } from "../../common/Advertisement";
 import AsyncContent from "../../common/AsyncContent";
@@ -24,6 +24,7 @@ import { TestStats } from "./TestStats";
 import { VerifyNotice } from "./VerifyNotice";
 
 export function AccountPage(): JSXElement {
+  const [tableRef, tableElement] = useRef<HTMLTableElement>();
   const [limit, setLimit] = createSignal(10);
 
   const [sorting, setSorting] = createSignal<{
@@ -81,11 +82,11 @@ export function AccountPage(): JSXElement {
                 setSelectedResultId(_id);
 
                 requestAnimationFrame(() => {
-                  qs(
-                    `#resultList tbody tr:nth-child(${index + 1})`,
-                  )?.scrollIntoView({
-                    block: "center",
-                  });
+                  tableElement()
+                    ?.querySelector(`tbody tr:nth-child(${index + 1})`)
+                    ?.scrollIntoView({
+                      block: "center",
+                    });
                 });
               }}
             />
@@ -120,6 +121,7 @@ export function AccountPage(): JSXElement {
               {({ resultsQueryData }) => (
                 <>
                   <Table
+                    ref={tableRef}
                     data={resultsQueryData().slice(0, limit())}
                     onSortingChange={(val) => setSorting(val)}
                     selectedRowId={selectedResultId}

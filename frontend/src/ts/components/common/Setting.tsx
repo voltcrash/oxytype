@@ -1,11 +1,17 @@
-import { JSXElement, ParentProps, Show } from "solid-js";
+import { JSXElement, ParentProps, Show, onMount, onCleanup } from "solid-js";
 import { z } from "zod";
 import { serialize } from "zod-urlsearchparams";
 
+import { useRef } from "../../hooks/useRef";
 import {
   showErrorNotification,
   showSuccessNotification,
 } from "../../states/notifications";
+import {
+  getHighlightedSetting,
+  setHighlightedSetting,
+  registerSettingHighlight,
+} from "../../states/settings-highlight";
 import { cn } from "../../utils/cn";
 import { Button } from "./Button";
 import { FaProps } from "./Fa";
@@ -45,14 +51,33 @@ export type SettingProps = {
   );
 
 export function Setting(props: SettingProps): JSXElement {
+  const [ref, element] = useRef<HTMLDivElement>();
+  onMount(() => {
+    if (props.key === undefined) return;
+    const key = props.key;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    onCleanup(
+      registerSettingHighlight(key, () => {
+        timer = setTimeout(() => {
+          element()?.scrollIntoView({ block: "center", behavior: "auto" });
+          setHighlightedSetting(key);
+        }, 250);
+      }),
+    );
+    onCleanup(() => clearTimeout(timer));
+  });
   const breakpoints = () => props.breakpoints ?? "normal";
   return (
     <div
+      ref={ref}
       class={cn(
         "group grid gap-2",
         "-m-4 rounded-double p-4",
         // "animate-[ring-flash_4s_ease-in_forwards]",
         props.class,
+        props.key !== undefined &&
+          getHighlightedSetting() === props.key &&
+          "settings-highlight",
       )}
       {...("key" in props && props.key !== undefined
         ? { "data-setting-key": props.key }

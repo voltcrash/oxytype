@@ -1,6 +1,7 @@
 import { JSXElement } from "solid-js";
 
 import { ViewApeKeyModal } from "./account-settings/ViewApeKeyModal";
+import { Commandline } from "./Commandline";
 import { ContactModal } from "./ContactModal";
 import { CookiesModal } from "./CookiesModal";
 import { CustomTestDurationModal } from "./CustomTestDurationModal";
@@ -12,6 +13,7 @@ import { GoogleSignupModal } from "./GoogleSignUpModal";
 import { LastSignedOutResultModal } from "./LastSignedOutResultModal";
 import { MobileTestConfigModal } from "./MobileTestConfigModal";
 import { PbTablesModal } from "./PbTablesModal";
+import { PractiseWordsModal } from "./PractiseWordsModal";
 import { AddPresetModal } from "./preset/AddPresetModal";
 import { EditPresetModal } from "./preset/EditPresetModal";
 import { QuoteRateModal } from "./QuoteRateModal";
@@ -30,6 +32,7 @@ export function Modals(): JSXElement {
     <>
       <VersionHistoryModal />
       <ContactModal />
+      <Commandline />
       <RegisterCaptchaModal />
       <SupportModal />
       <SimpleModal />
@@ -52,6 +55,7 @@ export function Modals(): JSXElement {
       <ForgotPasswordModal />
       <UserReportModal />
       <EditResultTagsModal />
+      <PractiseWordsModal />
     </>
   );
 }

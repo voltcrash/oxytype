@@ -1,11 +1,13 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <link rel="stylesheet" href="/css/fa.min.css" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>404 Not Found | Oxytype</title>
-    <link rel="stylesheet" href="styles/standalone.scss" />
     <link rel="icon" type="image/svg+xml" href="/images/favicon/oxytype.svg" />
+    <title>404 Not Found | Oxytype</title>
+    <link rel="stylesheet" href="styles/standalone-solid.scss" />
+    <link rel="stylesheet" href="styles/tailwind.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
@@ -22,114 +24,9 @@
     <meta name="twitter:title" content="404 Not Found | Oxytype" />
     <meta name="twitter:card" content="summary" />
   </head>
-  <body>
-    <script type="module" async>
-      import { loadCSS } from "./ts/utils/misc";
-      loadCSS("/css/fa.min.css", true);
-      document.getElementById("page404").classList.remove("hidden");
-      document.getElementById("page404").classList.remove("hidden");
-      document.querySelector("header").classList.add("focus");
-      document.title = "404 Not Found | Oxytype";
-    </script>
+  <body class="leading-[1.25]">
     <load src="html/warnings.html" />
-    <style>
-      h1 {
-        font-weight: unset;
-        font-size: 2rem;
-        margin-top: 3rem;
-        color: var(--sub-color);
-      }
-      header #logo .icon svg path {
-        fill: var(--sub-color);
-      }
-      a.button {
-        border-radius: var(--roundness);
-        text-decoration: none;
-        background: var(--sub-alt-color);
-        color: var(--text-color);
-        &:hover {
-          background: var(--text-color);
-          color: var(--bg-color);
-        }
-      }
-      .page404 {
-        display: grid;
-        justify-content: center;
-        height: 100%;
-        align-content: center;
-      }
-      .page404 .content {
-        display: grid;
-        grid-auto-flow: column;
-        gap: 4rem;
-        grid-template-columns: 300px 300px;
-      }
-      .page404 .image {
-        width: 100%;
-        align-self: center;
-        background-image: url("/images/oxytype-404.svg");
-        aspect-ratio: 300/199;
-        background-size: contain;
-        border-radius: var(--roundness);
-      }
-
-      .page404 .title {
-        font-size: 5rem;
-        line-height: 4rem;
-        /* margin: -3rem; */
-        color: var(--main-color);
-        align-self: center;
-      }
-
-      .page404 .side {
-        justify-items: center;
-        display: grid;
-        gap: 1rem;
-        text-align: center;
-      }
-      .page404 .big {
-        font-size: 10rem;
-        line-height: 10rem;
-        color: var(--sub-color);
-      }
-
-      .page404 .button {
-        padding: 1rem 2rem;
-        width: max-content;
-      }
-    </style>
-    <div id="app" class="content-grid focus">
-      <header class="focus">
-        <a id="logo" href="/" router-link="">
-          <div class="icon">
-            <img
-              src="/images/favicon/oxytype.svg"
-              alt=""
-              width="40"
-              height="40"
-            />
-          </div>
-          <h1 class="text">
-            <div class="top">type with focus</div>
-            oxytype
-          </h1>
-        </a>
-      </header>
-      <main style="height: 100%">
-        <div class="page page404 hidden" id="page404">
-          <div class="content">
-            <div class="image"></div>
-            <div class="side">
-              <div class="title">404</div>
-              <div>Ooops! Looks like this page or resource doesn't exist.</div>
-              <a href="/" class="button" router-link>
-                <i class="fas fa-home"></i>
-                Go Home
-              </a>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
+    <div id="app" class="content-grid focus"></div>
+    <script type="module" src="/ts/not-found.tsx"></script>
   </body>
 </html>

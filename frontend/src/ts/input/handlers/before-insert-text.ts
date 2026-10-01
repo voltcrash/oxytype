@@ -4,7 +4,7 @@ import * as TestWords from "../../test/test-words";
 import { isFunboxActiveWithProperty } from "../../test/funbox/list";
 import { getInputElementValue } from "../input-element";
 import { isAwaitingNextWord } from "../state";
-import * as SlowTimer from "../../legacy-states/slow-timer";
+import * as SlowTimer from "../../states/slow-timer";
 import {
   isTestRestarting,
   getActiveWordIndex,

@@ -24,6 +24,7 @@ type Sorting = {
 };
 
 export function Table<M extends Mode>(props: {
+  ref?: (element: HTMLTableElement) => void;
   data: SnapshotResult<M>[];
   onSortingChange: (sorting: Sorting) => void;
   selectedRowId: Accessor<string | null>;
@@ -52,6 +53,7 @@ export function Table<M extends Mode>(props: {
       </Show>
       <DataTable
         id="resultList"
+        ref={props.ref}
         onSortingChange={(val) => {
           if (val.length === 0) {
             props.onSortingChange({ field: "timestamp", direction: "desc" });
