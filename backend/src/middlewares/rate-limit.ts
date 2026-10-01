@@ -17,11 +17,14 @@ export const REQUEST_MULTIPLIER = isDevEnvironment() ? 100 : 1;
 
 export function getClientIp(c: ApiContext): string {
   // One trusted proxy: the rightmost forwarded address is the immediate client.
+  const forwarded = c.req.header("x-forwarded-for")?.split(",").pop()?.trim();
+  const candidates = [
+    c.req.header("cf-connecting-ip"),
+    forwarded,
+    c.env.incoming?.socket.remoteAddress,
+  ];
   return (
-    c.req.header("cf-connecting-ip") ||
-    c.req.header("x-forwarded-for")?.split(",").at(-1)?.trim() ||
-    c.env.incoming?.socket.remoteAddress ||
-    "255.255.255.255"
+    candidates.find((ip) => ip !== undefined && ip !== "") ?? "255.255.255.255"
   );
 }
 

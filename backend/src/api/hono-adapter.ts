@@ -62,8 +62,9 @@ export function createHonoEndpoints<T extends AppRouter>(
   ): void {
     for (const [key, route] of Object.entries(schema)) {
       const entry = implementation[key];
-      if (entry === undefined)
+      if (entry === undefined) {
         throw new Error(`Missing route implementation: ${key}`);
+      }
       if (!isAppRoute(route)) {
         registerRouter(route, entry as RuntimeRouter);
         continue;
@@ -71,7 +72,7 @@ export function createHonoEndpoints<T extends AppRouter>(
       const endpoint = entry as RuntimeRoute;
       app.on(
         route.method,
-        route.path,
+        route.path.replace(/\/$/, "") || "/",
         async (c, next) => {
           const req = c.get("request");
           req.tsRestRoute = route;

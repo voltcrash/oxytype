@@ -50,7 +50,7 @@ vi.spyOn(ApeKeys, "getApeKey").mockResolvedValue(mockApeKey);
 vi.spyOn(ApeKeys, "updateLastUsedOn").mockResolvedValue();
 const isDevModeMock = vi.spyOn(Misc, "isDevEnvironment");
 let mockRequest: Partial<HttpRequest>;
-let nextFunction: ReturnType<typeof vi.fn>;
+let nextFunction: ReturnType<typeof vi.fn<(error?: unknown) => unknown>>;
 
 describe("middlewares/auth", () => {
   beforeEach(async () => {

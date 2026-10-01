@@ -10,8 +10,9 @@ export const etagMiddleware: ApiMiddleware = async (c, next) => {
     response.status === 204 ||
     response.status === 304 ||
     response.body === null
-  )
+  ) {
     return;
+  }
   const etag =
     response.headers.get("etag") ??
     generateETag(Buffer.from(await response.clone().arrayBuffer()), undefined);

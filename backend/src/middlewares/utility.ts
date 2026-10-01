@@ -7,7 +7,7 @@ import { recordClientVersion as prometheusRecordClientVersion } from "../utils/p
 export function recordClientVersion(): ApiMiddleware {
   return async (c, next) => {
     const version =
-      c.req.header("x-client-version") || c.req.header("client-version");
+      c.req.header("x-client-version") ?? c.req.header("client-version");
     prometheusRecordClientVersion(version ?? "unknown");
     await next();
   };
@@ -26,5 +26,5 @@ export function onlyAvailableOnDev(): ApiMiddleware {
 }
 
 export function getMetadata(req: HttpRequest): EndpointMetadata {
-  return (req.tsRestRoute?.metadata ?? {}) as EndpointMetadata;
+  return req.tsRestRoute?.metadata ?? {};
 }

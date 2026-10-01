@@ -122,7 +122,7 @@ function handleErrorResponse(
   data?: ErrorData,
 ): Response {
   return c.newResponse(JSON.stringify({ message, data: data ?? null }), {
-    status,
+    status: status as import("hono/utils/http-status").StatusCode,
     statusText: isCustomCode(status) ? message : undefined,
     headers: { "Content-Type": "application/json; charset=utf-8" },
   });

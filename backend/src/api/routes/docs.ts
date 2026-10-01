@@ -15,15 +15,15 @@ for (const [route, file] of [
   ["/public", "public.html"],
   ["/", "public.html"],
   ["/public.json", "public.json"],
-]) {
+] as const) {
   router.get(
-    route as string,
+    route,
     async (c, next) => {
-      if (file?.endsWith(".html")) c.header("Content-Security-Policy", CSP);
+      if (file.endsWith(".html")) c.header("Content-Security-Policy", CSP);
       await next();
     },
     serveStatic({
-      path: join(root, file as string),
+      path: join(root, file),
       onNotFound: () => {
         throw new MonkeyError(404, "API documentation file not found");
       },

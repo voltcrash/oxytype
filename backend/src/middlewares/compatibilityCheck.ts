@@ -5,6 +5,6 @@ import {
 import { ApiMiddleware } from "../api/http";
 
 export const compatibilityCheckMiddleware: ApiMiddleware = async (c, next) => {
-  c.header(COMPATIBILITY_CHECK_HEADER, COMPATIBILITY_CHECK);
+  c.header(COMPATIBILITY_CHECK_HEADER, String(COMPATIBILITY_CHECK));
   await next();
 };

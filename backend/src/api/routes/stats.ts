@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { routePath } from "hono/route";
 import { basicAuth } from "hono/basic-auth";
 import { Counter, Histogram, register } from "prom-client";
 import { performance } from "perf_hooks";
@@ -34,7 +35,7 @@ export function addStatsRoutes(app: Hono<ApiEnv>): void {
     const labels = {
       path:
         c.get("request")?.tsRestRoute?.path ??
-        (c.res.status === 404 ? "unmatched" : c.req.routePath),
+        (c.res.status === 404 ? "unmatched" : routePath(c)),
       method: c.req.method,
       status: String(c.res.status),
     };
@@ -47,7 +48,8 @@ export function addStatsRoutes(app: Hono<ApiEnv>): void {
   const authenticate = basicAuth({
     realm: "Oxytype API stats",
     verifyUser: (username, password) =>
-      Boolean(process.env["STATS_USERNAME"] && process.env["STATS_PASSWORD"]) &&
+      (process.env["STATS_USERNAME"] ?? "") !== "" &&
+      (process.env["STATS_PASSWORD"] ?? "") !== "" &&
       username === process.env["STATS_USERNAME"] &&
       password === process.env["STATS_PASSWORD"],
   });

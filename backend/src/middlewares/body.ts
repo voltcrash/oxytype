@@ -41,8 +41,9 @@ export const parseRequestBody: ApiMiddleware = async (c, next) => {
       br: brotliDecompressSync,
     }[encoding];
     if (encoding !== "identity") {
-      if (decompress === undefined)
+      if (decompress === undefined) {
         throw new MonkeyError(415, "Unsupported content encoding");
+      }
       try {
         bytes = decompress(bytes, { maxOutputLength: MAX_BODY_SIZE });
       } catch (error) {
@@ -57,12 +58,14 @@ export const parseRequestBody: ApiMiddleware = async (c, next) => {
     if (rawBody.length > 0) {
       if (type === "application/json") {
         // Match strict JSON parsing: primitives are not accepted as request bodies.
-        if (!/^[\s\uFEFF]*[\[{]/.test(rawBody))
+        if (!/^[\s\uFEFF]*[\[{]/.test(rawBody)) {
           throw new SyntaxError("Invalid JSON request body");
+        }
         c.set("body", JSON.parse(rawBody.replace(/^\uFEFF/, "")) as unknown);
       } else {
-        if (rawBody.split("&").length > 1000)
+        if (rawBody.split("&").length > 1000) {
           throw new MonkeyError(413, "Too many request parameters");
+        }
         c.set(
           "body",
           qs.parse(rawBody, {

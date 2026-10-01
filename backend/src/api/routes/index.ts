@@ -91,6 +91,7 @@ export function addApiRoutes(app: Hono<ApiEnv>): void {
       return c.json({ message: "Server is down for maintenance" }, 503);
     }
     await next();
+    return;
   });
   app.get("/", (c) =>
     c.json(

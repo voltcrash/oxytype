@@ -37,7 +37,6 @@ export function buildApp(): Hono<ApiEnv> {
       contentSecurityPolicy: {
         defaultSrc: ["'self'"],
         baseUri: ["'self'"],
-        blockAllMixedContent: [],
         fontSrc: ["'self'", "https:", "data:"],
         frameAncestors: ["'self'"],
         imgSrc: ["'self'", "data:"],

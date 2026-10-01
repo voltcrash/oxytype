@@ -35,7 +35,7 @@ export function buildAgentLog(req: MonkeyRequest): AgentLog {
     ip:
       (req.raw.headers["cf-connecting-ip"] as string) ||
       (req.raw.headers["x-forwarded-for"] as string) ||
-      (req.raw.ip as string) ||
+      req.raw.ip ||
       "255.255.255.255",
     agent: `${agent.os.name} ${agent.os.version} ${agent.browser.name} ${agent.browser.version}`,
   };

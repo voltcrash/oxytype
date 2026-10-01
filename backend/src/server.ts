@@ -6,8 +6,7 @@ import {
   updateFromConfigurationFile,
 } from "./init/configuration";
 import app from "./app";
-import { Server } from "http";
-import { serve } from "@hono/node-server";
+import { serve, ServerType } from "@hono/node-server";
 import { version } from "./version";
 import { recordServerVersion } from "./utils/prometheus";
 import * as RedisClient from "./init/redis";
@@ -21,7 +20,7 @@ import { createIndicies as blocklistDbSetup } from "./dal/blocklist";
 import { createIndicies as connectionsDbSetup } from "./dal/connections";
 import { getErrorMessage } from "./utils/error";
 
-async function bootServer(port: number): Promise<Server> {
+async function bootServer(port: number): Promise<ServerType> {
   try {
     Logger.info(`Starting server version ${version}`);
     Logger.info(`Starting server in ${process.env["MODE"]} mode`);
