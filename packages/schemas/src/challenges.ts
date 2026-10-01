@@ -31,7 +31,6 @@ export const ChallengeNameSchema = z.enum(
     "crosstalk",
     "bees",
     "getOffMySwamp",
-    "lookAtMeIAmTheDeveloperNow",
     "beLikeWater",
     "rollercoaster",
     "oneHourMirror",
