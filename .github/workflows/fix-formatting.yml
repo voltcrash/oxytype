@@ -1,7 +1,7 @@
 name: Fix formatting
 
 env:
-  PNPM_VERSION: "11.21.0"
+  PNPM_VERSION: "12.8.1"
   NODE_VERSION: "24.21.0"
 
 permissions:
@@ -66,6 +66,6 @@ jobs:
           commit_message: "fix formatting"
 
       - name: Remove label
-        uses: actions-ecosystem/action-remove-labels@v1
+        uses: actions-ecosystem/action-remove-labels@v1.3.0
         with:
           labels: format
