@@ -13,7 +13,6 @@ export type Challenge = {
   display: string;
   description: string;
   isHidden?: boolean;
-  discordRoleId: string;
   category:
     | "other"
     | "endurance"
@@ -81,7 +80,6 @@ export type ChallengeSettings = {
 const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   "69": {
     display: "6969696969",
-    discordRoleId: "749505965174292511",
     category: "other",
     description:
       "Complete a 69-second test and achieve 69 WPM, 69 raw, 69% accuracy, and 69% consistency.",
@@ -101,7 +99,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   oneHourWarrior: {
     display: "One Hour Warrior",
-    discordRoleId: "728371749737201855",
     category: "endurance",
     description: "Complete a one-hour test.",
     settings: {
@@ -113,7 +110,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   doubleDown: {
     display: "Double Down",
-    discordRoleId: "732008008514535544",
     category: "endurance",
     description: "Complete a two-hour test.",
     settings: {
@@ -125,7 +121,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   tripleTrouble: {
     display: "Triple Trouble",
-    discordRoleId: "732008047618293762",
     category: "endurance",
     description: "Complete a three-hour test.",
     settings: {
@@ -137,7 +132,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   quad: {
     display: "Quaaaaad",
-    discordRoleId: "736215666352455801",
     category: "endurance",
     description: "Complete a four-hour test.",
     settings: {
@@ -149,7 +143,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   "8Ball": {
     display: "8 Ball",
-    discordRoleId: "736528159956271126",
     category: "endurance",
     description: "Complete an eight-hour test.",
     settings: {
@@ -160,7 +153,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   theBig12: {
     display: "The Big 12",
-    discordRoleId: "740532256388546581",
     category: "endurance",
     description: "Complete a twelve-hour test.",
     settings: {
@@ -171,7 +163,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   "1Day": {
     display: "1 Day",
-    discordRoleId: "751801958511149057",
     category: "endurance",
     description: "Complete a twenty-four-hour test.",
     settings: {
@@ -182,7 +173,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   bigramSalad: {
     display: "Bigram Salad",
-    discordRoleId: "818535054145093652",
     category: "speed",
     description:
       "Get 100 WPM on a randomized, 100-word custom test with the words list: to of in it is as at be we he so on an or do if up by my go.",
@@ -201,7 +191,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   antidiseWhat: {
     display: "Antidise-what?",
-    discordRoleId: "782006507360616449",
     category: "script",
     description: "Get at least 200 wpm typing antidisestablishmentarianism.",
     settings: {
@@ -219,7 +208,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   developd: {
     display: "Develop'd",
-    discordRoleId: "735964917877964932",
     category: "script",
     description: "Type develop one thousand times.",
     settings: {
@@ -236,7 +224,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   slowAndSteady: {
     display: "Slow and Steady",
-    discordRoleId: "782005061935956008",
     category: "speed",
     description:
       "Complete a 5-minute test with exactly 60 WPM without using the live WPM or pace caret.",
@@ -252,7 +239,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   speedSpacer: {
     display: "Speed Spacer",
-    discordRoleId: "755244049446731856",
     category: "speed",
     description:
       "Get 100 wpm on a randomised custom test with the input: a b c d e f g h i j k l m n o p q r s t u v w x y z (the alphabet) and a word count of 100.",
@@ -271,7 +257,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   iveGotThePower: {
     display: "I've got the POWER",
-    discordRoleId: "764879734873915402",
     category: "speed",
     description: "Get 400 WPM while typing power 10 times.",
     settings: {
@@ -289,7 +274,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   accuracyExpert: {
     display: "Accuracy Expert",
-    discordRoleId: "751168451263070259",
     category: "accuracy",
     description: "Complete a 10-minute Master mode test.",
     settings: {
@@ -306,7 +290,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   accuracyMaster: {
     display: "Accuracy Master",
-    discordRoleId: "751168567432708239",
     category: "accuracy",
     description: "Complete a 20-minute Master mode test.",
     settings: {
@@ -323,7 +306,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   accuracyGod: {
     display: "Accuracy God",
-    discordRoleId: "751168657626890361",
     category: "accuracy",
     description: "Complete a 30-minute Master mode test.",
     settings: {
@@ -340,7 +322,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   inAGalaxyFarFarAway: {
     display: "In a galaxy far, far away",
-    discordRoleId: "740004324301602907",
     category: "script",
     description:
       "Type out the entire Star Wars Episode 4 script with punctuation while watching the movie simultaneously.",
@@ -352,7 +333,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   beepBoop: {
     display: "Beep Boop",
-    discordRoleId: "813076265145729024",
     category: "script",
     description:
       "Type the beepboop script with 100% accuracy and at least 45 WPM.",
@@ -369,7 +349,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   whosYourDaddy: {
     display: "Who's your daddy?",
-    discordRoleId: "742171915405361204",
     category: "script",
     description:
       "Type out the entire Star Wars Episode 5 script with punctuation while watching the movie simultaneously.",
@@ -381,7 +360,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   itsATrap: {
     display: "It's a trap!!",
-    discordRoleId: "744325174668820550",
     category: "script",
     description:
       "Type out the entire Star Wars Episode 6 script with punctuation while watching the movie simultaneously.",
@@ -393,7 +371,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   jolly: {
     display: "Jolly",
-    discordRoleId: "768497412548329563",
     category: "script",
     description: "Type the Jolly script with a minimum of 70 wpm.",
     settings: {
@@ -406,7 +383,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   gottaCatchEmAll: {
     display: "Gotta catch 'em all",
-    discordRoleId: "767069340599975998",
     category: "script",
     description: "Type out the names of all Pokemon.",
     settings: {
@@ -417,7 +393,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   rapGod: {
     display: "Rap God",
-    discordRoleId: "743844891045396603",
     category: "script",
     description:
       "Type out the lyrics of Eminem's Rap God at a minimum of 85 WPM and 90% accuracy, including punctuation.",
@@ -431,7 +406,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   navySeal: {
     display: "Navy Seal",
-    discordRoleId: "762345535969165342",
     category: "script",
     description:
       "Type out the Navy Seal copy pasta with 100% accuracy and minimum 60 WPM.",
@@ -445,7 +419,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   littleChef: {
     display: "Little Chef",
-    discordRoleId: "763544714028122153",
     category: "script",
     description:
       "Type out the entire Ratatouille script while watching the movie simultaneously.",
@@ -453,7 +426,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   crosstalk: {
     display: "(CROSSTALK)",
-    discordRoleId: "761276009664217129",
     category: "script",
     description:
       "Type out the entire transcript of the first 2020 Presidential Debate.",
@@ -461,7 +433,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   bees: {
     display: "Bees!!!",
-    discordRoleId: "739636003182084307",
     category: "script",
     description:
       "Type out the entire Bee Movie script while watching the movie simultaneously.",
@@ -469,7 +440,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   getOffMySwamp: {
     display: "Get off my swamp",
-    discordRoleId: "757346966987342026",
     category: "script",
     description:
       "Type out the entire Shrek script with punctuation while watching the movie simultaneously.",
@@ -477,7 +447,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   beLikeWater: {
     display: "Be like water",
-    discordRoleId: "740568679485276201",
     category: "funbox",
     description:
       "Achieve at least 50 WPM in all three layouts in a 60-second time test using the layoutfluid mode. Layouts must be unique (e.g., QWERTY, Colemak, Dvorak).",
@@ -489,7 +458,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   rollercoaster: {
     display: "Rollercoaster",
-    discordRoleId: "736032495526740001",
     category: "funbox",
     description:
       "Complete at least a one-hour test using the round round baby mode.",
@@ -505,7 +473,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   oneHourMirror: {
     display: "ɿoɿɿim ɿυoʜ ɘno",
-    discordRoleId: "737385182998429757",
     category: "funbox",
     description: "Complete at least a one-hour test using the mirror mode.",
     settings: {
@@ -517,7 +484,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   chooChoo: {
     display: "Choo choo",
-    discordRoleId: "739306439574683710",
     category: "funbox",
     description: "Complete at least a one-hour test using choo choo mode.",
     settings: {
@@ -529,7 +495,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   mnemonist: {
     display: "Mnemonist",
-    discordRoleId: "782005606852067328",
     category: "funbox",
     description:
       "Achieve 100+ WPM with 100% accuracy on a 25-word test using the memory funbox.",
@@ -546,7 +511,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   earfquake: {
     display: "Earfquake",
-    discordRoleId: "740730587429601291",
     category: "funbox",
     description:
       "Complete at least a one-hour test using the earthquake funbox mode.",
@@ -559,7 +523,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   simonSez: {
     display: "Simon Sez",
-    discordRoleId: "742128871825997914",
     category: "funbox",
     description:
       "Complete at least a one-hour test using the simon says funbox mode.",
@@ -572,7 +535,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   accountant: {
     display: "Accountant",
-    discordRoleId: "743962178821816391",
     category: "funbox",
     description:
       "Complete at least a one-hour test using the 58008 funbox mode.",
@@ -585,7 +547,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   hidden: {
     display: "Hidden",
-    discordRoleId: "782006137742557194",
     category: "funbox",
     description:
       "Achieve 100+ WPM using the read ahead funbox on a 60-second test.",
@@ -603,7 +564,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   iCanSeeTheFuture: {
     display: "I can see the future",
-    discordRoleId: "814877508008411226",
     category: "funbox",
     description:
       "Achieve 100+ WPM using the read ahead hard funbox on a 60-second test.",
@@ -621,7 +581,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   whatAreWordsAtThisPoint: {
     display: "What are words at this point?",
-    discordRoleId: "744209241396740176",
     category: "funbox",
     description:
       "Complete at least a one-hour test using the gibberish funbox mode.",
@@ -634,7 +593,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   specials: {
     display: "Specials",
-    discordRoleId: "744209452714033162",
     category: "funbox",
     description:
       "Complete at least a one-hour test using the specials funbox mode.",
@@ -647,7 +605,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   aeiou: {
     display: "Aeiou.",
-    discordRoleId: "744318102766092362",
     category: "funbox",
     description: "Complete at least a one-hour test using the tts funbox mode.",
     settings: {
@@ -659,7 +616,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   asciiWarrior: {
     display: "ASCII warrior",
-    discordRoleId: "746142791326760980",
     category: "funbox",
     description:
       "Complete at least a one-hour test using the ascii funbox mode.",
@@ -672,7 +628,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   iKiNdAlIkEhOwInEfFiCiEnTqWeRtYiS: {
     display: "i KINda LikE HoW inEFFICIeNt QwErtY Is.",
-    discordRoleId: "760999194525171724",
     category: "funbox",
     description:
       "Complete at least a one-hour test using the randomcase funbox mode.",
@@ -685,7 +640,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   oneNauseousMonkey: {
     display: "One Nauseous Monkey",
-    discordRoleId: "760930262740631633",
     category: "funbox",
     description:
       "Complete at least a one-hour test using the nausea funbox mode.",
@@ -698,14 +652,12 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   thumbWarrior: {
     display: "Thumb warrior",
-    discordRoleId: "761794585109200906",
     category: "other",
     description: "Complete a one-hour test using only your thumbs.",
     settings: { type: "customTime", parameters: { time: 3600 } },
   },
   mouseWarrior: {
     display: "Mouse warrior",
-    discordRoleId: "744580294442614790",
     category: "other",
     description:
       "Complete a one-hour test using only the on-screen keyboard. Funbox modes are not allowed.",
@@ -713,14 +665,12 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   mobileWarrior: {
     display: "Mobile warrior",
-    discordRoleId: "744723801526370407",
     category: "other",
     description: "Complete a one-hour test on mobile.",
     settings: { type: "customTime", parameters: { time: 3600 } },
   },
   upsideDown: {
     display: "uʍop ǝpᴉsdn",
-    discordRoleId: "782725716114014237",
     category: "other",
     description:
       "Achieve at least 60 WPM on a one-minute test with your keyboard upside down.",
@@ -728,7 +678,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   oneArmedBandit: {
     display: "One armed bandit",
-    discordRoleId: "765919192557682708",
     category: "other",
     description:
       "Complete a one-hour or 10k words test (whichever comes sooner, using an external timer) using a one-handed words list (either left or right) for your layout.",
@@ -736,7 +685,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   englishMaster: {
     display: "English master",
-    discordRoleId: "751166528824672396",
     category: "other",
     description:
       "Complete a one-hour test using English 10k language with punctuation and numbers enabled.",
@@ -752,14 +700,12 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
   },
   feetWarrior: {
     display: "Feet warrior",
-    discordRoleId: "751953592860147822",
     category: "other",
     description: "Complete a one-hour test using your feet. Don't ask me why.",
     settings: { type: "customTime", parameters: { time: 3600 } },
   },
   wingdings: {
     display: "Ten Words of Pain",
-    discordRoleId: "863192575984140338",
     category: "other",
     description:
       "Complete a 10-word Master mode test using the Wingdings custom font.",
