@@ -579,8 +579,8 @@ importers:
         specifier: 1.2.0
         version: 1.2.0
       '@fortawesome/fontawesome-free':
-        specifier: 5.15.4
-        version: 5.15.4
+        specifier: 7.3.1
+        version: 7.3.1
       '@oxytype/oxlint-config':
         specifier: workspace:*
         version: link:../packages/oxlint-config
@@ -636,8 +636,8 @@ importers:
         specifier: 3.0.6
         version: 3.0.6
       '@types/subset-font':
-        specifier: 1.4.3
-        version: 1.4.3
+        specifier: 2.3.0
+        version: 2.3.0
       '@types/throttle-debounce':
         specifier: 5.0.2
         version: 5.0.2
@@ -667,7 +667,7 @@ importers:
         version: 15.32.1(@types/node@24.19.0)(encoding@0.1.13)(supports-color@10.2.2)
       fontawesome-subset:
         specifier: 4.6.0
-        version: 4.6.0(@fortawesome/fontawesome-free@5.15.4)
+        version: 4.6.0(@fortawesome/fontawesome-free@7.3.1)
       happy-dom:
         specifier: 20.8.9
         version: 20.8.9
@@ -696,8 +696,8 @@ importers:
         specifier: 1.9.15
         version: 1.9.15
       subset-font:
-        specifier: 2.3.0
-        version: 2.3.0
+        specifier: 2.9.0
+        version: 2.9.0
       tailwindcss:
         specifier: 4.3.3
         version: 4.3.3
@@ -2528,8 +2528,8 @@ packages:
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
 
-  '@fortawesome/fontawesome-free@5.15.4':
-    resolution: {integrity: sha512-eYm8vijH/hpzr/6/1CJ/V/Eb1xQFW2nnUKArb3z+yUWv7HTwj6M7SP957oMjfZjAHU6qpoNc2wQvIxBLWYa/Jg==}
+  '@fortawesome/fontawesome-free@7.3.1':
+    resolution: {integrity: sha512-wmglKKPDIkgV3aWlZzWECCPoGIkYCulzBwxG9+w7rc5BGapZ6cPMpoPOT8k36J0Ni7PPX6c/rsoMWfS4d1MUMg==}
     engines: {node: '>=6'}
 
   '@google-cloud/cloud-sql-connector@1.3.3':
@@ -4913,8 +4913,8 @@ packages:
   '@types/stylis@4.2.7':
     resolution: {integrity: sha512-VgDNokpBoKF+wrdvhAAfS55OMQpL6QRglwTwNC3kIgBrzZxA4WsFj+2eLfEA/uMUDzBcEhYmjSbwQakn/i3ajA==}
 
-  '@types/subset-font@1.4.3':
-    resolution: {integrity: sha512-DDCrYTYujq/aEEy+DhI54ld/3TOxUnuCc85dULW+xBOxmvJ5wCg/kFpiUoHlieDxh4GKlhIk/4AnDbeu/WVGGg==}
+  '@types/subset-font@2.3.0':
+    resolution: {integrity: sha512-+u2CzLEE7ZReuBP0Mfz0tBydVZvWESmZpBbL7sc+J+qB9ImNp1QmOptMe28uXj2aRPDoQhQF3dubXMgwo56gIg==}
 
   '@types/superagent@8.1.8':
     resolution: {integrity: sha512-nTqHJ2OTa7PFEpLahzSEEeFeqbMpmcN7OeayiOc7v+xk+/vyTKljRe+o4MPqSnPeRCMvtxuLG+5QqluUVQJOnA==}
@@ -7638,8 +7638,8 @@ packages:
     resolution: {integrity: sha512-Tz23LR9T9jOGVZm2x1EPdXqwA37G/owYMxRwU0E4miurAtFsPMQ1d2Jc2okUaSjZqAFz2oEn3FLXC5a0a+siyA==}
     engines: {node: '>=20.0.0'}
 
-  harfbuzzjs@0.3.6:
-    resolution: {integrity: sha512-dzf7y6NS8fiAIvPAL/VKwY8wx2HCzUB0vUfOo6h1J5UilFEEf7iYqFsvgwjHwvM3whbjfOMadNvQekU3KuRnWQ==}
+  harfbuzzjs@1.6.2:
+    resolution: {integrity: sha512-95c1vWuzoHjM19d5fQgPbz1wcv1pTa0UM9dZrdPgSMUEVuSwuzeVPkq6UhHHw3jLOkE9AYzzTP8XQkRBpPYpEg==}
 
   has-bigints@1.1.0:
     resolution: {integrity: sha512-R3pbpkcIqv2Pm3dUwgjclDRVmWpTJW2DcMzcIhEXEx1oh/CEMObMm3KLmRJOdvhM7o4uQBnwr8pzRK2sJWIqfg==}
@@ -10834,8 +10834,8 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  subset-font@2.3.0:
-    resolution: {integrity: sha512-RcB2cu/14zYxGceTnnptlc8uTuxMkVYdyu3Kj+CA1nye6bI1s1cSSp+ApzpkMzl8iAmEUt+zAE0VHvhVpTO/Ig==}
+  subset-font@2.9.0:
+    resolution: {integrity: sha512-WJulQeFwbewrXIGcLJbSZFWI44fHW8gNRuPzLywfDL8w38IPRbN1JFxwG76aoohw9kcFdvjVIn2QmID1iy119A==}
 
   superagent@10.2.3:
     resolution: {integrity: sha512-y/hkYGeXAj7wUMjxRbB21g/l6aAEituGXM9Rwl4o20+SX3e8YOSV6BxFXl+dL3Uk0mjSL3kCbNkwURm8/gEDig==}
@@ -13581,7 +13581,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
-  '@fortawesome/fontawesome-free@5.15.4': {}
+  '@fortawesome/fontawesome-free@7.3.1': {}
 
   '@google-cloud/cloud-sql-connector@1.3.3(encoding@0.1.13)(supports-color@10.2.2)':
     dependencies:
@@ -15791,7 +15791,7 @@ snapshots:
 
   '@types/stylis@4.2.7': {}
 
-  '@types/subset-font@1.4.3':
+  '@types/subset-font@2.3.0':
     dependencies:
       '@types/node': 24.19.0
 
@@ -18870,14 +18870,14 @@ snapshots:
 
   fn.name@1.1.0: {}
 
-  fontawesome-subset@4.6.0(@fortawesome/fontawesome-free@5.15.4):
+  fontawesome-subset@4.6.0(@fortawesome/fontawesome-free@7.3.1):
     dependencies:
       lodash: 4.18.1
       mkdirp: 2.1.6
-      subset-font: 2.3.0
+      subset-font: 2.9.0
       yaml: 2.8.3
     optionalDependencies:
-      '@fortawesome/fontawesome-free': 5.15.4
+      '@fortawesome/fontawesome-free': 7.3.1
 
   fontverter@2.0.0:
     dependencies:
@@ -19350,7 +19350,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  harfbuzzjs@0.3.6: {}
+  harfbuzzjs@1.6.2: {}
 
   has-bigints@1.1.0: {}
 
@@ -23280,11 +23280,10 @@ snapshots:
     dependencies:
       commander: 12.1.0
 
-  subset-font@2.3.0:
+  subset-font@2.9.0:
     dependencies:
       fontverter: 2.0.0
-      harfbuzzjs: 0.3.6
-      lodash: 4.17.21
+      harfbuzzjs: 1.6.2
       p-limit: 3.1.0
 
   superagent@10.2.3(supports-color@10.2.2):
