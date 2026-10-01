@@ -337,7 +337,13 @@ export default defineConfig(({ mode }): UserConfig => {
     if (env["RECAPTCHA_SITE_KEY"] === undefined) {
       throw new Error(`${mode}: RECAPTCHA_SITE_KEY is not defined`);
     }
-    if (useSentry && (!env["SENTRY_ORG"] || !env["SENTRY_PROJECT"])) {
+    if (
+      useSentry &&
+      (env["SENTRY_ORG"] === undefined ||
+        env["SENTRY_ORG"] === "" ||
+        env["SENTRY_PROJECT"] === undefined ||
+        env["SENTRY_PROJECT"] === "")
+    ) {
       throw new Error(
         `${mode}: SENTRY_ORG and SENTRY_PROJECT are required for source map uploads`,
       );
