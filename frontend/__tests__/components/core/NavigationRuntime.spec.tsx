@@ -1,5 +1,5 @@
 import { Router, useLocation } from "@solidjs/router";
-import { cleanup, render, waitFor } from "@solidjs/testing-library";
+import { cleanup, fireEvent, render, waitFor } from "@solidjs/testing-library";
 import {
   afterEach,
   beforeEach,
@@ -51,6 +51,7 @@ vi.mock("../../../src/ts/states/notifications", () => ({
   showErrorNotification: state.error,
 }));
 
+import { Link } from "../../../src/ts/components/common/Link";
 import { NavigationRuntime } from "../../../src/ts/components/core/NavigationRuntime";
 import { authEvent } from "../../../src/ts/events/auth";
 import { navigate, replaceUrl } from "../../../src/ts/navigation/navigation";
@@ -68,6 +69,7 @@ function mount(path = "/"): ReturnType<typeof render> {
           <>
             <NavigationRuntime />
             {props.children}
+            <Link href="/settings">settings</Link>
             <output>
               {location.pathname + location.search + location.hash}
             </output>
@@ -200,6 +202,52 @@ describe("Solid Router page integration", () => {
     expect(state.notice).toHaveBeenCalledOnce();
   });
 
+  it("blocks native links during an active no-quit test", async () => {
+    const { getByRole } = mount();
+    await ready();
+    state.active = state.noQuit = true;
+    fireEvent.click(getByRole("link", { name: "settings" }));
+    expect(window.location.pathname).toBe("/");
+    expect(state.notice).toHaveBeenCalledOnce();
+  });
+
+  it("does not give native clicks a pending forced navigation's bypass", async () => {
+    const { getByRole } = mount();
+    await ready();
+    const navigation = navigate("/about", { force: true });
+    fireEvent.click(getByRole("link", { name: "settings" }));
+    await navigation;
+    expect(window.location.pathname).toBe("/about");
+    expect(state.change).toHaveBeenLastCalledWith("about", { force: true });
+  });
+
+  it("serializes forced refreshes after an unfinished page transition", async () => {
+    mount();
+    await ready();
+    state.change.mockClear();
+    let finish!: (value: boolean) => void;
+    state.change.mockImplementationOnce(
+      async () => new Promise<boolean>((resolve) => (finish = resolve)),
+    );
+    const first = navigate("/about");
+    await waitFor(() => expect(state.change).toHaveBeenCalledOnce());
+    const second = navigate("/settings", { force: true });
+    await waitFor(() => expect(window.location.pathname).toBe("/settings"));
+    expect(state.change).toHaveBeenCalledOnce();
+    finish(true);
+    await Promise.all([first, second]);
+    expect(state.change).toHaveBeenLastCalledWith("settings", { force: true });
+  });
+
+  it("rejects failed page lifecycles and permits later navigation", async () => {
+    mount();
+    await ready();
+    state.change.mockRejectedValueOnce(new Error("page failed"));
+    await expect(navigate("/about")).rejects.toThrow("page failed");
+    await navigate("/settings");
+    expect(state.change).toHaveBeenLastCalledWith("settings", {});
+  });
+
   it("waits for page transitions and reloads the current URL without pushing history", async () => {
     mount();
     await ready();
@@ -231,12 +279,16 @@ describe("Solid Router page integration", () => {
         "/settings?highlight=fontSize",
       ),
     );
-    expect(state.change).toHaveBeenLastCalledWith("settings", {});
+    await waitFor(() =>
+      expect(state.change).toHaveBeenLastCalledWith("settings", {}),
+    );
     window.history.forward();
     await waitFor(() =>
       expect(getByRole("status")).toHaveTextContent("/about"),
     );
-    expect(state.change).toHaveBeenLastCalledWith("about", {});
+    await waitFor(() =>
+      expect(state.change).toHaveBeenLastCalledWith("about", {}),
+    );
   });
 
   it("restores the URL when browser back is blocked", async () => {

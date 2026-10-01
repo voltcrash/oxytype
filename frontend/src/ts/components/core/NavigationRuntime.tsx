@@ -38,6 +38,10 @@ export function NavigationRuntime(): null {
   let ready = false;
   let replacingUrl = false;
   let pending: NavigationRequest | undefined;
+  let navigatingOptions: NavigateOptions | undefined;
+  let transitions = 0;
+  let pageChanges = Promise.resolve();
+  const inFlight = new Set<NavigationRequest>();
   const urlReplacements = new Set<() => void>();
   let disposed = false;
 
@@ -52,31 +56,50 @@ export function NavigationRuntime(): null {
     );
   };
 
+  const allowed = (options: NavigateOptions): boolean => {
+    if (!options.force && (isRouting() || transitions > 0)) return false;
+    return canNavigate(options);
+  };
+  const routeTo = (
+    target: string,
+    options: NavigateOptions,
+    replace = false,
+  ): void => {
+    navigatingOptions = options;
+    try {
+      solidNavigate(target, {
+        resolve: false,
+        replace,
+        scroll: false,
+        state: replace || target === currentUrl() ? location.state : undefined,
+      });
+    } finally {
+      navigatingOptions = undefined;
+    }
+  };
+
   useBeforeLeave((event) => {
     if (replacingUrl) return;
-    const options = pending?.options ?? {};
-    if ((!options.force && isRouting()) || !canNavigate(options)) {
+    if (!allowed(navigatingOptions ?? {})) {
       event.preventDefault();
-      pending?.resolve();
-      pending = undefined;
+      if (navigatingOptions !== undefined) {
+        pending?.resolve();
+        pending = undefined;
+      }
     }
   });
 
   onCleanup(
     bindNavigation({
       navigate: async (url, options) => {
-        if ((!options.force && isRouting()) || !canNavigate(options)) return;
+        if (!allowed(options)) return;
         const target = path(url ?? currentUrl());
         await new Promise<void>((resolve, reject) => {
           batch(() => {
             pending?.resolve();
             pending = { options, resolve, reject };
             ready = true;
-            solidNavigate(target, {
-              resolve: false,
-              scroll: false,
-              state: target === currentUrl() ? location.state : undefined,
-            });
+            routeTo(target, options);
             // Same-URL auth refreshes still run the page lifecycle.
             setRevision((value) => value + 1);
           });
@@ -130,31 +153,39 @@ export function NavigationRuntime(): null {
                 ? "/account"
                 : undefined;
       if (redirect !== undefined) {
-        solidNavigate(redirect, {
-          resolve: false,
-          replace: true,
-          scroll: false,
-          state: location.state,
-        });
+        routeTo(redirect, options, true);
         return;
       }
 
       pending = undefined;
-      void PageController.change(page, {
+      const changeOptions = {
         ...options,
         ...(page === "profile"
           ? { force: true, params: { uidOrName: params["uidOrName"] ?? "" } }
           : page === "404"
             ? { force: true }
             : {}),
-      }).then(
-        () => request?.resolve(),
-        (error: unknown) => {
-          if (disposed) return;
-          if (request !== undefined) request.reject(error);
-          else showErrorNotification("Failed to navigate", { error });
-        },
-      );
+      };
+      if (request !== undefined) inFlight.add(request);
+      transitions++;
+      // Forced auth refreshes wait for any outgoing page animation/loading.
+      const previousChange = pageChanges;
+      pageChanges = (async () => {
+        await previousChange;
+        try {
+          if (!disposed) await PageController.change(page, changeOptions);
+          request?.resolve();
+        } catch (error) {
+          if (request !== undefined) {
+            request.reject(error);
+          } else if (!disposed) {
+            showErrorNotification("Failed to navigate", { error });
+          }
+        } finally {
+          transitions--;
+          if (request !== undefined) inFlight.delete(request);
+        }
+      })();
     }),
   );
 
@@ -187,6 +218,7 @@ export function NavigationRuntime(): null {
   onCleanup(() => {
     disposed = true;
     pending?.resolve();
+    for (const request of inFlight) request.resolve();
     for (const resolve of urlReplacements) resolve();
   });
 
