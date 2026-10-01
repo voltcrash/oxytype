@@ -1,15 +1,4 @@
-@keyframes loader {
-  0% {
-    transform: translateX(-100%) scaleX(0);
-  }
-  50% {
-    transform: translateX(0) scaleX(1);
-  }
-  100% {
-    transform: translateX(100%) scaleX(0);
-  }
-}
-
+/* Public animation names are also used by runtime styles and funbox CSS. */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -79,22 +68,22 @@
 
 @keyframes rgb-bg {
   0% {
-    background: hsl(120, 39%, 49%);
+    background: var(--color-rgb-1);
   }
   20% {
-    background: hsl(192, 48%, 48%);
+    background: var(--color-rgb-2);
   }
   40% {
-    background: hsl(264, 90%, 58%);
+    background: var(--color-rgb-3);
   }
   60% {
-    background: hsl(357, 89%, 50%);
+    background: var(--color-rgb-4);
   }
   80% {
-    background: hsl(46, 100%, 51%);
+    background: var(--color-rgb-5);
   }
   100% {
-    background: hsl(120, 39%, 49%);
+    background: var(--color-rgb-1);
   }
 }
 
@@ -139,15 +128,11 @@
     transform: scale(1);
     color: var(--current-color);
   }
-  10% {
-    /* transform: scale(1); */
-  }
   15% {
     transform: scale(1);
     color: var(--c-dot);
   }
   80% {
-    /* transform: scale(0.5); */
     color: var(--c-dot);
   }
   100% {
