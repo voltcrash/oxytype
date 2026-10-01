@@ -1,5 +1,5 @@
 import { Language as LanguageSchema } from "@oxytype/schemas/languages";
-import { Optgroup } from "slim-select/store";
+import { Optgroup } from "slim-select";
 import { JSXElement } from "solid-js";
 
 import { configMetadata } from "../../../../config/metadata";
