@@ -6,7 +6,7 @@ This project began from the Monkeytype codebase and now has its own roadmap. We 
 
 ## Development
 
-Use Node 24.11.0 and pnpm 11.21.0. Follow [the development setup guide](./docs/CONTRIBUTING_ADVANCED.md) for Firebase and backend configuration. See [the architecture overview](./docs/ARCHITECTURE.md) for the codebase and stack.
+Use Node 24.21.0 and pnpm 11.21.0. Follow [the development setup guide](./docs/CONTRIBUTING_ADVANCED.md) for Firebase and backend configuration. See [the architecture overview](./docs/ARCHITECTURE.md) for the codebase and stack.
 
 ```sh
 pnpm install
