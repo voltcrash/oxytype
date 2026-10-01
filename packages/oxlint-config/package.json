@@ -6,7 +6,7 @@
     ".": "./index.json"
   },
   "devDependencies": {
-    "@types/node": "24",
+    "@types/node": "24.19.0",
     "jsonc-parser": "3.3.1",
     "vite-plus": "catalog:"
   }
