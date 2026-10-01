@@ -61,7 +61,7 @@ jobs:
           xargs -0 pnpm exec vp fmt --no-error-on-unmatched-pattern < /tmp/changed-files.txt
 
       - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7.2.0
         with:
           commit_message: "fix formatting"
 
