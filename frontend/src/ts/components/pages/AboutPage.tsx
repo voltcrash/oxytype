@@ -48,8 +48,8 @@ export function AboutPage(): JSXElement {
     <Page id="about">
       <div class="content-grid grid gap-8">
         <section class="text-center text-sub">
-          Oxytype is independently developed from Monkeytype, originally
-          created by Miodec and expanded by its contributors.
+          Oxytype is independently developed from Monkeytype, originally created
+          by Miodec and expanded by its contributors.
           <br />
           <a href="#contributors_title">See contributor credits</a>.
         </section>
@@ -183,9 +183,9 @@ export function AboutPage(): JSXElement {
           <p>
             Oxytype is an independent typing test project based on Monkeytype.
             It offers multiple test modes, progress tracking, themes, and a
-            customizable typing experience. The original Monkeytype project
-            was created by Miodec; its contributors remain credited here and
-            in the repository.
+            customizable typing experience. The original Monkeytype project was
+            created by Miodec; its contributors remain credited here and in the
+            repository.
             <br />
             <br />
             Test yourself in various modes, track your progress and improve your
@@ -255,16 +255,14 @@ export function AboutPage(): JSXElement {
         </section>
         <section>
           <H3 fa={{ icon: "fa-bug" }} text="bug report or feature request" />
-          <p>
-            Report a bug or suggest a feature in the Oxytype repository.
-          </p>
+          <p>Report a bug or suggest a feature in the Oxytype repository.</p>
         </section>
         <div></div>
         <section>
           <H2 fa={{ icon: "fa-life-ring" }} text="support" />
           <p>
-            Help Oxytype grow by contributing code, reporting bugs, and
-            helping other users.
+            Help Oxytype grow by contributing code, reporting bugs, and helping
+            other users.
           </p>
           <div class="mt-4 text-xl">
             <Button
@@ -280,9 +278,7 @@ export function AboutPage(): JSXElement {
         <div></div>
         <section>
           <H2 fa={{ icon: "fa-envelope" }} text="contact" />
-          <p>
-            Report bugs or request features through the Oxytype repository.
-          </p>
+          <p>Report bugs or request features through the Oxytype repository.</p>
           <div class="mt-4 grid w-full grid-cols-1 gap-4 text-xl sm:grid-cols-2 lg:grid-cols-4">
             <Button
               text="mail"
