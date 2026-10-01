@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Full checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
         # paths filter doesn't need checkout on pr
         if: github.event_name != 'pull_request'
 
@@ -69,7 +69,7 @@ jobs:
     if: github.event.pull_request.draft == false || contains(github.event.pull_request.labels.*.name, 'force-ci') || contains(github.event.pull_request.labels.*.name, 'force-full-ci')
     steps:
       - name: Checkout pnpm-lock
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
         with:
           sparse-checkout: |
             pnpm-lock.yaml
@@ -96,7 +96,7 @@ jobs:
 
       - if: ${{ steps.cache-pnpm.outputs.cache-hit != 'true' }}
         name: Full checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
 
       - if: ${{ steps.cache-pnpm.outputs.cache-hit != 'true' }}
         name: Set up Node.js
@@ -115,7 +115,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Full checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
 
@@ -190,7 +190,7 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.pre-ci.outputs.should-build-be == 'true' || needs.pre-ci.outputs.should-build-pkg == 'true' || contains(github.event.pull_request.labels.*.name, 'force-full-ci')
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.1
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -234,7 +234,7 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.pre-ci.outputs.should-build-fe == 'true' || needs.pre-ci.outputs.should-build-pkg == 'true' || contains(github.event.pull_request.labels.*.name, 'force-full-ci')
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.1
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -282,7 +282,7 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.pre-ci.outputs.assets-or-styles == 'true' || needs.pre-ci.outputs.should-build-pkg == 'true' || contains(github.event.pull_request.labels.*.name, 'force-full-ci')
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.1
 
       - uses: dorny/paths-filter@v4
         id: filter
@@ -356,7 +356,7 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.pre-ci.outputs.should-build-pkg == 'true' || contains(github.event.pull_request.labels.*.name, 'force-full-ci')
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.1
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
