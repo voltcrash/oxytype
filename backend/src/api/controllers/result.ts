@@ -66,7 +66,6 @@ import { MonkeyRequest } from "../types";
 import { getFunbox, checkCompatibility } from "@oxytype/funbox";
 import { tryCatch } from "@oxytype/util/trycatch";
 import { getCachedConfiguration } from "../../init/configuration";
-import { getChallenges } from "@oxytype/challenges";
 
 try {
   if (!anticheatImplemented()) throw new Error("undefined");
@@ -83,12 +82,6 @@ try {
     process.exit(1);
   }
 }
-
-const autoRoleChallengeNames = new Set(
-  getChallenges()
-    .filter((it) => it.settings?.autoRole)
-    .map((it) => it.name),
-);
 
 export async function getResults(
   req: MonkeyRequest<GetResultsQuery>,
@@ -477,17 +470,7 @@ export async function addResult(
     }
   }
 
-  if (
-    completedEvent.challenge !== null &&
-    completedEvent.challenge !== undefined &&
-    autoRoleChallengeNames.has(completedEvent.challenge) &&
-    user.discordId !== undefined &&
-    user.discordId !== ""
-  ) {
-    void GeorgeQueue.awardChallenge(user.discordId, completedEvent.challenge);
-  } else {
-    delete completedEvent.challenge;
-  }
+  delete completedEvent.challenge;
 
   const afk = completedEvent.afkDuration ?? 0;
   const totalDurationTypedSeconds =

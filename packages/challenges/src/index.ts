@@ -63,7 +63,6 @@ type ChallengeParameter =
   | { type: "other" };
 
 export type ChallengeSettings = {
-  autoRole?: boolean;
   message?: string;
   requirements?: {
     wpm?: { min: number } | { exact: number };
@@ -84,7 +83,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     description:
       "Complete a 69-second test and achieve 69 WPM, 69 raw, 69% accuracy, and 69% consistency.",
     settings: {
-      autoRole: true,
       type: "customTime",
       message:
         "You need to achieve 69 wpm, 69 raw, 69% accuracy and 69% consistency.",
@@ -102,7 +100,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     category: "endurance",
     description: "Complete a one-hour test.",
     settings: {
-      autoRole: true,
       type: "customTime",
       parameters: { time: 3600 },
       requirements: { time: { min: 3600 } },
@@ -113,7 +110,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     category: "endurance",
     description: "Complete a two-hour test.",
     settings: {
-      autoRole: true,
       type: "customTime",
       parameters: { time: 7200 },
       requirements: { time: { min: 7200 } },
@@ -124,7 +120,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     category: "endurance",
     description: "Complete a three-hour test.",
     settings: {
-      autoRole: true,
       type: "customTime",
       parameters: { time: 10800 },
       requirements: { time: { min: 10800 } },
@@ -135,7 +130,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     category: "endurance",
     description: "Complete a four-hour test.",
     settings: {
-      autoRole: true,
       type: "customTime",
       parameters: { time: 14400 },
       requirements: { time: { min: 14400 } },
@@ -177,7 +171,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     description:
       "Get 100 WPM on a randomized, 100-word custom test with the words list: to of in it is as at be we he so on an or do if up by my go.",
     settings: {
-      autoRole: true,
       type: "customText",
       parameters: {
         text: "to of in it is as at be we he so on an or do if up by my go",
@@ -194,7 +187,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     category: "script",
     description: "Get at least 200 wpm typing antidisestablishmentarianism.",
     settings: {
-      autoRole: true,
       type: "customText",
       parameters: {
         text: "antidisestablishmentarianism",
@@ -211,7 +203,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     category: "script",
     description: "Type develop one thousand times.",
     settings: {
-      autoRole: true,
       type: "customText",
       parameters: {
         text: "develop",
@@ -228,7 +219,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     description:
       "Complete a 5-minute test with exactly 60 WPM without using the live WPM or pace caret.",
     settings: {
-      autoRole: true,
       type: "customTime",
       parameters: { time: 300 },
       requirements: {
@@ -243,7 +233,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     description:
       "Get 100 wpm on a randomised custom test with the input: a b c d e f g h i j k l m n o p q r s t u v w x y z (the alphabet) and a word count of 100.",
     settings: {
-      autoRole: true,
       type: "customText",
       parameters: {
         text: "a b c d e f g h i j k l m n o p q r s t u v w x y z",
@@ -260,7 +249,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     category: "speed",
     description: "Get 400 WPM while typing power 10 times.",
     settings: {
-      autoRole: true,
       type: "customText",
       parameters: {
         text: "power",
@@ -277,7 +265,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     category: "accuracy",
     description: "Complete a 10-minute Master mode test.",
     settings: {
-      autoRole: true,
       type: "accuracy",
       message: "Minimum 60wpm and 100% accuracy required.",
       requirements: {
@@ -293,7 +280,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     category: "accuracy",
     description: "Complete a 20-minute Master mode test.",
     settings: {
-      autoRole: true,
       type: "accuracy",
       message: "Minimum 60wpm and 100% accuracy required.",
       requirements: {
@@ -309,7 +295,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     category: "accuracy",
     description: "Complete a 30-minute Master mode test.",
     settings: {
-      autoRole: true,
       type: "accuracy",
       message: "Minimum 60wpm and 100% accuracy required.",
       requirements: {
@@ -374,7 +359,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     category: "script",
     description: "Type the Jolly script with a minimum of 70 wpm.",
     settings: {
-      autoRole: true,
       type: "script",
       message: "Minimum 70wpm required.",
       parameters: { script: "jolly.txt" },
@@ -386,7 +370,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     category: "script",
     description: "Type out the names of all Pokemon.",
     settings: {
-      autoRole: true,
       type: "script",
       parameters: { script: "pokemon.txt" },
     },
@@ -397,7 +380,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     description:
       "Type out the lyrics of Eminem's Rap God at a minimum of 85 WPM and 90% accuracy, including punctuation.",
     settings: {
-      autoRole: true,
       type: "script",
       message: "Minimum 85wpm and 90% accuracy required.",
       parameters: { script: "rapgod.txt" },
@@ -410,7 +392,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     description:
       "Type out the Navy Seal copy pasta with 100% accuracy and minimum 60 WPM.",
     settings: {
-      autoRole: true,
       type: "script",
       message: "Minimum 60wpm and 100% accuracy required.",
       parameters: { script: "navyseal.txt" },
@@ -462,7 +443,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     description:
       "Complete at least a one-hour test using the round round baby mode.",
     settings: {
-      autoRole: true,
       type: "funbox",
       parameters: { funbox: "round_round_baby", mode: "time", mode2: 3600 },
       requirements: {
@@ -476,7 +456,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     category: "funbox",
     description: "Complete at least a one-hour test using the mirror mode.",
     settings: {
-      autoRole: true,
       type: "funbox",
       parameters: { funbox: "mirror", mode: "time", mode2: 3600 },
       requirements: { time: { min: 3600 }, funbox: { exact: ["mirror"] } },
@@ -487,7 +466,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     category: "funbox",
     description: "Complete at least a one-hour test using choo choo mode.",
     settings: {
-      autoRole: true,
       type: "funbox",
       parameters: { funbox: "choo_choo", mode: "time", mode2: 3600 },
       requirements: { time: { min: 3600 }, funbox: { exact: ["choo_choo"] } },
@@ -515,7 +493,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     description:
       "Complete at least a one-hour test using the earthquake funbox mode.",
     settings: {
-      autoRole: true,
       type: "funbox",
       parameters: { funbox: "earthquake", mode: "time", mode2: 3600 },
       requirements: { time: { min: 3600 }, funbox: { exact: ["earthquake"] } },
@@ -527,7 +504,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     description:
       "Complete at least a one-hour test using the simon says funbox mode.",
     settings: {
-      autoRole: true,
       type: "funbox",
       parameters: { funbox: "simon_says", mode: "time", mode2: 3600 },
       requirements: { time: { min: 3600 }, funbox: { exact: ["simon_says"] } },
@@ -539,7 +515,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     description:
       "Complete at least a one-hour test using the 58008 funbox mode.",
     settings: {
-      autoRole: true,
       type: "funbox",
       parameters: { funbox: "58008", mode: "time", mode2: 3600 },
       requirements: { time: { min: 3600 }, funbox: { exact: ["58008"] } },
@@ -551,7 +526,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     description:
       "Achieve 100+ WPM using the read ahead funbox on a 60-second test.",
     settings: {
-      autoRole: true,
       type: "funbox",
       parameters: { funbox: "read_ahead", mode: "time", mode2: 60 },
       requirements: {
@@ -568,7 +542,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     description:
       "Achieve 100+ WPM using the read ahead hard funbox on a 60-second test.",
     settings: {
-      autoRole: true,
       type: "funbox",
       parameters: { funbox: "read_ahead_hard", mode: "time", mode2: 60 },
       requirements: {
@@ -585,7 +558,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     description:
       "Complete at least a one-hour test using the gibberish funbox mode.",
     settings: {
-      autoRole: true,
       type: "funbox",
       parameters: { funbox: "gibberish", mode: "time", mode2: 3600 },
       requirements: { time: { min: 60 }, funbox: { exact: ["gibberish"] } },
@@ -597,7 +569,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     description:
       "Complete at least a one-hour test using the specials funbox mode.",
     settings: {
-      autoRole: true,
       type: "funbox",
       parameters: { funbox: "specials", mode: "time", mode2: 3600 },
       requirements: { time: { min: 60 }, funbox: { exact: ["specials"] } },
@@ -608,7 +579,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     category: "funbox",
     description: "Complete at least a one-hour test using the tts funbox mode.",
     settings: {
-      autoRole: true,
       type: "funbox",
       parameters: { funbox: "tts", mode: "time", mode2: 3600 },
       requirements: { time: { min: 60 }, funbox: { exact: ["tts"] } },
@@ -620,7 +590,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     description:
       "Complete at least a one-hour test using the ascii funbox mode.",
     settings: {
-      autoRole: true,
       type: "funbox",
       parameters: { funbox: "ascii", mode: "time", mode2: 3600 },
       requirements: { time: { min: 60 }, funbox: { exact: ["ascii"] } },
@@ -632,7 +601,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     description:
       "Complete at least a one-hour test using the randomcase funbox mode.",
     settings: {
-      autoRole: true,
       type: "funbox",
       parameters: { funbox: "sPoNgEcAsE", mode: "time", mode2: 3600 },
       requirements: { time: { min: 60 }, funbox: { exact: ["sPoNgEcAsE"] } },
@@ -644,7 +612,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     description:
       "Complete at least a one-hour test using the nausea funbox mode.",
     settings: {
-      autoRole: true,
       type: "funbox",
       parameters: { funbox: "nausea", mode: "time", mode2: 3600 },
       requirements: { time: { min: 60 }, funbox: { exact: ["nausea"] } },
@@ -689,7 +656,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     description:
       "Complete a one-hour test using English 10k language with punctuation and numbers enabled.",
     settings: {
-      autoRole: true,
       type: "customTime",
       parameters: { time: 3600 },
       requirements: {
