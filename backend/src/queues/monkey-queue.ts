@@ -1,36 +1,29 @@
-import IORedis from "ioredis";
+import type { Redis } from "ioredis";
 import {
   type BulkJobOptions,
-  type ConnectionOptions,
   type JobsOptions,
   Queue,
   type QueueOptions,
-  QueueScheduler,
 } from "bullmq";
 
 export class MonkeyQueue<T> {
   private jobQueue: Queue | undefined;
-  private _queueScheduler: QueueScheduler;
   public readonly queueName: string;
-  private queueOpts: QueueOptions;
+  private queueOpts: Omit<QueueOptions, "connection">;
 
-  constructor(queueName: string, queueOpts: QueueOptions) {
+  constructor(queueName: string, queueOpts: Omit<QueueOptions, "connection">) {
     this.queueName = queueName;
     this.queueOpts = queueOpts;
   }
 
-  init(redisConnection?: IORedis.Redis): void {
+  init(redisConnection?: Redis): void {
     if (this.jobQueue !== undefined || !redisConnection) {
       return;
     }
 
     this.jobQueue = new Queue(this.queueName, {
       ...this.queueOpts,
-      connection: redisConnection as ConnectionOptions,
-    });
-
-    this._queueScheduler = new QueueScheduler(this.queueName, {
-      connection: redisConnection as ConnectionOptions,
+      connection: redisConnection,
     });
   }
 
