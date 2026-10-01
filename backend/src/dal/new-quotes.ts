@@ -46,7 +46,9 @@ async function verifyQuoteRepositoryRemote(): Promise<
     throw new MonkeyError(503, "Oxytype quote repository is not configured.");
   }
   const expectedRemote = process.env["OXYTYPE_QUOTES_REMOTE_URL"];
-  const actualRemote = (await quoteGit.raw(["remote", "get-url", "origin"])).trim();
+  const actualRemote = (
+    await quoteGit.raw(["remote", "get-url", "origin"])
+  ).trim();
   if (
     !expectedRemote ||
     actualRemote !== expectedRemote ||
