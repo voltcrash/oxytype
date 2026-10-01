@@ -20,7 +20,6 @@ import { LiveStatsMini } from "./live-stats/LiveStatsMini";
 import { LiveStatsTextBottom } from "./live-stats/LiveStatsTextBottom";
 import { LiveStatsTextTop } from "./live-stats/LiveStatsTextTop";
 import { TestModesNotice } from "./modes-notice/TestModesNotice";
-import { Monkey } from "./Monkey";
 import { OutOfFocusWarning } from "./OutOfFocusWarning";
 import { Premid } from "./Premid";
 import { RestartTestButton } from "./RestartTestButton";
@@ -127,7 +126,6 @@ export function TestPage(
         </div>
         <CompositionDisplay />
         <Keymap />
-        <Monkey />
         <RestartTestButton />
         <LiveStatsTextBottom />
         <Premid />

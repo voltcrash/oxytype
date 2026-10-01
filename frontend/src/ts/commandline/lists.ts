@@ -204,7 +204,6 @@ export const commands: CommandsSubgroup = {
       "showAverage",
       "showPb",
       "monkeyPowerLevel",
-      "monkey",
     ),
 
     //danger zone

@@ -1265,7 +1265,8 @@ export const configMetadata: ConfigMetadataObject = {
   monkey: {
     key: "monkey",
     fa: { icon: "fa-egg" },
-    displayString: "monkey",
+    // Retained for compatibility with saved configs; the mascot was removed.
+    displayString: "legacy mascot",
     changeRequiresRestart: false,
     group: "hidden",
     overrideConfig: ({ value, currentConfig }) => {
@@ -1287,7 +1288,7 @@ export const configMetadata: ConfigMetadataObject = {
   monkeyPowerLevel: {
     key: "monkeyPowerLevel",
     fa: { icon: "fa-egg" },
-    displayString: "monkey power level",
+    displayString: "typing power level",
     changeRequiresRestart: false,
     group: "hidden",
   },
