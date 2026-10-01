@@ -17,25 +17,17 @@ export function verifyRequiredConfiguration(): ApiMiddleware {
       await next();
       return;
     }
-    try {
-      for (const requireConfiguration of requiredConfigurations) {
-        const value = getValue(
-          req.ctx.configuration,
-          requireConfiguration.path,
+    for (const requireConfiguration of requiredConfigurations) {
+      const value = getValue(req.ctx.configuration, requireConfiguration.path);
+      if (!value) {
+        throw new MonkeyError(
+          503,
+          requireConfiguration.invalidMessage ??
+            "This endpoint is currently unavailable.",
         );
-        if (!value) {
-          throw new MonkeyError(
-            503,
-            requireConfiguration.invalidMessage ??
-              "This endpoint is currently unavailable.",
-          );
-        }
       }
-      await next();
-      return;
-    } catch (e) {
-      throw e;
     }
+    await next();
   };
 }
 
