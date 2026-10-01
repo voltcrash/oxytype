@@ -63,7 +63,7 @@
     "@commitlint/cli": "20.5.2",
     "@commitlint/config-conventional": "19.2.2",
     "@oxytype/release": "workspace:*",
-    "@types/node": "24.9.1",
+    "@types/node": "24",
     "@vitest/coverage-v8": "catalog:",
     "caniuse-lite": "1.0.30001778",
     "conventional-changelog": "6.0.0",
