@@ -1,6 +1,5 @@
 import { ApeKeyNameSchema } from "@oxytype/schemas/ape-keys";
 import { tryCatch } from "@oxytype/util/trycatch";
-import { createDataTableColumnHelper as createColumnHelper } from "../../ui/table/features";
 import { format as dateFormat } from "date-fns";
 import { createMemo, Show } from "solid-js";
 import { z } from "zod/v3";
@@ -21,6 +20,7 @@ import AsyncContent from "../../common/AsyncContent";
 import { Button } from "../../common/Button";
 import { Fa } from "../../common/Fa";
 import { DataTable, DataTableColumnDef } from "../../ui/table/DataTable";
+import { createDataTableColumnHelper as createColumnHelper } from "../../ui/table/features";
 import { Section } from "./utils";
 
 export function ApeKeysTab() {

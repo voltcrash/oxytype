@@ -1,6 +1,5 @@
 import { Difficulty } from "@oxytype/schemas/configs";
 import { Mode } from "@oxytype/schemas/shared";
-import { createDataTableColumnHelper as createColumnHelper } from "../../ui/table/features";
 import { format as dateFormat } from "date-fns/format";
 import { Accessor, createMemo, createSignal, JSXElement, Show } from "solid-js";
 
@@ -16,6 +15,7 @@ import { replaceUnderscoresWithSpaces } from "../../../utils/strings";
 import { Button } from "../../common/Button";
 import { Fa, FaProps } from "../../common/Fa";
 import { DataTable, DataTableColumnDef } from "../../ui/table/DataTable";
+import { createDataTableColumnHelper as createColumnHelper } from "../../ui/table/features";
 import { MiniResultChart } from "./MiniResultChart";
 
 type Sorting = {

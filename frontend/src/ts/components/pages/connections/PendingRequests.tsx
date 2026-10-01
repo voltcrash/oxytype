@@ -1,5 +1,4 @@
 import { Connection } from "@oxytype/schemas/connections";
-import { createDataTableColumnHelper as createColumnHelper } from "../../ui/table/features";
 import { format as dateFormat } from "date-fns/format";
 import { createMemo, Show } from "solid-js";
 
@@ -15,6 +14,7 @@ import { Button } from "../../common/Button";
 import { H2 } from "../../common/Headers";
 import { User } from "../../common/User";
 import { DataTable, DataTableColumnDef } from "../../ui/table/DataTable";
+import { createDataTableColumnHelper as createColumnHelper } from "../../ui/table/features";
 
 export function PendingRequests() {
   const columns = createMemo(() => getColumns());
