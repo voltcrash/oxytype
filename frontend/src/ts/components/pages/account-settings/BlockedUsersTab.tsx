@@ -1,5 +1,4 @@
 import { Connection } from "@oxytype/schemas/connections";
-import { createColumnHelper } from "@tanstack/solid-table";
 import { format } from "date-fns/format";
 import { createMemo, Show } from "solid-js";
 
@@ -12,6 +11,7 @@ import AsyncContent from "../../common/AsyncContent";
 import { Button } from "../../common/Button";
 import { User } from "../../common/User";
 import { DataTable, DataTableColumnDef } from "../../ui/table/DataTable";
+import { createDataTableColumnHelper as createColumnHelper } from "../../ui/table/features";
 import { Section } from "./utils";
 
 export function BlockedUsersTab() {

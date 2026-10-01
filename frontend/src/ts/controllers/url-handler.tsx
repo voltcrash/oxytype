@@ -19,7 +19,7 @@ import {
 import { parseWithSchema as parseJsonWithSchema } from "@oxytype/util/json";
 import { tryCatchSync } from "@oxytype/util/trycatch";
 import { decompressFromURI } from "lz-ts";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import Ape from "../ape";
 import { setConfig } from "../config/setters";

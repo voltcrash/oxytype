@@ -11,20 +11,21 @@ export function AverageNotice(): JSXElement {
   });
 
   const displayText = createMemo(() => {
-    if (last10() === undefined) return "no average";
+    const average = last10();
+    if (average === undefined || Array.isArray(average)) return "no average";
 
     const format = getFormatting();
     let speed = undefined;
     let acc = undefined;
 
     if (getConfig.showAverage === "both" || getConfig.showAverage === "speed") {
-      speed = format.typingSpeed(last10()?.wpm ?? 0, {
+      speed = format.typingSpeed(average.wpm ?? 0, {
         suffix: ` ${getConfig.typingSpeedUnit}`,
       });
     }
 
     if (getConfig.showAverage === "both" || getConfig.showAverage === "acc") {
-      acc = format.accuracy(last10()?.acc ?? 0, {
+      acc = format.accuracy(average.acc ?? 0, {
         suffix: " acc",
       });
     }

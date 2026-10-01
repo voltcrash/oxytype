@@ -8,7 +8,7 @@ import {
   ZodOptional,
   ZodSchema,
   ZodTypeAny,
-} from "zod";
+} from "zod/v3";
 
 export function getOptions<T extends ZodSchema>(
   schema: T,

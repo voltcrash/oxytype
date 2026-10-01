@@ -1,5 +1,5 @@
 import { createResource, createSignal, JSXElement, Show } from "solid-js";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import { resetConfig } from "../../../config/lifecycle";
 import { getConfig } from "../../../config/store";

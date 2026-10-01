@@ -1,8 +1,8 @@
 name: Oxytype CI
 
 env:
-  PNPM_VERSION: "11.21.0"
-  NODE_VERSION: "24.11.0"
+  PNPM_VERSION: "12.8.1"
+  NODE_VERSION: "24.21.0"
   RECAPTCHA_SITE_KEY: "6Lc-V8McAAAAAJ7s6LGNe7MBZnRiwbsbiWts87aj"
 
 permissions:
@@ -33,12 +33,12 @@ jobs:
 
     steps:
       - name: Full checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
         # paths filter doesn't need checkout on pr
         if: github.event_name != 'pull_request'
 
       - name: Detect changes
-        uses: dorny/paths-filter@v4
+        uses: dorny/paths-filter@v4.0.3
         id: filter
         with:
           filters: |
@@ -69,13 +69,13 @@ jobs:
     if: github.event.pull_request.draft == false || contains(github.event.pull_request.labels.*.name, 'force-ci') || contains(github.event.pull_request.labels.*.name, 'force-full-ci')
     steps:
       - name: Checkout pnpm-lock
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
         with:
           sparse-checkout: |
             pnpm-lock.yaml
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@v6.1.0
         with:
           version: ${{ env.PNPM_VERSION }}
 
@@ -86,7 +86,7 @@ jobs:
 
       - name: Cache node modules
         id: cache-pnpm
-        uses: actions/cache@v5
+        uses: actions/cache@v6.1.0
         env:
           cache-name: node-modules
         with:
@@ -96,11 +96,11 @@ jobs:
 
       - if: ${{ steps.cache-pnpm.outputs.cache-hit != 'true' }}
         name: Full checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
 
       - if: ${{ steps.cache-pnpm.outputs.cache-hit != 'true' }}
         name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -115,13 +115,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Full checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
 
       - name: Get changed files and write to temp
         id: get-changed-files
-        uses: actions/github-script@v9
+        uses: actions/github-script@v9.0.0
         with:
           script: |
             let files;
@@ -149,13 +149,13 @@ jobs:
 
       - name: Set up Node.js
         if: steps.get-changed-files.outputs.has-files == 'true'
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Setup pnpm
         if: steps.get-changed-files.outputs.has-files == 'true'
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@v6.1.0
         with:
           version: ${{ env.PNPM_VERSION }}
 
@@ -168,7 +168,7 @@ jobs:
       - name: Cache node modules
         if: steps.get-changed-files.outputs.has-files == 'true'
         id: cache-pnpm
-        uses: actions/cache@v5
+        uses: actions/cache@v6.1.0
         env:
           cache-name: node-modules
         with:
@@ -190,15 +190,15 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.pre-ci.outputs.should-build-be == 'true' || needs.pre-ci.outputs.should-build-pkg == 'true' || contains(github.event.pull_request.labels.*.name, 'force-full-ci')
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.1
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@v6.1.0
         with:
           version: ${{ env.PNPM_VERSION }}
 
@@ -209,7 +209,7 @@ jobs:
 
       - name: Cache node modules
         id: cache-pnpm
-        uses: actions/cache@v5
+        uses: actions/cache@v6.1.0
         env:
           cache-name: node-modules
         with:
@@ -234,10 +234,10 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.pre-ci.outputs.should-build-fe == 'true' || needs.pre-ci.outputs.should-build-pkg == 'true' || contains(github.event.pull_request.labels.*.name, 'force-full-ci')
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.1
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -246,7 +246,7 @@ jobs:
         run: mv ./firebase-config-example.ts ./firebase-config.ts && cp ./firebase-config.ts ./firebase-config-live.ts
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@v6.1.0
         with:
           version: ${{ env.PNPM_VERSION }}
 
@@ -257,7 +257,7 @@ jobs:
 
       - name: Cache node modules
         id: cache-pnpm
-        uses: actions/cache@v5
+        uses: actions/cache@v6.1.0
         env:
           cache-name: node-modules
         with:
@@ -282,9 +282,9 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.pre-ci.outputs.assets-or-styles == 'true' || needs.pre-ci.outputs.should-build-pkg == 'true' || contains(github.event.pull_request.labels.*.name, 'force-full-ci')
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.1
 
-      - uses: dorny/paths-filter@v4
+      - uses: dorny/paths-filter@v4.0.3
         id: filter
         with:
           filters: |
@@ -304,12 +304,12 @@ jobs:
               - 'frontend/static/sounds/**'
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@v6.1.0
         with:
           version: ${{ env.PNPM_VERSION }}
 
@@ -320,7 +320,7 @@ jobs:
 
       - name: Cache node modules
         id: cache-pnpm
-        uses: actions/cache@v5
+        uses: actions/cache@v6.1.0
         env:
           cache-name: node-modules
         with:
@@ -356,15 +356,15 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.pre-ci.outputs.should-build-pkg == 'true' || contains(github.event.pull_request.labels.*.name, 'force-full-ci')
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.1
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@v6.1.0
         with:
           version: ${{ env.PNPM_VERSION }}
 
@@ -375,7 +375,7 @@ jobs:
 
       - name: Cache node modules
         id: cache-pnpm
-        uses: actions/cache@v5
+        uses: actions/cache@v6.1.0
         env:
           cache-name: node-modules
         with:
@@ -417,7 +417,7 @@ jobs:
         run: echo $PR_NUM > pr_num.txt
 
       - name: Upload the PR number
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: pr_num
           path: ./pr_num.txt

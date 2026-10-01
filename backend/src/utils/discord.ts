@@ -2,7 +2,7 @@ import { getFrontendUrl } from "./misc";
 import * as RedisClient from "../init/redis";
 import { randomBytes } from "crypto";
 import MonkeyError from "./error";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { parseWithSchema as parseJsonWithSchema } from "@oxytype/util/json";
 
 const BASE_URL = "https://discord.com/api";

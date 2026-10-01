@@ -1,0 +1,64 @@
+diff --git a/index.cjs.js b/index.cjs.js
+index 06f054818f430f65daa1d8daf49114fa41fb5a89..d2966cdfa98b408184d0b794e4defb37bc3a6eb1 100644
+--- a/index.cjs.js
++++ b/index.cjs.js
+@@ -2,7 +2,7 @@
+ 
+ Object.defineProperty(exports, '__esModule', { value: true });
+ 
+-var zod = require('zod');
++var zod = require('zod/v3');
+ 
+ const isZodType = (obj) => {
+     return typeof (obj === null || obj === void 0 ? void 0 : obj.safeParse) === 'function';
+diff --git a/index.esm.mjs b/index.esm.mjs
+index eafef1eece35d2af103ae2be81139fd428d9b9d6..14a502a9a84ddf83cc019e28127d71f9cba397a7 100644
+--- a/index.esm.mjs
++++ b/index.esm.mjs
+@@ -1,4 +1,4 @@
+-import { z } from 'zod';
++import { z } from 'zod/v3';
+ 
+ const isZodType = (obj) => {
+     return typeof (obj === null || obj === void 0 ? void 0 : obj.safeParse) === 'function';
+diff --git a/src/lib/dsl.d.ts b/src/lib/dsl.d.ts
+index 0e141c8f46765f33b6efb3d459c08dc7c7551bd9..86deed96f40d60110fb81640673fdc803b94847f 100644
+--- a/src/lib/dsl.d.ts
++++ b/src/lib/dsl.d.ts
+@@ -1,5 +1,5 @@
+ import { Merge, Opaque, Prettify, WithoutUnknown } from './type-utils';
+-import { z } from 'zod';
++import { z } from 'zod/v3';
+ type MixedZodError<A, B> = Opaque<{
+     a: A;
+     b: B;
+diff --git a/src/lib/response-validation-error.d.ts b/src/lib/response-validation-error.d.ts
+index aad609673db0890f47f12bae2c57baa5f0c1e96d..f88dd28cfeacfa41e911e4f4732ff01d56a218c3 100644
+--- a/src/lib/response-validation-error.d.ts
++++ b/src/lib/response-validation-error.d.ts
+@@ -1,4 +1,4 @@
+-import { z } from 'zod';
++import { z } from 'zod/v3';
+ import { AppRoute } from './dsl';
+ export declare class ResponseValidationError extends Error {
+     appRoute: AppRoute;
+diff --git a/src/lib/type-utils.d.ts b/src/lib/type-utils.d.ts
+index 23d37b67fa93d2c10f00c459ff34338afbee3179..3fb6296bb7690c451d10f809899a79999387c831 100644
+--- a/src/lib/type-utils.d.ts
++++ b/src/lib/type-utils.d.ts
+@@ -1,4 +1,4 @@
+-import { z } from 'zod';
++import { z } from 'zod/v3';
+ import { ContractNoBodyType, ContractNullType, ContractPlainType } from './dsl';
+ type GetIndexedField<T, K> = K extends keyof T ? T[K] : K extends `${number}` ? '0' extends keyof T ? undefined : number extends keyof T ? T[number] : undefined : undefined;
+ type FieldWithPossiblyUndefined<T, Key> = GetFieldType<Exclude<T, undefined>, Key> | Extract<T, undefined>;
+diff --git a/src/lib/zod-utils.d.ts b/src/lib/zod-utils.d.ts
+index 960163ce69ac3f79840dabb50b97f72c4a800edb..c16a2ce0e8222ebfebbad92c8760c68bd1a6048a 100644
+--- a/src/lib/zod-utils.d.ts
++++ b/src/lib/zod-utils.d.ts
+@@ -1,4 +1,4 @@
+-import { z } from 'zod';
++import { z } from 'zod/v3';
+ export declare const isZodType: (obj: unknown) => obj is z.ZodTypeAny;
+ export declare const isZodObject: (obj: unknown) => obj is z.AnyZodObject | z.ZodEffects<z.AnyZodObject, {
+     [x: string]: any;

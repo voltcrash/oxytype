@@ -2,7 +2,7 @@ import { PSA } from "@oxytype/schemas/psas";
 import { IdSchema } from "@oxytype/schemas/util";
 import { isSafeNumber } from "@oxytype/util/numbers";
 import { format } from "date-fns/format";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import Ape from "../ape";
 import { authEvent } from "../events/auth";

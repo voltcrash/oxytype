@@ -15,9 +15,9 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
 
       - name: Check for Todos
-        uses: phntmxyz/pr_todo_checker@v1
+        uses: phntmxyz/pr_todo_checker@v1.2.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

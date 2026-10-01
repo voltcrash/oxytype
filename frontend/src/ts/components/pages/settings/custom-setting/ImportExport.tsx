@@ -1,5 +1,5 @@
 import { JSXElement } from "solid-js";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import { applyConfigFromJson } from "../../../../config/lifecycle";
 import { getConfig } from "../../../../config/store";

@@ -1,6 +1,6 @@
 import { createForm } from "@tanstack/solid-form";
 import { createSignal } from "solid-js";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import preview from "#.storybook/preview";
 

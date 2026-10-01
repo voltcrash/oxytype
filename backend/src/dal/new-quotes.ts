@@ -9,7 +9,7 @@ import { compareTwoStrings } from "string-similarity";
 import { ApproveQuote, Quote } from "@oxytype/schemas/quotes";
 import { WithObjectId } from "../utils/misc";
 import { parseWithSchema as parseJsonWithSchema } from "@oxytype/util/json";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { Language } from "@oxytype/schemas/languages";
 
 const JsonQuoteSchema = z.object({
@@ -80,7 +80,7 @@ export const getNewQuoteCollection = (): Collection<DBNewQuote> =>
 export async function add(
   text: string,
   source: string,
-  language: string,
+  language: Language,
   uid: string,
 ): Promise<AddQuoteReturn | undefined> {
   const repositoryPath = requireQuoteRepositoryPath();
@@ -99,7 +99,7 @@ export async function add(
   }
 
   const count = await getNewQuoteCollection().countDocuments({
-    language: language,
+    language,
   });
 
   if (count >= 100) {

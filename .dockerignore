@@ -21,3 +21,11 @@ frontend/.env
 backend/src/credentials/*.json
 backend/.env
 backend/dist
+
+# Workspace dependencies and generated build outputs
+**/node_modules
+**/dist
+**/.turbo
+**/.vite
+frontend/storybook/storybook-static
+.git

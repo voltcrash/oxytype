@@ -1,7 +1,7 @@
 import { UserNameSchema } from "@oxytype/schemas/users";
 import { createSignal, For, JSXElement } from "solid-js";
 import { envConfig } from "virtual:env-config";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import Ape from "../../ape";
 import { signIn } from "../../auth";

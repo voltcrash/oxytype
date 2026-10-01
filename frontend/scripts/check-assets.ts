@@ -16,7 +16,7 @@ import { LayoutsList } from "../src/ts/constants/layouts";
 import { KnownFontName } from "@oxytype/schemas/fonts";
 import { Fonts } from "../src/ts/constants/fonts";
 import { themes, ThemeSchema, ThemesList } from "../src/ts/constants/themes";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { LayoutObject, LayoutObjectSchema } from "@oxytype/schemas/layouts";
 import { QuoteDataSchema, QuoteData } from "@oxytype/schemas/quotes";
 import { clickSoundConfig } from "../src/ts/constants/sounds";

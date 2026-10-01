@@ -1,7 +1,7 @@
 import { AnyFieldApi } from "@tanstack/solid-form";
 import { format as dateFormat } from "date-fns/format";
 import { Accessor, createSignal, JSXElement, Show } from "solid-js";
-import { ZodDate, ZodFirstPartyTypeKind, ZodNumber, ZodTypeAny } from "zod";
+import { ZodDate, ZodFirstPartyTypeKind, ZodNumber, ZodTypeAny } from "zod/v3";
 
 import { cn } from "../../../utils/cn";
 import { getZodType, unwrapSchema } from "../../../utils/zod";

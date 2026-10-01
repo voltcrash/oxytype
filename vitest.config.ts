@@ -1,4 +1,4 @@
-import { defineConfig, UserWorkspaceConfig } from "vite-plus";
+import { defineConfig, TestProjectInlineConfiguration } from "vite-plus";
 import { projects as backendProjects } from "./backend/vitest.config";
 import { projects as frontendProjects } from "./frontend/vitest.config";
 
@@ -22,10 +22,10 @@ export default defineConfig({
   },
 });
 
-function convertTests(
-  projects: UserWorkspaceConfig[],
+function convertTests<T extends TestProjectInlineConfiguration>(
+  projects: T[],
   root: string,
-): UserWorkspaceConfig[] {
+): T[] {
   return projects.map((it) => {
     const test = it.test ?? {};
     const name: string | { label: string } = test.name ?? "unknown";

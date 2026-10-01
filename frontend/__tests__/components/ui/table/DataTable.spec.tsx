@@ -54,6 +54,7 @@ const data: Person[] = [
 
 describe("DataTable", () => {
   beforeEach(() => {
+    setLocalStorage([]);
     bpSignal[1]({
       xxs: true,
       sm: true,
@@ -156,5 +157,57 @@ describe("DataTable", () => {
     expect(nameHeader).not.toHaveClass("hidden");
     expect(nameHeader).toHaveClass("sm:hidden");
     expect(ageHeader).toHaveClass("hidden sm:table-cell");
+  });
+
+  it("updates rows when reactive data changes", () => {
+    const [people, setPeople] = createSignal(data);
+    render(() => <DataTable id="reactive" columns={columns} data={people()} />);
+
+    setPeople([{ name: "Charlie", age: 40 }]);
+
+    expect(screen.queryByText("Alice")).not.toBeInTheDocument();
+    expect(screen.queryByText("Bob")).not.toBeInTheDocument();
+    expect(screen.getByText("Charlie")).toBeInTheDocument();
+    expect(screen.getAllByRole("row")).toHaveLength(2);
+  });
+
+  it("updates the externally selected row", () => {
+    const [activeRow, setActiveRow] = createSignal<string | null>("Alice");
+    render(() => (
+      <DataTable
+        id="selected"
+        columns={columns}
+        data={data}
+        rowSelection={{
+          getRowId: (row) => row.name,
+          class: "bg-main",
+          activeRow,
+        }}
+      />
+    ));
+
+    expect(screen.getByText("Alice").closest("tr")).toHaveClass("bg-main");
+    setActiveRow("Bob");
+    expect(screen.getByText("Alice").closest("tr")).not.toHaveClass("bg-main");
+    expect(screen.getByText("Bob").closest("tr")).toHaveClass("bg-main");
+    setActiveRow(null);
+    expect(screen.getByText("Bob").closest("tr")).not.toHaveClass("bg-main");
+  });
+
+  it("delegates sorting without reordering server-sorted data", () => {
+    const onSortingChange = vi.fn();
+    render(() => (
+      <DataTable
+        id="server-sorting"
+        columns={columns}
+        data={[...data].reverse()}
+        onSortingChange={onSortingChange}
+      />
+    ));
+
+    fireEvent.click(screen.getByRole("button", { name: "Age" }));
+
+    expect(onSortingChange).toHaveBeenCalledWith([{ id: "age", desc: true }]);
+    expect(screen.getAllByRole("row")[1]).toHaveTextContent("Bob");
   });
 });

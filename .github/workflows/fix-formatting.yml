@@ -1,8 +1,8 @@
 name: Fix formatting
 
 env:
-  PNPM_VERSION: "11.21.0"
-  NODE_VERSION: "24.11.0"
+  PNPM_VERSION: "12.8.1"
+  NODE_VERSION: "24.21.0"
 
 permissions:
   contents: write
@@ -18,18 +18,18 @@ jobs:
     if: github.event.label.name == 'format'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name}}
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@v6.1.0
         with:
           version: ${{ env.PNPM_VERSION }}
 
@@ -38,7 +38,7 @@ jobs:
 
       - name: Get changed files and write to temp
         id: get-changed-files
-        uses: actions/github-script@v9
+        uses: actions/github-script@v9.0.0
         with:
           script: |
             const changedFiles = await github.paginate(
@@ -61,11 +61,11 @@ jobs:
           xargs -0 pnpm exec vp fmt --no-error-on-unmatched-pattern < /tmp/changed-files.txt
 
       - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7.2.0
         with:
           commit_message: "fix formatting"
 
       - name: Remove label
-        uses: actions-ecosystem/action-remove-labels@v1
+        uses: actions-ecosystem/action-remove-labels@v1.3.0
         with:
           labels: format

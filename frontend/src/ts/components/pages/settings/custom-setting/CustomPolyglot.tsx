@@ -1,5 +1,5 @@
 import { CustomPolyglot as CustomPolyglotType } from "@oxytype/schemas/configs";
-import { Optgroup } from "slim-select/store";
+import { Optgroup } from "slim-select";
 import { JSXElement } from "solid-js";
 
 import { configMetadata } from "../../../../config/metadata";

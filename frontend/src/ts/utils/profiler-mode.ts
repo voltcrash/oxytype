@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 import { LocalStorageWithSchema } from "./local-storage-with-schema";
 import { isDevEnvironment } from "./env";
 

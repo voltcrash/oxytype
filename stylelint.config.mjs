@@ -17,6 +17,10 @@ export default {
       true,
       { ignoreAtRules: ["theme", "utility", "tailwind", "apply", "source"] },
     ], // source for lightningCss and the rest for tailwind //default: true
+    "at-rule-prelude-no-invalid": [
+      true,
+      { ignoreAtRules: ["theme", "utility", "tailwind", "apply", "source"] },
+    ],
     "selector-type-no-unknown": [
       true,
       { ignore: ["custom-elements"], ignoreTypes: ["letter", "hint"] },
@@ -60,6 +64,20 @@ export default {
         "no-invalid-position-at-import-rule": null, // consider adding // default: [true, {ignoreAtRules: ['use', 'forward'],},]
 
         "at-rule-no-unknown": null, // use "scss/at-rule-no-unknown" to override this
+        "at-rule-prelude-no-invalid": [
+          true,
+          {
+            ignoreAtRules: [
+              "theme",
+              "utility",
+              "tailwind",
+              "apply",
+              "source",
+              "mixin",
+              "import",
+            ],
+          },
+        ], // Sass mixins and imports use different syntax from CSS
 
         "scss/at-extend-no-missing-placeholder": null,
         "scss/load-no-partial-leading-underscore": null,

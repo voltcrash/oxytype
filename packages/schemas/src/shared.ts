@@ -1,4 +1,4 @@
-import { literal, z } from "zod";
+import { literal, z } from "zod/v3";
 import { StringNumberSchema } from "./util";
 import { LanguageSchema } from "./languages";
 

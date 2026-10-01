@@ -4,7 +4,7 @@ import { ChartJs } from "../../src/ts/components/common/ChartJs";
 
 const meta = preview.meta({
   title: "Common/ChartJs",
-  component: ChartJs,
+  component: ChartJs<"bar" | "line" | "scatter">,
   parameters: {
     layout: "padded",
   },

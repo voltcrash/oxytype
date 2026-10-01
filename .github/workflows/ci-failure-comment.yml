@@ -13,7 +13,7 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     steps:
       - name: Download workflow artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
@@ -22,12 +22,12 @@ jobs:
 
       - name: Read the pr_num file
         id: pr_num_reader
-        uses: juliangruber/read-file-action@v1
+        uses: juliangruber/read-file-action@v1.1.8
         with:
           path: ./pr_num/pr_num.txt
 
       - name: Create comment
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@v5.0.0
         with:
           issue-number: ${{ steps.pr_num_reader.outputs.content }}
           body: |

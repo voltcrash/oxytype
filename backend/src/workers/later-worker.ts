@@ -1,4 +1,4 @@
-import IORedis from "ioredis";
+import type { Redis } from "ioredis";
 import { Worker, Job, type ConnectionOptions } from "bullmq";
 import Logger from "../utils/logger";
 import { addToInboxBulk } from "../dal/user";
@@ -206,14 +206,14 @@ function calculateXpReward(
   return rewards.length ? Math.max(...rewards) : undefined;
 }
 
-export default (redisConnection?: IORedis.Redis): Worker => {
+export default (redisConnection?: Redis): Worker => {
   const worker = new Worker(LaterQueue.queueName, jobHandler, {
     autorun: false,
     connection: redisConnection as ConnectionOptions,
   });
   worker.on("failed", (job, error) => {
     Logger.error(
-      `Job: ${job.data.taskName} - failed with error "${error.message}"`,
+      `Job: ${job?.data.taskName ?? "unknown"} - failed with error "${error.message}"`,
     );
   });
   return worker;

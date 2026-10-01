@@ -2,10 +2,9 @@ import { PersonalBest } from "@oxytype/schemas/shared";
 import { Friend, UserNameSchema } from "@oxytype/schemas/users";
 import { isSafeNumber } from "@oxytype/util/numbers";
 import { useQuery } from "@tanstack/solid-query";
-import { createColumnHelper } from "@tanstack/solid-table";
 import { format as dateFormat } from "date-fns/format";
 import { createMemo, Show } from "solid-js";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import Ape from "../../../ape";
 import {
@@ -29,6 +28,7 @@ import { H2 } from "../../common/Headers";
 import { LoadingCircle } from "../../common/LoadingCircle";
 import { User } from "../../common/User";
 import { DataTable, DataTableColumnDef } from "../../ui/table/DataTable";
+import { createDataTableColumnHelper as createColumnHelper } from "../../ui/table/features";
 
 export function FriendsList() {
   const isOpen = () => getActivePage() === "friends";

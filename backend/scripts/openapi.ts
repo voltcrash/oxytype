@@ -2,7 +2,12 @@ import { generateOpenApi } from "@ts-rest/open-api";
 import { COMPATIBILITY_CHECK, contract } from "@oxytype/contracts/index";
 import { writeFileSync, mkdirSync } from "fs";
 import { EndpointMetadata, PermissionId } from "@oxytype/contracts/util/api";
-import type { OpenAPIObject, OperationObject } from "openapi3-ts";
+type OpenAPIObject = ReturnType<typeof generateOpenApi>;
+type OperationObject = Parameters<
+  NonNullable<
+    NonNullable<Parameters<typeof generateOpenApi>[2]>["operationMapper"]
+  >
+>[0];
 import {
   RateLimitIds,
   getLimits,

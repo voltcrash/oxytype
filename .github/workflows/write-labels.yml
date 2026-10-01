@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Download workflow artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
@@ -25,7 +25,7 @@ jobs:
 
       - name: Read json file
         id: json_reader
-        uses: juliangruber/read-file-action@v1
+        uses: juliangruber/read-file-action@v1.1.8
         with:
           path: ./labels/write-labels.json
 

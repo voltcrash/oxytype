@@ -7,7 +7,7 @@ import {
   JSXElement,
   Show,
 } from "solid-js";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import type {
   WordLetter,

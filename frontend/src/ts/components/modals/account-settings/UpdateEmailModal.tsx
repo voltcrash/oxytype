@@ -1,5 +1,5 @@
 import { UserEmailSchema } from "@oxytype/schemas/users";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import Ape from "../../../ape";
 import {

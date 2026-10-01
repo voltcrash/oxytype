@@ -52,7 +52,7 @@ function updateColors(chart: ResultChartType, colors: Theme): void {
     const scale = chart.options.scales?.[scaleKey] as CartesianScaleOptions;
     scale.grid.color = gridcolor;
     scale.grid.tickColor = gridcolor;
-    scale.grid.borderColor = gridcolor;
+    scale.border.color = gridcolor;
     scale.ticks.color = colors.sub;
     scale.title.color = colors.sub;
   }
@@ -99,7 +99,6 @@ export function ResultChart(props: {
     labels: [],
     datasets: [
       {
-        //@ts-expect-error the type is defined incorrectly, have to ignore the error
         clip: false,
         label: "wpm",
         data: [],
@@ -110,7 +109,6 @@ export function ResultChart(props: {
         pointRadius: 1,
       },
       {
-        //@ts-expect-error the type is defined incorrectly, have to ignore the error
         clip: false,
         label: "raw",
         data: [],
@@ -122,7 +120,6 @@ export function ResultChart(props: {
         pointRadius: 0,
       },
       {
-        //@ts-expect-error the type is defined incorrectly, have to ignore the error
         clip: false,
         label: "errors",
         data: [],
@@ -145,7 +142,6 @@ export function ResultChart(props: {
         },
       },
       {
-        //@ts-expect-error the type is defined incorrectly, have to ignore the error
         clip: false,
         label: "burst",
         data: [],

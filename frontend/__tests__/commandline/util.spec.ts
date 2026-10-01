@@ -6,7 +6,7 @@ import * as Util from "../../src/ts/commandline/util";
 import type { CommandlineConfigMetadata } from "../../src/ts/commandline/commandline-metadata";
 import type { ConfigKey } from "@oxytype/schemas/configs";
 import type { ConfigMetadata } from "../../src/ts/config/metadata";
-import { z, ZodSchema } from "zod";
+import { z, ZodSchema } from "zod/v3";
 import { Command } from "../../src/ts/commandline/types";
 
 const buildCommandForConfigKey = Util.__testing._buildCommandForConfigKey;

@@ -1,6 +1,6 @@
 import { createForm } from "@tanstack/solid-form";
 import { JSXElement } from "solid-js";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import { setConfig } from "../../config/setters";
 import { getConfig } from "../../config/store";

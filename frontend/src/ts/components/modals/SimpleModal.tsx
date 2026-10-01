@@ -10,7 +10,7 @@ import {
   Switch,
   untrack,
 } from "solid-js";
-import { z, ZodFirstPartyTypeKind } from "zod";
+import { z, ZodFirstPartyTypeKind } from "zod/v3";
 
 import { hideLoaderBar, showLoaderBar } from "../../states/loader-bar";
 import {

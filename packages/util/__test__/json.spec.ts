@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vite-plus/test";
 import { parseWithSchema } from "../src/json";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 describe("json", () => {
   describe("parseWithSchema", () => {

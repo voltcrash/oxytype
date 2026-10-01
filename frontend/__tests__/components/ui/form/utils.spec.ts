@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vite-plus/test";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import {
   fromSchema,

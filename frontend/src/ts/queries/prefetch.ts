@@ -7,21 +7,25 @@ import {
 import { getLeaderboardQueryOptions } from "./leaderboards";
 
 export function prefetchAboutPage(): void {
-  void queryClient.prefetchQuery(getContributorsQueryOptions());
-  void queryClient.prefetchQuery(getTypingStatsQueryOptions());
-  void queryClient.prefetchQuery(getSpeedHistogramQueryOptions());
+  void queryClient.query(getContributorsQueryOptions()).catch(() => undefined);
+  void queryClient.query(getTypingStatsQueryOptions()).catch(() => undefined);
+  void queryClient
+    .query(getSpeedHistogramQueryOptions())
+    .catch(() => undefined);
 }
 
 export function prefetchLeaderboardPage(): void {
-  void queryClient.prefetchQuery(
-    getLeaderboardQueryOptions({
-      type: "allTime",
-      mode: "time",
-      mode2: "15",
-      language: "english",
-      friendsOnly: false,
-      page: 0,
-      previous: false,
-    }),
-  );
+  void queryClient
+    .query(
+      getLeaderboardQueryOptions({
+        type: "allTime",
+        mode: "time",
+        mode2: "15",
+        language: "english",
+        friendsOnly: false,
+        page: 0,
+        previous: false,
+      }),
+    )
+    .catch(() => undefined);
 }

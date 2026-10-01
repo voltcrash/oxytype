@@ -13,7 +13,7 @@ import { getErrorMessage } from "../utils/error";
 import { join } from "path";
 import { existsSync, readFileSync } from "fs";
 import { parseWithSchema as parseJsonWithSchema } from "@oxytype/util/json";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { intersect } from "@oxytype/util/arrays";
 
 const CONFIG_UPDATE_INTERVAL = 10 * 60 * 1000; // 10 Minutes

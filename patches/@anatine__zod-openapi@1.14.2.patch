@@ -1,0 +1,38 @@
+diff --git a/src/lib/zod-extensions.d.ts b/src/lib/zod-extensions.d.ts
+index ccef4724ba4d9db17d8508cfceb12ef9a22d0349..039147c84b4be33b792d01d5f778593043d3f23e 100644
+--- a/src/lib/zod-extensions.d.ts
++++ b/src/lib/zod-extensions.d.ts
+@@ -1,7 +1,7 @@
+-import { z } from "zod";
++import { z } from "zod/v3";
+ import { SchemaObject } from "openapi3-ts/oas31";
+ import { ZodTypeDef } from "zod/lib/types";
+-declare module 'zod' {
++declare module 'zod/v3' {
+     interface ZodSchema<Output = any, Def extends ZodTypeDef = ZodTypeDef, Input = Output> {
+         openapi<T extends ZodSchema<Output, Def, Input>>(this: T, metadata: Partial<SchemaObject>): T;
+     }
+diff --git a/src/lib/zod-openapi.d.ts b/src/lib/zod-openapi.d.ts
+index 9d16b1ca05b0b17d523774d79ae582b13ab1b77f..0e54cc9603c0245abab4c80576fef8dae2b50c25 100644
+--- a/src/lib/zod-openapi.d.ts
++++ b/src/lib/zod-openapi.d.ts
+@@ -1,5 +1,5 @@
+ import type { SchemaObject } from 'openapi3-ts/oas31';
+-import { ZodTypeAny } from 'zod';
++import { ZodTypeAny } from 'zod/v3';
+ export interface OpenApiZodAny extends ZodTypeAny {
+     metaOpenApi?: SchemaObject | SchemaObject[];
+ }
+diff --git a/src/lib/zod-openapi.js b/src/lib/zod-openapi.js
+index cc71afb4d872b755908f03b9cf441112240405de..99658b5591bb220a7e8d007efc8b244126746386 100644
+--- a/src/lib/zod-openapi.js
++++ b/src/lib/zod-openapi.js
+@@ -2,7 +2,7 @@
+ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.generateSchema = exports.extendApi = void 0;
+ const ts_deepmerge_1 = require("ts-deepmerge");
+-const zod_1 = require("zod");
++const zod_1 = require("zod/v3");
+ function extendApi(schema, SchemaObject = {}) {
+     schema.metaOpenApi = Object.assign(schema.metaOpenApi || {}, SchemaObject);
+     return schema;

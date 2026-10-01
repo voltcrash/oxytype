@@ -53,12 +53,12 @@ export type RedisConnectionWithCustomMethods = Redis & {
   ) => Promise<void>;
 };
 
-let connection: IORedis.Redis;
+let connection: Redis;
 let connected = false;
 
 const REDIS_SCRIPTS_DIRECTORY_PATH = join(__dirname, "../../redis-scripts");
 
-function loadScripts(client: IORedis.Redis): void {
+function loadScripts(client: Redis): void {
   const scriptFiles = fs.readdirSync(REDIS_SCRIPTS_DIRECTORY_PATH);
 
   scriptFiles.forEach((scriptFile) => {
@@ -79,7 +79,7 @@ export async function connect(): Promise<void> {
 
   const { REDIS_URI } = process.env;
 
-  if (!(REDIS_URI ?? "")) {
+  if (REDIS_URI === undefined || REDIS_URI === "") {
     if (isDevEnvironment()) {
       Logger.warning("No redis configuration provided. Running without redis.");
       return;

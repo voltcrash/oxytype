@@ -1,5 +1,4 @@
 import { Mode2, Mode, PersonalBest } from "@oxytype/schemas/shared";
-import { createColumnHelper } from "@tanstack/solid-table";
 import { format as formatDate } from "date-fns/format";
 import { createMemo, createSignal, JSXElement } from "solid-js";
 
@@ -12,6 +11,7 @@ import { getLanguageDisplayString } from "../../utils/strings";
 import { AnimatedModal } from "../common/AnimatedModal";
 import { Fa } from "../common/Fa";
 import { DataTable, DataTableColumnDef } from "../ui/table/DataTable";
+import { createDataTableColumnHelper as createColumnHelper } from "../ui/table/features";
 
 type PBWithMode2 = PersonalBest & {
   mode2: Mode2<Mode>;

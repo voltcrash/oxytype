@@ -109,7 +109,7 @@ export function AddPresetModal(): JSXElement {
     },
   );
 
-  //  const formErrorMap = form.useStore((state) => state.errorMap);
+  //  const formErrorMap = form.useSelector((state) => state.errorMap);
 
   return (
     <AnimatedModal id="AddPresetModal" title="Add new preset">

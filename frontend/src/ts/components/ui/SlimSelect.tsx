@@ -1,7 +1,6 @@
 import type { JSX, JSXElement } from "solid-js";
 
-import SlimSelectCore, { Config } from "slim-select";
-import { Optgroup, Option } from "slim-select/store";
+import SlimSelectCore, { Config, Optgroup, Option } from "slim-select";
 import { onMount, onCleanup, createEffect, createSignal } from "solid-js";
 
 import { areUnsortedArraysEqual } from "../../utils/arrays";
@@ -12,11 +11,11 @@ function updateSlimSelectData(
   data: (Partial<Option> | Partial<Optgroup>)[],
   scheduleRender = false,
 ): void {
-  slimSelect.store.setData(data as Option[]);
+  slimSelect.store.setData(data);
   if (scheduleRender) {
     requestAnimationFrame(() => {
       slimSelect.render.renderValues();
-      slimSelect.render.renderOptions(data as Option[]);
+      slimSelect.render.renderOptions(slimSelect.store.getData());
     });
   }
 }
@@ -48,7 +47,7 @@ export type SlimSelectProps = {
     }
 );
 
-export default function SlimSelect(props: SlimSelectProps): JSXElement {
+function SlimSelect(props: SlimSelectProps): JSXElement {
   let selectRef!: HTMLSelectElement;
   let containerRef!: HTMLDivElement;
   let slimSelect: SlimSelectCore | null = null;
@@ -144,7 +143,7 @@ export default function SlimSelect(props: SlimSelectProps): JSXElement {
       if (!("value" in item)) continue;
       item.selected = item.value === "all";
     }
-    slimSelect.store.setData(data as Option[]);
+    slimSelect.store.setData(data);
     slimSelect.render.renderValues();
 
     // Second pass: mark all items as selected in the data
@@ -158,8 +157,8 @@ export default function SlimSelect(props: SlimSelectProps): JSXElement {
 
     requestAnimationFrame(() => {
       if (!slimSelect) return;
-      slimSelect.store.setData(data as Option[]);
-      slimSelect.render.renderOptions(data as Option[]);
+      slimSelect.store.setData(data);
+      slimSelect.render.renderOptions(slimSelect.store.getData());
     });
   };
 
@@ -251,7 +250,7 @@ export default function SlimSelect(props: SlimSelectProps): JSXElement {
 
     const config: Config = {
       select: selectRef,
-      data: getInitialData() as Option[],
+      data: getInitialData(),
       settings: {
         ...props.settings,
         ...(props.appendTo === "container" && {
@@ -379,7 +378,7 @@ export default function SlimSelect(props: SlimSelectProps): JSXElement {
         .filter((item) => item.selected);
 
       if (selectedOptions.length > 0) {
-        let initialValue = selectedOptions.map((o) => o.value);
+        let initialValue = selectedOptions.map((o) => o.value ?? o.text ?? "");
 
         if (props.settings?.addAllOption) {
           if (initialValue.length === 1 && initialValue[0] === "all") {
@@ -448,7 +447,7 @@ export default function SlimSelect(props: SlimSelectProps): JSXElement {
       if (isActiveInstance) return;
 
       const data = buildData(options, selected ?? []);
-      slimSelect.store.setData(getDataWithAll(data) as Option[]);
+      slimSelect.store.setData(getDataWithAll(data));
 
       // Handle "all" option when all items are selected
       if (props.settings?.addAllOption && props.multiple) {
@@ -496,3 +495,5 @@ export default function SlimSelect(props: SlimSelectProps): JSXElement {
     </div>
   );
 }
+
+export default SlimSelect;

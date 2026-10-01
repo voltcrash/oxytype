@@ -4,7 +4,7 @@ import { showModal, hideModal } from "./modals";
 import { AddNotificationOptions } from "./notifications";
 
 import { Validation } from "../types/validation";
-import { z, ZodTypeAny } from "zod";
+import { z, ZodTypeAny } from "zod/v3";
 
 type InferSchema<T extends ZodTypeAny> = z.infer<T>;
 

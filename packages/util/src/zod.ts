@@ -1,4 +1,4 @@
-import { ZodError } from "zod";
+import { ZodError } from "zod/v3";
 
 //from https://github.com/colinhacks/zod/pull/3819
 export function isZodError(error: unknown): error is ZodError {

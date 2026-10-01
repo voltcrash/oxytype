@@ -6,14 +6,22 @@ import { fontawesomeSubset as createFontawesomeSubset } from "fontawesome-subset
 
 function parseIcons(iconSet: string): string[] {
   const require = createRequire(import.meta.url);
-  const path = require.resolve(
-    `@fortawesome/fontawesome-free/js/${iconSet}.js`,
+  const metadataPath =
+    require.resolve("@fortawesome/fontawesome-free/metadata/icon-families.json");
+  const icons = JSON.parse(fs.readFileSync(metadataPath, "utf8")) as Record<
+    string,
+    {
+      familyStylesByLicense: { free: { family: string; style: string }[] };
+      aliases?: { names?: string[] };
+    }
+  >;
+  return Object.entries(icons).flatMap(([name, icon]) =>
+    icon.familyStylesByLicense.free.some(
+      ({ family, style }) => family === "classic" && style === iconSet,
+    )
+      ? [name, ...(icon.aliases?.names ?? [])]
+      : [],
   );
-  const file: string | null = fs.readFileSync(path).toString();
-
-  return file
-    ?.match(/"(.*)": \[.*\],/g)
-    ?.map((it) => it.substring(1, it.indexOf(":") - 1)) as string[];
 }
 
 type FontawesomeConfig = {
@@ -100,8 +108,7 @@ function getFontawesomeConfig(debug = false): FontawesomeConfig {
   const srcFiles = findAllFiles(
     "./src",
     (filename) =>
-      !filename.endsWith("fontawesome-5.scss") &&
-      !filename.endsWith("fontawesome-6.scss"), //ignore our own css
+      !filename.endsWith("fontawesome.scss") && !filename.endsWith(".d.ts"), //ignore CSS and type declarations
   );
   const staticFiles = findAllFiles(
     "./static",

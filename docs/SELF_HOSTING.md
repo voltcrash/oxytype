@@ -11,6 +11,7 @@
   - [Prerequisites](#prerequisites)
   - [Quickstart](#quickstart)
     - [Hosting over the network (HTTPS)](#hosting-over-the-network-https)
+  - [Upgrading database containers](#upgrading-database-containers)
   - [Security](#security)
   - [Account System](#account-system)
     - [Setup Firebase](#setup-firebase)
@@ -72,6 +73,19 @@ docker compose up -d --force-recreate
 
 > [!TIP]
 >     After updating your configuration and recreating the containers, clear your browser cache or perform a hard reload (Ctrl + F5) to make sure your browser isn't running an old cached version of the frontend.
+
+
+## Upgrading database containers
+
+The Compose files now pin MongoDB 9.0.2 and Redis 8.10.2. Fresh installations can use these images directly. Existing MongoDB 5 volumes require a staged upgrade before using the new Compose file.
+
+1. Stop application writes and create a verified backup of MongoDB and Redis. Keep the previous Compose file and image tags for recovery. Do not delete persistent volumes.
+2. Upgrade MongoDB through supported major versions: 5 → 6 → 7 → 8 → 9. At each step, first install the latest supported patch of the current major, follow that version's upgrade instructions, then set its feature compatibility version after validation. Never start MongoDB 9 against a MongoDB 5 data directory.
+3. Before the final step, follow MongoDB's [standalone upgrade to 9.0](https://www.mongodb.com/docs/manual/release-notes/9.0-upgrade-standalone/). Replica sets require the corresponding replica-set procedure.
+4. Test Redis 8 against a copy of your persistence files, including BullMQ jobs, before switching production traffic. Keep a pre-upgrade snapshot; do not assume newer RDB/AOF files can be read by the previous Redis version.
+5. Start the updated application and check authentication, result writes, leaderboards, and queued email jobs. Recovery after a database format or feature compatibility change requires restoring the pre-upgrade backup into the matching old version.
+
+Integration tests use disposable MongoDB/Redis containers and never upgrade existing application volumes.
 
 
 ## Security

@@ -18,7 +18,7 @@
     "build": "npm run madge && vp pack",
     "test": "vp test run",
     "madge": " madge --circular --extensions ts ./src",
-    "ts-check": "tsc --noEmit",
+    "ts-check": "vp lint . --type-aware --type-check --format agent",
     "lint": "vp lint . --type-aware --type-check --format agent",
     "lint-fast": "vp lint . --format agent"
   },
@@ -28,7 +28,7 @@
   "devDependencies": {
     "@oxytype/tsdown-config": "workspace:*",
     "@oxytype/typescript-config": "workspace:*",
-    "@types/node": "24.9.1",
+    "@types/node": "24.19.0",
     "madge": "8.0.0",
     "typescript": "7.0.2",
     "vite-plus": "catalog:",
@@ -36,6 +36,6 @@
   },
   "peerDependencies": {
     "@ts-rest/core": "3.52.1",
-    "zod": "3.23.8"
+    "zod": "4.6.5"
   }
 }

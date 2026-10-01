@@ -1,4 +1,4 @@
-import { z, ZodIssue } from "zod";
+import { z, ZodIssue } from "zod/v3";
 import { tryCatchSync } from "./trycatch";
 
 function prettyErrorMessage(issue: ZodIssue | undefined): string {
