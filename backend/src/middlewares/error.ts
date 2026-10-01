@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import Logger from "../utils/logger";
 import MonkeyError, { getErrorMessage } from "../utils/error";
 import { incrementBadAuth } from "./rate-limit";
-import type { NextFunction, Response } from "express";
+import { ApiContext } from "../api/http";
 import { isCustomCode } from "../constants/monkey-status-codes";
 
 import {
@@ -13,7 +13,6 @@ import {
 import { isDevEnvironment } from "../utils/misc";
 import { version } from "../version";
 import { addLog } from "../dal/logs";
-import { ExpressRequestWithContext } from "../api/types";
 
 type DBError = {
   _id: string; //we are using uuid here, not objectIds
@@ -34,16 +33,15 @@ type ErrorData = {
 
 async function errorHandlingMiddleware(
   error: Error,
-  req: ExpressRequestWithContext,
-  res: Response,
-  _next: NextFunction,
-): Promise<void> {
+  c: ApiContext,
+): Promise<Response> {
+  const req = c.get("request");
   try {
     const monkeyError = error as MonkeyError;
     let status = 500;
     const data: { errorId?: string; uid: string } = {
       errorId: monkeyError.errorId ?? uuidv4(),
-      uid: monkeyError.uid ?? req.ctx?.decodedToken?.uid,
+      uid: monkeyError.uid ?? req?.ctx.decodedToken.uid ?? "",
     };
     let message = "Unknown error";
 
@@ -59,10 +57,10 @@ async function errorHandlingMiddleware(
       message = `Oops! Our monkeys dropped their bananas. Please try again later. - ${data.errorId}`;
     }
 
-    await incrementBadAuth(req, res, status);
+    await incrementBadAuth(req, status);
 
     if (status >= 400 && status < 500) {
-      recordClientErrorByVersion(req.headers["x-client-version"] as string);
+      recordClientErrorByVersion(c.req.header("x-client-version") ?? "unknown");
     }
 
     if (!isDevEnvironment() && status >= 500 && status !== 503) {
@@ -86,9 +84,9 @@ async function errorHandlingMiddleware(
           uid,
           message: error.message,
           stack: error.stack,
-          endpoint: req.originalUrl,
-          method: req.method,
-          url: req.url,
+          endpoint: req?.originalUrl ?? c.req.path,
+          method: c.req.method,
+          url: c.req.url,
         });
       } catch (e) {
         Logger.error("Logging to db failed.");
@@ -103,36 +101,31 @@ async function errorHandlingMiddleware(
       delete data.errorId;
     }
 
-    handleErrorResponse(res, status, message, data);
-    return;
+    return handleErrorResponse(c, status, message, data);
   } catch (e) {
     Logger.error("Error handling middleware failed.");
     Logger.error(getErrorMessage(e) ?? "Unknown error");
     console.error(e);
   }
 
-  handleErrorResponse(
-    res,
+  return handleErrorResponse(
+    c,
     500,
     "Something went really wrong, please contact support.",
   );
 }
 
 function handleErrorResponse(
-  res: Response,
+  c: ApiContext,
   status: number,
   message: string,
   data?: ErrorData,
-): void {
-  res.status(status);
-  if (isCustomCode(status)) {
-    res.statusMessage = message;
-  }
-
-  //@ts-expect-error ignored so that we can see message in swagger stats
-  res.monkeyMessage = message;
-
-  res.json({ message, data: data ?? null });
+): Response {
+  return c.newResponse(JSON.stringify({ message, data: data ?? null }), {
+    status,
+    statusText: isCustomCode(status) ? message : undefined,
+    headers: { "Content-Type": "application/json; charset=utf-8" },
+  });
 }
 
 export default errorHandlingMiddleware;

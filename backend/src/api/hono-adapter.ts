@@ -56,10 +56,14 @@ export function createHonoEndpoints<T extends AppRouter>(
 ): void {
   registerRouter(contract, router as unknown as RuntimeRouter);
 
-  function registerRouter(schema: AppRouter, implementation: RuntimeRouter): void {
+  function registerRouter(
+    schema: AppRouter,
+    implementation: RuntimeRouter,
+  ): void {
     for (const [key, route] of Object.entries(schema)) {
       const entry = implementation[key];
-      if (entry === undefined) throw new Error(`Missing route implementation: ${key}`);
+      if (entry === undefined)
+        throw new Error(`Missing route implementation: ${key}`);
       if (!isAppRoute(route)) {
         registerRouter(route, entry as RuntimeRouter);
         continue;
@@ -78,10 +82,20 @@ export function createHonoEndpoints<T extends AppRouter>(
         ...(endpoint.middleware ?? []),
         async (c) => {
           const req = c.get("request");
-          const params = checkZodSchema(req.params, route.pathParams, { passThroughExtraKeys: true });
-          const headers = checkZodSchema(req.headers, route.headers, { passThroughExtraKeys: true });
-          const query = checkZodSchema(parseJsonQueryObject(req.query as Record<string, string>), route.query);
-          const body = checkZodSchema(req.body, "body" in route ? route.body : null);
+          const params = checkZodSchema(req.params, route.pathParams, {
+            passThroughExtraKeys: true,
+          });
+          const headers = checkZodSchema(req.headers, route.headers, {
+            passThroughExtraKeys: true,
+          });
+          const query = checkZodSchema(
+            parseJsonQueryObject(req.query as Record<string, string>),
+            route.query,
+          );
+          const body = checkZodSchema(
+            req.body,
+            "body" in route ? route.body : null,
+          );
           const failure = [
             { result: params, message: "Invalid path parameter schema" },
             { result: query, message: "Invalid query schema" },
@@ -89,14 +103,23 @@ export function createHonoEndpoints<T extends AppRouter>(
             { result: headers, message: "Invalid header schema" },
           ].find(({ result }) => !result.success);
           if (failure !== undefined && !failure.result.success) {
-            return c.json({
-              message: failure.message,
-              validationErrors: failure.result.error.issues.map((issue) =>
-                `${issue.path.length > 0 ? `"${issue.path.join(".")}" ` : ""}${issue.message}`,
-              ),
-            }, 422);
+            return c.json(
+              {
+                message: failure.message,
+                validationErrors: failure.result.error.issues.map(
+                  (issue) =>
+                    `${issue.path.length > 0 ? `"${issue.path.join(".")}" ` : ""}${issue.message}`,
+                ),
+              },
+              422,
+            );
           }
-          if (!params.success || !headers.success || !query.success || !body.success) {
+          if (
+            !params.success ||
+            !headers.success ||
+            !query.success ||
+            !body.success
+          ) {
             throw new Error("Unrecognized contract validation failure");
           }
           let response: { status: number; body: unknown };

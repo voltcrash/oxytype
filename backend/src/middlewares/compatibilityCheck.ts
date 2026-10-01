@@ -2,19 +2,9 @@ import {
   COMPATIBILITY_CHECK,
   COMPATIBILITY_CHECK_HEADER,
 } from "@oxytype/contracts";
-import type { Response, NextFunction, Request } from "express";
+import { ApiMiddleware } from "../api/http";
 
-/**
- * Add the COMPATIBILITY_CHECK_HEADER to each response
- * @param _req
- * @param res
- * @param next
- */
-export async function compatibilityCheckMiddleware(
-  _req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> {
-  res.setHeader(COMPATIBILITY_CHECK_HEADER, COMPATIBILITY_CHECK);
-  next();
-}
+export const compatibilityCheckMiddleware: ApiMiddleware = async (c, next) => {
+  c.header(COMPATIBILITY_CHECK_HEADER, COMPATIBILITY_CHECK);
+  await next();
+};

@@ -63,11 +63,7 @@ type MonkeyHandler<TQuery, TBody, TParams, TResponse> = (
   req: MonkeyRequest<TQuery, TBody, TParams>,
 ) => Promise<MonkeyResponse<TResponse>>;
 
-type TypeSafeTsRestRequest<
-  TQuery,
-  TBody,
-  TParams,
-> = {
+type TypeSafeTsRestRequest<TQuery, TBody, TParams> = {
   req: HttpRequest;
 } & (TQuery extends undefined ? WithoutQuery : WithQuery<TQuery>) &
   (TBody extends undefined ? WithoutBody : WithBody<TBody>) &
