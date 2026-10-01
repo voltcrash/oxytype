@@ -1,4 +1,5 @@
-import admin from "firebase-admin";
+import { cert, getApps, initializeApp } from "firebase-admin/app";
+import { type Auth, getAuth } from "firebase-admin/auth";
 import Logger from "../utils/logger";
 import { existsSync } from "fs";
 import MonkeyError from "../utils/error";
@@ -26,22 +27,22 @@ export function init(): void {
       );
     }
   } else {
-    admin.initializeApp({
-      credential: admin.credential.cert(SERVICE_ACCOUNT_PATH),
+    initializeApp({
+      credential: cert(SERVICE_ACCOUNT_PATH),
     });
     Logger.success("Firebase app initialized");
   }
 }
 
-function get(): typeof admin {
-  if (admin.apps.length === 0) {
+function get(): { auth: () => Auth } {
+  if (getApps().length === 0) {
     throw new MonkeyError(
       500,
       "Firebase app not initialized! Make sure generate a service account key and place it in credentials/serviceAccountKey.json.",
       "get() firebase-admin.ts",
     );
   }
-  return admin;
+  return { auth: getAuth };
 }
 
 export default get;
