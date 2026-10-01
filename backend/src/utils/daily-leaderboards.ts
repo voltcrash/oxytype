@@ -2,10 +2,7 @@ import * as RedisClient from "../init/redis";
 import LaterQueue from "../queues/later-queue";
 import { matchesAPattern, kogascore, omit } from "./misc";
 import { parseWithSchema as parseJsonWithSchema } from "@oxytype/util/json";
-import {
-  Configuration,
-  ValidModeRule,
-} from "@oxytype/schemas/configuration";
+import { Configuration, ValidModeRule } from "@oxytype/schemas/configuration";
 import {
   LeaderboardEntry,
   RedisDailyLeaderboardEntry,

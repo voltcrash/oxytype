@@ -1,7 +1,4 @@
-import type {
-  QuoteLength,
-  QuoteLengthConfig,
-} from "@oxytype/schemas/configs";
+import type { QuoteLength, QuoteLengthConfig } from "@oxytype/schemas/configs";
 import type { Mode } from "@oxytype/schemas/shared";
 
 import { For, JSXElement, Show } from "solid-js";

@@ -5,11 +5,12 @@ import fs, { readFileSync } from "fs";
 import readlineSync from "readline-sync";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
+import { getRepository } from "./repository.js";
 
 const FILENAME = fileURLToPath(import.meta.url);
 const DIRNAME = dirname(FILENAME);
 
-dotenv.config();
+dotenv.config({ path: path.resolve(DIRNAME, "../.env") });
 
 const args = new Set(process.argv.slice(2));
 const isFrontend = args.has("--fe");
@@ -21,6 +22,16 @@ const hotfix = args.has("--hotfix");
 const previewFe = args.has("--preview-fe");
 
 const PROJECT_ROOT = path.resolve(DIRNAME, "../../../");
+
+function getFirebaseProjectId() {
+  const projectId = process.env.OXYTYPE_FIREBASE_PROJECT_ID?.trim();
+  if (!projectId || !/^[a-z0-9][a-z0-9-]*$/.test(projectId)) {
+    throw new Error(
+      "Set OXYTYPE_FIREBASE_PROJECT_ID in packages/release/.env before deploying frontend",
+    );
+  }
+  return projectId;
+}
 
 const runCommand = (command, force) => {
   if (isDryRun && !force) {
@@ -173,15 +184,15 @@ const buildProject = () => {
 
   if (isFrontend && !isBackend) {
     runProjectRootCommand(
-      "NODE_ENV=production SENTRY=1 npx turbo lint test check-assets build --filter @oxytype/frontend --force",
+      "NODE_ENV=production npx turbo lint test check-assets build --filter @oxytype/frontend --force",
     );
   } else if (isBackend && !isFrontend) {
     runProjectRootCommand(
-      "NODE_ENV=production SENTRY=1 npx turbo lint test build --filter @oxytype/backend --force",
+      "NODE_ENV=production npx turbo lint test build --filter @oxytype/backend --force",
     );
   } else {
     runProjectRootCommand(
-      "NODE_ENV=production SENTRY=1 npx turbo lint test check-assets build --force",
+      "NODE_ENV=production npx turbo lint test check-assets build --force",
     );
   }
 };
@@ -189,20 +200,27 @@ const buildProject = () => {
 const deployBackend = () => {
   console.log("Deploying backend...");
   const p = path.resolve(DIRNAME, "../bin/deployBackend.sh");
-  runCommand(`sh ${p}`);
+  runCommand(`bash ${p}`);
 };
 
 const deployFrontend = () => {
   console.log("Deploying frontend...");
+  const projectId = getFirebaseProjectId();
   runProjectRootCommand(
-    "cd frontend && npx firebase deploy -P live --only hosting",
+    `cd frontend && npx firebase deploy --project ${projectId} --only hosting`,
   );
 };
 
 const purgeCache = () => {
   console.log("Purging Cloudflare cache...");
   const p = path.resolve(DIRNAME, "../bin/purgeCfCache.sh");
-  runCommand(`sh ${p}`);
+  if (!process.env.CF_ZONE_ID || !process.env.CF_API_KEY) {
+    console.log(
+      "Cloudflare cache purge skipped: credentials are not configured",
+    );
+    return;
+  }
+  runCommand(`bash ${p}`);
 };
 
 const generateChangelog = async () => {
@@ -257,10 +275,7 @@ const createGithubRelease = async (version, changelogContent) => {
     );
   } else {
     const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
-    const { owner, repo } = {
-      owner: "monkeytypegame",
-      repo: "monkeytype",
-    };
+    const { owner, repo } = getRepository();
     await octokit.repos.createRelease({
       owner,
       repo,
@@ -273,6 +288,7 @@ const createGithubRelease = async (version, changelogContent) => {
 
 const main = async () => {
   if (previewFe) {
+    getFirebaseProjectId();
     console.log(`Starting frontend preview deployment process...`);
     installDependencies();
     runProjectRootCommand(
@@ -300,8 +316,12 @@ const main = async () => {
     console.log(
       `Deploying frontend preview to channel "${channelName}" with expiration "${expires}"...`,
     );
+    if (!/^[a-zA-Z0-9-]+$/.test(channelName) || !/^[0-9]+[hd]$/.test(expires)) {
+      throw new Error("Invalid Firebase preview channel or expiration");
+    }
+    const projectId = getFirebaseProjectId();
     const result = runProjectRootCommand(
-      `cd frontend && npx firebase hosting:channel:deploy ${channelName} -P live --expires ${expires}`,
+      `cd frontend && npx firebase hosting:channel:deploy ${channelName} --project ${projectId} --expires ${expires}`,
     );
     console.log(result);
     console.log("Frontend preview deployed successfully.");
@@ -313,6 +333,22 @@ const main = async () => {
   if (!hotfix) checkBranchSync();
 
   checkUncommittedChanges();
+
+  if (!isDryRun && !hotfix && !process.env.GITHUB_TOKEN) {
+    throw new Error(
+      "Set GITHUB_TOKEN in packages/release/.env before creating a release",
+    );
+  }
+  if (!isDryRun && !noDeploy) {
+    if (!isBackend || isFrontend) getFirebaseProjectId();
+    if (!isFrontend || isBackend) {
+      for (const key of ["BE_HOST", "BE_USER", "BE_SCRIPT_PATH"]) {
+        if (!process.env[key]) {
+          throw new Error(`Set ${key} before deploying backend`);
+        }
+      }
+    }
+  }
 
   installDependencies();
 
