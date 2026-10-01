@@ -180,23 +180,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
       requirements: { time: { min: 86400 } },
     },
   },
-  trueSimp: {
-    display: "True Simp",
-    discordRoleId: "744328648211038359",
-    category: "script",
-    description: "Type miodec ten thousand times.",
-    settings: {
-      autoRole: true,
-      type: "customText",
-      parameters: {
-        text: "miodec",
-        mode: "repeat",
-        limit: 10000,
-        limitMode: "word",
-        isPipeDelimiter: false,
-      },
-    },
-  },
   bigramSalad: {
     display: "Bigram Salad",
     discordRoleId: "818535054145093652",
@@ -214,39 +197,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
         isPipeDelimiter: false,
       },
       requirements: { wpm: { min: 100 } },
-    },
-  },
-  simp: {
-    display: "Simp",
-    discordRoleId: "743854992699687023",
-    category: "script",
-    description: "Type miodec one thousand times.",
-    settings: {
-      autoRole: true,
-      type: "customText",
-      parameters: {
-        text: "miodec",
-        mode: "repeat",
-        limit: 1000,
-        limitMode: "word",
-        isPipeDelimiter: false,
-      },
-    },
-  },
-  simpLord: {
-    display: "Simp Lord",
-    discordRoleId: "984911956949479445",
-    category: "script",
-    description: "Type miodec one hundred thousand times.",
-    settings: {
-      type: "customText",
-      parameters: {
-        text: "miodec",
-        mode: "repeat",
-        limit: 100000,
-        limitMode: "word",
-        isPipeDelimiter: false,
-      },
     },
   },
   antidiseWhat: {
