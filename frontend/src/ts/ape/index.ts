@@ -1,7 +1,7 @@
 import { envConfig } from "virtual:env-config";
 import { buildClient } from "./adapters/ts-rest-adapter";
-import { contract } from "@monkeytype/contracts";
-import { devContract } from "@monkeytype/contracts/dev";
+import { contract } from "@oxytype/contracts";
+import { devContract } from "@oxytype/contracts/dev";
 
 const BASE_URL = envConfig.backendUrl;
 

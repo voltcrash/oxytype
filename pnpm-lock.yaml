@@ -17,7 +17,7 @@ importers:
       '@commitlint/config-conventional':
         specifier: 19.2.2
         version: 19.2.2
-      '@monkeytype/release':
+      '@oxytype/release':
         specifier: workspace:*
         version: link:packages/release
       '@types/node':
@@ -80,19 +80,19 @@ importers:
       '@date-fns/utc':
         specifier: 1.2.0
         version: 1.2.0
-      '@monkeytype/challenges':
+      '@oxytype/challenges':
         specifier: workspace:*
         version: link:../packages/challenges
-      '@monkeytype/contracts':
+      '@oxytype/contracts':
         specifier: workspace:*
         version: link:../packages/contracts
-      '@monkeytype/funbox':
+      '@oxytype/funbox':
         specifier: workspace:*
         version: link:../packages/funbox
-      '@monkeytype/schemas':
+      '@oxytype/schemas':
         specifier: workspace:*
         version: link:../packages/schemas
-      '@monkeytype/util':
+      '@oxytype/util':
         specifier: workspace:*
         version: link:../packages/util
       '@ts-rest/core':
@@ -189,10 +189,10 @@ importers:
         specifier: 3.23.8
         version: 3.23.8
     devDependencies:
-      '@monkeytype/oxlint-config':
+      '@oxytype/oxlint-config':
         specifier: workspace:*
         version: link:../packages/oxlint-config
-      '@monkeytype/typescript-config':
+      '@oxytype/typescript-config':
         specifier: workspace:*
         version: link:../packages/typescript-config
       '@redocly/cli':
@@ -291,19 +291,19 @@ importers:
       '@leonabcd123/modern-caps-lock':
         specifier: 3.1.3
         version: 3.1.3
-      '@monkeytype/challenges':
+      '@oxytype/challenges':
         specifier: workspace:*
         version: link:../packages/challenges
-      '@monkeytype/contracts':
+      '@oxytype/contracts':
         specifier: workspace:*
         version: link:../packages/contracts
-      '@monkeytype/funbox':
+      '@oxytype/funbox':
         specifier: workspace:*
         version: link:../packages/funbox
-      '@monkeytype/schemas':
+      '@oxytype/schemas':
         specifier: workspace:*
         version: link:../packages/schemas
-      '@monkeytype/util':
+      '@oxytype/util':
         specifier: workspace:*
         version: link:../packages/util
       '@sentry/browser':
@@ -427,10 +427,10 @@ importers:
       '@fortawesome/fontawesome-free':
         specifier: 5.15.4
         version: 5.15.4
-      '@monkeytype/oxlint-config':
+      '@oxytype/oxlint-config':
         specifier: workspace:*
         version: link:../packages/oxlint-config
-      '@monkeytype/typescript-config':
+      '@oxytype/typescript-config':
         specifier: workspace:*
         version: link:../packages/typescript-config
       '@solid-devtools/overlay':
@@ -647,14 +647,14 @@ importers:
 
   packages/challenges:
     dependencies:
-      '@monkeytype/schemas':
+      '@oxytype/schemas':
         specifier: workspace:*
         version: link:../schemas
     devDependencies:
-      '@monkeytype/tsup-config':
+      '@oxytype/tsup-config':
         specifier: workspace:*
         version: link:../tsup-config
-      '@monkeytype/typescript-config':
+      '@oxytype/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@types/node':
@@ -681,7 +681,7 @@ importers:
 
   packages/contracts:
     dependencies:
-      '@monkeytype/schemas':
+      '@oxytype/schemas':
         specifier: workspace:*
         version: link:../schemas
       '@ts-rest/core':
@@ -691,10 +691,10 @@ importers:
         specifier: 3.23.8
         version: 3.23.8
     devDependencies:
-      '@monkeytype/tsup-config':
+      '@oxytype/tsup-config':
         specifier: workspace:*
         version: link:../tsup-config
-      '@monkeytype/typescript-config':
+      '@oxytype/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@types/node':
@@ -721,17 +721,17 @@ importers:
 
   packages/funbox:
     dependencies:
-      '@monkeytype/schemas':
+      '@oxytype/schemas':
         specifier: workspace:*
         version: link:../schemas
-      '@monkeytype/util':
+      '@oxytype/util':
         specifier: workspace:*
         version: link:../util
     devDependencies:
-      '@monkeytype/tsup-config':
+      '@oxytype/tsup-config':
         specifier: workspace:*
         version: link:../tsup-config
-      '@monkeytype/typescript-config':
+      '@oxytype/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@types/node':
@@ -786,17 +786,17 @@ importers:
 
   packages/schemas:
     dependencies:
-      '@monkeytype/util':
+      '@oxytype/util':
         specifier: workspace:*
         version: link:../util
       zod:
         specifier: 3.23.8
         version: 3.23.8
     devDependencies:
-      '@monkeytype/tsup-config':
+      '@oxytype/tsup-config':
         specifier: workspace:*
         version: link:../tsup-config
-      '@monkeytype/typescript-config':
+      '@oxytype/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@types/node':
@@ -827,7 +827,7 @@ importers:
         specifier: 8.4.0
         version: 8.4.0(jiti@2.7.0)(postcss@8.5.8)(supports-color@10.2.2)(tsx@4.21.0)(typescript@7.0.2)(yaml@2.8.3)
     devDependencies:
-      '@monkeytype/typescript-config':
+      '@oxytype/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@types/node':
@@ -847,10 +847,10 @@ importers:
 
   packages/util:
     devDependencies:
-      '@monkeytype/tsup-config':
+      '@oxytype/tsup-config':
         specifier: workspace:*
         version: link:../tsup-config
-      '@monkeytype/typescript-config':
+      '@oxytype/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@types/node':

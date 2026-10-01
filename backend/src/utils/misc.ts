@@ -1,6 +1,6 @@
-import { MILLISECONDS_IN_DAY } from "@monkeytype/util/date-and-time";
-import { roundTo2 } from "@monkeytype/util/numbers";
-export { sanitizeString } from "@monkeytype/util/strings";
+import { MILLISECONDS_IN_DAY } from "@oxytype/util/date-and-time";
+import { roundTo2 } from "@oxytype/util/numbers";
+export { sanitizeString } from "@oxytype/util/strings";
 import uaparser from "ua-parser-js";
 import { MonkeyRequest } from "../api/types";
 import { ObjectId } from "mongodb";

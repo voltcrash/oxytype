@@ -1,4 +1,4 @@
-import * as ConfigSchemas from "@monkeytype/schemas/configs";
+import * as ConfigSchemas from "@oxytype/schemas/configs";
 import { ZodType as ZodSchema } from "zod";
 import { saveToLocalStorage } from "../config/persistence";
 import { configEvent } from "../events/config";
@@ -12,8 +12,8 @@ import { camelCaseToWords, capitalizeFirstLetter } from "../utils/strings";
 import { configMetadata } from "./metadata";
 import { Config, setConfigStore } from "./store";
 import { isConfigValueValid } from "./validation";
-import { FunboxName } from "@monkeytype/schemas/configs";
-import { typedKeys } from "@monkeytype/util/objects";
+import { FunboxName } from "@oxytype/schemas/configs";
+import { typedKeys } from "@oxytype/util/objects";
 import { isTestActive } from "../states/test";
 
 export function setConfig<T extends keyof ConfigSchemas.Config>(

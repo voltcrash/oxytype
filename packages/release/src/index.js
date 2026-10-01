@@ -184,11 +184,11 @@ const buildProject = () => {
 
   if (isFrontend && !isBackend) {
     runProjectRootCommand(
-      "NODE_ENV=production npx turbo lint test check-assets build --filter @monkeytype/frontend --force",
+      "NODE_ENV=production npx turbo lint test check-assets build --filter @oxytype/frontend --force",
     );
   } else if (isBackend && !isFrontend) {
     runProjectRootCommand(
-      "NODE_ENV=production npx turbo lint test build --filter @monkeytype/backend --force",
+      "NODE_ENV=production npx turbo lint test build --filter @oxytype/backend --force",
     );
   } else {
     runProjectRootCommand(
@@ -292,7 +292,7 @@ const main = async () => {
     console.log(`Starting frontend preview deployment process...`);
     installDependencies();
     runProjectRootCommand(
-      "NODE_ENV=production npx turbo lint test check-assets build --filter @monkeytype/frontend --force",
+      "NODE_ENV=production npx turbo lint test check-assets build --filter @oxytype/frontend --force",
     );
 
     const name = readlineSync.question(

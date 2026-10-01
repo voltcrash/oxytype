@@ -1,4 +1,4 @@
-import { mapRange } from "@monkeytype/util/numbers";
+import { mapRange } from "@oxytype/util/numbers";
 
 import { getConfig } from "../../../config/store";
 import { getMonkeyState } from "../../../states/monkey";

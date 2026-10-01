@@ -2,13 +2,13 @@ import {
   TypingStats as TypingStatsType,
   UserProfile,
   UserProfileDetails,
-} from "@monkeytype/schemas/users";
+} from "@oxytype/schemas/users";
 import {
   isToday as dateIsToday,
   isYesterday as dateIsYesterday,
   getCurrentDayTimestamp,
-} from "@monkeytype/util/date-and-time";
-import { isSafeNumber } from "@monkeytype/util/numbers";
+} from "@oxytype/util/date-and-time";
+import { isSafeNumber } from "@oxytype/util/numbers";
 import { differenceInDays } from "date-fns/differenceInDays";
 import { formatDate } from "date-fns/format";
 import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";

@@ -2,9 +2,9 @@ import type {
   Config as ConfigSchema,
   FunboxName,
   PartialConfig,
-} from "@monkeytype/schemas/configs";
-import * as ConfigSchemas from "@monkeytype/schemas/configs";
-import { typedKeys } from "@monkeytype/util/objects";
+} from "@oxytype/schemas/configs";
+import * as ConfigSchemas from "@oxytype/schemas/configs";
+import { typedKeys } from "@oxytype/util/objects";
 import { getDefaultConfig } from "../constants/default-config";
 import { sanitize } from "../utils/sanitize";
 import { Config } from "./store";

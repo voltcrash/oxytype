@@ -1,4 +1,4 @@
-import { connectionsContract } from "@monkeytype/contracts/connections";
+import { connectionsContract } from "@oxytype/contracts/connections";
 import { initServer } from "@ts-rest/express";
 import { callController } from "../ts-rest-adapter";
 

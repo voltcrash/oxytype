@@ -4,9 +4,9 @@ import { getConfig } from "../config/store";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { EventLog } from "../test/events/types";
 
-import { Challenge } from "@monkeytype/challenges";
-import { LayoutObject } from "@monkeytype/schemas/layouts";
-import { CompletedEvent, IncompleteTest } from "@monkeytype/schemas/results";
+import { Challenge } from "@oxytype/challenges";
+import { LayoutObject } from "@oxytype/schemas/layouts";
+import { CompletedEvent, IncompleteTest } from "@oxytype/schemas/results";
 import { createStore } from "solid-js/store";
 import { keymapEvent } from "../events/keymap";
 import { createSignalWithSetters } from "../hooks/createSignalWithSetters";

@@ -1,9 +1,9 @@
 import { lastElementFromArray } from "./arrays";
-import { Config } from "@monkeytype/schemas/configs";
-import { Mode, Mode2, PersonalBests } from "@monkeytype/schemas/shared";
-import { Result } from "@monkeytype/schemas/results";
-import { RankAndCount } from "@monkeytype/schemas/users";
-import { roundTo2 } from "@monkeytype/util/numbers";
+import { Config } from "@oxytype/schemas/configs";
+import { Mode, Mode2, PersonalBests } from "@oxytype/schemas/shared";
+import { Result } from "@oxytype/schemas/results";
+import { RankAndCount } from "@oxytype/schemas/users";
+import { roundTo2 } from "@oxytype/util/numbers";
 import { animate, AnimationParams } from "animejs";
 import { ElementWithUtils } from "./dom";
 import { isDevEnvironment } from "./env";

@@ -1,6 +1,6 @@
-import { NewPasswordSchema, PasswordSchema } from "@monkeytype/schemas/users";
-import { typedKeys } from "@monkeytype/util/objects";
-import { tryCatch } from "@monkeytype/util/trycatch";
+import { NewPasswordSchema, PasswordSchema } from "@oxytype/schemas/users";
+import { typedKeys } from "@oxytype/util/objects";
+import { tryCatch } from "@oxytype/util/trycatch";
 import { FirebaseError } from "firebase/app";
 import {
   AuthProvider,

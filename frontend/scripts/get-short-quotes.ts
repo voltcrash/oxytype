@@ -1,4 +1,4 @@
-import { QuoteData } from "@monkeytype/schemas/quotes";
+import { QuoteData } from "@oxytype/schemas/quotes";
 import * as fs from "fs";
 
 import path, { dirname } from "path";

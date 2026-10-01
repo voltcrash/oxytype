@@ -11,8 +11,8 @@ import {
   PostResultResponseSchema,
   ResultMinifiedSchema,
   ResultSchema,
-} from "@monkeytype/schemas/results";
-import { IdSchema } from "@monkeytype/schemas/util";
+} from "@oxytype/schemas/results";
+import { IdSchema } from "@oxytype/schemas/util";
 
 export const GetResultsQuerySchema = z.object({
   onOrAfterTimestamp: z
