@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./inputs.css" layer(custom-styles);
 @import "./buttons.css" layer(custom-styles);
 
 @theme {

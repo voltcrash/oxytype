@@ -1,0 +1,120 @@
+input,
+textarea {
+  @apply outline-none border-none rounded bg-sub-alt text-text p-[0.5em] text-[1em] font-(family-name:--font) caret-main leading-[1.25em];
+  &:focus-visible {
+    box-shadow:
+      0 0 0 0.1rem var(--bg-color),
+      0 0 0 0.2rem var(--text-color);
+  }
+}
+
+textarea {
+  @apply resize-y;
+}
+
+input[type="range"] {
+  @apply appearance-none p-0 w-full h-[1.25em] rounded;
+  &::-webkit-slider-thumb {
+    @apply appearance-none p-0 border-none w-1/4 h-[1.25em] rounded bg-main;
+    &:hover {
+      @apply cursor-grab;
+    }
+    &:active {
+      @apply cursor-grabbing;
+    }
+  }
+
+  &::-moz-range-thumb {
+    @apply appearance-none p-0 border-none w-1/4 h-[1.25em] rounded bg-main;
+    &:hover {
+      @apply cursor-grab;
+    }
+    &:active {
+      @apply cursor-grabbing;
+    }
+  }
+  &:focus-visible {
+    box-shadow:
+      0 0 0 0.1rem var(--bg-color),
+      0 0 0 0.2rem var(--text-color);
+  }
+}
+
+input[type="checkbox"] {
+  @apply appearance-none h-[1.25em] w-[1.25em] rounded-half relative;
+  transition: background 0.125s;
+  @apply shrink-0;
+  &::after {
+    font-family: "Font Awesome";
+    content: "\f00c";
+    @apply top-0 left-0 w-full h-full;
+    border-radius: calc((var(--roundness) / 2) - 0.1em);
+    @apply font-black absolute grid justify-center content-center text-[0.75em];
+    transition: color 0.125s;
+    @apply text-transparent;
+  }
+
+  &:checked::after {
+    @apply text-main;
+  }
+  &:hover::after {
+    @apply text-bg;
+  }
+  &:hover:checked::after {
+    @apply text-text;
+  }
+
+  &[disabled] {
+    @apply opacity-[0.33] pointer-events-none;
+    &:hover::after {
+      @apply text-sub-alt;
+    }
+    &:hover:checked::after {
+      @apply text-main;
+    }
+  }
+}
+
+label:has(input[type="checkbox"][disabled]) {
+  color: color-mix(in srgb, transparent 66%, var(--text-color));
+}
+
+input[type="color"] {
+  @apply h-[3px] opacity-0 p-0 m-0 absolute pointer-events-none;
+}
+
+input:disabled,
+textarea:disabled {
+  @apply opacity-[0.33];
+}
+
+::-moz-color-swatch {
+  @apply border-none;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  @apply appearance-none m-0;
+}
+
+input[type="number"] {
+  @apply [appearance:textfield];
+}
+
+/* Change Autocomplete styles in Chrome*/
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  @apply border-none;
+  outline: 0.15em solid var(--main-color);
+  @apply font-[inherit];
+  -webkit-text-fill-color: var(--text-color);
+  box-shadow: 0 0 0 1000000px var(--sub-alt-color) inset;
+  @apply caret-text;
+}
