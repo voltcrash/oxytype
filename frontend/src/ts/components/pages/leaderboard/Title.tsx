@@ -42,10 +42,7 @@ export function Title(props: {
   const subTitle = createMemo(() => {
     const utcDateFormat = "EEEE, do MMMM yyyy";
     const localDateFormat = "EEEE, do MMMM yyyy HH:mm";
-    const toLocalString = (
-      timestamp: UTCDateMini,
-      endTimestamp: UTCDateMini,
-    ): string =>
+    const toLocalString = (timestamp: Date, endTimestamp: Date): string =>
       `local time\n${dateFormat(utcToLocalDate(timestamp), localDateFormat)} -\n${dateFormat(utcToLocalDate(endTimestamp), localDateFormat)}`;
 
     if (props.selection.type === "daily") {
@@ -109,6 +106,6 @@ export function Title(props: {
   );
 }
 
-function utcToLocalDate(timestamp: UTCDateMini): Date {
+function utcToLocalDate(timestamp: Date): Date {
   return subMinutes(timestamp, new Date().getTimezoneOffset());
 }
