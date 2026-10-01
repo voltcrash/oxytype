@@ -3,7 +3,7 @@ import { getApeKey, updateLastUsedOn } from "../dal/ape-keys";
 import MonkeyError from "../utils/error";
 import { verifyIdToken } from "../utils/auth";
 import { base64UrlDecode, isDevEnvironment } from "../utils/misc";
-import { NextFunction, Response } from "express";
+import { ApiMiddleware, HttpRequest } from "../api/http";
 import statuses from "../constants/monkey-status-codes";
 import {
   incrementAuth,
@@ -12,14 +12,12 @@ import {
 } from "../utils/prometheus";
 import crypto from "crypto";
 import { performance } from "perf_hooks";
-import { AppRoute, AppRouter } from "@ts-rest/core";
 import {
   EndpointMetadata,
   RequestAuthenticationOptions,
 } from "@oxytype/contracts/util/api";
 import { Configuration } from "@oxytype/schemas/configuration";
-import { AsyncTsRestRequestHandler, getMetadata } from "./utility";
-import { TsRestRequestWithContext } from "../api/types";
+import { getMetadata } from "./utility";
 
 export type DecodedToken = {
   type: "Bearer" | "ApeKey" | "None" | "GithubWebhook";
@@ -40,14 +38,9 @@ const DEFAULT_OPTIONS: RequestAuthenticationOptions = {
  * By default a Bearer token with user authentication is required.
  * @returns
  */
-export function authenticateTsRestRequest<
-  T extends AppRouter | AppRoute,
->(): AsyncTsRestRequestHandler<T> {
-  return async (
-    req: TsRestRequestWithContext,
-    _res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
+export function authenticateTsRestRequest(): ApiMiddleware {
+  return async (c, next): Promise<void> => {
+    const req = c.get("request");
     const options = {
       ...DEFAULT_OPTIONS,
       ...((getMetadata(req).authenticationOptions ?? {}) as EndpointMetadata),
@@ -85,7 +78,7 @@ export function authenticateTsRestRequest<
         throw new MonkeyError(
           401,
           "Unauthorized",
-          `endpoint: ${req.baseUrl} no authorization header found`,
+          `endpoint: ${req.path} no authorization header found`,
         );
       }
 
@@ -105,8 +98,7 @@ export function authenticateTsRestRequest<
         req,
       );
 
-      next(error);
-      return;
+      throw error;
     }
     recordAuthTime(
       token.type,
@@ -124,7 +116,7 @@ export function authenticateTsRestRequest<
     //   recordRequestForUid(req.ctx.decodedToken.uid);
     // }
 
-    next();
+    await next();
   };
 }
 
@@ -316,7 +308,7 @@ async function authenticateWithUid(token: string): Promise<DecodedToken> {
 }
 
 export function authenticateGithubWebhook(
-  req: TsRestRequestWithContext,
+  req: HttpRequest,
   authHeader: string | string[] | undefined,
 ): DecodedToken {
   try {
@@ -336,7 +328,7 @@ export function authenticateGithubWebhook(
 
     const signature = crypto
       .createHmac("sha256", webhookSecret)
-      .update(JSON.stringify(req.body))
+      .update(req.rawBody)
       .digest("hex");
     const trusted = Buffer.from(`sha256=${signature}`, "ascii");
     const untrusted = Buffer.from(authHeader, "ascii");
