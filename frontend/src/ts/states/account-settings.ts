@@ -25,7 +25,7 @@ export const accountSettingsTabs: Record<
   account: { text: "account", icon: "fa-user" },
   authentication: { text: "authentication", icon: "fa-key" },
   blockedUsers: { text: "blocked users", icon: "fa-ban" },
-  apeKeys: { text: "ape keys", icon: "fa-code" },
+  apeKeys: { text: "API keys", icon: "fa-code" },
   dangerZone: { text: "danger zone", icon: "fa-exclamation-triangle" },
 };
 

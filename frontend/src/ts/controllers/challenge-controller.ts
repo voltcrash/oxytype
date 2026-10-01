@@ -175,12 +175,6 @@ export function verify(result: CompletedEvent): ChallengeName | null {
         failReasons.push(...requirementFailReasons);
       }
       if (requirementsMet) {
-        if (loadedChallenge.settings.autoRole) {
-          showSuccessNotification(
-            "You will receive a role shortly. Please don't post a screenshot in challenge submissions.",
-            { durationMs: 5000 },
-          );
-        }
         showSuccessNotification(`${loadedChallenge.display} challenge passed!`);
         return loadedChallenge.name;
       } else {

@@ -799,7 +799,7 @@ describe("stats.ts", () => {
       // Firefox groups whitespace + non-word punctuation as one delete run.
       // Sequence: type "=ri" at word 1, Ctrl+Backspace twice. The first delete
       // leaves "=" (browser deletes "ri" only). The second deletes the
-      // sentinel + "=" together, which monkeytype interprets as crossing the
+      // sentinel + "=" together, which oxytype interprets as crossing the
       // word boundary → goToPreviousWord. Word 1 is abandoned with leftover
       // "=" residue in its event stream; its final state should still be "".
       pushWords("hello", "leave");

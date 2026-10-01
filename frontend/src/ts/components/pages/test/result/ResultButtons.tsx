@@ -156,7 +156,6 @@ export function ResultButtons(): JSXElement {
             </button>
           )}
         </For>
-        {/* #watchVideoAdButton (fa-ad, "Watch video ad") disabled, see VideoAdPopup */}
       </div>
     </>
   );

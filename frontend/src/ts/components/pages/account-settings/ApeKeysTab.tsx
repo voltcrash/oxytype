@@ -29,10 +29,10 @@ export function ApeKeysTab() {
   return (
     <>
       <Section
-        title="ape keys"
+        title="API keys"
         fa={{ icon: "fa-key" }}
         description=<>
-          Generate Ape Keys to access certain API endpoints (
+          Generate API keys to access certain API endpoints (
           <Button text="documentation" href="/api/docs" variant="text" />
           ).
         </>
@@ -42,7 +42,7 @@ export function ApeKeysTab() {
         }}
         disabled={isApeKeysDenied() === true}
         disabledDescription=<>
-          <Fa icon="fa-times" /> You have lost access to Ape Keys. Please
+          <Fa icon="fa-times" /> You have lost access to API keys. Please
           contact support if you believe this is a mistake.
         </>
       />
@@ -55,7 +55,7 @@ export function ApeKeysTab() {
               data={apeKeyQueryData()}
               fallback={
                 <div class="text-center text-sub">
-                  You don&lsquo;t have any ape keys yet.
+                  You don&lsquo;t have any API keys yet.
                 </div>
               }
             />
@@ -121,7 +121,7 @@ function getColumns(): DataTableColumnDef<ApeKeyEntry>[] {
             balloon={{ text: "delete" }}
             onClick={() => {
               showSimpleModal({
-                title: "Delete Ape key",
+                title: "Delete API key",
                 text: "Are you sure?",
                 buttonText: "delete",
                 execFn: async () => {
@@ -147,7 +147,7 @@ function getColumns(): DataTableColumnDef<ApeKeyEntry>[] {
 
 function addNewKey(): void {
   showSimpleModal({
-    title: "Generate new Ape key",
+    title: "Generate new API key",
     buttonText: "generate",
     schema: z.object({ name: ApeKeyNameSchema }),
     inputs: {
@@ -178,7 +178,7 @@ function addNewKey(): void {
 
 function showRenameModal(apeKeyId: string): void {
   showSimpleModal({
-    title: "Edit Ape key",
+    title: "Edit API key",
     buttonText: "edit",
     schema: z.object({ name: ApeKeyNameSchema }),
     inputs: {

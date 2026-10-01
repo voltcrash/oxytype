@@ -6,7 +6,11 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 
-if [ $(git branch --no-color | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') = "master" ] && [ $(git remote get-url origin) = "https://github.com/monkeytypegame/monkeytype" ]; then
+if [ "$(git symbolic-ref --short HEAD)" = "master" ]; then
+  case "$(git remote get-url origin)" in
+    https://github.com/voltcrash/oxytype|https://github.com/voltcrash/oxytype.git|git@github.com:voltcrash/oxytype.git) ;;
+    *) exit 0 ;;
+  esac
   nvm install
   echo "Running a full check before pushing to master..."
   pnpm run full-check

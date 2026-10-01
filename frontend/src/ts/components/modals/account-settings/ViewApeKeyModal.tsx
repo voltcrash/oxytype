@@ -34,17 +34,17 @@ export function ViewApeKeyModal() {
       closeOnEscape={!isDisabled()}
       closeOnWrapperClick={!isDisabled()}
     >
-      <H2 text="Ape key" />
+      <H2 text="API key" />
       <textarea class="h-25 opacity-100" disabled>
         {getLastGeneratedApeKey()}
       </textarea>
       <p>
-        This is your new Ape Key. Please keep it safe. You will only see it
+        This is your new API key. Please keep it safe. You will only see it
         once!
       </p>
       <p>
         <strong>Note: </strong>
-        Ape Keys are disabled by default, you need to enable them before they
+        API keys are disabled by default, you need to enable them before they
         can be used.
       </p>
 

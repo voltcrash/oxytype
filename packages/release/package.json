@@ -2,7 +2,7 @@
   "name": "@oxytype/release",
   "private": true,
   "bin": {
-    "monkeytype-release": "./src/index.js"
+    "oxytype-release": "./src/index.js"
   },
   "type": "module",
   "scripts": {

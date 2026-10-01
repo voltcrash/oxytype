@@ -69,6 +69,24 @@ const target = {
 };
 
 describe("native caret", () => {
+  it("keeps saved upstream skins visible and supports subsequent style changes", () => {
+    element.className += " monkey block";
+    const caret = new Caret(element, "monkey");
+    caret.show();
+    expect(element.className.split(/\s+/)).toContain("default");
+    expect(element.className.split(/\s+/)).not.toContain("monkey");
+    expect(element.className.split(/\s+/)).not.toContain("block");
+    expect(caret.isHidden()).toBe(false);
+    expect(caret.isFullWidth()).toBe(false);
+    caret.goTo({ ...target, letterIndex: 1 });
+    expect(element.style.left).toBe("17px");
+
+    caret.setStyle("block");
+    expect(element.className.split(/\s+/)).toContain("block");
+    expect(element.className.split(/\s+/)).not.toContain("default");
+    expect(caret.isFullWidth()).toBe(true);
+  });
+
   it("preserves classes and positions before/after letters", () => {
     const caret = new Caret(element, "default");
     caret.show();

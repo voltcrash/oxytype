@@ -6,7 +6,7 @@ import { UserProfile } from "../../src/ts/components/pages/profile/UserProfile";
 
 const baseProfile: UserProfileType = {
   uid: "user123",
-  name: "monkeytyper",
+  name: "oxytyper",
   addedAt: 1700000000000,
   xp: 42000,
   streak: 15,
@@ -104,11 +104,11 @@ const baseProfile: UserProfileType = {
     },
   },
   details: {
-    bio: "Just a monkey typing away",
+    bio: "Practicing my typing",
     keyboard: "Custom 65%",
     socialProfiles: {
-      twitter: "monkeytyper",
-      github: "monkeytyper",
+      twitter: "oxytyper",
+      github: "oxytyper",
       website: "https://example.com",
     },
   },

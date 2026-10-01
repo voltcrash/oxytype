@@ -72,7 +72,7 @@ export class Caret {
       ],
       false,
     );
-    setClass(this.element, style, true);
+    setClass(this.element, style === "monkey" ? "default" : style, true);
   }
 
   public show(): void {

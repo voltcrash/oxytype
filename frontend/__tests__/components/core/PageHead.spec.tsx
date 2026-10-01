@@ -18,13 +18,13 @@ it("updates the shell's existing Open Graph tag without duplicating it", () => {
   meta.setAttribute("property", "og:url");
   document.head.appendChild(meta);
   const { unmount } = render(() => <PageHead />);
-  setOpenGraphUrl("https://monkeytype.com/settings");
-  setPageTitle("Settings | Monkeytype");
-  expect(meta.content).toBe("https://monkeytype.com/settings");
+  setOpenGraphUrl("https://oxytype.example/settings");
+  setPageTitle("Settings | Oxytype");
+  expect(meta.content).toBe("https://oxytype.example/settings");
   expect(
     document.head.querySelectorAll('meta[property="og:url"]'),
   ).toHaveLength(1);
-  expect(document.title).toBe("Settings | Monkeytype");
+  expect(document.title).toBe("Settings | Oxytype");
   unmount();
   expect(meta.isConnected).toBe(true);
   meta.remove();
@@ -32,7 +32,7 @@ it("updates the shell's existing Open Graph tag without duplicating it", () => {
 
 it("cleans up a tag created when the shell has none", () => {
   const { unmount } = render(() => <PageHead />);
-  setOpenGraphUrl("https://monkeytype.com/");
+  setOpenGraphUrl("https://oxytype.example/");
   expect(document.head.querySelector('meta[property="og:url"]')).not.toBeNull();
   unmount();
   expect(document.head.querySelector('meta[property="og:url"]')).toBeNull();

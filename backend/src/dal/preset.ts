@@ -33,7 +33,7 @@ export async function getPresets(uid: string): Promise<DBConfigPreset[]> {
   const presets = await getPresetsCollection()
     .find({ uid })
     .sort({ timestamp: -1 })
-    .toArray(); // this needs to be changed to later take patreon into consideration
+    .toArray();
   return presets;
 }
 

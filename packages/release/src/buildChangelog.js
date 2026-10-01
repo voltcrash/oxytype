@@ -293,7 +293,7 @@ async function main() {
 
   //test commits
   // const logString = [
-  //   "d2739e4f193137db4d86450f0d50b3489d75c106 d2739e4f1 build: add new feature (miodec, someone) (#1234)",
+  //   "d2739e4f193137db4d86450f0d50b3489d75c106 d2739e4f1 build: add new feature (contributor, someone) (#1234)",
   //   "d2739e4f193137db4d86450f0d50b3489d75c106 d2739e4f1 build(scope): add new feature (#1234)",
   //   "d2739e4f193137db4d86450f0d50b3489d75c106 d2739e4f1 chore: add new feature (#1234)",
   //   "d2739e4f193137db4d86450f0d50b3489d75c106 d2739e4f1 chore(scope): add new feature (#1234)",
@@ -332,11 +332,7 @@ async function main() {
   const contributorCount = log.flatMap((l) => {
     const filtered = l.usernames.filter((u) => {
       const lowerCased = u.toLowerCase();
-      return (
-        lowerCased !== "monkeytype-bot" &&
-        lowerCased !== "dependabot" &&
-        lowerCased !== "miodec"
-      );
+      return lowerCased !== "dependabot" && !lowerCased.endsWith("[bot]");
     });
     return filtered;
   }).length;

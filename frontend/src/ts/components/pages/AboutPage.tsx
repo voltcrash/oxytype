@@ -267,7 +267,7 @@ export function AboutPage(): JSXElement {
           <div class="mt-4 text-xl">
             <Button
               fa={{
-                icon: "fa-donate",
+                icon: "fa-hands-helping",
               }}
               onClick={() => showModal("Support")}
               text="support"
@@ -310,7 +310,7 @@ export function AboutPage(): JSXElement {
               href="https://www.reddit.com/user/montydrei"
               class="p-0 pt-2 pr-2 pb-2"
             />
-            for the name suggestion
+            for suggesting the original Monkeytype name
           </p>
           <p>
             <Button
@@ -320,7 +320,7 @@ export function AboutPage(): JSXElement {
               class="p-0 pt-2 pr-2 pb-2"
             />
             who provided valuable feedback on the original reddit post for the
-            prototype of this website
+            Monkeytype prototype
           </p>
           <p>Supporters who helped the original project financially.</p>
           <p>

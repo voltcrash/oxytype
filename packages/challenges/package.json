@@ -15,8 +15,7 @@
     "madge": " madge --circular --extensions ts ./src",
     "ts-check": "tsc --noEmit",
     "lint": "vp lint . --type-aware --type-check --format agent",
-    "lint-fast": "vp lint . --format agent",
-    "george-mapping": "tsx ./scripts/challenge-roles"
+    "lint-fast": "vp lint . --format agent"
   },
   "dependencies": {
     "@oxytype/schemas": "workspace:*"
