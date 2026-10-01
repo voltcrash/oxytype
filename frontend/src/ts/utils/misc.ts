@@ -1,12 +1,10 @@
 import { lastElementFromArray } from "./arrays";
-import { Config } from "@monkeytype/schemas/configs";
-import { Mode, Mode2, PersonalBests } from "@monkeytype/schemas/shared";
-import { Result } from "@monkeytype/schemas/results";
-import { RankAndCount } from "@monkeytype/schemas/users";
-import { roundTo2 } from "@monkeytype/util/numbers";
-import { animate, AnimationParams } from "animejs";
-import { ElementWithUtils } from "./dom";
-import { isDevEnvironment } from "./env";
+import { Config } from "@oxytype/schemas/configs";
+import { Mode, Mode2, PersonalBests } from "@oxytype/schemas/shared";
+import { Result } from "@oxytype/schemas/results";
+import { RankAndCount } from "@oxytype/schemas/users";
+import { roundTo2 } from "@oxytype/util/numbers";
+import { download } from "../components/common/Download";
 
 export function whorf(speed: number, wordlen: number): number {
   return Math.min(
@@ -115,14 +113,6 @@ export function objectToQueryString<T extends string | number | boolean>(
   return str.join("&");
 }
 
-export function toggleFullscreen(): void {
-  if (!document.fullscreenElement) {
-    void document.documentElement.requestFullscreen();
-  } else {
-    void document.exitFullscreen();
-  }
-}
-
 export function escapeRegExp(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -174,65 +164,6 @@ type LastIndex = {
 };
 
 export const trailingComposeChars = /[\u02B0-\u02FF`´^¨~]+$|⎄.*$/;
-
-export async function swapElements(
-  el1: ElementWithUtils | null,
-  el2: ElementWithUtils | null,
-  totalDuration: number,
-  callback = async function (): Promise<void> {
-    return Promise.resolve();
-  },
-  middleCallback = async function (): Promise<void> {
-    return Promise.resolve();
-  },
-): Promise<boolean | undefined> {
-  if (el1 === null || el2 === null) {
-    return;
-  }
-
-  totalDuration = applyReducedMotion(totalDuration);
-  if (
-    (el1.hasClass("hidden") && !el2.hasClass("hidden")) ||
-    (!el1.hasClass("hidden") && el2.hasClass("hidden"))
-  ) {
-    //one of them is hidden and the other is visible
-    if (el1.hasClass("hidden")) {
-      await middleCallback();
-      await callback();
-      return false;
-    }
-
-    el1.show();
-    await el1.promiseAnimate({
-      opacity: [1, 0],
-      duration: totalDuration / 2,
-    });
-    el1.hide();
-    await middleCallback();
-    el2.show();
-    await el2.promiseAnimate({
-      opacity: [0, 1],
-      duration: totalDuration / 2,
-    });
-    await callback();
-  } else if (el1.hasClass("hidden") && el2.hasClass("hidden")) {
-    //both are hidden, only fade in the second
-    await middleCallback();
-
-    el2.show();
-    await el2.promiseAnimate({
-      opacity: [0, 1],
-      duration: totalDuration / 2,
-    });
-
-    await callback();
-  } else {
-    await middleCallback();
-    await callback();
-  }
-
-  return;
-}
 
 export function getMode2<M extends keyof PersonalBests>(
   config: Config,
@@ -320,64 +251,6 @@ export async function downloadResultsCSV(array: Result<Mode>[]): Promise<void> {
   download({ filename: "results.csv", data: blob });
 }
 
-export function download(options: { filename: string; data: Blob }): void {
-  const url = URL.createObjectURL(options.data);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = options.filename;
-
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-
-  URL.revokeObjectURL(url);
-}
-
-export function isElementVisible(query: string): boolean {
-  const el = document.querySelector(query);
-  if (!el) {
-    return false;
-  }
-  // const style = window.getComputedStyle(el);
-  return !!el.getClientRects().length;
-}
-
-export function isPopupVisible(popupId: string): boolean {
-  return (
-    isElementVisible(`#popups #${popupId}`) ||
-    isElementVisible(`#solidmodals #${popupId}`)
-  );
-}
-
-export function isAnyPopupVisible(): boolean {
-  const popups = document.querySelectorAll(
-    "#popups .popupWrapper, #popups .backdrop, #popups .modalWrapper, #solidmodals dialog",
-  );
-  let popupVisible = false;
-  for (const popup of popups) {
-    if (isPopupVisible(popup.id)) {
-      popupVisible = true;
-      break;
-    }
-  }
-  return popupVisible;
-}
-
-export async function promiseAnimate(
-  el: HTMLElement | string,
-  options: AnimationParams,
-): Promise<void> {
-  return new Promise((resolve) => {
-    animate(el, {
-      ...options,
-      onComplete: (self, e) => {
-        options.onComplete?.(self, e);
-        resolve();
-      },
-    });
-  });
-}
-
 export async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -389,31 +262,6 @@ export function isPasswordStrong(password: string): boolean {
   const isLong = password.length >= 8;
   const isShort = password.length <= 64;
   return hasCapital && hasNumber && hasSpecial && isLong && isShort;
-}
-
-export function htmlToText(html: string): string {
-  const el = document.createElement("div");
-  el.innerHTML = html;
-  return el.textContent || el.innerText || "";
-}
-
-export function loadCSS(href: string, prepend = false): void {
-  const link = document.createElement("link");
-  link.type = "text/css";
-  link.rel = "stylesheet";
-  link.href = href;
-
-  const head = document.getElementsByTagName("head")[0];
-
-  if (head === undefined) {
-    throw new Error("Could not load CSS - head is undefined");
-  }
-
-  if (prepend) {
-    head.prepend(link);
-  } else {
-    head.appendChild(link);
-  }
 }
 
 export function zipfyRandomArrayIndex(dictLength: number): number {
@@ -432,60 +280,10 @@ export function zipfyRandomArrayIndex(dictLength: number): number {
   return Math.floor(inverseCDF);
 }
 
-// Function to get the bounding rectangle of a collection of elements
-export function getBoundingRectOfElements(elements: HTMLElement[]): DOMRect {
-  let minX = Infinity,
-    minY = Infinity,
-    maxX = -Infinity,
-    maxY = -Infinity;
-
-  elements.forEach((element) => {
-    const rect = element.getBoundingClientRect();
-
-    minX = Math.min(minX, rect.left);
-    minY = Math.min(minY, rect.top);
-    maxX = Math.max(maxX, rect.right);
-    maxY = Math.max(maxY, rect.bottom);
-  });
-
-  // Create a new object with the same properties as a DOMRect
-  return {
-    x: minX,
-    y: minY,
-    width: maxX - minX,
-    height: maxY - minY,
-    top: minY,
-    right: maxX,
-    bottom: maxY,
-    left: minX,
-    toJSON: function (): string {
-      return JSON.stringify({
-        x: this.x,
-        y: this.y,
-        width: this.width,
-        height: this.height,
-        top: this.top,
-        right: this.right,
-        bottom: this.bottom,
-        left: this.left,
-      });
-    },
-  };
-}
 export function reloadAfter(seconds: number): void {
   setTimeout(() => {
     window.location.reload();
   }, seconds * 1000);
-}
-
-export function updateTitle(title?: string): void {
-  const local = isDevEnvironment() ? "localhost - " : "";
-
-  if (title === undefined || title === "") {
-    document.title = `${local}Monkeytype | A minimalistic, customizable typing test`;
-  } else {
-    document.title = local + title;
-  }
 }
 
 export function isObject(obj: unknown): obj is Record<string, unknown> {
@@ -639,10 +437,6 @@ export function debounceUntilResolved<TArgs extends unknown[], TResult>(
   };
 }
 
-export function triggerResize(): void {
-  window.dispatchEvent(new Event("resize"));
-}
-
 export type RequiredProperties<T, K extends keyof T> = Omit<T, K> &
   Required<Pick<T, K>>;
 
@@ -675,23 +469,6 @@ export function isMacLike(): boolean {
 export function isFirefox(): boolean {
   const userAgent = window.navigator.userAgent.toLowerCase();
   return userAgent.includes("firefox");
-}
-
-export function scrollToCenterOrTop(el: HTMLElement | null): void {
-  if (!el) return;
-
-  const elementHeight = el.offsetHeight;
-  const windowHeight = window.innerHeight;
-
-  el.scrollIntoView({
-    block: elementHeight < windowHeight ? "center" : "start",
-  });
-}
-export function scrollToTop(): void {
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth",
-  });
 }
 
 export function formatTopPercentage(lbRank?: RankAndCount): string {
@@ -731,13 +508,6 @@ export function addToGlobal(items: Record<string, unknown>): void {
     //@ts-expect-error dev
     window[name] = item;
   }
-}
-
-export function getTotalInlineMargin(element: HTMLElement): number {
-  const computedStyle = window.getComputedStyle(element);
-  return (
-    parseInt(computedStyle.marginRight) + parseInt(computedStyle.marginLeft)
-  );
 }
 
 // DO NOT ALTER GLOBAL OBJECTSONSTRUCTOR, IT WILL BREAK RESULT HASHES

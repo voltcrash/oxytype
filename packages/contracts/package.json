@@ -1,5 +1,5 @@
 {
-  "name": "@monkeytype/contracts",
+  "name": "@oxytype/contracts",
   "private": true,
   "exports": {
     ".": {
@@ -23,11 +23,11 @@
     "lint-fast": "vp lint . --format agent"
   },
   "dependencies": {
-    "@monkeytype/schemas": "workspace:*"
+    "@oxytype/schemas": "workspace:*"
   },
   "devDependencies": {
-    "@monkeytype/tsdown-config": "workspace:*",
-    "@monkeytype/typescript-config": "workspace:*",
+    "@oxytype/tsdown-config": "workspace:*",
+    "@oxytype/typescript-config": "workspace:*",
     "@types/node": "24.9.1",
     "madge": "8.0.0",
     "typescript": "7.0.2",

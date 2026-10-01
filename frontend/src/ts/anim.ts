@@ -1,4 +1,4 @@
-import { engine } from "animejs";
+import { animate, AnimationParams, engine } from "animejs";
 import { LocalStorageWithSchema } from "./utils/local-storage-with-schema";
 import { z } from "zod";
 import { createSignal } from "solid-js";
@@ -40,4 +40,20 @@ export function setLowFpsMode(): void {
 export function clearLowFpsMode(): void {
   engine.fps = fpsLimit.get();
   engine.defaults.frameRate = fpsLimit.get();
+}
+
+export async function animateAsync(
+  element: HTMLElement | undefined,
+  options: AnimationParams,
+): Promise<void> {
+  if (!element) return;
+  await new Promise<void>((resolve) => {
+    animate(element, {
+      ...options,
+      onComplete: (self, event) => {
+        options.onComplete?.(self, event);
+        resolve();
+      },
+    });
+  });
 }

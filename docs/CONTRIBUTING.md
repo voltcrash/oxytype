@@ -13,7 +13,7 @@
 
 ## Getting Started
 
-When contributing to Monkeytype, it's good to know our best practices, tips, and tricks. First, Monkeytype is written in ~~JavaScript~~ TypeScript, HTML, and CSS (in order of language usage within the project); thus, we assume you are comfortable with these languages or have basic knowledge of them. Our backend is in NodeJS and we use MongoDB to store our user data. Firebase is used for authentication. Redis is used to store ephemeral data (daily leaderboards, jobs via BullMQ, OAuth state parameters). Furthermore, we use Oxc (Oxfmt and Oxlint) to format and lint our code.
+When contributing to Oxytype, it's good to know our best practices, tips, and tricks. First, Oxytype is written in ~~JavaScript~~ TypeScript, HTML, and CSS (in order of language usage within the project); thus, we assume you are comfortable with these languages or have basic knowledge of them. Our backend is in NodeJS and we use MongoDB to store our user data. Firebase is used for authentication. Redis is used to store ephemeral data (daily leaderboards, jobs via BullMQ, OAuth state parameters). Furthermore, we use Oxc (Oxfmt and Oxlint) to format and lint our code.
 
 ## How to Contribute
 
@@ -27,12 +27,11 @@ Below is a set of general guidelines for different types of changes.
 
 ### Pull Request Naming Guidelines
 
-We use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for our pull request titles (and commit messages on the master branch) and also include the author name at the end inside parenthesis. Please follow the guidelines below when naming pull requests.
+We use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for our pull request titles (and commit messages on the master branch). Please follow the guidelines below when naming pull requests.
 
 For types, we use the following:
 
 - `feat`: A new feature
-- `impr`: An improvement to an existing feature
 - `fix`: A bug fix
 - `docs`: Documentation only changes
 - `style`: Changes that do not affect the meaning of the code (white space, formatting, missing semi-colons, etc)
@@ -46,9 +45,9 @@ For types, we use the following:
 
 #### Examples
 
-- `feat: add new feature (@github_username)`
-- `impr(quotes): add english quotes (@username)`
-- `fix(leaderboard): show user rank correctly (@user1, @user2, @user3)`
+- `feat: add new feature `
+- `impr(quotes): add english quotes `
+- `fix(leaderboard): show user rank correctly `
 
 ### Theme Guidelines
 
@@ -81,7 +80,7 @@ If you want to contribute languages but don't know how, check [LANGUAGES.md](/do
 - Verify the `id` property is incremented correctly
 - Please do not add extremely short quotes (less than 60 characters)
 - For quotes not in English, please include translations of quotes in the description of your pull request. This assists in the verification process to ensure the integrity of the quotes.
-- Remember to name your pull request properly. For example, if you are adding new quotes for the language `French`, your pull request should be named `impr(quotes): add French quotes (@yourusername)`.
+- Remember to name your pull request properly. For example, if you are adding new quotes for the language `French`, your pull request should be named `impr(quotes): add French quotes `.
 
 If you want to contribute quotes but don't know how, check [QUOTES.md](/docs/QUOTES.md)
 
@@ -91,4 +90,4 @@ If you want to contribute layouts but don't know how, check [LAYOUTS.md](/docs/L
 
 ## Questions
 
-If you have any questions, comments, concerns, or problems let me know on [GitHub](https://github.com/Miodec), [Discord](https://discord.gg/monkeytype) in the `#development` channel, or ask a question on Monkeytype's [GitHub discussions](https://github.com/monkeytypegame/monkeytype/discussions) and a contributor will be happy to assist you.
+Open an [issue](https://github.com/voltcrash/oxytype/issues) or a [discussion](https://github.com/voltcrash/oxytype/discussions) in this repository.

@@ -1,3 +1,4 @@
+import { revealPreparedTestPage } from "../states/page-transition";
 import {
   showErrorNotification,
   showNoticeNotification,
@@ -10,10 +11,10 @@ import { setConfig } from "../config/setters";
 import { Config } from "../config/store";
 import { configEvent } from "../events/config";
 
-import { ChallengeSettings, getChallenge } from "@monkeytype/challenges";
-import { ChallengeName } from "@monkeytype/schemas/challenges";
-import { CompletedEvent } from "@monkeytype/schemas/results";
-import { typedKeys } from "@monkeytype/util/objects";
+import { ChallengeSettings, getChallenge } from "@oxytype/challenges";
+import { ChallengeName } from "@oxytype/schemas/challenges";
+import { CompletedEvent } from "@oxytype/schemas/results";
+import { typedKeys } from "@oxytype/util/objects";
 import { hideLoaderBar, showLoaderBar } from "../states/loader-bar";
 import {
   isTestRestarting,
@@ -21,7 +22,6 @@ import {
   setLoadedChallenge,
 } from "../states/test";
 import { areUnsortedArraysEqual } from "../utils/arrays";
-import { qs } from "../utils/dom";
 
 let challengeLoading = false;
 
@@ -214,8 +214,7 @@ export async function setup(challengeName: ChallengeName): Promise<boolean> {
     if (challenge === undefined || settings === undefined) {
       showNoticeNotification("Challenge not found or missing settings");
       setTimeout(() => {
-        qs("header .config")?.show();
-        qs(".page.pageTest")?.show();
+        revealPreparedTestPage();
       }, 250);
       return false;
     }
@@ -349,8 +348,7 @@ export async function setup(challengeName: ChallengeName): Promise<boolean> {
       }
     }
     notitext = settings.message;
-    qs("header .config")?.show();
-    qs(".page.pageTest")?.show();
+    revealPreparedTestPage();
 
     if (notitext === undefined) {
       showSuccessNotification(`Challenge '${challenge.display}' loaded.`);

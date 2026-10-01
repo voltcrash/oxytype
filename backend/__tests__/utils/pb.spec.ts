@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vite-plus/test";
 import * as pb from "../../src/utils/pb";
-import { Mode, PersonalBests } from "@monkeytype/schemas/shared";
-import { Result } from "@monkeytype/schemas/results";
-import { FunboxName } from "@monkeytype/schemas/configs";
+import { Mode, PersonalBests } from "@oxytype/schemas/shared";
+import { Result } from "@oxytype/schemas/results";
+import { FunboxName } from "@oxytype/schemas/configs";
 
 describe("Pb Utils", () => {
   describe("funboxCatGetPb", () => {

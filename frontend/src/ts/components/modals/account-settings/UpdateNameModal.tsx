@@ -1,4 +1,4 @@
-import { UserNameSchema } from "@monkeytype/schemas/users";
+import { UserNameSchema } from "@oxytype/schemas/users";
 import { z } from "zod";
 
 import Ape from "../../../ape";

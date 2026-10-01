@@ -1,4 +1,4 @@
-import { isSafeNumber } from "@monkeytype/util/numbers";
+import { isSafeNumber } from "@oxytype/util/numbers";
 import { JSXElement, createSignal, For } from "solid-js";
 
 import Ape from "../../ape";
@@ -17,8 +17,8 @@ import {
   updateQuoteStats,
   getRatingAverage,
 } from "../../states/quote-rate";
+import { updateQuoteRating } from "../../test/result";
 import { cn } from "../../utils/cn";
-import { qs } from "../../utils/dom";
 import { AnimatedModal } from "../common/AnimatedModal";
 import { Button } from "../common/Button";
 import { Fa } from "../common/Fa";
@@ -122,9 +122,7 @@ export function QuoteRateModal(): JSXElement {
     if (currentStats) {
       const avg = getRatingAverage(currentStats);
       updateQuoteStats({ ...currentStats, average: avg });
-      qs(".pageTest #result #rateQuoteButton .rating")?.setText(avg.toFixed(1));
-      qs(".pageTest #result #rateQuoteButton .icon")?.removeClass("far");
-      qs(".pageTest #result #rateQuoteButton .icon")?.addClass("fas");
+      updateQuoteRating(avg.toFixed(1));
     }
   };
 

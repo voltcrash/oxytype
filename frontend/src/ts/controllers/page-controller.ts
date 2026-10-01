@@ -1,3 +1,6 @@
+import { setOpenGraphUrl, setPageTitle } from "../states/page-head";
+import { highlightSetting } from "../states/settings-highlight";
+import { isDevEnvironment } from "../utils/env";
 import * as Misc from "../utils/misc";
 import * as Strings from "../utils/strings";
 import {
@@ -7,7 +10,7 @@ import {
 } from "../states/core";
 import * as PageTest from "../pages/test";
 import * as PageLoading from "../pages/loading";
-import * as PageTransition from "../legacy-states/page-transition";
+import * as PageTransition from "../states/page-transition";
 import * as AdController from "../controllers/ad-controller";
 import * as Focus from "../test/focus";
 import Page, {
@@ -18,8 +21,6 @@ import Page, {
   UrlParamsSchema,
   OptionsWithUrlParams,
 } from "../pages/page";
-import { onDOMReady, qsa, qsr } from "../utils/dom";
-import * as Skeleton from "../utils/skeleton";
 import {
   LeaderboardUrlParamsSchema,
   readLeaderboardGetParameters,
@@ -50,28 +51,9 @@ const pages = {
   test: PageTest.page,
   settings: solidPage("settings", {
     beforeShow: async () => {
-      // clear any previous highlight
-      const prev = document.querySelector<HTMLElement>(
-        '[data-component="settingspage"] .settings-highlight',
+      highlightSetting(
+        new URLSearchParams(window.location.search).get("highlight"),
       );
-      if (prev !== null) {
-        prev.classList.remove("settings-highlight");
-      }
-
-      const highlight = new URLSearchParams(window.location.search).get(
-        "highlight",
-      );
-      if (highlight === null) return;
-
-      const element = document.querySelector<HTMLElement>(
-        `[data-component="settingspage"] [data-setting-key="${CSS.escape(highlight)}"]`,
-      );
-      if (element === null) return;
-
-      setTimeout(() => {
-        element.scrollIntoView({ block: "center", behavior: "auto" });
-        element.classList.add("settings-highlight");
-      }, 250);
     },
   }),
   about: solidPage("about"),
@@ -155,29 +137,14 @@ const pages = {
   }),
 };
 
-function updateOpenGraphUrl(): void {
-  const ogUrlTag = document.querySelector('meta[property="og:url"]');
-  const currentUrl = window.location.href;
-
-  if (ogUrlTag) {
-    // Update existing tag
-    ogUrlTag.setAttribute("content", currentUrl);
-  } else {
-    // Create and append new tag if it doesn't exist
-    const newOgUrlTag = document.createElement("meta");
-    newOgUrlTag.setAttribute("property", "og:url");
-    newOgUrlTag.content = currentUrl;
-    document.head.appendChild(newOgUrlTag);
-  }
-}
-
 function updateTitle(nextPage: { id: string; display?: string }): void {
+  const local = isDevEnvironment() ? "localhost - " : "";
   if (nextPage.id === "test") {
-    Misc.updateTitle();
+    setPageTitle(`${local}Oxytype | A minimalistic, customizable typing test`);
   } else {
     const titleString =
       nextPage.display ?? Strings.capitalizeFirstLetterOfEachWord(nextPage.id);
-    Misc.updateTitle(`${titleString} | Monkeytype`);
+    setPageTitle(`${local}${titleString} | Oxytype`);
   }
 }
 
@@ -188,17 +155,14 @@ async function showSyncLoading({
   loadingOptions: LoadingOptions[];
   totalDuration: number;
 }): Promise<void> {
-  PageLoading.page.element.show().setStyle({ opacity: "0" });
+  PageTransition.preparePage("loading");
   await PageLoading.page.beforeShow({});
 
   const fillDivider = loadingOptions.length;
   const fillOffset = 100 / fillDivider;
 
   //void here to run the loading promise as soon as possible
-  void PageLoading.page.element.promiseAnimate({
-    opacity: "1",
-    duration: totalDuration / 2,
-  });
+  void PageTransition.transitionPage("loading", true, totalDuration / 2, false);
 
   for (let i = 0; i < loadingOptions.length; i++) {
     const currentOffset = fillOffset * i;
@@ -226,13 +190,9 @@ async function showSyncLoading({
     }
   }
 
-  await PageLoading.page.element.promiseAnimate({
-    opacity: "0",
-    duration: totalDuration / 2,
-  });
+  await PageTransition.transitionPage("loading", false, totalDuration / 2);
 
   await PageLoading.page.afterHide();
-  PageLoading.page.element.hide();
 }
 
 // Global abort controller for keyframe promises
@@ -316,16 +276,14 @@ export async function change(
 
   //start
   PageTransition.set(true);
-  qsa(".page")?.removeClass("active");
 
   //previous page
   await previousPage?.beforeHide?.();
-  previousPage.element.show().setStyle({ opacity: "1" });
-  await previousPage.element.promiseAnimate({
-    opacity: "0",
-    duration: totalDuration / 2,
-  });
-  previousPage.element.hide();
+  await PageTransition.transitionPage(
+    previousPage.id,
+    false,
+    totalDuration / 2,
+  );
   await previousPage?.afterHide();
 
   // we need to evaluate and store next page loading mode in case options.loadingOptions.loadingMode is sync
@@ -359,7 +317,7 @@ export async function change(
       keyframeAbortController = null;
     }
 
-    pages.loading.element.addClass("active");
+    PageTransition.activatePage("loading");
     setActivePage(pages.loading.id);
     Focus.set(false);
     PageLoading.showError();
@@ -375,10 +333,11 @@ export async function change(
   //between
   updateTitle(nextPage);
   setActivePage(nextPage.id);
-  updateOpenGraphUrl();
+  setOpenGraphUrl(window.location.href);
   Focus.set(false);
 
   //next page
+  PageTransition.preparePage(nextPage.id);
   await nextPage?.beforeShow({
     params: options.params,
     // @ts-expect-error for the future (i think)
@@ -395,12 +354,7 @@ export async function change(
     });
   }
 
-  nextPage.element.show().setStyle({ opacity: "0" });
-  await nextPage.element.promiseAnimate({
-    opacity: "1",
-    duration: totalDuration / 2,
-  });
-  nextPage.element.addClass("active");
+  await PageTransition.transitionPage(nextPage.id, true, totalDuration / 2);
   await nextPage?.afterShow();
 
   //wrapup
@@ -440,16 +394,12 @@ function solidPage<U extends UrlParamsSchema>(
   },
 ): Page<undefined> | PageWithUrlParams<undefined, U> {
   const path = props?.path ?? `/${id}`;
-  const internalId = `page${Strings.capitalizeFirstLetter(id)}`;
-  onDOMReady(() => Skeleton.save(internalId));
 
   const shared = {
     id,
     path,
-    element: qsr(`#${internalId}`),
     loadingOptions: props?.loadingOptions,
     afterHide: async () => {
-      Skeleton.remove(internalId);
       await props?.afterHide?.();
     },
   };
@@ -459,7 +409,6 @@ function solidPage<U extends UrlParamsSchema>(
       ...shared,
       urlParamsSchema: props.urlParamsSchema,
       beforeShow: async (options) => {
-        Skeleton.append(internalId, "main");
         await props.beforeShow?.(options);
       },
     });
@@ -468,7 +417,6 @@ function solidPage<U extends UrlParamsSchema>(
   return new Page({
     ...shared,
     beforeShow: async (options) => {
-      Skeleton.append(internalId, "main");
       await props?.beforeShow?.(options);
     },
   });

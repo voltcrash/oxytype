@@ -1,12 +1,12 @@
 import { JSXElement, onCleanup, onMount, ParentProps } from "solid-js";
 
-import { useRefWithUtils } from "../../hooks/useRefWithUtils";
+import { useRef } from "../../hooks/useRef";
 import { convertRemToPixels } from "../../utils/numbers";
 
 export function AutoShrink(
   props: ParentProps & { class?: string; upperLimitRem: number },
 ): JSXElement {
-  const [ref, el] = useRefWithUtils<HTMLElement>();
+  const [ref, el] = useRef<HTMLElement>();
 
   let resizeObserver: ResizeObserver | undefined;
 
@@ -34,7 +34,7 @@ export function AutoShrink(
   };
 
   onMount(() => {
-    const element = el()?.native;
+    const element = el();
     if (!element) return;
 
     const parent = element.parentElement;

@@ -1,5 +1,5 @@
 {
-  "name": "@monkeytype/backend",
+  "name": "@oxytype/backend",
   "version": "1.14.3",
   "private": true,
   "license": "GPL-3.0",
@@ -21,11 +21,11 @@
   },
   "dependencies": {
     "@date-fns/utc": "1.2.0",
-    "@monkeytype/challenges": "workspace:*",
-    "@monkeytype/contracts": "workspace:*",
-    "@monkeytype/funbox": "workspace:*",
-    "@monkeytype/schemas": "workspace:*",
-    "@monkeytype/util": "workspace:*",
+    "@oxytype/challenges": "workspace:*",
+    "@oxytype/contracts": "workspace:*",
+    "@oxytype/funbox": "workspace:*",
+    "@oxytype/schemas": "workspace:*",
+    "@oxytype/util": "workspace:*",
     "@ts-rest/core": "3.52.1",
     "@ts-rest/express": "3.52.1",
     "@ts-rest/open-api": "3.52.1",
@@ -59,8 +59,8 @@
     "zod": "3.23.8"
   },
   "devDependencies": {
-    "@monkeytype/oxlint-config": "workspace:*",
-    "@monkeytype/typescript-config": "workspace:*",
+    "@oxytype/oxlint-config": "workspace:*",
+    "@oxytype/typescript-config": "workspace:*",
     "@redocly/cli": "2.24.1",
     "@types/bcrypt": "5.0.2",
     "@types/cors": "2.8.19",

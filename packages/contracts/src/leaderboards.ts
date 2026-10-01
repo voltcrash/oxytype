@@ -9,11 +9,11 @@ import {
 import {
   LeaderboardEntrySchema,
   XpLeaderboardEntrySchema,
-} from "@monkeytype/schemas/leaderboards";
-import { Mode2Schema, ModeSchema } from "@monkeytype/schemas/shared";
+} from "@oxytype/schemas/leaderboards";
+import { Mode2Schema, ModeSchema } from "@oxytype/schemas/shared";
 import { initContract } from "@ts-rest/core";
-import { LanguageSchema } from "@monkeytype/schemas/languages";
-import { PageNumberSchema } from "@monkeytype/schemas/util";
+import { LanguageSchema } from "@oxytype/schemas/languages";
+import { PageNumberSchema } from "@oxytype/schemas/util";
 
 const LanguageAndModeQuerySchema = z.object({
   language: LanguageSchema,

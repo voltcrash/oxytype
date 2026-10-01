@@ -16,7 +16,7 @@ import * as TestLogic from "../../test/test-logic";
 import { Config } from "../../config/store";
 import { flash } from "../../events/keymap";
 import * as WeakSpot from "../../test/weak-spot";
-import * as CompositionState from "../../legacy-states/composition";
+import * as CompositionState from "../../states/composition";
 import {
   isCorrectShiftUsed,
   getIncorrectShiftsInARow,

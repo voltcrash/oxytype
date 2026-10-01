@@ -2,7 +2,7 @@ import { For, JSXElement, onCleanup, onMount, Show } from "solid-js";
 import { debounce } from "throttle-debounce";
 
 import { createEffectOn } from "../../../hooks/effects";
-import { useRefWithUtils } from "../../../hooks/useRefWithUtils";
+import { useRef } from "../../../hooks/useRef";
 import {
   Banner as BannerType,
   addBanner,
@@ -13,7 +13,7 @@ import { setGlobalOffsetTop } from "../../../states/core";
 import { getSnapshot } from "../../../states/snapshot";
 import { cn } from "../../../utils/cn";
 import { isProfilerMode } from "../../../utils/profiler-mode";
-import { Fa } from "../../common/Fa";
+import { Fa, FaProps } from "../../common/Fa";
 import { showUpdateNameModal } from "../../modals/account-settings/UpdateNameModal";
 
 function Banner(props: BannerType): JSXElement {
@@ -26,6 +26,16 @@ function Banner(props: BannerType): JSXElement {
     props.icon === undefined || props.icon === ""
       ? "fa fa-fw fa-bullhorn"
       : props.icon;
+
+  const fa = (): FaProps =>
+    ({
+      icon: icon(),
+      variant: icon().split(" ").includes("fab")
+        ? "brand"
+        : icon().split(" ").includes("far")
+          ? "regular"
+          : "solid",
+    }) as FaProps;
 
   return (
     <div
@@ -41,14 +51,14 @@ function Banner(props: BannerType): JSXElement {
       <div class="flex w-full justify-between gap-2">
         <Show
           when={props.imagePath !== undefined}
-          fallback={<i class={`self-center ${icon()}`}></i>}
+          fallback={<Fa {...fa()} class="self-center" />}
         >
           <img
             src={props.imagePath}
             alt="Banner Image"
             class="hidden aspect-6/1 h-full max-h-9 self-center xl:block"
           />
-          <i class={`self-center ${icon()} xl:hidden`}></i>
+          <Fa {...fa()} class="self-center xl:hidden" />
         </Show>
         <div class="self-center p-2">{props.customContent ?? props.text}</div>
         <Show
@@ -65,7 +75,7 @@ function Banner(props: BannerType): JSXElement {
             </button>
           }
         >
-          <i class={`self-center ${icon()}`}></i>
+          <Fa {...fa()} class="self-center" />
         </Show>
       </div>
     </div>
@@ -73,7 +83,7 @@ function Banner(props: BannerType): JSXElement {
 }
 
 export function Banners(): JSXElement {
-  const [ref, element] = useRefWithUtils();
+  const [ref, element] = useRef();
 
   let nameChangeAdded = false;
   createEffectOn(
@@ -104,7 +114,7 @@ export function Banners(): JSXElement {
   );
 
   const setGlobalOffsetSignal = (): void => {
-    const height = element()?.getOffsetHeight() ?? 0;
+    const height = element()?.offsetHeight ?? 0;
     setGlobalOffsetTop(height);
   };
 

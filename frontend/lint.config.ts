@@ -5,7 +5,14 @@ import type { OxlintConfig } from "vite-plus/lint";
 const require = createRequire(import.meta.url);
 
 export const frontendLint: OxlintConfig = {
-  ignorePatterns: ["node_modules", "dist", "coverage", ".firebase", ".turbo"],
+  ignorePatterns: [
+    "node_modules",
+    "dist",
+    "coverage",
+    ".firebase",
+    ".turbo",
+    ".standalone-generated",
+  ],
   extends: [sharedLint, pluginLint],
   options: {
     typeAware: false,

@@ -1,45 +1,27 @@
+import { createCroppedScreenshot } from "../components/pages/test/result/useScreenshotCanvas";
 import { showLoaderBar, hideLoaderBar } from "../states/loader-bar";
-import * as Replay from "./replay-ui";
-import {
-  getActivePage,
-  isAuthenticated,
-  setIsScreenshotting,
-} from "../states/core";
+import * as Replay from "./replay";
+import { setIsScreenshotting } from "../states/core";
 import { getActiveFunboxesWithFunction } from "./funbox/list";
 import * as DB from "../db";
 import { format } from "date-fns/format";
-import { getHtmlByUserFlags } from "../controllers/user-flag-controller";
 import {
   showNoticeNotification,
   showErrorNotification,
   showSuccessNotification,
 } from "../states/notifications";
 import { convertRemToPixels } from "../utils/numbers";
-import { qs, qsa } from "../utils/dom";
+import {
+  getResultWrapperElement,
+  resultState,
+  setScreenshotWatermark,
+} from "../states/result";
 import { getTheme } from "../states/theme";
-import { download as downloadFile } from "../utils/misc";
-import { getResultVisible } from "../states/test";
-
-let revealReplay = false;
+import { download as downloadFile } from "../components/common/Download";
 
 function revert(): void {
   setIsScreenshotting(false);
   hideLoaderBar();
-  qs("#ad-result-wrapper")?.show();
-  qs("#ad-result-small-wrapper")?.show();
-  qs(".pageTest .ssWatermark")?.hide();
-  qs(".pageTest .ssWatermark")?.setText("monkeytype.com"); // Reset watermark text
-  qs(".pageTest .buttons")?.show();
-  qs("noscript")?.show();
-  qs("#nocss")?.show();
-  qs("#result")?.removeClass("noBalloons");
-  qs(".wordInputHighlight")?.show();
-  qsa(".highlightContainer")?.show();
-  if (revealReplay) qs("#resultReplay")?.show();
-  if (!isAuthenticated()) {
-    qs(".pageTest .loginTip")?.show();
-  }
-  qs("html")?.setStyle({ scrollBehavior: "smooth" });
   for (const fb of getActiveFunboxesWithFunction("applyGlobalCSS")) {
     fb.functions.applyGlobalCSS();
   }
@@ -56,51 +38,34 @@ async function generateCanvas(): Promise<HTMLCanvasElement | null> {
   const { domToCanvas } = await import("modern-screenshot");
   showLoaderBar(true);
 
-  if (!qs("#resultReplay")?.hasClass("hidden")) {
-    revealReplay = true;
+  if (resultState.replay.visible) {
     Replay.pauseReplay();
   }
 
   // --- UI Preparation ---
+  // result components hide buttons, login tip, replay, highlights and the
+  // result ad and show the watermark while screenshotting
   const dateNow = new Date(Date.now());
-  qs("#resultReplay")?.hide();
-  qs(".pageTest .ssWatermark")?.show();
-
   const snapshot = DB.getSnapshot();
-  const ssWatermark = [format(dateNow, "dd MMM yyyy HH:mm"), "monkeytype.com"];
-  if (snapshot?.name !== undefined) {
-    const userText = `${snapshot?.name}${getHtmlByUserFlags(snapshot, {
-      iconsOnly: true,
-    })}`;
-    ssWatermark.unshift(userText);
-  }
-  qs(".pageTest .ssWatermark")?.setHtml(
-    ssWatermark
-      .map((el) => `<span>${el}</span>`)
-      .join("<span class='pipe'>|</span>"),
-  );
+  setScreenshotWatermark({
+    date: format(dateNow, "dd MMM yyyy HH:mm"),
+    user:
+      snapshot?.name !== undefined
+        ? { name: snapshot.name, flags: snapshot }
+        : undefined,
+  });
 
   setIsScreenshotting(true);
-  qs(".pageTest .buttons")?.hide();
-  qs(".pageTest .loginTip")?.hide();
-  qs("noscript")?.hide();
-  qs("#nocss")?.hide();
-  qs("#ad-result-wrapper")?.hide();
-  qs("#ad-result-small-wrapper")?.hide();
-  qs("#result")?.addClass("noBalloons");
-  qs(".wordInputHighlight")?.hide();
-  qsa(".highlightContainer")?.hide();
 
   for (const fb of getActiveFunboxesWithFunction("clearGlobal")) {
     fb.functions.clearGlobal();
   }
 
-  (document.querySelector("html") as HTMLElement).style.scrollBehavior = "auto";
   window.scrollTo({ top: 0, behavior: "auto" });
 
   // --- Target Element Calculation ---
-  const src = qs("#result .wrapper");
-  if (src === null) {
+  const src = getResultWrapperElement();
+  if (src === undefined) {
     console.error("Result wrapper not found for screenshot");
     showErrorNotification("Screenshot target element not found");
     revert();
@@ -109,11 +74,17 @@ async function generateCanvas(): Promise<HTMLCanvasElement | null> {
   // Wait a frame to ensure all UI changes are rendered
   await new Promise((resolve) => requestAnimationFrame(resolve));
 
-  const sourceX = src.screenBounds().left ?? 0;
-  const sourceY = src.screenBounds().top ?? 0;
+  const sourceX = src.getBoundingClientRect().left ?? 0;
+  const sourceY = src.getBoundingClientRect().top ?? 0;
 
-  const sourceWidth = src.getOuterWidth();
-  const sourceHeight = src.getOuterHeight();
+  const style = getComputedStyle(src);
+  const bounds = src.getBoundingClientRect();
+  const sourceWidth =
+    bounds.width + parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+  const sourceHeight =
+    bounds.height +
+    parseFloat(style.marginTop) +
+    parseFloat(style.marginBottom);
   const paddingX = convertRemToPixels(2);
   const paddingY = convertRemToPixels(2);
 
@@ -181,36 +152,21 @@ async function generateCanvas(): Promise<HTMLCanvasElement | null> {
     const scaledPaddedWForCrop = Math.ceil(paddedWidth * scale);
     const scaledPaddedHForCrop = Math.ceil(paddedHeight * scale);
 
-    const canvas = document.createElement("canvas");
-    canvas.width = scaledPaddedWCanvas;
-    canvas.height = scaledPaddedHCanvas;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) {
-      showErrorNotification("Failed to get canvas context for screenshot");
-      return null;
-    }
-
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
-
     // Calculate crop coordinates with proper clamping
     const cropX = Math.max(0, Math.floor((sourceX - paddingX) * scale));
     const cropY = Math.max(0, Math.floor((sourceY - paddingY) * scale));
     const cropW = Math.min(scaledPaddedWForCrop, fullCanvas.width - cropX);
     const cropH = Math.min(scaledPaddedHForCrop, fullCanvas.height - cropY);
 
-    ctx.drawImage(
-      fullCanvas,
-      cropX,
-      cropY,
-      cropW,
-      cropH,
-      0,
-      0,
-      canvas.width,
-      canvas.height,
-    );
-    return canvas;
+    return createCroppedScreenshot({
+      source: fullCanvas,
+      width: scaledPaddedWCanvas,
+      height: scaledPaddedHCanvas,
+      x: cropX,
+      y: cropY,
+      cropWidth: cropW,
+      cropHeight: cropH,
+    });
   } catch (e) {
     showErrorNotification("Error creating screenshot canvas", { error: e });
     return null;
@@ -318,7 +274,7 @@ export async function download(): Promise<void> {
       return;
     }
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const filename = `monkeytype-result-${timestamp}.png`;
+    const filename = `oxytype-result-${timestamp}.png`;
 
     downloadFile({ data, filename });
 
@@ -328,32 +284,3 @@ export async function download(): Promise<void> {
     showErrorNotification("Failed to download screenshot");
   }
 }
-
-qs(".pageTest")?.onChild("click", "#saveScreenshotButton", (event) => {
-  if (event.shiftKey) {
-    void download();
-  } else {
-    void copyToClipboard();
-  }
-
-  // reset save screenshot button icon
-  qs("#saveScreenshotButton i")
-    ?.removeClass(["fas", "fa-download"])
-    ?.addClass(["far", "fa-image"]);
-});
-
-document.addEventListener("keydown", (event) => {
-  if (!(getResultVisible() && getActivePage() === "test")) return;
-  if (event.key !== "Shift") return;
-  qs("#result #saveScreenshotButton i")
-    ?.removeClass(["far", "fa-image"])
-    ?.addClass(["fas", "fa-download"]);
-});
-
-document.addEventListener("keyup", (event) => {
-  if (!(getResultVisible() && getActivePage() === "test")) return;
-  if (event.key !== "Shift") return;
-  qs("#result #saveScreenshotButton i")
-    ?.removeClass(["fas", "fa-download"])
-    ?.addClass(["far", "fa-image"]);
-});

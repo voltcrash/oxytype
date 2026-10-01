@@ -1,5 +1,5 @@
-import { Difficulty } from "@monkeytype/schemas/configs";
-import { Mode } from "@monkeytype/schemas/shared";
+import { Difficulty } from "@oxytype/schemas/configs";
+import { Mode } from "@oxytype/schemas/shared";
 import { createColumnHelper } from "@tanstack/solid-table";
 import { format as dateFormat } from "date-fns/format";
 import { Accessor, createMemo, createSignal, JSXElement, Show } from "solid-js";
@@ -24,6 +24,7 @@ type Sorting = {
 };
 
 export function Table<M extends Mode>(props: {
+  ref?: (element: HTMLTableElement) => void;
   data: SnapshotResult<M>[];
   onSortingChange: (sorting: Sorting) => void;
   selectedRowId: Accessor<string | null>;
@@ -52,6 +53,7 @@ export function Table<M extends Mode>(props: {
       </Show>
       <DataTable
         id="resultList"
+        ref={props.ref}
         onSortingChange={(val) => {
           if (val.length === 0) {
             props.onSortingChange({ field: "timestamp", direction: "desc" });

@@ -1,4 +1,4 @@
-import { roundTo2 } from "@monkeytype/util/numbers";
+import { roundTo2 } from "@oxytype/util/numbers";
 import { TestEvent } from "./types";
 
 // Running tallies maintained as events arrive, so live readers don't rescan

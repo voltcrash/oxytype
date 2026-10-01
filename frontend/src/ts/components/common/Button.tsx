@@ -1,10 +1,13 @@
 import { JSXElement, Show } from "solid-js";
+import { Dynamic } from "solid-js/web";
 
 import { cn } from "../../utils/cn";
 import { BalloonProps, buildBalloonHtmlProperties } from "./Balloon";
 import { Fa, FaProps } from "./Fa";
+import { Link } from "./Link";
 
 type BaseProps = {
+  id?: string;
   text?: string;
   fa?: FaProps;
   class?: string;
@@ -90,8 +93,9 @@ export function Button(props: ButtonProps | AnchorProps): JSXElement {
         <button
           // oxlint-disable-next-line button-has-type
           type={(props as ButtonProps).type ?? "button"}
+          id={props.id}
           class={getClasses()}
-          onClick={(e) => props.onClick?.(e)}
+          onClick={(e: MouseEvent) => props.onClick?.(e)}
           onMouseEnter={(e) => props.onMouseEnter?.(e)}
           onMouseLeave={(e) => props.onMouseLeave?.(e)}
           {...balloonHtmlProps()}
@@ -106,7 +110,9 @@ export function Button(props: ButtonProps | AnchorProps): JSXElement {
         </button>
       }
     >
-      <a
+      <Dynamic
+        component={props["router-link"] ? Link : "a"}
+        id={props.id}
         class={getClasses()}
         href={props.href}
         target={
@@ -121,7 +127,7 @@ export function Button(props: ButtonProps | AnchorProps): JSXElement {
         }
         {...balloonHtmlProps()}
         {...(props["router-link"] ? { "router-link": "" } : {})}
-        onClick={(e) => props.onClick?.(e)}
+        onClick={(e: MouseEvent) => props.onClick?.(e)}
         onMouseEnter={(e) => props.onMouseEnter?.(e)}
         onMouseLeave={(e) => props.onMouseLeave?.(e)}
         data-ui-variant={variant()}
@@ -129,7 +135,7 @@ export function Button(props: ButtonProps | AnchorProps): JSXElement {
         {...props.dataset}
       >
         {content}
-      </a>
+      </Dynamic>
     </Show>
   );
 }

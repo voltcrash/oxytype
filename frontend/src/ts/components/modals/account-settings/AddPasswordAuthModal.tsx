@@ -1,4 +1,4 @@
-import { UserEmailSchema } from "@monkeytype/schemas/users";
+import { UserEmailSchema } from "@oxytype/schemas/users";
 import { z } from "zod";
 
 import { addAuthProvider, getPasswordSchema } from "../../../auth";

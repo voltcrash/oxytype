@@ -40,7 +40,7 @@ import {
   CountByYearAndDay,
   TestActivity,
   UserProfileDetails,
-} from "@monkeytype/schemas/users";
+} from "@oxytype/schemas/users";
 import { addImportantLog, addLog } from "../../dal/logs";
 import { sendForgotPasswordEmail as authSendForgotPasswordEmail } from "../../utils/auth";
 import {
@@ -88,12 +88,12 @@ import {
   UpdateUserNameRequest,
   UpdateUserProfileRequest,
   UpdateUserProfileResponse,
-} from "@monkeytype/contracts/users";
-import { MILLISECONDS_IN_DAY } from "@monkeytype/util/date-and-time";
+} from "@oxytype/contracts/users";
+import { MILLISECONDS_IN_DAY } from "@oxytype/util/date-and-time";
 import { MonkeyRequest } from "../types";
-import { tryCatch } from "@monkeytype/util/trycatch";
+import { tryCatch } from "@oxytype/util/trycatch";
 import * as ConnectionsDal from "../../dal/connections";
-import { PersonalBest } from "@monkeytype/schemas/shared";
+import { PersonalBest } from "@oxytype/schemas/shared";
 
 async function verifyCaptcha(captcha: string): Promise<void> {
   const { data: verified, error } = await tryCatch(verify(captcha));

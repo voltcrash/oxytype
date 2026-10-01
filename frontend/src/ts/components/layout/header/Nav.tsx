@@ -10,7 +10,7 @@ import {
 import { usePendingConnectionsQuery } from "../../../collections/connections";
 import { restartTestEvent } from "../../../events/test";
 import { createEffectOn } from "../../../hooks/effects";
-import { useRefWithUtils } from "../../../hooks/useRefWithUtils";
+import { useRef } from "../../../hooks/useRef";
 import {
   prefetchAboutPage,
   prefetchLeaderboardPage,
@@ -38,13 +38,13 @@ import { AccountXpBar } from "./AccountXpBar";
 export function Nav(): JSXElement {
   const [getAccountMenuOpen, setAccountMenuOpen] = createSignal(false);
   const isCoarse = () => window.matchMedia("(pointer: coarse)").matches;
-  const [accountMenuRef, accountMenuEl] = useRefWithUtils<HTMLDivElement>();
+  const [accountMenuRef, accountMenuEl] = useRef<HTMLDivElement>();
 
   const pendingConnections = usePendingConnectionsQuery();
 
   const handleClickOutside = (e: MouseEvent) => {
     const el = accountMenuEl();
-    if (getAccountMenuOpen() && el && !el.native.contains(e.target as Node)) {
+    if (getAccountMenuOpen() && el && !el.contains(e.target as Node)) {
       setAccountMenuOpen(false);
     }
   };

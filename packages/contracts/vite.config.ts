@@ -1,5 +1,5 @@
 import { sharedLint } from "../oxlint-config/config";
-import { extendConfig } from "@monkeytype/tsdown-config";
+import { extendConfig } from "@oxytype/tsdown-config";
 
 import { defineConfig } from "vite-plus";
 

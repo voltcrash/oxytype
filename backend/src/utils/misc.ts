@@ -1,6 +1,6 @@
-import { MILLISECONDS_IN_DAY } from "@monkeytype/util/date-and-time";
-import { roundTo2 } from "@monkeytype/util/numbers";
-export { sanitizeString } from "@monkeytype/util/strings";
+import { MILLISECONDS_IN_DAY } from "@oxytype/util/date-and-time";
+import { roundTo2 } from "@oxytype/util/numbers";
+export { sanitizeString } from "@oxytype/util/strings";
 import uaparser from "ua-parser-js";
 import { MonkeyRequest } from "../api/types";
 import { ObjectId } from "mongodb";
@@ -182,9 +182,13 @@ export function isDevEnvironment(): boolean {
 }
 
 export function getFrontendUrl(): string {
-  return isDevEnvironment()
-    ? "http://localhost:3000"
-    : (process.env["FRONTEND_URL"] ?? "https://monkeytype.com");
+  if (isDevEnvironment()) return "http://localhost:3000";
+
+  const frontendUrl = process.env["FRONTEND_URL"];
+  if (frontendUrl === undefined || frontendUrl === "") {
+    throw new Error("FRONTEND_URL must be configured for production links");
+  }
+  return frontendUrl;
 }
 
 /**

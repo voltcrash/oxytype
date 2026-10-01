@@ -1,5 +1,6 @@
+import { setAppLoading } from "../states/app";
 import * as PageController from "./page-controller";
-import * as PageTransition from "../legacy-states/page-transition";
+import * as PageTransition from "../states/page-transition";
 import { isAuthAvailable } from "../firebase";
 import { isAuthenticated } from "../states/core";
 import { isFunboxActive } from "../test/funbox/list";
@@ -233,16 +234,6 @@ window.addEventListener("popstate", () => {
   void router();
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-  document.body.addEventListener("click", (e) => {
-    const target = e?.target as HTMLLinkElement;
-    if (target.matches("[router-link]") && target?.href) {
-      e.preventDefault();
-      void navigate(target.href);
-    }
-  });
-});
-
 navigationEvent.subscribe(({ url, options }) => {
   void navigate(url, options);
 });
@@ -275,7 +266,7 @@ authEvent.subscribe((event) => {
         keyframes: keyframes,
       },
     }).finally(() => {
-      document.body.classList.remove("loading");
+      setAppLoading(false);
     });
   }
 });

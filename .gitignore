@@ -131,6 +131,7 @@ frontend/static/webfonts-preview
 
 .turbo
 frontend/.env.sentry-build-plugin
+frontend/.standalone-generated
 .claude/worktrees
 1024MiB
 .pnpm-store

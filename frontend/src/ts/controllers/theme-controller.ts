@@ -1,3 +1,8 @@
+import {
+  setBackground,
+  setBackgroundStyle,
+  setBackgroundSize,
+} from "../states/background";
 import * as Arrays from "../utils/arrays";
 import { isColorDark, isColorLight } from "../utils/colors";
 
@@ -7,10 +12,9 @@ import { configEvent } from "../events/config";
 import * as CustomThemes from "../collections/custom-themes";
 import { showNoticeNotification } from "../states/notifications";
 import { debounce } from "throttle-debounce";
-import { CustomThemeColors, ThemeName } from "@monkeytype/schemas/configs";
+import { CustomThemeColors, ThemeName } from "@oxytype/schemas/configs";
 import { Theme, themes, ThemesList } from "../constants/themes";
 import fileStorage from "../utils/file-storage";
-import { qs } from "../utils/dom";
 import { setThemeIndicator } from "../states/core";
 import { setTheme, ThemeIdentifier } from "../states/theme";
 
@@ -72,12 +76,6 @@ async function apply(
   setTheme({ ...themeColors, name: themeName });
 
   updateThemeIndicator(isPreview ? themeName : undefined);
-
-  if (isColorDark(themeColors.bg)) {
-    qs("body")?.addClass("darkMode");
-  } else {
-    qs("body")?.removeClass("darkMode");
-  }
 }
 
 function updateThemeIndicator(nameOverride?: string): void {
@@ -247,58 +245,16 @@ async function clearRandom(): Promise<void> {
 }
 
 function applyCustomBackgroundSize(): void {
-  if (Config.customBackgroundSize === "max") {
-    qs(".customBackground img")?.setStyle({
-      objectFit: "",
-    });
-  } else {
-    qs(".customBackground img")?.setStyle({
-      objectFit: Config.customBackgroundSize,
-    });
-  }
+  setBackgroundSize(
+    Config.customBackgroundSize === "max" ? "" : Config.customBackgroundSize,
+  );
 }
 
 export async function applyCustomBackground(): Promise<void> {
-  let backgroundUrl = Config.customBackground;
-
-  //if there is a localBackgroundFile available, use it.
   const localBackgroundFile = await fileStorage.getFile("LocalBackgroundFile");
-
-  if (localBackgroundFile !== undefined) {
-    backgroundUrl = localBackgroundFile;
-  }
-
-  // hide the filter section initially and always
-  qs(
-    ".pageSettings .section[data-config-name='customBackgroundFilter']",
-  )?.hide();
-
-  if (backgroundUrl === "") {
-    qs("#words")?.removeClass("noErrorBorder");
-    qs("#resultWordsHistory")?.removeClass("noErrorBorder");
-    qs(".customBackground img")?.remove();
-  } else {
-    qs("#words")?.addClass("noErrorBorder");
-    qs("#resultWordsHistory")?.addClass("noErrorBorder");
-
-    //use setAttribute for possible unsafe customBackground value
-    const container = document.querySelector(".customBackground");
-    const img = document.createElement("img");
-
-    img.setAttribute("src", backgroundUrl);
-    img.setAttribute(
-      "onError",
-      "javascript:this.style.display='none'; window.dispatchEvent(new Event('customBackgroundFailed'))",
-    );
-    img.onload = () => {
-      // show the filter section only if the image loads successfully
-      qs(
-        ".pageSettings .section[data-config-name='customBackgroundFilter']",
-      )?.show();
-    };
-
-    container?.replaceChildren(img);
-
+  const url = localBackgroundFile ?? Config.customBackground;
+  setBackground({ url });
+  if (url !== "") {
     applyCustomBackgroundFilters();
     applyCustomBackgroundSize();
   }
@@ -333,9 +289,9 @@ export function applyCustomBackgroundFilters(
     height: `calc(100% + ${valuesToApply[0] * 8}rem)`,
     transform: `scale(${1 + valuesToApply[0] / 100})`,
     top: `-${valuesToApply[0] * 4}rem`,
-    position: "absolute",
+    position: "absolute" as const,
   };
-  qs(".customBackground img")?.setStyle(css);
+  setBackgroundStyle(css);
 }
 
 window

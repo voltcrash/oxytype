@@ -4,14 +4,12 @@ import { For, JSXElement } from "solid-js";
 import {
   getContributorsQueryOptions,
   getSpeedHistogramQueryOptions,
-  getSupportersQueryOptions,
   getTypingStatsQueryOptions,
 } from "../../queries/public";
 import { getActivePage } from "../../states/core";
 import { showModal } from "../../states/modals";
 import { getTheme } from "../../states/theme";
 import { getNumberWithMagnitude } from "../../utils/numbers";
-import { Advertisement } from "../common/Advertisement";
 import AsyncContent from "../common/AsyncContent";
 import { Button } from "../common/Button";
 import { ChartJs } from "../common/ChartJs";
@@ -25,11 +23,6 @@ export function AboutPage(): JSXElement {
 
   const contributors = useQuery(() => ({
     ...getContributorsQueryOptions(),
-    enabled: isOpen(),
-  }));
-
-  const supporters = useQuery(() => ({
-    ...getSupportersQueryOptions(),
     enabled: isOpen(),
   }));
 
@@ -55,12 +48,10 @@ export function AboutPage(): JSXElement {
     <Page id="about">
       <div class="content-grid grid gap-8">
         <section class="text-center text-sub">
-          Created with love by Miodec.
+          Oxytype is independently developed from Monkeytype, originally created
+          by Miodec and expanded by its contributors.
           <br />
-          <a href="#supporters_title">Supported</a> and{" "}
-          <a href="#contributors_title">expanded</a> by many awesome people.
-          <br />
-          Launched on 15th of May, 2020.
+          <a href="#contributors_title">See contributor credits</a>.
         </section>
         <section>
           <AsyncContent
@@ -190,14 +181,11 @@ export function AboutPage(): JSXElement {
         <section>
           <H2 fa={{ icon: "fa-info-circle" }} text="about" />
           <p>
-            Monkeytype is a minimalistic and customizable typing test. It
-            features many test modes, an account system to save your typing
-            speed history, and user-configurable features such as themes,
-            sounds, a smooth caret, and more. Monkeytype attempts to emulate the
-            experience of natural keyboard typing during a typing test, by
-            unobtrusively presenting the text prompts and displaying typed
-            characters in-place, providing straightforward, real-time feedback
-            on typos, speed, and accuracy.
+            Oxytype is an independent typing test project based on Monkeytype.
+            It offers multiple test modes, progress tracking, themes, and a
+            customizable typing experience. The original Monkeytype project was
+            created by Miodec; its contributors remain credited here and in the
+            repository.
             <br />
             <br />
             Test yourself in various modes, track your progress and improve your
@@ -253,7 +241,6 @@ export function AboutPage(): JSXElement {
             </dd>
           </dl>
         </section>
-        <Advertisement id="ad-about-1" visible="sellout" />
         <section>
           <H3 fa={{ icon: "fa-chart-area" }} text="results screen" />
           <p>
@@ -268,18 +255,14 @@ export function AboutPage(): JSXElement {
         </section>
         <section>
           <H3 fa={{ icon: "fa-bug" }} text="bug report or feature request" />
-          <p>
-            If you encounter a bug, or have a feature request - join the Discord
-            server, send me an email, a direct message on Twitter or create an
-            issue on GitHub.
-          </p>
+          <p>Report a bug or suggest a feature in the Oxytype repository.</p>
         </section>
         <div></div>
         <section>
           <H2 fa={{ icon: "fa-life-ring" }} text="support" />
           <p>
-            Thanks to everyone who has supported this project. It would not be
-            possible without you and your continued support.
+            Help Oxytype grow by contributing code, reporting bugs, and helping
+            other users.
           </p>
           <div class="mt-4 text-xl">
             <Button
@@ -295,10 +278,7 @@ export function AboutPage(): JSXElement {
         <div></div>
         <section>
           <H2 fa={{ icon: "fa-envelope" }} text="contact" />
-          <p>
-            If you encounter a bug, have a feature request or just want to say
-            hi - here are the different ways you can contact me directly.
-          </p>
+          <p>Report bugs or request features through the Oxytype repository.</p>
           <div class="mt-4 grid w-full grid-cols-1 gap-4 text-xl sm:grid-cols-2 lg:grid-cols-4">
             <Button
               text="mail"
@@ -307,21 +287,15 @@ export function AboutPage(): JSXElement {
               class="w-full p-8"
             />
             <Button
-              text="twitter"
-              fa={{ icon: "fa-twitter", variant: "brand" }}
-              href="https://x.com/monkeytype"
-              class="w-full p-8"
-            />
-            <Button
-              text="discord"
-              fa={{ icon: "fa-discord", variant: "brand" }}
-              href="https://discord.gg/monkeytype"
+              text="discussions"
+              fa={{ icon: "fa-comments" }}
+              href="https://github.com/voltcrash/oxytype/discussions"
               class="w-full p-8"
             />
             <Button
               text="github"
               fa={{ icon: "fa-github", variant: "brand" }}
-              href="https://github.com/monkeytypegame/monkeytype"
+              href="https://github.com/voltcrash/oxytype"
               class="w-full p-8"
             />
           </div>
@@ -348,51 +322,16 @@ export function AboutPage(): JSXElement {
             who provided valuable feedback on the original reddit post for the
             prototype of this website
           </p>
-          <p>
-            <Button
-              variant="text"
-              text="Supporters"
-              href="#supporters_title"
-              class="p-0 pt-2 pr-2 pb-2"
-            />
-            who helped financially by donating, enabling optional ads or buying
-            merch
-          </p>
+          <p>Supporters who helped the original project financially.</p>
           <p>
             <Button
               variant="text"
               text="Contributors"
-              href="https://github.com/monkeytypegame/monkeytype/graphs/contributors"
+              href="https://github.com/voltcrash/oxytype/graphs/contributors"
               class="p-0 pt-2 pr-2 pb-2"
             />
-            on GitHub that have helped with implementing various features,
-            adding themes and more
+            who built the original project and continue to improve Oxytype
           </p>
-        </section>
-        <Advertisement id="ad-about-2" visible="sellout" />
-        <div></div>
-        <section>
-          <H2
-            id="supporters_title"
-            fa={{ icon: "fa-hand-holding-usd" }}
-            text="top supporters"
-          />
-          <AsyncContent
-            queries={{ supporters }}
-            errorMessage="Failed to get supporters"
-          >
-            {({ supportersData }) => (
-              <div
-                class="grid"
-                style={{
-                  "grid-template-columns":
-                    "repeat(auto-fill, minmax(13em, 1fr))",
-                }}
-              >
-                <For each={supportersData()}>{(name) => <div>{name}</div>}</For>
-              </div>
-            )}
-          </AsyncContent>
         </section>
         <div></div>
         <section>

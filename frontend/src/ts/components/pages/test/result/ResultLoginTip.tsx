@@ -1,0 +1,19 @@
+import { JSXElement } from "solid-js";
+
+import { getIsScreenshotting } from "../../../../states/core";
+import { resultState } from "../../../../states/result";
+import { cn } from "../../../../utils/cn";
+import { Link } from "../../../common/Link";
+
+export function ResultLoginTip(): JSXElement {
+  return (
+    <div
+      class={cn(
+        "loginTip col-[1/3] text-center text-sub",
+        (!resultState.loginTip || getIsScreenshotting()) && "hidden",
+      )}
+    >
+      <Link href="/login">Sign in</Link> to save your result
+    </div>
+  );
+}

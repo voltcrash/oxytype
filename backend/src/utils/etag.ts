@@ -1,4 +1,4 @@
-import { COMPATIBILITY_CHECK } from "@monkeytype/contracts";
+import { COMPATIBILITY_CHECK } from "@oxytype/contracts";
 import { default as etag } from "etag";
 
 /**

@@ -1,9 +1,8 @@
 import { navigate } from "../../controllers/route-controller";
 import { isAuthenticated } from "../../states/core";
-import { toggleFullscreen } from "../../utils/misc";
 import { Command, withValidation } from "../types";
 import { remoteValidation } from "../../utils/remote-validation";
-import { UserNameWithoutFilterSchema } from "@monkeytype/schemas/users";
+import { UserNameWithoutFilterSchema } from "@oxytype/schemas/users";
 import Ape from "../../ape";
 
 const commands: Command[] = [
@@ -85,3 +84,11 @@ const commands: Command[] = [
 ];
 
 export default commands;
+
+function toggleFullscreen(): void {
+  if (!document.fullscreenElement) {
+    void document.documentElement.requestFullscreen();
+  } else {
+    void document.exitFullscreen();
+  }
+}

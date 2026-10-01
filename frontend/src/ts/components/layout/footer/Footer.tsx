@@ -12,17 +12,17 @@ import { VersionButton } from "./VersionButton";
 export function Footer(): JSXElement {
   return (
     <footer
-      class={cn("relative text-xs text-sub", {
+      class={cn("relative text-xs text-sub", getFocus() && "focus", {
         "opacity-0": getIsScreenshotting(),
       })}
     >
       <Keytips />
 
       <div
-        class="-m-2 flex justify-between gap-8 transition-opacity"
-        classList={{
-          "opacity-0": getFocus(),
-        }}
+        class={cn(
+          "-m-2 flex justify-between gap-8 transition-opacity",
+          getFocus() && "opacity-0",
+        )}
       >
         <div class="grid grid-cols-1 justify-items-start xs:grid-cols-2 sm:grid-cols-4 lg:flex">
           <Button
@@ -50,27 +50,13 @@ export function Footer(): JSXElement {
               icon: "fa-code",
               fixedWidth: true,
             }}
-            href="https://github.com/monkeytypegame/monkeytype"
+            href="https://github.com/voltcrash/oxytype"
           />
           <Button
             variant="text"
-            text="discord"
-            fa={{
-              icon: "fa-discord",
-              variant: "brand",
-              fixedWidth: true,
-            }}
-            href="https://www.discord.gg/monkeytype"
-          />
-          <Button
-            variant="text"
-            text="twitter"
-            fa={{
-              icon: "fa-twitter",
-              variant: "brand",
-              fixedWidth: true,
-            }}
-            href="https://x.com/monkeytype"
+            text="discussions"
+            fa={{ icon: "fa-comments", fixedWidth: true }}
+            href="https://github.com/voltcrash/oxytype/discussions"
           />
           <Button
             variant="text"

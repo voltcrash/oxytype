@@ -1,7 +1,7 @@
-import type { Language } from "@monkeytype/schemas/languages";
-import type { LayoutObject } from "@monkeytype/schemas/layouts";
+import type { Language } from "@oxytype/schemas/languages";
+import type { LayoutObject } from "@oxytype/schemas/layouts";
 
-import { tryCatch } from "@monkeytype/util/trycatch";
+import { tryCatch } from "@oxytype/util/trycatch";
 import { createForm } from "@tanstack/solid-form";
 import {
   createMemo,

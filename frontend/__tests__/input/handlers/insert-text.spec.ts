@@ -113,7 +113,7 @@ vi.mock("../../../src/ts/events/keymap", () => ({ flash: vi.fn() }));
 vi.mock("../../../src/ts/states/notifications", () => ({
   showNoticeNotification: vi.fn(),
 }));
-vi.mock("../../../src/ts/legacy-states/composition", () => ({
+vi.mock("../../../src/ts/states/composition", () => ({
   getComposing: () => false,
   getData: () => "",
 }));

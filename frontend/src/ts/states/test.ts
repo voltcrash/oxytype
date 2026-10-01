@@ -4,9 +4,9 @@ import { getConfig } from "../config/store";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { EventLog } from "../test/events/types";
 
-import { Challenge } from "@monkeytype/challenges";
-import { LayoutObject } from "@monkeytype/schemas/layouts";
-import { CompletedEvent, IncompleteTest } from "@monkeytype/schemas/results";
+import { Challenge } from "@oxytype/challenges";
+import { LayoutObject } from "@oxytype/schemas/layouts";
+import { CompletedEvent, IncompleteTest } from "@oxytype/schemas/results";
 import { createStore } from "solid-js/store";
 import { keymapEvent } from "../events/keymap";
 import { createSignalWithSetters } from "../hooks/createSignalWithSetters";
@@ -30,11 +30,16 @@ export const [getResultVisible, setResultVisible] = createSignal(false);
 // True from the first line of TestLogic.finish() until the result is built, so
 // it covers the words fade-out that getResultVisible() is still false during.
 export const [isResultCalculating, setResultCalculating] = createSignal(false);
+// Spinner between the typing test fading out and the result showing.
+export const [isResultLoading, setResultLoading] = createSignal(false);
 // Set when the user bails out of a test early; reset by TestLogic.restart().
 export const [getBailedOut, setBailedOut] = createSignal(false);
+// Set when test init fails repeatedly; message is the last init error, if any.
+export const [getTestInitError, setTestInitError] = createSignal<{
+  message: string | undefined;
+} | null>(null);
 export const [getFocus, setFocus] = createSignal(false);
-// #words is still vanilla so it's blurred imperatively (see test/test-ui);
-// the Solid-owned composition display + OutOfFocusWarning read this signal.
+// Words blur, composition display and OutOfFocusWarning share delayed input focus.
 const outOfFocusTimeouts: (number | NodeJS.Timeout)[] = [];
 export type TestFocusState = "focused" | "unfocused" | "unfocusedWindow";
 export const [testFocusState, { setTestFocusState }] =

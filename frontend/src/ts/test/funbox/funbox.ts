@@ -1,4 +1,10 @@
 import {
+  setFunboxBodyClasses as setBodyClasses,
+  setFunboxStylesheets,
+  setFunboxReducedMotionIgnored,
+  setWordsWrapperVisible,
+} from "../../states/funbox";
+import {
   showNoticeNotification,
   showErrorNotification,
 } from "../../states/notifications";
@@ -11,9 +17,9 @@ import {
 } from "../../config/setters";
 import * as MemoryTimer from "./memory-funbox-timer";
 import * as FunboxMemory from "./funbox-memory";
-import { HighlightMode, FunboxName } from "@monkeytype/schemas/configs";
-import { Mode } from "@monkeytype/schemas/shared";
-import { checkCompatibility, checkForcedConfig } from "@monkeytype/funbox";
+import { HighlightMode, FunboxName } from "@oxytype/schemas/configs";
+import { Mode } from "@oxytype/schemas/shared";
+import { checkCompatibility, checkForcedConfig } from "@oxytype/funbox";
 import {
   getAllFunboxes,
   getActiveFunboxes,
@@ -22,8 +28,7 @@ import {
   isFunboxActiveWithProperty,
   getActiveFunboxesWithProperty,
 } from "./list";
-import { tryCatch } from "@monkeytype/util/trycatch";
-import { qs, qsa } from "../../utils/dom";
+import { tryCatch } from "@oxytype/util/trycatch";
 import { configEvent } from "../../events/config";
 
 export function toggleScript(...params: string[]): void {
@@ -57,18 +62,9 @@ export function toggleFunbox(funbox: FunboxName): void {
 }
 
 export async function clear(): Promise<boolean> {
-  qs("body")?.setAttribute(
-    "class",
-    qs("body")
-      ?.getAttribute("class")
-      ?.split(/\s+/)
-      ?.filter((it) => !it.startsWith("fb-"))
-      ?.join(" ") ?? "",
-  );
-
-  qsa(".funBoxTheme").remove();
-
-  qs("#wordsWrapper")?.show();
+  setBodyClasses([]);
+  setFunboxStylesheets([]);
+  setWordsWrapperVisible(true);
   MemoryTimer.reset();
   return true;
 }
@@ -101,7 +97,7 @@ export async function activate(
   await setFunboxBodyClasses();
   await applyFunboxCSS();
 
-  qs("#wordsWrapper")?.show();
+  setWordsWrapperVisible(true);
 
   const { data: language, error } = await tryCatch(
     JSONData.getCurrentLanguage(Config.language),
@@ -194,39 +190,20 @@ export async function rememberSettings(): Promise<void> {
 }
 
 async function setFunboxBodyClasses(): Promise<boolean> {
-  const body = qs("body");
-
-  const activeFbClasses = getActiveFunboxNames().map(
-    (name) => `fb-${name.replaceAll("_", "-")}`,
+  setBodyClasses(
+    getActiveFunboxNames().map((name) => `fb-${name.replaceAll("_", "-")}`),
   );
-
-  const currentClasses =
-    body
-      ?.getAttribute("class")
-      ?.split(/\s+/)
-      .filter((it) => !it.startsWith("fb-")) ?? [];
-
   if (isFunboxActiveWithProperty("ignoreReducedMotion")) {
-    currentClasses.push("ignore-reduced-motion");
+    setFunboxReducedMotionIgnored(true);
   }
-
-  body?.setAttribute(
-    "class",
-    [...new Set([...currentClasses, ...activeFbClasses]).keys()].join(" "),
-  );
-
   return true;
 }
 
 async function applyFunboxCSS(): Promise<boolean> {
-  qsa(".funBoxTheme").remove();
-  for (const funbox of getActiveFunboxesWithProperty("hasCssFile")) {
-    const css = document.createElement("link");
-    css.classList.add("funBoxTheme");
-    css.rel = "stylesheet";
-    css.href = `funbox/${funbox.name}.css`;
-    document.head.appendChild(css);
-  }
+  // Fresh objects recreate links on each activation, like legacy remove/append.
+  setFunboxStylesheets(
+    getActiveFunboxesWithProperty("hasCssFile").map(({ name }) => ({ name })),
+  );
   return true;
 }
 

@@ -1,5 +1,5 @@
 {
-  "name": "@monkeytype/tsdown-config",
+  "name": "@oxytype/tsdown-config",
   "private": true,
   "exports": {
     ".": {
@@ -16,7 +16,7 @@
     "lint-fast": "vp lint . --format agent"
   },
   "devDependencies": {
-    "@monkeytype/typescript-config": "workspace:*",
+    "@oxytype/typescript-config": "workspace:*",
     "@types/node": "24.9.1",
     "typescript": "7.0.2",
     "vite-plus": "catalog:"

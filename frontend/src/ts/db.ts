@@ -7,21 +7,21 @@ import {
   ModifiableTestActivityCalendar,
 } from "./elements/test-activity-calendar";
 import { showLoaderBar, hideLoaderBar } from "./states/loader-bar";
-import { Badge } from "@monkeytype/schemas/users";
-import { Difficulty } from "@monkeytype/schemas/configs";
+import { Badge } from "@oxytype/schemas/users";
+import { Difficulty } from "@oxytype/schemas/configs";
 import {
   Mode,
   Mode2,
   PersonalBest,
   PersonalBests,
-} from "@monkeytype/schemas/shared";
+} from "@oxytype/schemas/shared";
 import {
   getDefaultSnapshot,
   Snapshot,
   SnapshotResult,
 } from "./constants/default-snapshot";
 import { getFirstDayOfTheWeek } from "./utils/date-and-time";
-import { Language } from "@monkeytype/schemas/languages";
+import { Language } from "@oxytype/schemas/languages";
 import { authEvent } from "./events/auth";
 import { configurationPromise } from "./ape/server-configuration";
 import { insertLocalResult } from "./collections/results";
@@ -29,9 +29,9 @@ import {
   setLastResult,
   _setSnapshot as setSolidSnapshot,
 } from "./states/snapshot";
-import { XpBreakdown } from "@monkeytype/schemas/results";
+import { XpBreakdown } from "@oxytype/schemas/results";
 import { setXpBarData } from "./states/header";
-import { FunboxMetadata } from "@monkeytype/funbox";
+import { FunboxMetadata } from "@oxytype/funbox";
 import { __nonReactive } from "./collections/tags";
 import { fetchUserFromApi } from "./ape/user";
 import { SnapshotInitError } from "./utils/snapshot-init-error";

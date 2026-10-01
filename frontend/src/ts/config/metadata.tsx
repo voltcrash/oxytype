@@ -1,6 +1,6 @@
-import { checkCompatibility } from "@monkeytype/funbox";
-import * as ConfigSchemas from "@monkeytype/schemas/configs";
-import { roundTo1 } from "@monkeytype/util/numbers";
+import { checkCompatibility } from "@oxytype/funbox";
+import * as ConfigSchemas from "@oxytype/schemas/configs";
+import { roundTo1 } from "@oxytype/util/numbers";
 import { JSXElement } from "solid-js";
 
 import * as CustomThemes from "../collections/custom-themes";
@@ -8,8 +8,6 @@ import { getDefaultConfig } from "../constants/default-config";
 import { isAuthenticated } from "../states/core";
 import { showNoticeNotification } from "../states/notifications";
 import { FaObject } from "../types/font-awesome";
-import { isDevEnvironment } from "../utils/env";
-import { reloadAfter } from "../utils/misc";
 import { capitalizeFirstLetter } from "../utils/strings";
 import { getOptions } from "../utils/zod";
 import { canSetFunboxWithConfig } from "./funbox-validation";
@@ -1299,27 +1297,10 @@ export const configMetadata: ConfigMetadataObject = {
     key: "ads",
     fa: { icon: "fa-ad" },
     changeRequiresRestart: false,
-    description: `You can disable or enable ads at any time. "Result" will show one ad on the result page, "on" will add floating vertical banners, and "sellout" will add multiple ads on every page.`,
+    description: "Ads are currently unavailable in Oxytype.",
     group: "ads",
-    overrideValue: ({ value }) => {
-      if (isDevEnvironment()) {
-        return "off";
-      }
-      return value;
-    },
-    isBlocked: ({ value }) => {
-      if (value !== "off" && isDevEnvironment()) {
-        showNoticeNotification("Ads are disabled in development mode.");
-        return true;
-      }
-      return false;
-    },
-    afterSet: ({ nosave }) => {
-      if (!nosave && !isDevEnvironment()) {
-        reloadAfter(3);
-        showNoticeNotification("Ad settings changed. Refreshing...");
-      }
-    },
+    overrideValue: () => "off",
+    isBlocked: ({ value }) => value !== "off",
   },
 };
 

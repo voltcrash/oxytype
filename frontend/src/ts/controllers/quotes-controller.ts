@@ -4,9 +4,9 @@ import { cachedFetchJson } from "../utils/json-data";
 import { configEvent } from "../events/config";
 import * as DB from "../db";
 import Ape from "../ape";
-import { tryCatch } from "@monkeytype/util/trycatch";
-import { Language } from "@monkeytype/schemas/languages";
-import { QuoteData } from "@monkeytype/schemas/quotes";
+import { tryCatch } from "@oxytype/util/trycatch";
+import { Language } from "@oxytype/schemas/languages";
+import { QuoteData } from "@oxytype/schemas/quotes";
 import {
   Quote as QuoteType,
   QuoteWithTextSplit as QuoteWithTextSplitType,

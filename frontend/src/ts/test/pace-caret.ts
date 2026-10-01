@@ -1,3 +1,4 @@
+import { cancelPendingAnimationFrame } from "../utils/debounced-animation-frame";
 import * as TestWords from "./test-words";
 import { Config } from "../config/store";
 import * as DB from "../db";
@@ -6,7 +7,10 @@ import * as Misc from "../utils/misc";
 import { configEvent } from "../events/config";
 import { getActiveFunboxes } from "./funbox/list";
 import { Caret } from "../elements/caret";
-import { qsr } from "../utils/dom";
+import {
+  areTestElementsMounted,
+  getPaceCaretElement,
+} from "../states/test-dom";
 import {
   getUserAverage10Once,
   getUserDailyBestOnce,
@@ -37,7 +41,22 @@ let startTimestamp = 0;
 
 let settings: Settings | null = null;
 
-export const caret = new Caret(qsr("#paceCaret"), Config.paceCaretStyle);
+let caret: Caret | undefined;
+
+// The component owns the node and cancels its animations on disposal.
+export function bindCaret(element: HTMLDivElement): () => void {
+  const instance = new Caret(element, Config.paceCaretStyle);
+  caret = instance;
+  return () => {
+    instance.stopAllAnimations();
+    cancelPendingAnimationFrame(`caret.${element.id}.goTo`);
+    if (caret === instance) caret = undefined;
+  };
+}
+
+export function getCaret(): Caret {
+  return (caret ??= new Caret(getPaceCaretElement(), Config.paceCaretStyle));
+}
 
 let lastTestWpm = 0;
 
@@ -51,11 +70,11 @@ export function resetCaretPosition(): void {
   if (Config.paceCaret === "off" && !isPaceRepeat()) return;
   if (Config.mode === "zen") return;
 
-  caret.hide();
-  caret.stopAllAnimations();
-  caret.clearMargins();
+  getCaret().hide();
+  getCaret().stopAllAnimations();
+  getCaret().clearMargins();
 
-  caret.goTo({
+  getCaret().goTo({
     wordIndex: 0,
     letterIndex: 0,
     isLanguageRightToLeft: isLanguageRightToLeft(),
@@ -65,7 +84,7 @@ export function resetCaretPosition(): void {
 }
 
 export async function init(): Promise<void> {
-  caret.hide();
+  getCaret().hide();
   const mode2 = Misc.getMode2(Config, getCurrentQuote());
   let wpm = 0;
   if (Config.paceCaret === "pb") {
@@ -128,8 +147,8 @@ export async function update(expectedStepEnd: number): Promise<void> {
     return;
   }
 
-  if (caret.isHidden()) {
-    caret.show();
+  if (getCaret().isHidden()) {
+    getCaret().show();
   }
 
   incrementLetterIndex();
@@ -139,7 +158,7 @@ export async function update(expectedStepEnd: number): Promise<void> {
     const absoluteStepEnd = startTimestamp + expectedStepEnd;
     const duration = absoluteStepEnd - now;
 
-    caret.goTo({
+    getCaret().goTo({
       wordIndex: currentSettings.currentWordIndex,
       letterIndex: currentSettings.currentLetterIndex,
       isLanguageRightToLeft: isLanguageRightToLeft(),
@@ -164,7 +183,7 @@ export async function update(expectedStepEnd: number): Promise<void> {
     );
   } catch (e) {
     console.error(e);
-    caret.hide();
+    getCaret().hide();
     return;
   }
 }
@@ -225,7 +244,7 @@ function incrementLetterIndex(): void {
     //out of words
     settings = null;
     console.log("pace caret out of words");
-    caret.hide();
+    getCaret().hide();
     return;
   }
 }
@@ -258,8 +277,9 @@ export function start(): void {
 }
 
 configEvent.subscribe(({ key }) => {
+  if (!areTestElementsMounted()) return;
   if (key === "paceCaret") void init();
   if (key === "paceCaretStyle") {
-    caret.setStyle(Config.paceCaretStyle);
+    getCaret().setStyle(Config.paceCaretStyle);
   }
 });

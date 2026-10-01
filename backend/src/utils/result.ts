@@ -3,11 +3,11 @@ import {
   CompletedEvent,
   OldChartData,
   Result,
-} from "@monkeytype/schemas/results";
-import { Mode } from "@monkeytype/schemas/shared";
+} from "@oxytype/schemas/results";
+import { Mode } from "@oxytype/schemas/shared";
 import { ObjectId } from "mongodb";
 import { WithObjectId } from "./misc";
-import { FunboxName } from "@monkeytype/schemas/configs";
+import { FunboxName } from "@oxytype/schemas/configs";
 
 export type DBResult = WithObjectId<Result<Mode>> & {
   //legacy values

@@ -3,7 +3,7 @@ import { createEffect, createMemo, JSXElement, Show } from "solid-js";
 
 import { themes } from "../../constants/themes";
 import { createDebouncedEffectOn } from "../../hooks/effects";
-import { useRefWithUtils } from "../../hooks/useRefWithUtils";
+import { useRef } from "../../hooks/useRef";
 import { hideLoaderBar, showLoaderBar } from "../../states/loader-bar";
 import { showNoticeNotification } from "../../states/notifications";
 import { getTheme } from "../../states/theme";
@@ -11,8 +11,8 @@ import { FavIcon } from "./FavIcon";
 
 export function Theme(): JSXElement {
   // Refs are assigned by SolidJS via the ref attribute
-  const [styleRef, styleEl] = useRefWithUtils<HTMLStyleElement>();
-  const [linkRef, linkEl] = useRefWithUtils<HTMLLinkElement>();
+  const [styleRef, styleEl] = useRef<HTMLStyleElement>();
+  const [linkRef, linkEl] = useRef<HTMLLinkElement>();
 
   //Use memo to ignore signals without changes, needed for the css loading
   const getThemeName = createMemo(() => getTheme().name);
@@ -37,7 +37,9 @@ export function Theme(): JSXElement {
   };
 
   createDebouncedEffectOn(125, getTheme, (colors) => {
-    styleEl()?.setHtml(`
+    const style = styleEl();
+    if (style) {
+      style.textContent = `
 :root {
     --bg-color: ${colors.bg};
     --main-color: ${colors.main};
@@ -49,7 +51,8 @@ export function Theme(): JSXElement {
     --error-extra-color: ${colors.errorExtra};
     --colorful-error-color: ${colors.colorfulError};
     --colorful-error-extra-color: ${colors.colorfulErrorExtra};
-}`);
+}`;
+    }
   });
 
   const isThemeWithCss = () => {

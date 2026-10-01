@@ -1,5 +1,5 @@
-import { ConfigSchema } from "@monkeytype/schemas/configs";
-import { FontNameSchema } from "@monkeytype/schemas/fonts";
+import { ConfigSchema } from "@oxytype/schemas/configs";
+import { FontNameSchema } from "@oxytype/schemas/fonts";
 import { createResource, For, JSXElement, Show } from "solid-js";
 import { z } from "zod";
 
@@ -16,6 +16,7 @@ import FileStorage from "../../../../utils/file-storage";
 import { normalizeName } from "../../../../utils/strings";
 import { getOptions } from "../../../../utils/zod";
 import { Button } from "../../../common/Button";
+import { Fa } from "../../../common/Fa";
 import { Separator } from "../../../common/Separator";
 import { SearchableSetting } from "../SearchableSetting";
 
@@ -113,7 +114,7 @@ export function FontFamily(): JSXElement {
                 for="customFontUploadSolid"
                 class="inline-flex w-full cursor-pointer items-center justify-center gap-[0.5em] rounded border-0 bg-sub-alt p-[0.5em] text-text transition-[color,background,opacity] duration-125 hover:bg-text hover:text-bg"
               >
-                <i class="fas fa-file-import"></i>
+                <Fa icon="fa-file-import" />
                 use local font
               </label>
               <Separator text="or" />

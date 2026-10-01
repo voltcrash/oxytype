@@ -10,7 +10,7 @@ import {
   SubgroupProps,
 } from "./commandline-metadata";
 import { Command } from "./types";
-import * as ConfigSchemas from "@monkeytype/schemas/configs";
+import * as ConfigSchemas from "@oxytype/schemas/configs";
 import { ZodSchema, ZodFirstPartySchemaTypes } from "zod";
 import { getOptions } from "../utils/zod";
 
@@ -242,3 +242,6 @@ function buildInputCommand<K extends keyof ConfigSchemas.Config>({
 }
 
 export const __testing = { _buildCommandForConfigKey };
+
+export const COMMAND_SEPARATOR_HTML =
+  '<i class="fas fa-fw fa-chevron-right chevronIcon"></i>';

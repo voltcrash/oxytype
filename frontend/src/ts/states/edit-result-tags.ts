@@ -1,5 +1,5 @@
-import { Result } from "@monkeytype/schemas/results";
-import { Mode } from "@monkeytype/schemas/shared";
+import { Result } from "@oxytype/schemas/results";
+import { Mode } from "@oxytype/schemas/shared";
 import { createSignal } from "solid-js";
 import { showModal } from "./modals";
 import { showErrorNotification } from "./notifications";
