@@ -12,7 +12,6 @@ export const ChallengeNameSchema = z.enum(
     "1Day",
     "bigramSalad",
     "antidiseWhat",
-    "whatsThisWebsiteCalledAgain",
     "developd",
     "slowAndSteady",
     "speedSpacer",

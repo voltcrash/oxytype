@@ -217,23 +217,6 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
       requirements: { wpm: { min: 200 } },
     },
   },
-  whatsThisWebsiteCalledAgain: {
-    display: "What's this website called again?",
-    discordRoleId: "739276161603076116",
-    category: "script",
-    description: "Type monkeytype one thousand times.",
-    settings: {
-      autoRole: true,
-      type: "customText",
-      parameters: {
-        text: "monkeytype",
-        mode: "repeat",
-        limit: 1000,
-        limitMode: "word",
-        isPipeDelimiter: false,
-      },
-    },
-  },
   developd: {
     display: "Develop'd",
     discordRoleId: "735964917877964932",
