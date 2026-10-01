@@ -16,7 +16,7 @@
 }
 
 @layer custom-styles {
-  @import "animations", "caret", "fonts", "scroll", "test", "media-queries";
+  @import "animations", "caret", "fonts", "scroll", "test";
 
   .chartCanvas {
     width: 100% !important;
