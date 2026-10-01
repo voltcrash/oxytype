@@ -1,14 +1,8 @@
 import MonkeyError from "../utils/error";
-import type { Response, NextFunction, Request } from "express";
-import { RateLimiterMemory } from "rate-limiter-flexible";
-import {
-  ipKeyGenerator,
-  rateLimit,
-  RateLimitRequestHandler,
-  type Options,
-} from "express-rate-limit";
+import { RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
+import { Address6 } from "ip-address";
+import { isIP } from "net";
 import { isDevEnvironment } from "../utils/misc";
-import { TsRestRequestHandler } from "@ts-rest/express";
 import {
   limits,
   RateLimiterId,
@@ -17,20 +11,34 @@ import {
 } from "@oxytype/contracts/rate-limit/index";
 import statuses from "../constants/monkey-status-codes";
 import { getMetadata } from "./utility";
-import {
-  ExpressRequestWithContext,
-  TsRestRequestWithContext,
-} from "../api/types";
-import { AppRoute, AppRouter } from "@ts-rest/core";
+import { ApiContext, ApiMiddleware, HttpRequest } from "../api/http";
 
 export const REQUEST_MULTIPLIER = isDevEnvironment() ? 100 : 1;
 
-export const customHandler = (
-  req: ExpressRequestWithContext,
-  _res: Response,
-  _next: NextFunction,
-  _options: Options,
-): void => {
+export function getClientIp(c: ApiContext): string {
+  // One trusted proxy: the rightmost forwarded address is the immediate client.
+  const forwarded = c.req.header("x-forwarded-for")?.split(",").pop()?.trim();
+  const candidates = [
+    c.req.header("cf-connecting-ip"),
+    forwarded,
+    c.env?.incoming?.socket.remoteAddress,
+  ];
+  return (
+    candidates.find((ip) => ip !== undefined && ip !== "") ?? "255.255.255.255"
+  );
+}
+
+export function getIpKey(ip: string): string {
+  return isIP(ip) === 6
+    ? `${new Address6(`${ip}/56`).startAddress().correctForm()}/56`
+    : ip;
+}
+
+function getKey(req: HttpRequest): string {
+  return getIpKey(req.ip);
+}
+
+export function customHandler(req: HttpRequest): never {
   if (req.ctx.decodedToken.type === "ApeKey") {
     throw new MonkeyError(
       statuses.APE_KEY_RATE_LIMIT_EXCEEDED.code,
@@ -38,175 +46,127 @@ export const customHandler = (
     );
   }
   throw new MonkeyError(429, "Request limit reached, please try again later.");
-};
-
-const getKey = (req: Request, _res: Response): string => {
-  const ip =
-    (req.headers["cf-connecting-ip"] as string) ||
-    (req.headers["x-forwarded-for"] as string) ||
-    (req.ip as string) ||
-    "255.255.255.255";
-  const key = ipKeyGenerator(ip);
-  return key;
-};
-
-const getKeyWithUid = (
-  req: ExpressRequestWithContext,
-  _res: Response,
-): string => {
-  const uid = req?.ctx?.decodedToken?.uid;
-  const useUid = uid !== undefined && uid !== "";
-
-  return useUid ? uid : getKey(req, _res);
-};
-
-function initialiseLimiters(): Record<RateLimiterId, RateLimitRequestHandler> {
-  const keys = Object.keys(limits) as RateLimiterId[];
-
-  const convert = (options: RateLimitOptions): RateLimitRequestHandler => {
-    return rateLimit({
-      windowMs: convertWindowToMs(options.window),
-      limit: options.max * REQUEST_MULTIPLIER,
-      handler: customHandler,
-      keyGenerator: getKeyWithUid,
-    });
-  };
-
-  return keys.reduce((output, key) => {
-    output[key] = convert(limits[key]);
-    return output;
-  }, {}) as Record<RateLimiterId, RateLimitRequestHandler>;
 }
 
 function convertWindowToMs(window: Window): number {
   if (typeof window === "number") return window;
-  switch (window) {
-    case "second":
-      return 1000;
-    case "minute":
-      return 60 * 1000;
-    case "hour":
-      return 60 * 60 * 1000;
-    case "day":
-      return 24 * 60 * 60 * 1000;
-  }
+  return { second: 1000, minute: 60000, hour: 3600000, day: 86400000 }[window];
 }
 
-//visible for testing
-export const requestLimiters: Record<RateLimiterId, RateLimitRequestHandler> =
-  initialiseLimiters();
-
-export function rateLimitRequest<
-  T extends AppRouter | AppRoute,
->(): TsRestRequestHandler<T> {
-  return async (
-    req: TsRestRequestWithContext,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
-    const metadataRateLimit = getMetadata(req).rateLimit;
-    if (metadataRateLimit === undefined) {
-      next();
-      return;
+export function createRateLimiter(
+  options: RateLimitOptions,
+  useUid = true,
+  onLimit: (req: HttpRequest) => never = customHandler,
+): ApiMiddleware {
+  const max = options.max * REQUEST_MULTIPLIER;
+  const limiter = new RateLimiterMemory({
+    points: max,
+    duration: convertWindowToMs(options.window) / 1000,
+  });
+  return async (c, next) => {
+    const req = c.get("request");
+    const key = (useUid && req.ctx.decodedToken.uid) || getKey(req);
+    let result: RateLimiterRes;
+    try {
+      result = await limiter.consume(key);
+    } catch (error) {
+      if (!(error instanceof RateLimiterRes)) throw error;
+      setHeaders(c, max, error);
+      c.header("Retry-After", String(Math.ceil(error.msBeforeNext / 1000)));
+      onLimit(req);
     }
-
-    const hasApeKeyLimiterId = typeof metadataRateLimit === "object";
-    let rateLimiterId: RateLimiterId;
-
-    if (req.ctx.decodedToken.type === "ApeKey") {
-      rateLimiterId = hasApeKeyLimiterId
-        ? metadataRateLimit.apeKey
-        : "defaultApeRateLimit";
-    } else {
-      rateLimiterId = hasApeKeyLimiterId
-        ? metadataRateLimit.normal
-        : metadataRateLimit;
-    }
-
-    const rateLimiter = requestLimiters[rateLimiterId];
-    if (rateLimiter === undefined) {
-      next(
-        new MonkeyError(
-          500,
-          `Unknown rateLimiterId '${rateLimiterId}', how did you manage to do this?`,
-        ),
-      );
-    } else {
-      await rateLimiter(req, res, next);
-    }
+    setHeaders(c, max, result);
+    await next();
   };
 }
 
-// Root Rate Limit
-export const rootRateLimiter = rateLimit({
-  windowMs: 60 * 1000 * 60,
-  limit: 1000 * REQUEST_MULTIPLIER,
-  keyGenerator: getKey,
-  handler: (_req, _res, _next, _options): void => {
+function setHeaders(c: ApiContext, max: number, result: RateLimiterRes): void {
+  c.header("X-RateLimit-Limit", String(max));
+  c.header(
+    "X-RateLimit-Remaining",
+    String(Math.max(0, result.remainingPoints)),
+  );
+  c.header(
+    "X-RateLimit-Reset",
+    String(Math.ceil((Date.now() + result.msBeforeNext) / 1000)),
+  );
+}
+
+export const requestLimiters = Object.fromEntries(
+  Object.entries(limits).map(([id, options]) => [
+    id,
+    createRateLimiter(options),
+  ]),
+) as Record<RateLimiterId, ApiMiddleware>;
+
+export function rateLimitRequest(): ApiMiddleware {
+  return async (c, next) => {
+    const req = c.get("request");
+    const metadataRateLimit = getMetadata(req).rateLimit;
+    if (metadataRateLimit === undefined) {
+      await next();
+      return;
+    }
+    const hasApeKeyLimiterId = typeof metadataRateLimit === "object";
+    const rateLimiterId =
+      req.ctx.decodedToken.type === "ApeKey"
+        ? hasApeKeyLimiterId
+          ? metadataRateLimit.apeKey
+          : "defaultApeRateLimit"
+        : hasApeKeyLimiterId
+          ? metadataRateLimit.normal
+          : metadataRateLimit;
+    const limiter = requestLimiters[rateLimiterId];
+    if (limiter === undefined) {
+      throw new MonkeyError(
+        500,
+        `Unknown rateLimiterId '${rateLimiterId}', how did you manage to do this?`,
+      );
+    }
+    await limiter(c, next);
+  };
+}
+
+export const rootRateLimiter = createRateLimiter(
+  { window: "hour", max: 1000 },
+  false,
+  () => {
     throw new MonkeyError(
       429,
       "Maximum API request (root) limit reached. Please try again later.",
     );
   },
-});
+);
 
-// Bad Authentication Rate Limiter
 const badAuthRateLimiter = new RateLimiterMemory({
   points: 30 * REQUEST_MULTIPLIER,
-  duration: 60 * 60, //one hour seconds
+  duration: 3600,
 });
 
-export async function badAuthRateLimiterHandler(
-  req: ExpressRequestWithContext,
-  res: Response,
-  next: NextFunction,
-): Promise<void> {
-  const badAuthEnabled =
-    req?.ctx?.configuration?.rateLimiting?.badAuthentication?.enabled;
-  if (!badAuthEnabled) {
-    next();
-    return;
-  }
-
-  try {
-    const key = getKey(req, res);
-    const rateLimitStatus = await badAuthRateLimiter.get(key);
-
-    if (rateLimitStatus !== null && rateLimitStatus?.remainingPoints <= 0) {
+export const badAuthRateLimiterHandler: ApiMiddleware = async (c, next) => {
+  const req = c.get("request");
+  if (req.ctx.configuration.rateLimiting.badAuthentication.enabled) {
+    const result = await badAuthRateLimiter.get(getKey(req));
+    if (result !== null && result.remainingPoints <= 0) {
       throw new MonkeyError(
         429,
         "Too many bad authentication attempts, please try again later.",
       );
     }
-  } catch (error) {
-    next(error);
-    return;
   }
-
-  next();
-}
+  await next();
+};
 
 export async function incrementBadAuth(
-  req: ExpressRequestWithContext,
-  res: Response,
+  req: HttpRequest | undefined,
   status: number,
 ): Promise<void> {
-  const { enabled, penalty, flaggedStatusCodes } =
-    req?.ctx?.configuration?.rateLimiting?.badAuthentication ?? {};
-
-  if (!enabled || !flaggedStatusCodes.includes(status)) {
-    return;
-  }
-
+  const options = req?.ctx.configuration.rateLimiting.badAuthentication;
+  if (!options?.enabled || !options.flaggedStatusCodes.includes(status)) return;
   try {
-    const key = getKey(req, res);
-    await badAuthRateLimiter.penalty(key, penalty);
+    await badAuthRateLimiter.penalty(
+      getKey(req as HttpRequest),
+      options.penalty,
+    );
   } catch {}
 }
-
-export const webhookLimit = rateLimit({
-  windowMs: 1000,
-  limit: 1 * REQUEST_MULTIPLIER,
-  keyGenerator: getKeyWithUid,
-  handler: customHandler,
-});

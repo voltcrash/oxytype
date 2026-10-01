@@ -1,5 +1,5 @@
 import { publicContract } from "@oxytype/contracts/public";
-import { initServer } from "@ts-rest/express";
+import { initServer } from "../hono-adapter";
 import * as PublicController from "../controllers/public";
 import { callController } from "../ts-rest-adapter";
 

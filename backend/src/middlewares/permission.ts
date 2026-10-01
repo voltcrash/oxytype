@@ -1,5 +1,5 @@
 import MonkeyError from "../utils/error";
-import type { Response, NextFunction } from "express";
+import { ApiMiddleware, HttpRequest } from "../api/http";
 import { DBUser, getPartialUser } from "../dal/user";
 import { isAdmin } from "../dal/admin-uids";
 import {
@@ -8,15 +8,13 @@ import {
   PermissionId,
 } from "@oxytype/contracts/util/api";
 import { isDevEnvironment } from "../utils/misc";
-import { AsyncTsRestRequestHandler, getMetadata } from "./utility";
-import { TsRestRequestWithContext } from "../api/types";
+import { getMetadata } from "./utility";
 import { DecodedToken } from "./auth";
-import { AppRoute, AppRouter } from "@ts-rest/core";
 
 type RequestPermissionCheck = {
   type: "request";
   criteria: (
-    req: TsRestRequestWithContext,
+    req: HttpRequest,
     metadata: EndpointMetadata | undefined,
   ) => Promise<boolean>;
   invalidMessage?: string;
@@ -70,42 +68,33 @@ const permissionChecks: Record<PermissionId, PermissionCheck> = {
   ),
 };
 
-export function verifyPermissions<
-  T extends AppRouter | AppRoute,
->(): AsyncTsRestRequestHandler<T> {
-  return async (
-    req: TsRestRequestWithContext,
-    _res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
+export function verifyPermissions(): ApiMiddleware {
+  return async (c, next): Promise<void> => {
+    const req = c.get("request");
     const metadata = getMetadata(req);
     const requiredPermissionIds = getRequiredPermissionIds(metadata);
     if (
       requiredPermissionIds === undefined ||
       requiredPermissionIds.length === 0
     ) {
-      next();
+      await next();
       return;
     }
 
     const checks = requiredPermissionIds.map((id) => permissionChecks[id]);
 
     if (checks.some((it) => it === undefined)) {
-      next(new MonkeyError(500, "Unknown permission id."));
-      return;
+      throw new MonkeyError(500, "Unknown permission id.");
     }
 
     //handle request checks
     const requestChecks = checks.filter((it) => it.type === "request");
     for (const check of requestChecks) {
       if (!(await check.criteria(req, metadata))) {
-        next(
-          new MonkeyError(
-            403,
-            check.invalidMessage ?? "You don't have permission to do this.",
-          ),
+        throw new MonkeyError(
+          403,
+          check.invalidMessage ?? "You don't have permission to do this.",
         );
-        return;
       }
     }
 
@@ -117,17 +106,14 @@ export function verifyPermissions<
     );
 
     if (!checkResult.passed) {
-      next(
-        new MonkeyError(
-          403,
-          checkResult.invalidMessage ?? "You don't have permission to do this.",
-        ),
+      throw new MonkeyError(
+        403,
+        checkResult.invalidMessage ?? "You don't have permission to do this.",
       );
-      return;
     }
 
     //all checks passed
-    next();
+    await next();
     return;
   };
 }

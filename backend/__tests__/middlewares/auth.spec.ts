@@ -9,7 +9,8 @@ import {
 import * as AuthUtils from "../../src/utils/auth";
 import * as Auth from "../../src/middlewares/auth";
 import { DecodedIdToken } from "firebase-admin/auth";
-import { NextFunction, Request, Response } from "express";
+import { HttpRequest } from "../../src/api/http";
+import { invokeMiddleware } from "../__testData__/middleware";
 import { getCachedConfiguration } from "../../src/init/configuration";
 import * as ApeKeys from "../../src/dal/ape-keys";
 import { ObjectId } from "mongodb";
@@ -22,9 +23,10 @@ import {
   RequestAuthenticationOptions,
 } from "@oxytype/contracts/util/api";
 import * as Prometheus from "../../src/utils/prometheus";
-import { TsRestRequestWithContext } from "../../src/api/types";
 import { enableMonkeyErrorExpects } from "../__testData__/monkey-error";
 import { Context } from "../../src/middlewares/context";
+
+const signature = `sha256=${"0".repeat(64)}`;
 
 enableMonkeyErrorExpects();
 const mockDecodedToken: DecodedIdToken = {
@@ -49,9 +51,8 @@ const mockApeKey = {
 vi.spyOn(ApeKeys, "getApeKey").mockResolvedValue(mockApeKey);
 vi.spyOn(ApeKeys, "updateLastUsedOn").mockResolvedValue();
 const isDevModeMock = vi.spyOn(Misc, "isDevEnvironment");
-let mockRequest: Partial<TsRestRequestWithContext>;
-let mockResponse: Partial<Response>;
-let nextFunction: NextFunction;
+let mockRequest: Partial<HttpRequest>;
+let nextFunction: ReturnType<typeof vi.fn<(error?: unknown) => unknown>>;
 
 describe("middlewares/auth", () => {
   beforeEach(async () => {
@@ -60,10 +61,7 @@ describe("middlewares/auth", () => {
     config.apeKeys.acceptKeys = true;
 
     mockRequest = {
-      baseUrl: "/api/v1",
-      route: {
-        path: "/",
-      },
+      path: "/api/v1",
       headers: {
         authorization: "Bearer 123456789",
       },
@@ -76,11 +74,8 @@ describe("middlewares/auth", () => {
         },
       },
     };
-    mockResponse = {
-      json: vi.fn(),
-    };
     nextFunction = vi.fn((error) => {
-      if (error !== undefined) {
+      if (error instanceof Error) {
         throw error;
       }
       return "Next function called";
@@ -447,7 +442,7 @@ describe("middlewares/auth", () => {
       //WHEN
       const result = await authenticate(
         {
-          headers: { "x-hub-signature-256": "the-signature" },
+          headers: { "x-hub-signature-256": signature },
           body: { action: "published", release: { id: 1 } },
         },
         { isGithubWebhook: true },
@@ -466,7 +461,7 @@ describe("middlewares/auth", () => {
         Buffer.from(
           "sha256=ff0f3080539e9df19153f6b5b5780f66e558d61038e6cf5ecf4efdc7266a7751",
         ),
-        Buffer.from("the-signature"),
+        Buffer.from(signature),
       );
     });
     it("should fail githubwebhook with mismatched signature", async () => {
@@ -476,7 +471,7 @@ describe("middlewares/auth", () => {
       await expect(async () =>
         authenticate(
           {
-            headers: { "x-hub-signature-256": "the-signature" },
+            headers: { "x-hub-signature-256": signature },
             body: { action: "published", release: { id: 1 } },
           },
           { isGithubWebhook: true },
@@ -518,7 +513,7 @@ describe("middlewares/auth", () => {
       await expect(async () =>
         authenticate(
           {
-            headers: { "x-hub-signature-256": "the-signature" },
+            headers: { "x-hub-signature-256": signature },
             body: { action: "published", release: { id: 1 } },
           },
           { isGithubWebhook: true },
@@ -542,7 +537,7 @@ describe("middlewares/auth", () => {
       await expect(async () =>
         authenticate(
           {
-            headers: { "x-hub-signature-256": "the-signature" },
+            headers: { "x-hub-signature-256": signature },
             body: { action: "published", release: { id: 1 } },
           },
           { isGithubWebhook: true },
@@ -564,20 +559,21 @@ describe("middlewares/auth", () => {
 });
 
 async function authenticate(
-  request: Partial<Request>,
+  request: Partial<HttpRequest>,
   authenticationOptions?: RequestAuthenticationOptions,
 ): Promise<{ decodedToken: Auth.DecodedToken }> {
   const mergedRequest = {
     ...mockRequest,
     ...request,
+    rawBody: request.rawBody ?? JSON.stringify(request.body ?? {}),
     tsRestRoute: {
       metadata: { authenticationOptions } as EndpointMetadata,
     },
   } as any;
 
-  await Auth.authenticateTsRestRequest()(
+  await invokeMiddleware(
+    Auth.authenticateTsRestRequest(),
     mergedRequest,
-    mockResponse as Response,
     nextFunction,
   );
 

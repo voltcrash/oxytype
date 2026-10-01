@@ -1,5 +1,5 @@
 import { quotesContract } from "@oxytype/contracts/quotes";
-import { initServer } from "@ts-rest/express";
+import { initServer } from "../hono-adapter";
 import * as QuoteController from "../controllers/quote";
 import { callController } from "../ts-rest-adapter";
 

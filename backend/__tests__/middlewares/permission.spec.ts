@@ -1,5 +1,4 @@
 import { EndpointMetadata } from "@oxytype/contracts/util/api";
-import { Response } from "express";
 import {
   afterEach,
   beforeEach,
@@ -8,7 +7,8 @@ import {
   it,
   vi,
 } from "vite-plus/test";
-import { TsRestRequestWithContext } from "../../src/api/types";
+import { HttpRequest } from "../../src/api/http";
+import { invokeMiddleware } from "../__testData__/middleware";
 import * as AdminUids from "../../src/dal/admin-uids";
 import * as UserDal from "../../src/dal/user";
 import { DecodedToken } from "../../src/middlewares/auth";
@@ -22,7 +22,6 @@ const uid = "123456789";
 
 describe("permission middleware", () => {
   const handler = verifyPermissions();
-  const res: Response = {} as any;
   const next = vi.fn();
   const getPartialUserMock = vi.spyOn(UserDal, "getPartialUser");
   const isAdminMock = vi.spyOn(AdminUids, "isAdmin");
@@ -43,7 +42,7 @@ describe("permission middleware", () => {
     //GIVEN
     const req = givenRequest({});
     //WHEN
-    await handler(req, res, next);
+    await invokeMiddleware(handler, req, next);
 
     //THEN
     expect(next).toHaveBeenCalledWith();
@@ -52,7 +51,7 @@ describe("permission middleware", () => {
     //GIVEN
     const req = givenRequest({ requirePermission: [] });
     //WHEN
-    await handler(req, res, next);
+    await invokeMiddleware(handler, req, next);
 
     //THE
     expect(next).toHaveBeenCalledWith();
@@ -67,7 +66,7 @@ describe("permission middleware", () => {
       //GIVEN
       const req = givenRequest(requireAdminPermission);
       //WHEN
-      await handler(req, res, next);
+      await invokeMiddleware(handler, req, next);
 
       //THEN
       expect(next).toHaveBeenCalledWith(
@@ -87,7 +86,7 @@ describe("permission middleware", () => {
         { uid },
       );
       //WHEN
-      await handler(req, res, next);
+      await invokeMiddleware(handler, req, next);
 
       //THEN
       expect(next).toHaveBeenCalledWith();
@@ -102,7 +101,7 @@ describe("permission middleware", () => {
         { uid },
       );
       //WHEN
-      await handler(req, res, next);
+      await invokeMiddleware(handler, req, next);
 
       //THEN
       expect(next).toHaveBeenCalledWith(
@@ -116,7 +115,7 @@ describe("permission middleware", () => {
       const req = givenRequest(requireAdminPermission, { uid });
 
       //WHEN
-      await handler(req, res, next);
+      await invokeMiddleware(handler, req, next);
 
       //THEN
       expect(next).toHaveBeenCalledWith(
@@ -138,7 +137,7 @@ describe("permission middleware", () => {
       );
 
       //WHEN
-      await handler(req, res, next);
+      await invokeMiddleware(handler, req, next);
 
       //THEN
       expect(getPartialUserMock).toHaveBeenCalledOnce();
@@ -155,7 +154,7 @@ describe("permission middleware", () => {
       });
 
       //WHEN
-      await handler(req, res, next);
+      await invokeMiddleware(handler, req, next);
 
       //THEN
       expect(next).toHaveBeenCalledWith(
@@ -179,7 +178,7 @@ describe("permission middleware", () => {
       const req = givenRequest(requireQuoteMod, { uid });
 
       //WHEN
-      await handler(req, res, next);
+      await invokeMiddleware(handler, req, next);
 
       //THEN
       expect(next).toHaveBeenCalledWith();
@@ -195,7 +194,7 @@ describe("permission middleware", () => {
       const req = givenRequest(requireQuoteMod, { uid });
 
       //WHEN
-      await handler(req, res, next);
+      await invokeMiddleware(handler, req, next);
 
       //THEN
       expect(next).toHaveBeenCalledWith();
@@ -211,7 +210,7 @@ describe("permission middleware", () => {
       const req = givenRequest(requireQuoteMod, { uid });
 
       //WHEN
-      await handler(req, res, next);
+      await invokeMiddleware(handler, req, next);
 
       //THEN
       expect(next).toHaveBeenCalledWith(
@@ -226,7 +225,7 @@ describe("permission middleware", () => {
       const req = givenRequest(requireQuoteMod, { uid });
 
       //WHEN
-      await handler(req, res, next);
+      await invokeMiddleware(handler, req, next);
 
       //THEN
       expect(next).toHaveBeenCalledWith(
@@ -247,7 +246,7 @@ describe("permission middleware", () => {
       const req = givenRequest(requireCanReport, { uid });
 
       //WHEN
-      await handler(req, res, next);
+      await invokeMiddleware(handler, req, next);
 
       //THEN
       expect(next).toHaveBeenCalledWith(
@@ -267,7 +266,7 @@ describe("permission middleware", () => {
       const req = givenRequest(requireCanReport, { uid });
 
       //WHEN
-      await handler(req, res, next);
+      await invokeMiddleware(handler, req, next);
 
       //THEN
       expect(next).toHaveBeenCalledWith();
@@ -278,7 +277,7 @@ describe("permission middleware", () => {
       const req = givenRequest(requireCanReport, { uid });
 
       //WHEN
-      await handler(req, res, next);
+      await invokeMiddleware(handler, req, next);
 
       //THEN
       expect(next).toHaveBeenCalledWith();
@@ -295,7 +294,7 @@ describe("permission middleware", () => {
       const req = givenRequest(requireCanReport, { uid });
 
       //WHEN
-      await handler(req, res, next);
+      await invokeMiddleware(handler, req, next);
 
       //THEN
       expect(next).toHaveBeenCalledWith(
@@ -318,7 +317,7 @@ describe("permission middleware", () => {
       const req = givenRequest(requireCanReport, { uid });
 
       //WHEN
-      await handler(req, res, next);
+      await invokeMiddleware(handler, req, next);
 
       //THEN
       expect(next).toHaveBeenCalledWith();
@@ -329,7 +328,7 @@ describe("permission middleware", () => {
       const req = givenRequest(requireCanReport, { uid });
 
       //WHEN
-      await handler(req, res, next);
+      await invokeMiddleware(handler, req, next);
 
       //THEN
       expect(next).toHaveBeenCalledWith();
@@ -340,9 +339,9 @@ describe("permission middleware", () => {
 function givenRequest(
   metadata: EndpointMetadata,
   decodedToken?: Partial<DecodedToken>,
-): TsRestRequestWithContext {
+): HttpRequest {
   return {
     tsRestRoute: { metadata },
     ctx: { decodedToken },
-  } as TsRestRequestWithContext;
+  } as HttpRequest;
 }

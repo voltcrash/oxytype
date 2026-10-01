@@ -1,5 +1,5 @@
 import { configsContract } from "@oxytype/contracts/configs";
-import { initServer } from "@ts-rest/express";
+import { initServer } from "../hono-adapter";
 import * as ConfigController from "../controllers/config";
 import { callController } from "../ts-rest-adapter";
 

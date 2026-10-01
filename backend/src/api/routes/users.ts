@@ -1,5 +1,5 @@
 import { usersContract } from "@oxytype/contracts/users";
-import { initServer } from "@ts-rest/express";
+import { initServer } from "../hono-adapter";
 import * as UserController from "../controllers/user";
 import { callController } from "../ts-rest-adapter";
 

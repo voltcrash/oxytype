@@ -1,5 +1,5 @@
 import { apeKeysContract } from "@oxytype/contracts/ape-keys";
-import { initServer } from "@ts-rest/express";
+import { initServer } from "../hono-adapter";
 import * as ApeKeyController from "../controllers/ape-key";
 import { callController } from "../ts-rest-adapter";
 

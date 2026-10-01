@@ -1,6 +1,6 @@
 # Oxytype architecture
 
-Snapshot: 29 September 2026. Package versions come from the workspace manifests and lockfile. This describes the codebase, including inherited architecture; Oxytype branding and deployment ownership are being updated in separate PRs.
+Snapshot: 1 October 2026. Package versions come from the workspace manifests and lockfile. This describes the codebase, including inherited architecture; Oxytype branding and deployment ownership are being updated in separate PRs.
 
 ## Repository map
 
@@ -28,13 +28,29 @@ Useful entry points: `frontend/src/index.html`, `frontend/src/ts/index.ts`, `fro
 
 ## Backend and data
 
-Express 5 serves the API. `@ts-rest` contracts and Zod schemas are shared with the frontend, so request and response shapes live in workspace packages. The backend uses MongoDB for durable records, Redis for cache/coordination, and BullMQ for background jobs. Firebase Admin handles account identity. Nodemailer and MJML render account emails. Redocly builds API documentation; Prometheus metrics and Swagger stats provide operational visibility.
+Hono serves the API through `@hono/node-server`. `@ts-rest` contracts and Zod schemas are shared with the frontend, so request and response shapes live in workspace packages. The backend uses MongoDB for durable records, Redis for cache/coordination, and BullMQ for background jobs. Firebase Admin handles account identity. Nodemailer and MJML render account emails. Redocly builds API documentation; Hono stats and Prometheus metrics provide operational visibility.
+
+`backend/src/api/hono-adapter.ts` registers all 93 contract endpoints directly
+with Hono. It uses ts-rest core inference and Zod validation while controllers
+receive a transport-independent `MonkeyRequest`. Native Hono middleware handles
+authentication, configuration/permission gates, in-memory rate limits, error
+responses, security headers, and versioned conditional ETags.
+
+The stats dashboard lives at `/stats/ui`, JSON summaries at
+`/stats/swagger-stats`, and Prometheus exposition at `/stats/metrics`. Production
+requires Basic authentication using `STATS_USERNAME` and `STATS_PASSWORD`; stats
+remain available during maintenance. These replace Swagger Stats: its dashboard,
+JSON structure, and generated metric names are no longer used. HTTP metrics are
+`api_http_requests_total` and `api_http_request_duration_seconds`; existing domain
+metrics are exposed from the same prom-client registry. Update external dashboards
+that relied on Swagger Stats names or JSON fields. Missing production credentials
+leave stats inaccessible.
 
 Start with `backend/src/server.ts`, `backend/src/app.ts`, `backend/src/api/`, `backend/src/dal/`, `backend/src/services/`, and `backend/src/queues/`. The `dal` directory handles database access; services and workers handle work outside a single request.
 
 ```mermaid
 flowchart LR
-  Browser[Browser app] --> API[Express API]
+  Browser[Browser app] --> API[Hono API]
   Browser --> Firebase[Firebase authentication]
   API --> Mongo[(MongoDB)]
   API --> Redis[(Redis)]

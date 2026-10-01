@@ -1,5 +1,5 @@
 import { devContract } from "@oxytype/contracts/dev";
-import { initServer } from "@ts-rest/express";
+import { initServer } from "../hono-adapter";
 
 import * as DevController from "../controllers/dev";
 import { callController } from "../ts-rest-adapter";

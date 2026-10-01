@@ -1,4 +1,4 @@
-import { initServer } from "@ts-rest/express";
+import { initServer } from "../hono-adapter";
 import * as LeaderboardController from "../controllers/leaderboard";
 import { leaderboardsContract } from "@oxytype/contracts/leaderboards";
 import { callController } from "../ts-rest-adapter";
