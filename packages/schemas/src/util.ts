@@ -1,4 +1,4 @@
-import { z, ZodErrorMap, ZodString } from "zod";
+import { z, ZodErrorMap, ZodString } from "zod/v3";
 
 export const StringNumberSchema = z
   .string()

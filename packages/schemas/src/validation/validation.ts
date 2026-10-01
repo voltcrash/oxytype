@@ -1,6 +1,6 @@
 import { replaceHomoglyphs } from "./homoglyphs";
 import { sanitizeString } from "@oxytype/util/strings";
-import { ZodEffects, ZodString } from "zod";
+import { ZodEffects, ZodString } from "zod/v3";
 
 // Sorry for the bad words
 const disallowedWords = [

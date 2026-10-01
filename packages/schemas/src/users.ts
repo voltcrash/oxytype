@@ -1,4 +1,4 @@
-import { z, ZodEffects, ZodOptional, ZodString } from "zod";
+import { z, ZodEffects, ZodOptional, ZodString } from "zod/v3";
 import { IdSchema, nameWithSeparators, slug, StringNumberSchema } from "./util";
 import { LanguageSchema } from "./languages";
 import {

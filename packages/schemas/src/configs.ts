@@ -1,4 +1,4 @@
-import { z, ZodSchema } from "zod";
+import { z, ZodSchema } from "zod/v3";
 import * as Shared from "./shared";
 import * as Themes from "./themes";
 import * as Layouts from "./layouts";
