@@ -1,7 +1,7 @@
 services:
   oxytype-proxy:
     container_name: oxytype-proxy
-    image: traefik:v3.7
+    image: traefik:v3.7.13
     restart: on-failure
     depends_on:
       oxytype-backend:
@@ -128,7 +128,7 @@ services:
 
   oxytype-redis:
     container_name: oxytype-redis
-    image: redis:6.2.6
+    image: redis:8.10.2
     #uncomment if you want to expose the redis server (not recommended)
     #ports:
     #  - "${REDIS_PORT:-6379}:6379"
@@ -148,7 +148,7 @@ services:
 
   oxytype-mongodb:
     container_name: oxytype-mongodb
-    image: mongo:5.0.13
+    image: mongo:9.0.2
     restart: on-failure
     volumes:
       - mongo-data:/data/db
@@ -160,7 +160,7 @@ services:
       #uncomment if you want to expose the mongodb server (not recommended)
       #- public
     healthcheck:
-      test: echo 'db.stats().ok' | mongo localhost:27017/test --quiet
+      test: echo 'db.stats().ok' | mongosh localhost:27017/test --quiet
       interval: 5s
       timeout: 10s
       retries: 15

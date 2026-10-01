@@ -2,7 +2,7 @@ name: oxytype
 services:
   redis:
     container_name: oxytype-redis
-    image: redis:6.2.6
+    image: redis:8.10.2
     restart: on-failure
     ports:
       - "${DOCKER_REDIS_PORT:-6379}:6379"
@@ -11,7 +11,7 @@ services:
 
   mongodb:
     container_name: oxytype-mongodb
-    image: mongo:5.0.13
+    image: mongo:9.0.2
     restart: on-failure
     ports:
       - "${DOCKER_DB_PORT:-27017}:27017"

@@ -4,11 +4,11 @@ let startedMongoContainer: StartedTestContainer | undefined;
 let startedRedisContainer: StartedTestContainer | undefined;
 
 export async function setup(): Promise<void> {
-  process.env.TZ = "UTC";
+  process.env["TZ"] = "UTC";
 
   //use testcontainer to start mongodb
   console.log("\x1b[36mMongoDB starting...\x1b[0m");
-  const mongoContainer = new GenericContainer("mongo:5.0.13")
+  const mongoContainer = new GenericContainer("mongo:9.0.2")
     .withExposedPorts(27017)
     .withWaitStrategy(Wait.forListeningPorts());
 
@@ -22,7 +22,7 @@ export async function setup(): Promise<void> {
 
   //use testcontainer to start redis
   console.log("\x1b[36mRedis starting...\x1b[0m");
-  const redisContainer = new GenericContainer("redis:6.2.6")
+  const redisContainer = new GenericContainer("redis:8.10.2")
     .withExposedPorts(6379)
     .withWaitStrategy(Wait.forLogMessage("Ready to accept connections"));
 
