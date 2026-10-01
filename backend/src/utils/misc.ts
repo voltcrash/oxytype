@@ -185,7 +185,7 @@ export function getFrontendUrl(): string {
   if (isDevEnvironment()) return "http://localhost:3000";
 
   const frontendUrl = process.env["FRONTEND_URL"];
-  if (!frontendUrl) {
+  if (frontendUrl === undefined || frontendUrl === "") {
     throw new Error("FRONTEND_URL must be configured for production links");
   }
   return frontendUrl;

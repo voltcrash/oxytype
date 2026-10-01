@@ -36,7 +36,7 @@ export async function getDiscordUser(
 
 export async function getOauthLink(uid: string): Promise<string> {
   const clientId = process.env["DISCORD_CLIENT_ID"];
-  if (!clientId) {
+  if (clientId === undefined || clientId === "") {
     throw new MonkeyError(503, "Discord connection is not configured");
   }
 
