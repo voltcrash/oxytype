@@ -6,8 +6,8 @@
   "scripts": {
     "lint": "vp lint . --type-aware --type-check --format agent",
     "lint-fast": "vp lint . --format agent",
-    "lint-styles": "stylelint \"**/*.{scss,css}\"",
-    "lint-styles-fix": "stylelint \"**/*.{scss,css}\" --fix",
+    "lint-styles": "stylelint \"**/*.css\"",
+    "lint-styles-fix": "stylelint \"**/*.css\" --fix",
     "lint-json": "eslint static/**/*.json",
     "check-assets": "tsx ./scripts/check-assets.ts",
     "audit": "vite-bundle-visualizer",
@@ -111,7 +111,6 @@
     "magic-string": "1.4.2",
     "normalize.css": "8.0.1",
     "postcss": "8.5.28",
-    "sass": "1.105.1",
     "solid-devtools": "0.34.5",
     "solid-js": "1.9.15",
     "subset-font": "2.9.0",

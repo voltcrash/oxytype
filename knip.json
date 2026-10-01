@@ -64,8 +64,7 @@
     "caniuse-lite",
     "conventional-changelog",
     "prettier",
-    "yaml",
-    "stylelint-config-standard-scss"
+    "yaml"
   ],
   "ignore": ["docker/frontend/firebase-config-live.ts"],
   "ignoreBinaries": ["docker", "tsx", "tsup-node"]
