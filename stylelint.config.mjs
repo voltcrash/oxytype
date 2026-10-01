@@ -17,6 +17,10 @@ export default {
       true,
       { ignoreAtRules: ["theme", "utility", "tailwind", "apply", "source"] },
     ], // source for lightningCss and the rest for tailwind //default: true
+    "at-rule-prelude-no-invalid": [
+      true,
+      { ignoreAtRules: ["theme", "utility", "tailwind", "apply", "source"] },
+    ],
     "selector-type-no-unknown": [
       true,
       { ignore: ["custom-elements"], ignoreTypes: ["letter", "hint"] },
