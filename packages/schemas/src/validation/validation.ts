@@ -4,7 +4,6 @@ import { ZodEffects, ZodString } from "zod";
 
 // Sorry for the bad words
 const disallowedWords = [
-  "miodec",
   "bitly",
   "niqqa",
   "niqqer",

@@ -209,14 +209,14 @@ describe("user controller test", () => {
       const { body } = await mockApp
         .post("/users/signup")
         .set("Authorization", `Bearer ${uid}`)
-        .send({ ...newUser, name: "miodec" })
+        .send({ ...newUser, name: "bitly" })
         .expect(422);
 
       //THEN
       expect(body).toEqual({
         message: "Invalid request data schema",
         validationErrors: [
-          '"name" Disallowed word detected. Please remove it. If you believe this is a mistake, please contact us (miodec).',
+          '"name" Disallowed word detected. Please remove it. If you believe this is a mistake, please contact us (bitly).',
         ],
       });
     });
@@ -283,7 +283,7 @@ describe("user controller test", () => {
     });
     it("returns 422 if username contains disallowed word", async () => {
       await mockApp
-        .get("/users/checkName/newMiodec")
+        .get("/users/checkName/newBitly")
         //no authentication required
         .expect(422);
     });
@@ -1149,14 +1149,14 @@ describe("user controller test", () => {
       const { body } = await mockApp
         .patch("/users/name")
         .set("Authorization", `Bearer ${uid}`)
-        .send({ name: "miodec" })
+        .send({ name: "bitly" })
         .expect(422);
 
       //THEN
       expect(body).toEqual({
         message: "Invalid request data schema",
         validationErrors: [
-          '"name" Disallowed word detected. Please remove it. If you believe this is a mistake, please contact us (miodec).',
+          '"name" Disallowed word detected. Please remove it. If you believe this is a mistake, please contact us (bitly).',
         ],
       });
     });
@@ -3190,7 +3190,7 @@ describe("user controller test", () => {
         socialProfiles: {
           github: "github",
           twitter: "twitter",
-          website: "https://monkeytype.com",
+          website: "https://example.com",
         },
         showActivityOnPublicProfile: false,
       };
@@ -3218,7 +3218,7 @@ describe("user controller test", () => {
           socialProfiles: {
             github: "github",
             twitter: "twitter",
-            website: "https://monkeytype.com",
+            website: "https://example.com",
           },
           showActivityOnPublicProfile: false,
         },
@@ -3321,12 +3321,12 @@ describe("user controller test", () => {
         .patch("/users/profile")
         .set("Authorization", `Bearer ${uid}`)
         .send({
-          bio: "miodec",
-          keyboard: "miodec",
+          bio: "bitly",
+          keyboard: "bitly",
           socialProfiles: {
-            twitter: "miodec",
-            github: "miodec",
-            website: "https://i-luv-miodec.com",
+            twitter: "bitly",
+            github: "bitly",
+            website: "https://i-luv-bitly.com",
           },
         })
         .expect(422);
@@ -3335,11 +3335,11 @@ describe("user controller test", () => {
       expect(body).toEqual({
         message: "Invalid request data schema",
         validationErrors: [
-          '"bio" Disallowed word detected. Please remove it. If you believe this is a mistake, please contact us (miodec).',
-          '"keyboard" Disallowed word detected. Please remove it. If you believe this is a mistake, please contact us (miodec).',
-          '"socialProfiles.twitter" Disallowed word detected. Please remove it. If you believe this is a mistake, please contact us (miodec).',
-          '"socialProfiles.github" Disallowed word detected. Please remove it. If you believe this is a mistake, please contact us (miodec).',
-          '"socialProfiles.website" Disallowed word detected. Please remove it. If you believe this is a mistake, please contact us (https://i-luv-miodec.com).',
+          '"bio" Disallowed word detected. Please remove it. If you believe this is a mistake, please contact us (bitly).',
+          '"keyboard" Disallowed word detected. Please remove it. If you believe this is a mistake, please contact us (bitly).',
+          '"socialProfiles.twitter" Disallowed word detected. Please remove it. If you believe this is a mistake, please contact us (bitly).',
+          '"socialProfiles.github" Disallowed word detected. Please remove it. If you believe this is a mistake, please contact us (bitly).',
+          '"socialProfiles.website" Disallowed word detected. Please remove it. If you believe this is a mistake, please contact us (https://i-luv-bitly.com).',
         ],
       });
     });
@@ -3380,7 +3380,7 @@ describe("user controller test", () => {
         .set("Authorization", `Bearer ${uid}`)
         .send({
           socialProfiles: {
-            website: "http://monkeytype.com",
+            website: "http://example.com",
           },
         })
         .expect(422);
