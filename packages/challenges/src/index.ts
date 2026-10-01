@@ -599,7 +599,7 @@ const challenges: Record<ChallengeName, Omit<Challenge, "name">> = {
     },
   },
   oneNauseousMonkey: {
-    display: "One Nauseous Monkey",
+    display: "One Nauseous Typist",
     category: "funbox",
     description:
       "Complete at least a one-hour test using the nausea funbox mode.",
