@@ -140,8 +140,9 @@ export function createHonoEndpoints<T extends AppRouter>(
             response = { status: error.statusCode, body: error.body };
           }
           const responseType = route.responses[response.status];
-          if (responseType !== undefined && isAppRouteNoBody(responseType))
+          if (responseType !== undefined && isAppRouteNoBody(responseType)) {
             return c.body(null, response.status as StatusCode);
+          }
           if (
             responseType !== undefined &&
             isAppRouteOtherResponse(responseType)

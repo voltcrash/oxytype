@@ -37,9 +37,11 @@ export function createPathNormalizer(
   };
   function collect(router: AppRouter): void {
     for (const route of Object.values(router)) {
-      if (isAppRoute(route))
+      if (isAppRoute(route)) {
         paths.push((route.path.replace(/\/$/, "") || "/").split("/"));
-      else collect(route);
+      } else {
+        collect(route);
+      }
     }
   }
 }

@@ -9,11 +9,10 @@ import {
   rootRateLimiter,
 } from "./middlewares/rate-limit";
 import { compatibilityCheckMiddleware } from "./middlewares/compatibilityCheck";
-import { COMPATIBILITY_CHECK_HEADER } from "@oxytype/contracts";
+import { COMPATIBILITY_CHECK_HEADER, contract } from "@oxytype/contracts";
 import { requestBodyLimit, parseRequestBody } from "./middlewares/body";
 import { etagMiddleware } from "./middlewares/etag";
 import { ApiEnv } from "./api/http";
-import { contract } from "@oxytype/contracts";
 import { createPathNormalizer } from "./api/path";
 
 export function buildApp(options: { docsRoot?: string } = {}): Hono<ApiEnv> {
