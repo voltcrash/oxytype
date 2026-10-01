@@ -56,7 +56,7 @@
       "project": ["plugins/*.js"]
     }
   },
-  "$schema": "https://unpkg.com/knip@2.19.2/schema.json",
+  "$schema": "https://unpkg.com/knip@6.39.0/schema.json",
   "entry": ["commitlint.config.cjs", "stylelint.config.mjs"],
   "ignoreDependencies": [
     "@commitlint/cli",
