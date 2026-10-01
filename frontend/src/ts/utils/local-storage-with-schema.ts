@@ -1,4 +1,4 @@
-import { ZodIssue } from "zod";
+import { ZodIssue, ZodType } from "zod/v3";
 import { isZodError } from "@oxytype/util/zod";
 import { showErrorNotification } from "../states/notifications";
 import { tryCatchSync } from "@oxytype/util/trycatch";
@@ -6,7 +6,7 @@ import { parseWithSchema as parseJsonWithSchema } from "@oxytype/util/json";
 
 export class LocalStorageWithSchema<T> {
   private key: string;
-  private schema: Zod.Schema<T>;
+  private schema: ZodType<T>;
   private fallback: T;
   private migrate?: (
     value: Record<string, unknown> | unknown[],
@@ -16,7 +16,7 @@ export class LocalStorageWithSchema<T> {
 
   constructor(options: {
     key: string;
-    schema: Zod.Schema<T>;
+    schema: ZodType<T>;
     fallback: T;
     migrate?: (
       value: Record<string, unknown> | unknown[],
