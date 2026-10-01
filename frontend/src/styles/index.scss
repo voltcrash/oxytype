@@ -16,7 +16,7 @@
 }
 
 @layer custom-styles {
-  @import "animations", "fonts", "test";
+  @import "animations", "fonts";
 
   .chartCanvas {
     width: 100% !important;
