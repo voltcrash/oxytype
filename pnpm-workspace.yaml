@@ -45,3 +45,4 @@ minimumReleaseAgeExclude:
   - "@tanstack/solid-db@0.3.0"
   - firebase-tools@15.32.1
   - bullmq@6.3.11
+  - dotenv@18.0.5
