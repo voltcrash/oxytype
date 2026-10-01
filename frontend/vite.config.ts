@@ -158,7 +158,9 @@ function getPlugins({
         runtimeCaching: [
           {
             urlPattern: (options) => {
-              const isApi = options.url.hostname === "api.monkeytype.com";
+              const isApi =
+                options.url.pathname === "/api" ||
+                options.url.pathname.startsWith("/api/");
               return options.sameOrigin && !isApi;
             },
             handler: "NetworkFirst",
@@ -178,12 +180,12 @@ function getPlugins({
     useSentry
       ? sentryVitePlugin({
           authToken: env["SENTRY_AUTH_TOKEN"],
-          org: "monkeytype",
-          project: "frontend",
+          org: env["SENTRY_ORG"],
+          project: env["SENTRY_PROJECT"],
           release: {
             name: clientVersion,
           },
-          applicationKey: "monkeytype-frontend",
+          applicationKey: "oxytype-frontend",
         })
       : null,
     injectPreload(),
@@ -328,15 +330,23 @@ function getCssOptions({
 
 export default defineConfig(({ mode }): UserConfig => {
   const env = loadEnv(mode, process.cwd(), "");
-  const useSentry = env["SENTRY"] !== undefined;
+  const useSentry = Boolean(env["SENTRY_AUTH_TOKEN"]);
   const isDevelopment = mode !== "production";
 
   if (!isDevelopment) {
     if (env["RECAPTCHA_SITE_KEY"] === undefined) {
       throw new Error(`${mode}: RECAPTCHA_SITE_KEY is not defined`);
     }
-    if (useSentry && env["SENTRY_AUTH_TOKEN"] === undefined) {
-      throw new Error(`${mode}: SENTRY_AUTH_TOKEN is not defined`);
+    if (
+      useSentry &&
+      (env["SENTRY_ORG"] === undefined ||
+        env["SENTRY_ORG"] === "" ||
+        env["SENTRY_PROJECT"] === undefined ||
+        env["SENTRY_PROJECT"] === "")
+    ) {
+      throw new Error(
+        `${mode}: SENTRY_ORG and SENTRY_PROJECT are required for source map uploads`,
+      );
     }
   }
 
