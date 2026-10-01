@@ -1,0 +1,44 @@
+diff --git a/dist/index.d.mts b/dist/index.d.mts
+index b815f05134922e2e112fcc0b2fcb0564c9ee1b0e..3d75ee3370fbf349d314c4b14cd9668351b29b35 100644
+--- a/dist/index.d.mts
++++ b/dist/index.d.mts
+@@ -1,4 +1,4 @@
+-import { z } from 'zod';
++import { z } from 'zod/v3';
+ 
+ type Schema = z.ZodObject<Record<string, z.ZodTypeAny>>;
+ type ParseArgs<T extends Schema> = {
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index b815f05134922e2e112fcc0b2fcb0564c9ee1b0e..3d75ee3370fbf349d314c4b14cd9668351b29b35 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -1,4 +1,4 @@
+-import { z } from 'zod';
++import { z } from 'zod/v3';
+ 
+ type Schema = z.ZodObject<Record<string, z.ZodTypeAny>>;
+ type ParseArgs<T extends Schema> = {
+diff --git a/dist/index.js b/dist/index.js
+index cc69a1110c965b09c8707d4335b7e0afd2eb585c..c224a5ed54815ba05a17d71f9f8a677523744088 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -28,7 +28,7 @@ __export(src_exports, {
+   shape: () => shape
+ });
+ module.exports = __toCommonJS(src_exports);
+-var import_zod = require("zod");
++var import_zod = require("zod/v3");
+ function isScalar(value) {
+   return typeof value === "string" || typeof value === "number" || typeof value === "boolean" || typeof value === "bigint" || value instanceof Date;
+ }
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 192aa4e419b2c9bee7f9275a120bf130e04a6614..41d8c30c9dba6e381385564e381251131c9e6842 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -1,5 +1,5 @@
+ // src/index.ts
+-import { z } from "zod";
++import { z } from "zod/v3";
+ function isScalar(value) {
+   return typeof value === "string" || typeof value === "number" || typeof value === "boolean" || typeof value === "bigint" || value instanceof Date;
+ }
