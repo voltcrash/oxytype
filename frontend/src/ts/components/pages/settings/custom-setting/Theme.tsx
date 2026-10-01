@@ -1,7 +1,7 @@
 import { CustomTheme, CustomThemeNameSchema } from "@oxytype/schemas/users";
 import { For, JSXElement, Show, untrack } from "solid-js";
 import { debounce } from "throttle-debounce";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import {
   addCustomTheme,

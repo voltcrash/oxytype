@@ -1,5 +1,5 @@
 import { createEffect, createMemo, createSignal } from "solid-js";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { getConfig } from "../config/store";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { EventLog } from "../test/events/types";

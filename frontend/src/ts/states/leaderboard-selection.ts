@@ -1,7 +1,7 @@
 import { LanguageSchema } from "@oxytype/schemas/languages";
 import { ModeSchema } from "@oxytype/schemas/shared";
 import { Accessor, createEffect, createSignal, Setter } from "solid-js";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { serialize as serializeUrlSearchParams } from "zod-urlsearchparams";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 

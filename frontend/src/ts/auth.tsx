@@ -18,7 +18,7 @@ import {
   User as UserType,
 } from "firebase/auth";
 import { createMemo } from "solid-js";
-import { z, ZodString } from "zod";
+import { z, ZodString } from "zod/v3";
 
 import Ape from "./ape";
 import { waitForPresetsReady } from "./collections/presets";

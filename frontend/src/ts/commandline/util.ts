@@ -11,7 +11,7 @@ import {
 } from "./commandline-metadata";
 import { Command } from "./types";
 import * as ConfigSchemas from "@oxytype/schemas/configs";
-import { ZodSchema, ZodFirstPartySchemaTypes } from "zod";
+import { ZodSchema, ZodFirstPartySchemaTypes } from "zod/v3";
 import { getOptions } from "../utils/zod";
 
 export function buildCommandForConfigKey<

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 
 function removeProblems<T extends object | unknown[]>(
   obj: T | undefined,

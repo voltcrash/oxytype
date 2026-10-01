@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 import { getLatestReleaseFromGitHub } from "./json-data";
 import { LocalStorageWithSchema } from "./local-storage-with-schema";
 import { tryCatch } from "@oxytype/util/trycatch";

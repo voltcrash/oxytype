@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vite-plus/test";
-import { z, ZodString, ZodNumber } from "zod";
+import { z, ZodString, ZodNumber } from "zod/v3";
 import { unwrapSchema } from "../../src/ts/utils/zod";
 
 describe("unwrapSchema", () => {

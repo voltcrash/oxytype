@@ -1,5 +1,5 @@
 import { JSXElement, Setter, Show } from "solid-js";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import { setPage } from "../../../states/leaderboard-selection";
 import { showSimpleModal } from "../../../states/simple-modal";

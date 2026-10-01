@@ -7,7 +7,7 @@ import {
   Show,
   on,
 } from "solid-js";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import Ape from "../../ape";
 import { setConfig } from "../../config/setters";

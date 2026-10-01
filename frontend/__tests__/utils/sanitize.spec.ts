@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vite-plus/test";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { sanitize } from "../../src/ts/utils/sanitize";
 
 describe("sanitize function", () => {

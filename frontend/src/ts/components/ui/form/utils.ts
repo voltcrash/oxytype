@@ -1,5 +1,5 @@
 import { AnyFieldApi } from "@tanstack/solid-form";
-import { ZodSchema } from "zod";
+import { ZodSchema } from "zod/v3";
 
 export type ValidationResult = { type: "error" | "warning"; message: string };
 export function fromSchema<T>(

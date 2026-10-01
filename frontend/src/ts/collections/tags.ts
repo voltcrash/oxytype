@@ -7,7 +7,7 @@ import {
   queryOnce,
   useLiveQuery,
 } from "@tanstack/solid-db";
-import { z } from "zod";
+import { z } from "zod/v3";
 import Ape from "../ape";
 import { queryClient } from "../queries";
 import { baseKey } from "../queries/utils/keys";

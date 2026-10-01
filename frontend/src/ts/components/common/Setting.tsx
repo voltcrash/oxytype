@@ -1,5 +1,5 @@
 import { JSXElement, ParentProps, Show, onMount, onCleanup } from "solid-js";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { serialize } from "zod-urlsearchparams";
 
 import { useRef } from "../../hooks/useRef";
