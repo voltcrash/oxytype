@@ -342,11 +342,11 @@ export const commands: CommandsSubgroup = {
       },
     },
     {
-      id: "joinDiscord",
-      display: "Join the Discord server",
+      id: "openDiscussions",
+      display: "Open project discussions",
       icon: "fa-users",
       exec: (): void => {
-        window.open("https://discord.gg/monkeytype");
+        window.open("https://github.com/voltcrash/oxytype/discussions");
       },
     },
     {
