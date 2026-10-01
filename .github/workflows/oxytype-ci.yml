@@ -1,7 +1,7 @@
 name: Oxytype CI
 
 env:
-  PNPM_VERSION: "11.21.0"
+  PNPM_VERSION: "12.8.1"
   NODE_VERSION: "24.21.0"
   RECAPTCHA_SITE_KEY: "6Lc-V8McAAAAAJ7s6LGNe7MBZnRiwbsbiWts87aj"
 
@@ -86,7 +86,7 @@ jobs:
 
       - name: Cache node modules
         id: cache-pnpm
-        uses: actions/cache@v5
+        uses: actions/cache@v6.1.0
         env:
           cache-name: node-modules
         with:
@@ -168,7 +168,7 @@ jobs:
       - name: Cache node modules
         if: steps.get-changed-files.outputs.has-files == 'true'
         id: cache-pnpm
-        uses: actions/cache@v5
+        uses: actions/cache@v6.1.0
         env:
           cache-name: node-modules
         with:
@@ -209,7 +209,7 @@ jobs:
 
       - name: Cache node modules
         id: cache-pnpm
-        uses: actions/cache@v5
+        uses: actions/cache@v6.1.0
         env:
           cache-name: node-modules
         with:
@@ -257,7 +257,7 @@ jobs:
 
       - name: Cache node modules
         id: cache-pnpm
-        uses: actions/cache@v5
+        uses: actions/cache@v6.1.0
         env:
           cache-name: node-modules
         with:
@@ -320,7 +320,7 @@ jobs:
 
       - name: Cache node modules
         id: cache-pnpm
-        uses: actions/cache@v5
+        uses: actions/cache@v6.1.0
         env:
           cache-name: node-modules
         with:
@@ -375,7 +375,7 @@ jobs:
 
       - name: Cache node modules
         id: cache-pnpm
-        uses: actions/cache@v5
+        uses: actions/cache@v6.1.0
         env:
           cache-name: node-modules
         with:
