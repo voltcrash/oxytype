@@ -1,4 +1,4 @@
-import { navigate } from "../../controllers/route-controller";
+import { navigate } from "../../navigation/navigation";
 import { isAuthenticated } from "../../states/core";
 import { Command, withValidation } from "../types";
 import { remoteValidation } from "../../utils/remote-validation";

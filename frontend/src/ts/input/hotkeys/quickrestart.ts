@@ -1,6 +1,6 @@
 import { isAnyPopupVisible } from "../../states/overlay-visibility";
 
-import { navigate } from "../../controllers/route-controller";
+import { navigate } from "../../navigation/navigation";
 import { restartTestEvent } from "../../events/test";
 import { getActivePage } from "../../states/core";
 import { hotkeys, quickRestartHotkeyMap } from "../../states/hotkeys";
