@@ -3,7 +3,7 @@ import { routePath } from "hono/route";
 import { basicAuth } from "hono/basic-auth";
 import { Counter, Histogram, register } from "prom-client";
 import { performance } from "perf_hooks";
-import { serveStatic } from "@hono/node-server/serve-static";
+import { serveStatic } from "../../utils/static";
 import { join } from "path";
 import { ApiEnv } from "../http";
 import { isDevEnvironment } from "../../utils/misc";

@@ -17,7 +17,7 @@ import { version } from "../../version";
 import leaderboards from "./leaderboards";
 import connections from "./connections";
 import { Hono } from "hono";
-import { serveStatic } from "@hono/node-server/serve-static";
+import { serveStatic } from "../../utils/static";
 import { ApiEnv } from "../http";
 import { initServer, createHonoEndpoints } from "../hono-adapter";
 import { addStatsRoutes } from "./stats";

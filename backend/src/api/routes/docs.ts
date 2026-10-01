@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { serveStatic } from "@hono/node-server/serve-static";
+import { serveStatic } from "../../utils/static";
 import { join } from "path";
 import { ApiEnv, ApiMiddleware } from "../http";
 import MonkeyError from "../../utils/error";
