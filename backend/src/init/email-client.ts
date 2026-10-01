@@ -154,7 +154,8 @@ async function getTemplate(name: string): Promise<string> {
     "utf-8",
   );
 
-  const html = mjml2html(template).html;
+  // MJML 5 renders asynchronously; its published typings still describe v4.
+  const html = (await Promise.resolve(mjml2html(template))).html;
 
   cachedTemplates[name] = html;
   return html;
