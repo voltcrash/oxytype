@@ -307,7 +307,7 @@ describe("Config", () => {
       expect(miscTriggerResizeMock).not.toHaveBeenCalled();
     });
 
-    it("calls afterSet", () => {
+    it("changes ad settings without enabling upstream reload behavior", () => {
       //GIVEN
       isDevEnvironmentMock.mockReturnValue(false);
       replaceConfig({ ads: "off" });
@@ -316,10 +316,8 @@ describe("Config", () => {
       Config.setConfig("ads", "sellout");
 
       //THEN
-      expect(notificationAddMock).toHaveBeenCalledWith(
-        "Ad settings changed. Refreshing...",
-      );
-      expect(miscReloadAfterMock).toHaveBeenCalledWith(3);
+      expect(notificationAddMock).not.toHaveBeenCalled();
+      expect(miscReloadAfterMock).not.toHaveBeenCalled();
     });
   });
 
