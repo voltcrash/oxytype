@@ -1,0 +1,16 @@
+/* Higher than theme/component hooks; utilities can still override visibility. */
+@layer hidden {
+  .hidden {
+    @apply hidden;
+  }
+
+  .invisible {
+    @apply opacity-0 pointer-events-none invisible;
+  }
+}
+
+@layer custom-styles {
+  .chartCanvas {
+    @apply w-full!;
+  }
+}
