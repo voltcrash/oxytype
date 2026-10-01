@@ -1,4 +1,4 @@
-import { ThemeName } from "@monkeytype/schemas/configs";
+import { ThemeName } from "@oxytype/schemas/configs";
 import { JSXElement, Show } from "solid-js";
 
 import { configMetadata } from "../../../../config/metadata";

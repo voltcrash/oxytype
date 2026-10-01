@@ -1,4 +1,4 @@
-import { getChallenges } from "@monkeytype/challenges";
+import { getChallenges } from "@oxytype/challenges";
 import {
   CustomBackgroundFilter,
   CustomBackgroundFilterSchema,
@@ -8,16 +8,16 @@ import {
   CustomThemeColorsSchema,
   FunboxName,
   FunboxSchema,
-} from "@monkeytype/schemas/configs";
-import { Language } from "@monkeytype/schemas/languages";
-import { CustomTextSettingsSchema } from "@monkeytype/schemas/results";
+} from "@oxytype/schemas/configs";
+import { Language } from "@oxytype/schemas/languages";
+import { CustomTextSettingsSchema } from "@oxytype/schemas/results";
 import {
   DifficultySchema,
   Mode2Schema,
   ModeSchema,
-} from "@monkeytype/schemas/shared";
-import { parseWithSchema as parseJsonWithSchema } from "@monkeytype/util/json";
-import { tryCatchSync } from "@monkeytype/util/trycatch";
+} from "@oxytype/schemas/shared";
+import { parseWithSchema as parseJsonWithSchema } from "@oxytype/util/json";
+import { tryCatchSync } from "@oxytype/util/trycatch";
 import { decompressFromURI } from "lz-ts";
 import { z } from "zod";
 

@@ -1,5 +1,5 @@
 {
-  "name": "@monkeytype/challenges",
+  "name": "@oxytype/challenges",
   "private": true,
   "exports": {
     ".": {
@@ -19,11 +19,11 @@
     "george-mapping": "tsx ./scripts/challenge-roles"
   },
   "dependencies": {
-    "@monkeytype/schemas": "workspace:*"
+    "@oxytype/schemas": "workspace:*"
   },
   "devDependencies": {
-    "@monkeytype/tsup-config": "workspace:*",
-    "@monkeytype/typescript-config": "workspace:*",
+    "@oxytype/tsup-config": "workspace:*",
+    "@oxytype/typescript-config": "workspace:*",
     "@types/node": "24.9.1",
     "madge": "8.0.0",
     "oxlint": "1.77.0",

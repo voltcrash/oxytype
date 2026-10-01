@@ -1,4 +1,4 @@
-import { ChartData } from "@monkeytype/schemas/results";
+import { ChartData } from "@oxytype/schemas/results";
 import { useQuery } from "@tanstack/solid-query";
 import { createMemo, JSXElement } from "solid-js";
 

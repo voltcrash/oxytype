@@ -1,4 +1,4 @@
-import { FontNameSchema } from "@monkeytype/schemas/fonts";
+import { FontNameSchema } from "@oxytype/schemas/fonts";
 import { Command, withValidation } from "../types";
 import { buildCommandForConfigKey } from "../util";
 import FileStorage from "../../utils/file-storage";

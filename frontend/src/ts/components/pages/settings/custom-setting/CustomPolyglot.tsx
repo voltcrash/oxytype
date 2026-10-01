@@ -1,4 +1,4 @@
-import { CustomPolyglot as CustomPolyglotType } from "@monkeytype/schemas/configs";
+import { CustomPolyglot as CustomPolyglotType } from "@oxytype/schemas/configs";
 import { Optgroup } from "slim-select/store";
 import { JSXElement } from "solid-js";
 

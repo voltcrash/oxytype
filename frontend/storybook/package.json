@@ -1,5 +1,5 @@
 {
-  "name": "@monkeytype/frontend-storybook",
+  "name": "@oxytype/frontend-storybook",
   "version": "0.0.0",
   "private": true,
   "imports": {

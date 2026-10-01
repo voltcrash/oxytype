@@ -6,7 +6,7 @@ import {
   MonkeyResponseSchema,
   responseWithData,
 } from "./util/api";
-import { IdSchema } from "@monkeytype/schemas/util";
+import { IdSchema } from "@oxytype/schemas/util";
 
 export const GenerateDataRequestSchema = z.object({
   username: z.string(),

@@ -1,8 +1,8 @@
 import { ZodIssue } from "zod";
-import { isZodError } from "@monkeytype/util/zod";
+import { isZodError } from "@oxytype/util/zod";
 import { showErrorNotification } from "../states/notifications";
-import { tryCatchSync } from "@monkeytype/util/trycatch";
-import { parseWithSchema as parseJsonWithSchema } from "@monkeytype/util/json";
+import { tryCatchSync } from "@oxytype/util/trycatch";
+import { parseWithSchema as parseJsonWithSchema } from "@oxytype/util/json";
 
 export class LocalStorageWithSchema<T> {
   private key: string;

@@ -33,7 +33,7 @@ import * as WeeklyXpLeaderboard from "../../services/weekly-xp-leaderboard";
 import { UAParser } from "ua-parser-js";
 import { canFunboxGetPb } from "../../utils/pb";
 import { buildDbResult } from "../../utils/result";
-import { Configuration } from "@monkeytype/schemas/configuration";
+import { Configuration } from "@oxytype/schemas/configuration";
 import { addImportantLog, addLog } from "../../dal/logs";
 import {
   AddResultRequest,
@@ -45,28 +45,28 @@ import {
   GetResultsResponse,
   UpdateResultTagsRequest,
   UpdateResultTagsResponse,
-} from "@monkeytype/contracts/results";
+} from "@oxytype/contracts/results";
 import {
   CompletedEvent,
   KeyStats,
   PostResultResponse,
   XpBreakdown,
-} from "@monkeytype/schemas/results";
+} from "@oxytype/schemas/results";
 import {
   isSafeNumber,
   mapRange,
   roundTo2,
   stdDev,
-} from "@monkeytype/util/numbers";
+} from "@oxytype/util/numbers";
 import {
   getCurrentDayTimestamp,
   getStartOfDayTimestamp,
-} from "@monkeytype/util/date-and-time";
+} from "@oxytype/util/date-and-time";
 import { MonkeyRequest } from "../types";
-import { getFunbox, checkCompatibility } from "@monkeytype/funbox";
-import { tryCatch } from "@monkeytype/util/trycatch";
+import { getFunbox, checkCompatibility } from "@oxytype/funbox";
+import { tryCatch } from "@oxytype/util/trycatch";
 import { getCachedConfiguration } from "../../init/configuration";
-import { getChallenges } from "@monkeytype/challenges";
+import { getChallenges } from "@oxytype/challenges";
 
 try {
   if (!anticheatImplemented()) throw new Error("undefined");

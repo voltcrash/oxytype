@@ -1,14 +1,14 @@
 import { generateOpenApi } from "@ts-rest/open-api";
-import { COMPATIBILITY_CHECK, contract } from "@monkeytype/contracts/index";
+import { COMPATIBILITY_CHECK, contract } from "@oxytype/contracts/index";
 import { writeFileSync, mkdirSync } from "fs";
-import { EndpointMetadata, PermissionId } from "@monkeytype/contracts/util/api";
+import { EndpointMetadata, PermissionId } from "@oxytype/contracts/util/api";
 import type { OpenAPIObject, OperationObject } from "openapi3-ts";
 import {
   RateLimitIds,
   getLimits,
   RateLimiterId,
   Window,
-} from "@monkeytype/contracts/rate-limit/index";
+} from "@oxytype/contracts/rate-limit/index";
 import { formatDuration } from "date-fns";
 
 type SecurityRequirementObject = {

@@ -1,5 +1,5 @@
-import { RequireConfiguration } from "@monkeytype/contracts/require-configuration/index";
-import { Configuration } from "@monkeytype/schemas/configuration";
+import { RequireConfiguration } from "@oxytype/contracts/require-configuration/index";
+import { Configuration } from "@oxytype/schemas/configuration";
 import { Response } from "express";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TsRestRequestWithContext } from "../../src/api/types";

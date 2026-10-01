@@ -1,4 +1,4 @@
-import { mean, roundTo2, stdDev } from "@monkeytype/util/numbers";
+import { mean, roundTo2, stdDev } from "@oxytype/util/numbers";
 
 const timings = new Map<string, number[]>();
 

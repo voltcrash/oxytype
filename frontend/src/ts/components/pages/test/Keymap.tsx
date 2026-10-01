@@ -1,4 +1,4 @@
-import { LayoutObject } from "@monkeytype/schemas/layouts";
+import { LayoutObject } from "@oxytype/schemas/layouts";
 import { createEffect, createMemo, createSignal, For, Show } from "solid-js";
 
 import { getConfig } from "../../../config/store";

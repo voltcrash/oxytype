@@ -1,4 +1,4 @@
-import { ResultFilters } from "@monkeytype/schemas/users";
+import { ResultFilters } from "@oxytype/schemas/users";
 import { queryCollectionOptions } from "@tanstack/query-db-collection";
 import {
   createCollection,

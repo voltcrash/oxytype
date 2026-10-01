@@ -1,10 +1,10 @@
 import { createSignal } from "solid-js";
-import { Language } from "@monkeytype/schemas/languages";
+import { Language } from "@oxytype/schemas/languages";
 import Ape from "../ape";
 import { Quote } from "../controllers/quotes-controller";
 import { showErrorNotification } from "./notifications";
 import { showModal } from "./modals";
-import { isSafeNumber } from "@monkeytype/util/numbers";
+import { isSafeNumber } from "@oxytype/util/numbers";
 
 type QuoteStats = {
   average?: number;

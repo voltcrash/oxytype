@@ -1,12 +1,12 @@
-import { ChallengeName } from "@monkeytype/schemas/challenges";
+import { ChallengeName } from "@oxytype/schemas/challenges";
 import {
   Config,
   Difficulty,
   FunboxName,
   ThemeName,
-} from "@monkeytype/schemas/configs";
-import { Mode } from "@monkeytype/schemas/shared";
-import { CustomTextLimitMode, CustomTextMode } from "@monkeytype/schemas/util";
+} from "@oxytype/schemas/configs";
+import { Mode } from "@oxytype/schemas/shared";
+import { CustomTextLimitMode, CustomTextMode } from "@oxytype/schemas/util";
 
 export type Challenge = {
   name: ChallengeName;

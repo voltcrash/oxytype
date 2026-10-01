@@ -1,4 +1,4 @@
-import { Config, ConfigKey } from "@monkeytype/schemas/configs";
+import { Config, ConfigKey } from "@oxytype/schemas/configs";
 import AnimatedModal from "../utils/animated-modal";
 import { Validation } from "../types/validation";
 

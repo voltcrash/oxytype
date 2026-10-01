@@ -1,4 +1,4 @@
-import { TagNameSchema } from "@monkeytype/schemas/users";
+import { TagNameSchema } from "@oxytype/schemas/users";
 import { z } from "zod";
 
 import { insertTag } from "../../collections/tags";

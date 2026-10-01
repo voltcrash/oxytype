@@ -1,6 +1,6 @@
-import { checkCompatibility } from "@monkeytype/funbox";
-import * as ConfigSchemas from "@monkeytype/schemas/configs";
-import { roundTo1 } from "@monkeytype/util/numbers";
+import { checkCompatibility } from "@oxytype/funbox";
+import * as ConfigSchemas from "@oxytype/schemas/configs";
+import { roundTo1 } from "@oxytype/util/numbers";
 import { JSXElement } from "solid-js";
 
 import * as CustomThemes from "../collections/custom-themes";

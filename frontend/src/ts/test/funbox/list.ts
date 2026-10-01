@@ -2,10 +2,10 @@ import {
   FunboxMetadata,
   getFunboxObject,
   FunboxProperty,
-} from "@monkeytype/funbox";
+} from "@oxytype/funbox";
 
 import { FunboxFunctions, getFunboxFunctions } from "./funbox-functions";
-import { FunboxName } from "@monkeytype/schemas/configs";
+import { FunboxName } from "@oxytype/schemas/configs";
 import {
   getActiveFunboxNames,
   isFunboxActive,

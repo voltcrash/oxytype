@@ -1,4 +1,4 @@
-import { TypingSpeedUnit } from "@monkeytype/schemas/configs";
+import { TypingSpeedUnit } from "@oxytype/schemas/configs";
 
 export type TypingSpeedUnitSettings = {
   fromWpm: (number: number) => number;
