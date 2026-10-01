@@ -1,6 +1,6 @@
-import { defineConfig, UserWorkspaceConfig } from "vite-plus";
+import { defineConfig, TestProjectInlineConfiguration } from "vite-plus";
 
-export const projects: UserWorkspaceConfig[] = [
+export const projects = [
   {
     test: {
       name: { label: "unit", color: "blue" },
@@ -19,6 +19,10 @@ export const projects: UserWorkspaceConfig[] = [
       globalSetup: "__tests__/__integration__/global-setup.ts",
       include: ["__tests__/__integration__/**/*.spec.ts"],
       exclude: ["**/*.isolated.spec.ts"],
+      // These files reset and migrate a shared database.
+      fileParallelism: false,
+      testTimeout: 30_000,
+      hookTimeout: 30_000,
 
       sequence: {
         concurrent: false,
@@ -39,9 +43,11 @@ export const projects: UserWorkspaceConfig[] = [
       },
       pool: "threads",
       maxWorkers: 1,
+      testTimeout: 30_000,
+      hookTimeout: 30_000,
     },
   },
-];
+] satisfies TestProjectInlineConfiguration[];
 export default defineConfig({
   test: {
     // Vitest v4 compatibility: preserve mock call history.

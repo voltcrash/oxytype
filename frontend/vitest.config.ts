@@ -1,4 +1,4 @@
-import { defineConfig, UserWorkspaceConfig } from "vite-plus";
+import { defineConfig, TestProjectInlineConfiguration } from "vite-plus";
 import { languageHashes } from "./vite-plugins/language-hashes";
 import { envConfig } from "./vite-plugins/env-config";
 import solidPlugin from "vite-plugin-solid";
@@ -14,7 +14,7 @@ const tanstackSolidNoExternal: (string | RegExp)[] = [
   /@tanstack\/solid-.*/,
 ];
 
-export const projects: UserWorkspaceConfig[] = [
+export const projects = [
   {
     ssr: {
       noExternal: tanstackSolidNoExternal,
@@ -63,7 +63,7 @@ export const projects: UserWorkspaceConfig[] = [
     },
     plugins,
   },
-];
+] satisfies TestProjectInlineConfiguration[];
 export default defineConfig({
   test: {
     // Vitest v4 compatibility: preserve mock call history.

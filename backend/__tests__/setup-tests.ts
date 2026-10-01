@@ -4,7 +4,7 @@ import "./setup-common-mocks";
 import { __testing } from "../src/init/configuration";
 
 process.env["MODE"] = "dev";
-process.env.TZ = "UTC";
+process.env["TZ"] = "UTC";
 vi.mock("../src/init/configuration", async (importOriginal) => {
   const orig = (await importOriginal()) as any;
 
