@@ -205,8 +205,8 @@ importers:
         specifier: 'catalog:'
         version: 5.0.2(vitest@5.0.2)
       caniuse-lite:
-        specifier: 1.0.30001778
-        version: 1.0.30001778
+        specifier: 1.0.30001814
+        version: 1.0.30001814
       conventional-changelog:
         specifier: 6.0.0
         version: 6.0.0(conventional-commits-filter@5.0.0)
@@ -5560,6 +5560,9 @@ packages:
 
   caniuse-lite@1.0.30001806:
     resolution: {integrity: sha512-72Cuvd95zbSYPKq6Fhg8eDJRlzgWDf7/mtoZv6Qe/DYNCEBdNxoA3+rZAU2ZhGCpZlns3EssFavaZomckT5Uuw==}
+
+  caniuse-lite@1.0.30001814:
+    resolution: {integrity: sha512-/Uaf1lAzr59XcMpW0o96WoEfr+VXK2OX4U9AgFoiSHsVJ4HppnIFUjtYzsyDH2+tgANaQb2/oxYGwCPapN1FpA==}
 
   canvas-confetti@1.9.4:
     resolution: {integrity: sha512-yxQbJkAVrFXWNbTUjPqjF7G+g6pDotOUHGbkZq2NELZUMDpiJ85rIEazVb8GTaAptNW2miJAXbs1BtioA251Pw==}
@@ -16369,6 +16372,8 @@ snapshots:
   caniuse-lite@1.0.30001778: {}
 
   caniuse-lite@1.0.30001806: {}
+
+  caniuse-lite@1.0.30001814: {}
 
   canvas-confetti@1.9.4: {}
 
