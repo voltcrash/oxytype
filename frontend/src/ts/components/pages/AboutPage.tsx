@@ -192,9 +192,9 @@ export function AboutPage(): JSXElement {
           <p>
             Oxytype is an independent typing test project based on Monkeytype.
             It offers multiple test modes, progress tracking, themes, and a
-            customizable typing experience. The original Monkeytype project
-            was created by Miodec; its contributors remain credited here and
-            in the repository.
+            customizable typing experience. The original Monkeytype project was
+            created by Miodec; its contributors remain credited here and in the
+            repository.
             <br />
             <br />
             Test yourself in various modes, track your progress and improve your
@@ -292,9 +292,7 @@ export function AboutPage(): JSXElement {
         <div></div>
         <section>
           <H2 fa={{ icon: "fa-envelope" }} text="contact" />
-          <p>
-            Report bugs or request features through the Oxytype repository.
-          </p>
+          <p>Report bugs or request features through the Oxytype repository.</p>
           <div class="mt-4 grid w-full grid-cols-1 gap-4 text-xl sm:grid-cols-2 lg:grid-cols-4">
             <Button
               text="mail"
