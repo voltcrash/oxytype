@@ -46,3 +46,4 @@ minimumReleaseAgeExclude:
   - firebase-tools@15.32.1
   - bullmq@6.3.11
   - dotenv@18.0.5
+  - "@redocly/cli@2.57.0"
