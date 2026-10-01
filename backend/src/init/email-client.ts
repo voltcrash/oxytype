@@ -55,7 +55,7 @@ export async function init(): Promise<void> {
     return;
   }
 
-  if (!EMAIL_FROM) {
+  if (EMAIL_FROM === undefined || EMAIL_FROM === "") {
     throw new Error("EMAIL_FROM must be configured when email is enabled");
   }
   emailFrom = EMAIL_FROM;
