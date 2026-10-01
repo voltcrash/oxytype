@@ -38,7 +38,7 @@ jobs:
             type=semver,pattern={{version}}
 
       - name: Build and publish backend
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@v7.4.0
         with:
           context: .
           platforms: ${{ env.PLATFORMS }}
@@ -59,7 +59,7 @@ jobs:
             type=semver,pattern={{version}}
 
       - name: Build and publish frontend
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@v7.4.0
         with:
           context: .
           platforms: ${{ env.PLATFORMS }}
