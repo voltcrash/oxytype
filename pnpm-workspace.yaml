@@ -5,7 +5,6 @@ packages:
   - frontend/storybook
 
 allowBuilds:
-  "@firebase/util": true
   "@fortawesome/fontawesome-free": true
   "@parcel/watcher": true
   "@sentry/cli": true
@@ -83,6 +82,14 @@ minimumReleaseAgeExclude:
   - turbo@2.11.6
   - vitest@5.0.3
   - "@vitest/browser-preview@5.0.3"
+  - "@better-auth/core@1.7.7"
+  - "@better-auth/drizzle-adapter@1.7.7"
+  - "@better-auth/kysely-adapter@1.7.7"
+  - "@better-auth/memory-adapter@1.7.7"
+  - "@better-auth/mongo-adapter@1.7.7"
+  - "@better-auth/prisma-adapter@1.7.7"
+  - "@better-auth/telemetry@1.7.7"
+  - better-auth@1.7.7
 patchedDependencies:
   "@anatine/zod-openapi@1.14.2": patches/@anatine__zod-openapi@1.14.2.patch
   "@ts-rest/core@3.52.1": patches/@ts-rest__core@3.52.1.patch
