@@ -1,3 +1,4 @@
+import { getRequestListener } from "@hono/node-server";
 import request from "supertest";
 import app from "../../src/app";
 import { ObjectId } from "mongodb";
@@ -10,7 +11,7 @@ export function setup(): {
   uid: string;
   mockAuth: BearerAuthenticationMock;
 } {
-  const mockApp = request(app);
+  const mockApp = request(getRequestListener(app.fetch));
   const uid = new ObjectId().toHexString();
   const mockAuth = mockBearerAuthentication(uid);
 

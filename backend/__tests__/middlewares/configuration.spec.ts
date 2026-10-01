@@ -1,6 +1,5 @@
 import { RequireConfiguration } from "@oxytype/contracts/require-configuration/index";
 import { Configuration } from "@oxytype/schemas/configuration";
-import { Response } from "express";
 import {
   afterEach,
   beforeEach,
@@ -9,15 +8,15 @@ import {
   it,
   vi,
 } from "vite-plus/test";
-import { TsRestRequestWithContext } from "../../src/api/types";
+import { HttpRequest } from "../../src/api/http";
+import { invokeMiddleware } from "../__testData__/middleware";
 import { verifyRequiredConfiguration } from "../../src/middlewares/configuration";
 import MonkeyError from "../../src/utils/error";
 import { enableMonkeyErrorExpects } from "../__testData__/monkey-error";
 
 enableMonkeyErrorExpects();
-describe("configuration middleware", () => {
+describe("configuration middleware", async () => {
   const handler = verifyRequiredConfiguration();
-  const res: Response = {} as any;
   const next = vi.fn();
 
   beforeEach(() => {
@@ -28,27 +27,27 @@ describe("configuration middleware", () => {
     expect(next).toHaveBeenCalledOnce();
   });
 
-  it("should pass without requireConfiguration", () => {
+  it("should pass without requireConfiguration", async () => {
     //GIVEN
     const req = { tsRestRoute: { metadata: {} } } as any;
 
     //WHEN
-    handler(req, res, next);
+    await invokeMiddleware(handler, req, next);
 
     //THEN
     expect(next).toHaveBeenCalledWith();
   });
-  it("should pass for enabled configuration", () => {
+  it("should pass for enabled configuration", async () => {
     //GIVEN
     const req = givenRequest({ path: "maintenance" }, { maintenance: true });
 
     //WHEN
-    handler(req, res, next);
+    await invokeMiddleware(handler, req, next);
 
     //THEN
     expect(next).toHaveBeenCalledWith();
   });
-  it("should pass for enabled configuration with complex path", () => {
+  it("should pass for enabled configuration with complex path", async () => {
     //GIVEN
     const req = givenRequest(
       { path: "users.xp.streak.enabled" },
@@ -56,17 +55,17 @@ describe("configuration middleware", () => {
     );
 
     //WHEN
-    handler(req, res, next);
+    await invokeMiddleware(handler, req, next);
 
     //THEN
     expect(next).toHaveBeenCalledWith();
   });
-  it("should fail for disabled configuration", () => {
+  it("should fail for disabled configuration", async () => {
     //GIVEN
     const req = givenRequest({ path: "maintenance" }, { maintenance: false });
 
     //WHEN
-    handler(req, res, next);
+    await invokeMiddleware(handler, req, next);
 
     //THEN
     expect(next).toHaveBeenCalledWith(
@@ -75,7 +74,7 @@ describe("configuration middleware", () => {
       ),
     );
   });
-  it("should fail for disabled configuration and custom message", () => {
+  it("should fail for disabled configuration and custom message", async () => {
     //GIVEN
     const req = givenRequest(
       { path: "maintenance", invalidMessage: "Feature not enabled." },
@@ -83,19 +82,19 @@ describe("configuration middleware", () => {
     );
 
     //WHEN
-    handler(req, res, next);
+    await invokeMiddleware(handler, req, next);
 
     //THEN
     expect(next).toHaveBeenCalledWith(
       expect.toMatchMonkeyError(new MonkeyError(503, "Feature not enabled.")),
     );
   });
-  it("should fail for invalid path", () => {
+  it("should fail for invalid path", async () => {
     //GIVEN
     const req = givenRequest({ path: "invalid.path" as any }, {});
 
     //WHEN
-    handler(req, res, next);
+    await invokeMiddleware(handler, req, next);
 
     //THEN
     expect(next).toHaveBeenCalledWith(
@@ -104,7 +103,7 @@ describe("configuration middleware", () => {
       ),
     );
   });
-  it("should fail for undefined value", () => {
+  it("should fail for undefined value", async () => {
     //GIVEN
     const req = givenRequest(
       { path: "admin.endpointsEnabled" },
@@ -112,7 +111,7 @@ describe("configuration middleware", () => {
     );
 
     //WHEN
-    handler(req, res, next);
+    await invokeMiddleware(handler, req, next);
 
     //THEN
     expect(next).toHaveBeenCalledWith(
@@ -124,7 +123,7 @@ describe("configuration middleware", () => {
       ),
     );
   });
-  it("should fail for null value", () => {
+  it("should fail for null value", async () => {
     //GIVEN
     const req = givenRequest(
       { path: "admin.endpointsEnabled" },
@@ -132,7 +131,7 @@ describe("configuration middleware", () => {
     );
 
     //WHEN
-    handler(req, res, next);
+    await invokeMiddleware(handler, req, next);
 
     //THEN
     expect(next).toHaveBeenCalledWith(
@@ -144,7 +143,7 @@ describe("configuration middleware", () => {
       ),
     );
   });
-  it("should fail for non booean value", () => {
+  it("should fail for non booean value", async () => {
     //GIVEN
     const req = givenRequest(
       { path: "admin.endpointsEnabled" },
@@ -152,7 +151,7 @@ describe("configuration middleware", () => {
     );
 
     //WHEN
-    handler(req, res, next);
+    await invokeMiddleware(handler, req, next);
 
     //THEN
     expect(next).toHaveBeenCalledWith(
@@ -164,7 +163,7 @@ describe("configuration middleware", () => {
       ),
     );
   });
-  it("should pass for multiple configurations", () => {
+  it("should pass for multiple configurations", async () => {
     //GIVEN
     const req = givenRequest(
       [{ path: "maintenance" }, { path: "admin.endpointsEnabled" }],
@@ -172,12 +171,12 @@ describe("configuration middleware", () => {
     );
 
     //WHEN
-    handler(req, res, next);
+    await invokeMiddleware(handler, req, next);
 
     //THEN
     expect(next).toHaveBeenCalledWith();
   });
-  it("should fail for multiple configurations", () => {
+  it("should fail for multiple configurations", async () => {
     //GIVEN
     const req = givenRequest(
       [
@@ -188,7 +187,7 @@ describe("configuration middleware", () => {
     );
 
     //WHEN
-    handler(req, res, next);
+    await invokeMiddleware(handler, req, next);
 
     //THEN
     expect(next).toHaveBeenCalledWith(
@@ -200,9 +199,9 @@ describe("configuration middleware", () => {
 function givenRequest(
   requireConfiguration: RequireConfiguration | RequireConfiguration[],
   configuration: Partial<Configuration>,
-): TsRestRequestWithContext {
+): HttpRequest {
   return {
     tsRestRoute: { metadata: { requireConfiguration } },
     ctx: { configuration: configuration },
-  } as TsRestRequestWithContext;
+  } as HttpRequest;
 }

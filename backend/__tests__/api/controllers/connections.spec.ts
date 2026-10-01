@@ -1,3 +1,4 @@
+import { getRequestListener } from "@hono/node-server";
 import { describe, expect, it, vi, beforeEach } from "vite-plus/test";
 import request, { Test as SuperTest } from "supertest";
 import app from "../../../src/app";
@@ -7,7 +8,7 @@ import { ObjectId } from "mongodb";
 import * as ConnectionsDal from "../../../src/dal/connections";
 import * as UserDal from "../../../src/dal/user";
 
-const mockApp = request(app);
+const mockApp = request(getRequestListener(app.fetch));
 const configuration = Configuration.getCachedConfiguration();
 const uid = new ObjectId().toHexString();
 const mockAuth = mockBearerAuthentication(uid);
