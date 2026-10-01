@@ -28,10 +28,11 @@ it("replaces failed images on reapply and retains filter and size geometry", () 
   const image = container.querySelector("img");
   expect(image).toHaveStyle({
     filter: "blur(2rem)",
-    width: "calc(100% + 16rem)",
-    top: "-8rem",
     "object-fit": "contain",
   });
+  // Computed styles normalize rem to px in jsdom; assert the authored geometry.
+  expect(image?.style.width).toBe("calc(100% + 16rem)");
+  expect(image?.style.top).toBe("-8rem");
   fireEvent.error(image as HTMLImageElement);
   expect(image).toHaveClass("hidden");
   expect(failed).toHaveBeenCalledOnce();
