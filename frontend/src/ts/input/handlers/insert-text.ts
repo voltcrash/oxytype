@@ -56,7 +56,7 @@ type OnInsertTextParams = {
   isCompositionEnding?: true;
   // are we on the last character of a multi character input
   lastInMultiIndex?: boolean;
-  // true if monkeytype is inserting this itself, not the user
+  // true if oxytype is inserting this itself, not the user
   automatic?: true;
 };
 

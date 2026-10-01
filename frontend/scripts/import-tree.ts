@@ -87,7 +87,7 @@ function resolveSpecifier(
     return null;
   }
 
-  // @monkeytype packages are treated as leaf nodes (no recursion into them)
+  // @oxytype packages are treated as leaf nodes (no recursion into them)
   if (specifier.startsWith("@oxytype/")) return specifier;
 
   return null; // third-party / virtual
@@ -134,7 +134,7 @@ function walk(
 
     reachable.add(resolved);
 
-    // @monkeytype packages are leaf nodes — don't recurse
+    // @oxytype packages are leaf nodes — don't recurse
     if (resolved.startsWith("@oxytype/")) {
       maxDepth = Math.max(maxDepth, 1);
       continue;
@@ -227,7 +227,7 @@ function printTree(
   const leavesTag = leaves ? ` ${c.red}[↑]${c.reset}` : "";
 
   if (!info) {
-    // leaf node (e.g. @monkeytype package)
+    // leaf node (e.g. @oxytype package)
     console.log(`${c.dim}${prefix}${connector}${dp}${c.reset}${leavesTag}`);
     return;
   }

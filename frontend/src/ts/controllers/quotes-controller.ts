@@ -67,9 +67,9 @@ class QuotesController {
         language: data.language,
       };
 
-      // Transform JSON Quote schema to MonkeyTypes Quote schema
+      // Transform stored quote data to the runtime quote schema
       data.quotes.forEach((quote) => {
-        const monkeyTypeQuote: Quote = {
+        const runtimeQuote: Quote = {
           text: quote.text,
           britishText: quote.britishText,
           source: quote.source,
@@ -79,7 +79,7 @@ class QuotesController {
           group: 0,
         };
 
-        this.quoteCollection.quotes.push(monkeyTypeQuote);
+        this.quoteCollection.quotes.push(runtimeQuote);
       });
 
       data.groups.forEach((quoteGroup, groupIndex) => {

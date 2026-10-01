@@ -96,7 +96,7 @@ export async function activateSentry(): Promise<void> {
       //       console.log(exception);
       //       const frames = exception.stacktrace.frames;
       //       for (const frame of frames ?? []) {
-      //         if (frame.filename && frame.filename.includes("monkeytype")) {
+      //         if (frame.filename && frame.filename.includes("oxytype")) {
       //           // return event;
       //         }
       //       }
