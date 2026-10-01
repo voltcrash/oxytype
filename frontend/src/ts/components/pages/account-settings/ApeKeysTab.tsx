@@ -1,9 +1,9 @@
 import { ApeKeyNameSchema } from "@oxytype/schemas/ape-keys";
 import { tryCatch } from "@oxytype/util/trycatch";
-import { createColumnHelper } from "@tanstack/solid-table";
+import { createDataTableColumnHelper as createColumnHelper } from "../../ui/table/features";
 import { format as dateFormat } from "date-fns";
 import { createMemo, Show } from "solid-js";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import {
   ApeKeyEntry,

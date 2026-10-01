@@ -1,6 +1,6 @@
 import { Difficulty } from "@oxytype/schemas/configs";
 import { Mode } from "@oxytype/schemas/shared";
-import { createColumnHelper } from "@tanstack/solid-table";
+import { createDataTableColumnHelper as createColumnHelper } from "../../ui/table/features";
 import { format as dateFormat } from "date-fns/format";
 import { Accessor, createMemo, createSignal, JSXElement, Show } from "solid-js";
 

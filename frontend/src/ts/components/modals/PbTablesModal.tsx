@@ -1,5 +1,5 @@
 import { Mode2, Mode, PersonalBest } from "@oxytype/schemas/shared";
-import { createColumnHelper } from "@tanstack/solid-table";
+import { createDataTableColumnHelper as createColumnHelper } from "../ui/table/features";
 import { format as formatDate } from "date-fns/format";
 import { createMemo, createSignal, JSXElement } from "solid-js";
 

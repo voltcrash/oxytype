@@ -2,7 +2,6 @@ import {
   LeaderboardEntry,
   XpLeaderboardEntry,
 } from "@oxytype/schemas/leaderboards";
-import { createColumnHelper } from "@tanstack/solid-table";
 import { format as dateFormat } from "date-fns/format";
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 import { Accessor, createMemo, JSXElement, Show } from "solid-js";
@@ -19,6 +18,7 @@ import { abbreviateNumber } from "../../../utils/numbers";
 import { Fa } from "../../common/Fa";
 import { User } from "../../common/User";
 import { DataTable, DataTableColumnDef } from "../../ui/table/DataTable";
+import { createDataTableColumnHelper as createColumnHelper } from "../../ui/table/features";
 
 type SpeedEntry = LeaderboardEntry;
 type XpEntry = XpLeaderboardEntry;
@@ -186,7 +186,7 @@ const userColumn = ({
     },
   });
 
-function defineResponsivePair<T>() {
+function defineResponsivePair<T extends object>() {
   return <KA extends string & keyof T, KB extends string & keyof T>({
     columns,
     switchBreakpoint: breakpoint,

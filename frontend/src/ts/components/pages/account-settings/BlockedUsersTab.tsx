@@ -1,5 +1,5 @@
 import { Connection } from "@oxytype/schemas/connections";
-import { createColumnHelper } from "@tanstack/solid-table";
+import { createDataTableColumnHelper as createColumnHelper } from "../../ui/table/features";
 import { format } from "date-fns/format";
 import { createMemo, Show } from "solid-js";
 

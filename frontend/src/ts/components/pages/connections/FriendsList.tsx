@@ -2,10 +2,10 @@ import { PersonalBest } from "@oxytype/schemas/shared";
 import { Friend, UserNameSchema } from "@oxytype/schemas/users";
 import { isSafeNumber } from "@oxytype/util/numbers";
 import { useQuery } from "@tanstack/solid-query";
-import { createColumnHelper } from "@tanstack/solid-table";
+import { createDataTableColumnHelper as createColumnHelper } from "../../ui/table/features";
 import { format as dateFormat } from "date-fns/format";
 import { createMemo, Show } from "solid-js";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import Ape from "../../../ape";
 import {
