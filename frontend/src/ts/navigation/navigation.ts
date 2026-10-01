@@ -1,4 +1,4 @@
-import type { LoadingOptions } from "../pages/page";
+import type { LoadingOptions } from "../pages/loading-options";
 
 export type NavigateOptions = {
   force?: boolean;
