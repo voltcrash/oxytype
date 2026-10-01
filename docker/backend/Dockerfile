@@ -8,7 +8,7 @@ COPY packages packages
 COPY backend backend
 
 #gimme pnpm + build
-RUN npm i -g pnpm@11.21.0 && \
+RUN npm i -g pnpm@12.8.1 && \
     pnpm i --frozen-lockfile && \
     npm run build
 
