@@ -17,8 +17,7 @@ export type AddResultOpts = {
   xpGained: RedisXpLeaderboardScore;
 };
 
-const weeklyXpLeaderboardLeaderboardNamespace =
-  "monkeytype:weekly-xp-leaderboard";
+const weeklyXpLeaderboardLeaderboardNamespace = "oxytype:weekly-xp-leaderboard";
 const scoresNamespace = `${weeklyXpLeaderboardLeaderboardNamespace}:scores`;
 const resultsNamespace = `${weeklyXpLeaderboardLeaderboardNamespace}:results`;
 

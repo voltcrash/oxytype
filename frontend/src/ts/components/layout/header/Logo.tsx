@@ -34,7 +34,11 @@ export function Logo(): JSXElement {
         )}
       >
         <circle cx="24" cy="24" r="16"></circle>
-        <path d="M24 5v13" class="[stroke-linecap:round]"></path>
+        <path
+          d="M24 5v13"
+
+          class="[stroke-linecap:round]"
+        ></path>
       </svg>
       <div class="hidden h-6 place-content-center text-[2rem] leading-0 sm:grid">
         <div
