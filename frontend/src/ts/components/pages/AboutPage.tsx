@@ -267,7 +267,7 @@ export function AboutPage(): JSXElement {
           <div class="mt-4 text-xl">
             <Button
               fa={{
-                icon: "fa-donate",
+                icon: "fa-hands-helping",
               }}
               onClick={() => showModal("Support")}
               text="support"

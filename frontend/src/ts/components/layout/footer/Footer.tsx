@@ -38,7 +38,7 @@ export function Footer(): JSXElement {
             variant="text"
             text="support"
             fa={{
-              icon: "fa-donate",
+              icon: "fa-hands-helping",
               fixedWidth: true,
             }}
             onClick={() => showModal("Support")}
