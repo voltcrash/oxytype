@@ -15,11 +15,29 @@ export default {
 
     "at-rule-no-unknown": [
       true,
-      { ignoreAtRules: ["theme", "utility", "tailwind", "apply", "source"] },
+      {
+        ignoreAtRules: [
+          "theme",
+          "utility",
+          "tailwind",
+          "apply",
+          "source",
+          "variant",
+        ],
+      },
     ], // source for lightningCss and the rest for tailwind //default: true
     "at-rule-prelude-no-invalid": [
       true,
-      { ignoreAtRules: ["theme", "utility", "tailwind", "apply", "source"] },
+      {
+        ignoreAtRules: [
+          "theme",
+          "utility",
+          "tailwind",
+          "apply",
+          "source",
+          "variant",
+        ],
+      },
     ],
     "selector-type-no-unknown": [
       true,
@@ -56,39 +74,5 @@ export default {
 
     "comment-whitespace-inside": null, // default: always
   },
-  overrides: [
-    {
-      files: ["**/*.scss"],
-      extends: ["stylelint-config-standard-scss"],
-      rules: {
-        "no-invalid-position-at-import-rule": null, // consider adding // default: [true, {ignoreAtRules: ['use', 'forward'],},]
-
-        "at-rule-no-unknown": null, // use "scss/at-rule-no-unknown" to override this
-        "at-rule-prelude-no-invalid": [
-          true,
-          {
-            ignoreAtRules: [
-              "theme",
-              "utility",
-              "tailwind",
-              "apply",
-              "source",
-              "mixin",
-              "import",
-            ],
-          },
-        ], // Sass mixins and imports use different syntax from CSS
-
-        "scss/at-extend-no-missing-placeholder": null,
-        "scss/load-no-partial-leading-underscore": null,
-        "scss/load-partial-extension": null, // default: never,
-        "scss/no-global-function-names": null,
-
-        "scss/dollar-variable-pattern": null,
-        "scss/double-slash-comment-empty-line-before": null,
-        "scss/double-slash-comment-whitespace-inside": null,
-      },
-    },
-  ],
-  ignoreFiles: ["**/dist/**", "**/coverage/**"],
+  ignoreFiles: ["**/dist/**", "**/coverage/**", "**/styles/generated/**"],
 };

@@ -1,0 +1,122 @@
+a.button,
+a.textButton {
+  @apply no-underline;
+}
+
+button,
+.button,
+.textButton {
+  .fas,
+  .far,
+  .fab,
+  .icon {
+    @apply leading-[1.25] pointer-events-none justify-self-center;
+  }
+  &.fullWidth {
+    @apply w-full;
+  }
+  &.circle {
+    @apply rounded-[100%];
+  }
+}
+
+button,
+.button,
+input[type="button"],
+input[type="reset"],
+input[type="submit"] {
+  @apply text-text cursor-pointer;
+  @apply transition-[background,color,opacity] duration-125 ease-[ease];
+  @apply p-[0.5em] rounded bg-sub-alt;
+  @apply text-center;
+  @apply select-none content-center items-center h-min leading-[1.25] appearance-none border-none font-[inherit] text-[1em] inline-flex gap-[0.5em] justify-center justify-items-center;
+
+  &.danger {
+    @apply bg-error text-bg;
+  }
+
+  &.active {
+    @apply bg-main text-bg;
+    &:hover {
+      @apply bg-text;
+    }
+    &:active {
+      @apply bg-sub text-bg;
+    }
+  }
+
+  &[disabled],
+  &.disabled {
+    @apply opacity-[0.33] pointer-events-none;
+    &:hover {
+      @apply bg-text outline-none;
+    }
+    &:active {
+      @apply bg-sub text-bg;
+    }
+  }
+
+  &:hover {
+    @apply text-bg bg-text outline-none;
+  }
+  &:focus-visible {
+    @apply shadow-control-focus;
+    @apply outline-none;
+  }
+  &:active {
+    @apply bg-sub text-bg;
+  }
+}
+
+button.text,
+.button.text,
+.textButton {
+  @apply text-sub cursor-pointer;
+  @apply transition-[background,color,opacity] duration-125 ease-[ease];
+  @apply p-[0.5em] rounded bg-none bg-transparent;
+  @apply text-center;
+  @apply select-none content-center h-min leading-[1.25] appearance-none border-none font-[inherit] text-[1em] inline-flex gap-[0.5em] items-baseline justify-center;
+
+  &.danger {
+    @apply text-error bg-none bg-transparent;
+  }
+
+  &.active {
+    @apply text-main bg-none bg-transparent;
+    &:hover {
+      @apply text-text bg-none bg-transparent;
+    }
+    &:active {
+      @apply text-sub bg-none bg-transparent;
+    }
+  }
+
+  &[disabled],
+  &.disabled {
+    &:hover {
+      @apply text-text outline-none;
+    }
+    &:active {
+      @apply bg-sub text-bg;
+    }
+  }
+
+  &:hover {
+    @apply text-text bg-none bg-transparent outline-none;
+  }
+  &:focus-visible {
+    @apply shadow-text-focus;
+    @apply outline-none;
+  }
+  &:active {
+    @apply text-sub bg-none bg-transparent;
+  }
+}
+
+a.textButton,
+a.text,
+a.button {
+  &:focus-visible {
+    @apply rounded;
+  }
+}

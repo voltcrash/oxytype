@@ -1,0 +1,7 @@
+#caret.debug,
+#paceCaret.debug {
+  @apply outline outline-[1px] outline-debug-caret;
+  &.hidden {
+    @apply opacity-50! block!;
+  }
+}

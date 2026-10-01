@@ -1,9 +1,0 @@
-// Legacy diagnostic color; normal caret styling lives in Caret.tsx.
-#caret.debug,
-#paceCaret.debug {
-  outline: 1px solid white;
-  &.hidden {
-    opacity: 0.5 !important;
-    display: block !important;
-  }
-}

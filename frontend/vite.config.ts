@@ -11,7 +11,7 @@ import path from "node:path";
 import injectHTML from "vite-plugin-html-inject";
 import childProcess from "child_process";
 import autoprefixer from "autoprefixer";
-import { Fonts } from "./src/ts/constants/fonts";
+import { fontStyles } from "./vite-plugins/font-styles";
 import { fontawesomeSubset } from "./vite-plugins/fontawesome-subset";
 import { fontPreview } from "./vite-plugins/font-preview";
 import { envConfig } from "./vite-plugins/env-config";
@@ -25,24 +25,9 @@ import Inspect from "vite-plugin-inspect";
 import { ViteMinifyPlugin } from "vite-plugin-minify";
 import { VitePWA } from "vite-plugin-pwa";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
-import { KnownFontName } from "@oxytype/schemas/fonts";
 import solidPlugin from "vite-plugin-solid";
 import devtools from "solid-devtools/vite";
 import tailwindcss from "@tailwindcss/vite";
-
-function getFontsConfig(): string {
-  return `\n${Object.keys(Fonts)
-    .sort()
-    .map((name: string) => {
-      const config = Fonts[name as KnownFontName];
-      if (config.systemFont === true) return "";
-      return `"${name.replaceAll("_", " ")}": (
-        "src": "${config.fileName}",
-        "weight": ${config.weight ?? 400},
-        ),`;
-    })
-    .join("\n")}\n`;
-}
 
 function pad(
   numbers: number[],
@@ -80,13 +65,6 @@ function getClientVersion(isDevelopment: boolean): string {
   }
 }
 
-/** Enable for font awesome v6 */
-/*
-function sassList(values) {
-  return values.map((it) => `"${it}"`).join(",");
-}
-*/
-
 function getPlugins({
   isDevelopment,
   env,
@@ -102,6 +80,7 @@ function getPlugins({
     envConfig({ isDevelopment, clientVersion, env }),
     languageHashes({ skip: isDevelopment }),
     injectHTML() as PluginOption,
+    fontStyles({ isDevelopment }),
     tailwindcss(),
 
     solidPlugin({ ssr: true }),
@@ -283,50 +262,11 @@ function getBuildOptions({
   };
 }
 
-function getCssOptions({
-  isDevelopment,
-}: {
-  isDevelopment: boolean;
-}): CSSOptions {
+function getCssOptions(): CSSOptions {
   return {
     devSourcemap: true,
     postcss: {
       plugins: [autoprefixer({})],
-    },
-    preprocessorOptions: {
-      scss: {
-        additionalData(source: string, fp: string) {
-          if (isDevelopment || fp.endsWith("index.scss")) {
-            /** Enable for font awesome v6 */
-            /*
-                const fontawesomeClasses = getFontawesomeConfig();
-
-                //inject variables into sass context
-                $fontawesomeBrands: ${sassList(
-                  fontawesomeClasses.brands
-                )};             
-                $fontawesomeSolid: ${sassList(fontawesomeClasses.solid)};
-              */
-
-            const bypassFonts = isDevelopment
-              ? `
-                $fontAwesomeOverride:"@fortawesome/fontawesome-free/webfonts";
-                $previewFontsPath:"webfonts";`
-              : "";
-            const fonts = `
-              ${bypassFonts}
-              $fonts: (${getFontsConfig()});
-              `;
-            return `
-              //inject variables into sass context
-              ${fonts}
-            
-              ${source}`;
-          } else {
-            return source;
-          }
-        },
-      },
     },
   };
 }
@@ -357,7 +297,7 @@ export default defineConfig(({ mode }): UserConfig => {
     lint: { ...frontendLint },
     plugins: getPlugins({ isDevelopment, useSentry: useSentry, env }),
     build: getBuildOptions({ enableSourceMaps: useSentry }),
-    css: getCssOptions({ isDevelopment }),
+    css: getCssOptions(),
     server: {
       open: env["SERVER_OPEN"] !== "false",
       port: 3000,

@@ -1,0 +1,10 @@
+/* Shared order: utilities override component hooks and default controls. */
+@layer normalize;
+@layer theme;
+@layer base;
+@layer components;
+@layer properties;
+@layer vendor;
+@layer custom-styles;
+@layer hidden;
+@layer utilities;

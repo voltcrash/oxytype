@@ -1,0 +1,338 @@
+/* stylelint-disable no-descending-specificity -- Highlight modes are mutually exclusive; preserve state/effect precedence. */
+#words .newline {
+  @apply w-[inherit];
+}
+#words .beforeNewline {
+  @apply inline-block align-top my-[0.25em] mx-[0] box-content h-[1em] border-t-[0.05em] [border-top-style:solid] border-t-transparent border-b-[2px] [border-bottom-style:solid] border-b-transparent;
+}
+#words .afterNewline {
+  @apply inline-block;
+}
+#words {
+  --correct-letter-color: var(--text-color);
+  --correct-letter-animation: none;
+  --untyped-letter-color: var(--sub-color);
+  --untyped-letter-animation: none;
+  --incorrect-letter-color: var(--error-color);
+  --incorrect-letter-animation: none;
+  --extra-letter-color: var(--error-extra-color);
+  --extra-letter-animation: none;
+}
+#words .word letter {
+  @apply text-letter-untyped;
+  animation: var(--untyped-letter-animation);
+  @apply [border-bottom-style:solid] border-b-[0.05em] border-b-transparent;
+}
+#words .word letter.dead {
+  @apply border-b-[0.05em] border-b-letter-untyped;
+}
+#words .word letter.tabChar,
+#words .word letter.nlChar {
+  @apply opacity-20;
+}
+#words .word letter.tabChar i,
+#words .word letter.nlChar i {
+  @apply leading-0;
+}
+#words .word letter.debugCaret {
+  @apply outline outline-[1px] outline-sub;
+}
+#words .word letter.debugCaretTarget {
+  @apply outline-2 outline-solid outline-debug-target;
+}
+#words .word letter.debugCaretTarget2 {
+  @apply outline-2 outline-solid outline-debug-target-secondary;
+}
+#words .word letter.correct {
+  @apply text-letter-correct;
+  animation: var(--correct-letter-animation);
+}
+#words .word letter.corrected {
+  @apply text-letter-correct;
+  animation: var(--correct-letter-animation);
+  @apply border-b-[2px] [border-bottom-style:dotted] border-b-main;
+}
+#words .word letter.extraCorrected {
+  @apply border-r-[2px] [border-right-style:dotted] border-r-main;
+}
+#words .word letter.incorrect {
+  @apply text-letter-incorrect;
+  animation: var(--incorrect-letter-animation);
+}
+#words .word letter.incorrect.extra {
+  @apply text-letter-extra;
+  animation: var(--extra-letter-animation);
+}
+#words .word letter.missing {
+  @apply opacity-50;
+}
+#words .word .hints hint {
+  @apply absolute bottom-[-1.1em] text-letter-correct;
+  animation: var(--correct-letter-animation);
+  line-height: initial;
+  @apply text-[0.75em];
+  text-shadow: none;
+  @apply p-[1px] left-0 opacity-50;
+  @apply text-center;
+  @apply grid justify-center;
+  transform: translate(-50%);
+}
+#words.tape {
+  @apply block whitespace-nowrap;
+}
+#words.tape .word {
+  @apply my-[0.25em] mr-[0.6em] ml-0;
+  @apply inline-block align-top;
+}
+/* Right-to-left languages. */
+#words.rightToLeftTest {
+  direction: rtl;
+}
+#words.rightToLeftTest .wordRtl {
+  unicode-bidi: bidi-override;
+}
+#words.joiningScript .word {
+  @apply wrap-anywhere pb-[0.05em];
+}
+#words.joiningScript .word .hints {
+  overflow-wrap: initial;
+}
+#words.joiningScript .word letter {
+  @apply inline;
+}
+#words.joiningScript .beforeNewline {
+  @apply [border-top:unset] pb-[0.05em];
+}
+#words.blind .word letter.extra {
+  @apply hidden!;
+}
+#words.blind .word letter.incorrect {
+  @apply text-letter-correct;
+  animation: var(--correct-letter-animation);
+}
+#words.blind .word .hints hint {
+  @apply hidden;
+}
+#words.blind .word.error {
+  @apply border-b-[2px] [border-bottom-style:solid] border-b-transparent;
+}
+#words.hideExtraLetters .word letter.extra {
+  @apply hidden;
+}
+#words.flipped {
+  --correct-letter-color: var(--sub-color);
+  --untyped-letter-color: var(--text-color);
+  --incorrect-letter-color: var(--error-color);
+  --extra-letter-color: var(--error-extra-color);
+}
+#words.colorfulMode {
+  --correct-letter-color: var(--main-color);
+  --untyped-letter-color: var(--sub-color);
+  --incorrect-letter-color: var(--colorful-error-color);
+  --extra-letter-color: var(--colorful-error-extra-color);
+  --c-dot: var(--main-color);
+  --c-dot--error: var(--colorful-error-color);
+}
+#words.colorfulMode.blind .word.error {
+  @apply border-b-[2px] [border-bottom-style:solid] border-b-transparent;
+}
+#words.flipped.colorfulMode {
+  --correct-letter-color: var(--sub-color);
+  --untyped-letter-color: var(--main-color);
+  --incorrect-letter-color: var(--colorful-error-color);
+  --extra-letter-color: var(--colorful-error-extra-color);
+}
+#words.highlight-off .word letter.correct {
+  @apply text-letter-untyped;
+  animation: var(--untyped-letter-animation);
+}
+#words.highlight-off.blind .word letter.incorrect {
+  @apply text-letter-untyped;
+  animation: var(--untyped-letter-animation);
+}
+#words.highlight-word .word.typed letter {
+  @apply text-letter-untyped;
+  animation: var(--untyped-letter-animation);
+}
+#words.highlight-word .word.active letter {
+  @apply text-letter-correct;
+  animation: var(--correct-letter-animation);
+}
+#words.highlight-word:not(.blind) .word.typed.error letter,
+#words.highlight-word:not(.blind) .word.active:has(letter.incorrect) letter {
+  @apply text-letter-incorrect;
+  animation: var(--incorrect-letter-animation);
+}
+#words.highlight-next-word .word.typed letter {
+  @apply text-letter-untyped;
+  animation: var(--untyped-letter-animation);
+}
+#words.highlight-next-word .word.active letter,
+#words.highlight-next-word .word.active + .word letter {
+  @apply text-letter-correct;
+  animation: var(--correct-letter-animation);
+}
+#words.highlight-next-word:not(.blind) .word.typed.error letter,
+#words.highlight-next-word:not(.blind)
+  .word.active:has(letter.incorrect)
+  letter {
+  @apply text-letter-incorrect;
+  animation: var(--incorrect-letter-animation);
+}
+#words.highlight-next-two-words .word.typed letter {
+  @apply text-letter-untyped;
+  animation: var(--untyped-letter-animation);
+}
+#words.highlight-next-two-words .word.active letter,
+#words.highlight-next-two-words .word.active + .word letter,
+#words.highlight-next-two-words .word.active + .word + .word letter {
+  @apply text-letter-correct;
+  animation: var(--correct-letter-animation);
+}
+#words.highlight-next-two-words:not(.blind) .word.typed.error letter,
+#words.highlight-next-two-words:not(.blind)
+  .word.active:has(letter.incorrect)
+  letter {
+  @apply text-letter-incorrect;
+  animation: var(--incorrect-letter-animation);
+}
+#words.highlight-next-three-words .word.typed letter {
+  @apply text-letter-untyped;
+  animation: var(--untyped-letter-animation);
+}
+#words.highlight-next-three-words .word.active letter,
+#words.highlight-next-three-words .word.active + .word letter,
+#words.highlight-next-three-words .word.active + .word + .word letter,
+#words.highlight-next-three-words .word.active + .word + .word + .word letter {
+  @apply text-letter-correct;
+  animation: var(--correct-letter-animation);
+}
+#words.highlight-next-three-words:not(.blind) .word.typed.error letter,
+#words.highlight-next-three-words:not(.blind)
+  .word.active:has(letter.incorrect)
+  letter {
+  @apply text-letter-incorrect;
+  animation: var(--incorrect-letter-animation);
+}
+#words.typed-effect-hide .word.typed {
+  @apply opacity-0;
+}
+#words.typed-effect-fade .word.typed {
+  animation: fadeOut 250ms ease-in 1 forwards;
+}
+#words.typed-effect-dots {
+  /* transform already typed letters into appropriately colored dots */
+}
+#words.typed-effect-dots:not(.joiningScript) .word letter,
+#words.typed-effect-dots.joiningScript .word.broken-joining letter {
+  @apply relative inline-block;
+}
+#words.typed-effect-dots:not(.joiningScript) .word letter::after,
+#words.typed-effect-dots.joiningScript .word.broken-joining letter::after {
+  @apply content-[''] absolute top-[50%] left-[50%];
+  transform: translate(-50%, -50%);
+  @apply w-[1em] aspect-square rounded-full opacity-0;
+}
+#words.typed-effect-dots.joiningScript .word.broken-joining letter {
+  @apply w-[0.4em];
+}
+#words.typed-effect-dots .word.broken-joining:not(.needs-wrap) {
+  @apply whitespace-nowrap;
+}
+#words.typed-effect-dots:not(.joiningScript) .word.typed letter,
+#words.typed-effect-dots.joiningScript .word.broken-joining.typed letter {
+  @apply text-bg;
+  animation: typedEffectToDust 200ms ease-out 0ms 1 forwards !important;
+}
+#words.typed-effect-dots:not(.joiningScript) .word.typed letter::after,
+#words.typed-effect-dots.joiningScript
+  .word.broken-joining.typed
+  letter::after {
+  animation: typedEffectFadeIn 100ms ease-in 100ms 1 forwards;
+  @apply bg-dot;
+}
+#words.typed-effect-dots:not(.joiningScript):not(.blind)
+  .word
+  letter.incorrect::after {
+  @apply bg-dot-error;
+}
+#words.typed-effect-dots.joiningScript:not(.blind)
+  .word.broken-joining
+  letter.incorrect::after {
+  @apply bg-dot-error;
+}
+@variant motion-reduce {
+  #words.typed-effect-dots:not(.joiningScript) .word.typed letter,
+  #words.typed-effect-dots.joiningScript .word.broken-joining.typed letter {
+    @apply animate-none!;
+    transform: scale(0.4);
+    @apply text-transparent;
+  }
+  #words.typed-effect-dots:not(.joiningScript) .word.typed letter::after,
+  #words.typed-effect-dots.joiningScript
+    .word.broken-joining.typed
+    letter::after {
+    @apply animate-none! opacity-100;
+  }
+}
+
+.word {
+  @apply relative text-[1em] leading-[1em] my-[0.25em] mx-[0.3em] [font-variant:no-common-ligatures] border-b-[2px] [border-bottom-style:solid] border-b-transparent;
+}
+.word letter {
+  @apply inline-block;
+}
+.word .wordInputHighlight {
+  @apply opacity-100 whitespace-nowrap absolute bg-sub text-bg pointer-events-none;
+  /* background: red; */
+  @apply p-[0.5rem];
+  /* left: .5rem; */
+  @apply ml-[-0.5rem] rounded;
+  @apply transition-all duration-250 ease-[ease];
+  text-shadow: none;
+  @apply top-[-0.5rem] z-10;
+}
+.word .wordInputHighlight.withSpeed .speed {
+  @apply text-[0.75rem] text-sub-alt;
+}
+.word.nocursor {
+  @apply cursor-none;
+}
+.word.error {
+  /*   margin-bottom: 1px; */
+  @apply border-b-[2px] [border-bottom-style:solid] border-b-error;
+  text-shadow:
+    1px 0px 0px var(--bg-color),
+    -1px 0px 0px var(--bg-color),
+    0px 1px 0px var(--bg-color),
+    1px 1px 0px var(--bg-color),
+    -1px 1px 0px var(--bg-color);
+}
+
+#words.noErrorBorder .word.error,
+#resultWordsHistory.noErrorBorder .word.error {
+  text-shadow: none;
+}
+
+#words.flipped.colorfulMode .word.error,
+#words.colorfulMode .word.error {
+  @apply border-b-[2px] [border-bottom-style:solid] border-b-colorful-error;
+}
+
+/* funbox nospace */
+body.fb-nospace #words .word {
+  @apply my-[0.5em] mx-[0];
+}
+
+/* funbox underscore_spaces */
+body.fb-underscore-spaces #words .word {
+  @apply my-[0.5em] mx-[0];
+}
+
+/* funbox arrows */
+body.fb-arrows #words .word {
+  @apply my-[0.5em] mx-[0];
+}
+body.fb-arrows #words .word letter {
+  @apply my-[0] mx-[0.25em];
+}

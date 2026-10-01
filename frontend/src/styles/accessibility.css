@@ -1,0 +1,36 @@
+body {
+  &.mediaQueryDebugLevel1 {
+    .content-grid {
+      @apply border-[0.1rem] border-dashed border-main;
+    }
+  }
+  &.mediaQueryDebugLevel2 {
+    .content-grid > * {
+      @apply border-[0.1rem] border-dashed border-sub;
+    }
+    .content-grid {
+      @apply border-[0.1rem] border-dashed border-main;
+    }
+  }
+}
+
+@variant motion-reduce {
+  body:not(.ignore-reduced-motion)
+    *:not(
+      .fa-spin,
+      .animate-\[loader\],
+      .preloader,
+      .typed-effect-fade .word.typed
+    ) {
+    @apply animate-none! transition-none!;
+
+    &::after,
+    &::before {
+      @apply animate-none! transition-none!;
+    }
+  }
+
+  html {
+    @apply scroll-auto!;
+  }
+}

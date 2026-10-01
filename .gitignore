@@ -138,3 +138,6 @@ frontend/.standalone-generated
 keylogs
 frontend/scripts/keylog-report.ts
 .vitest/
+
+# Font CSS generated for Tailwind by Vite
+frontend/src/styles/generated/
