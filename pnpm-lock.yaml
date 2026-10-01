@@ -485,8 +485,8 @@ importers:
         specifier: 0.3.0
         version: 0.3.0(solid-js@1.9.15)(typescript@7.0.2)
       '@tanstack/solid-form':
-        specifier: 1.33.0
-        version: 1.33.0(solid-js@1.9.15)
+        specifier: 1.33.5
+        version: 1.33.5(solid-js@1.9.15)
       '@tanstack/solid-hotkeys':
         specifier: 0.10.0
         version: 0.10.0(solid-js@1.9.15)
@@ -4347,8 +4347,8 @@ packages:
       typescript:
         optional: true
 
-  '@tanstack/form-core@1.33.0':
-    resolution: {integrity: sha512-AV4Pw9Dk4orFsuPBcDssfWMJFs+yMYBae7zZ4oTqrCf4ftNGQKxvrQRZeqKHG6A4TkiLeSvf2kzIjcVkrW7E6w==}
+  '@tanstack/form-core@1.33.5':
+    resolution: {integrity: sha512-3dfx9MBP0aq5sXKteikG629X9oviptrQj0IFRk9YGcb+lB7Kv5x8S17oOSk1wUWgjQZ4xVJEMbKwOAODymocgA==}
 
   '@tanstack/hotkeys-devtools@0.9.0':
     resolution: {integrity: sha512-6GHhmGbXJpWHBGCpPDBc7kHyrFJNx5+BfCpqeC8bQ1i9N8Bcy7UgkHH/1sM9lvwwWLjpH48A3yPDxhZFD1F8Iw==}
@@ -4395,8 +4395,8 @@ packages:
     peerDependencies:
       solid-js: '>=1.9.7'
 
-  '@tanstack/solid-form@1.33.0':
-    resolution: {integrity: sha512-+KXp+T/fD+nO5JarDj1W5GctEm4aFuz13DkHVJrdIHGo0evMXlFNWJT57n+TOyvoLoKehknKjM1o41rrKClSTQ==}
+  '@tanstack/solid-form@1.33.5':
+    resolution: {integrity: sha512-azYHYzNwop64bedJRKgjCpi5w9cHu7cNz+dAdSXzaqy9M6JO+GlKNQn54VFhCLYJo45sgNjcdrnz4eyTmgzJ/w==}
     peerDependencies:
       solid-js: '>=1.9.9'
 
@@ -14714,7 +14714,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tanstack/form-core@1.33.0':
+  '@tanstack/form-core@1.33.5':
     dependencies:
       '@tanstack/devtools-event-client': 0.4.3
       '@tanstack/pacer-lite': 0.1.1
@@ -14790,9 +14790,9 @@ snapshots:
       - csstype
       - utf-8-validate
 
-  '@tanstack/solid-form@1.33.0(solid-js@1.9.15)':
+  '@tanstack/solid-form@1.33.5(solid-js@1.9.15)':
     dependencies:
-      '@tanstack/form-core': 1.33.0
+      '@tanstack/form-core': 1.33.5
       '@tanstack/solid-store': 0.11.0(solid-js@1.9.15)
       solid-js: 1.9.15
 
