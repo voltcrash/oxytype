@@ -1,4 +1,4 @@
-FROM node:24.21.0-alpine3.22 AS builder
+FROM node:24.21.0-alpine3.24 AS builder
 WORKDIR /app
 
 #ENV
@@ -6,19 +6,22 @@ ENV BACKEND_URL=###OXYTYPE_BACKEND_URL### RECAPTCHA_SITE_KEY=###RECAPTCHA_SITE_K
 
 #COPY
 COPY ["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml", "turbo.json", "./"]
+COPY patches patches
 COPY packages packages
 COPY frontend frontend
+COPY backend/package.json backend/package.json
 
 COPY docker/frontend/firebase-config-live.ts frontend/src/ts/constants/firebase-config.ts
 COPY docker/frontend/firebase-config-live.ts frontend/src/ts/constants/firebase-config-live.ts
 
 #gimme pnpm + build
-RUN npm i -g pnpm@12.8.1 && \
+ARG TARGETARCH
+RUN --mount=type=cache,id=oxytype-pnpm-${TARGETARCH},target=/root/.local/share/pnpm/store,sharing=locked npm i -g pnpm@12.8.1 && \
     pnpm i --frozen-lockfile && \
-    npm run build
+    pnpm run build-fe
 
 # COPY to target
-FROM nginx:mainline-alpine
+FROM nginx:1.31.6-alpine3.24
 
 COPY --from=builder /app/frontend/dist /usr/share/nginx/html
 COPY docker/frontend/nginx.conf /etc/nginx/conf.d/default.conf
