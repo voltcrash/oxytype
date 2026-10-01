@@ -123,7 +123,7 @@ function handleErrorResponse(
   message: string,
   data?: ErrorData,
 ): Response {
-  if (isCustomCode(status) && c.env.outgoing !== undefined) {
+  if (isCustomCode(status) && c.env?.outgoing !== undefined) {
     c.env.outgoing.statusMessage = message;
   }
   return c.newResponse(JSON.stringify({ message, data: data ?? null }), {

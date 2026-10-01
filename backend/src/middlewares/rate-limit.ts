@@ -21,7 +21,7 @@ export function getClientIp(c: ApiContext): string {
   const candidates = [
     c.req.header("cf-connecting-ip"),
     forwarded,
-    c.env.incoming?.socket.remoteAddress,
+    c.env?.incoming?.socket.remoteAddress,
   ];
   return (
     candidates.find((ip) => ip !== undefined && ip !== "") ?? "255.255.255.255"
