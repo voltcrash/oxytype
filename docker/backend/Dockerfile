@@ -17,7 +17,7 @@ RUN --mount=type=cache,id=oxytype-pnpm-${TARGETARCH},target=/root/.local/share/p
     pnpm run build-be
 
 #deploy (install all non-dev dependencies in a single node_module folder)
-RUN pnpm --config.allowUnusedPatches=true deploy --legacy --filter @oxytype/backend --prod /prod/backend
+RUN --mount=type=cache,id=oxytype-pnpm-${TARGETARCH},target=/root/.local/share/pnpm/store,sharing=locked pnpm --config.allowUnusedPatches=true deploy --legacy --filter @oxytype/backend --prod /prod/backend
 
 #---------------------------------
 
