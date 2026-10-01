@@ -154,15 +154,6 @@ export class Section {
 export type FunboxWordOrder = "normal" | "reverse";
 
 /**
- * Fetches the list of supporters from the server.
- * @returns A promise that resolves to the list of supporters.
- */
-export async function getSupportersList(): Promise<string[]> {
-  const data = await fetchJson<string[]>("/supporters.json");
-  return data;
-}
-
-/**
  * Fetches the list of contributors from the server.
  * @returns A promise that resolves to the list of contributors.
  */

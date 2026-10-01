@@ -1,11 +1,7 @@
 import { infiniteQueryOptions, queryOptions } from "@tanstack/solid-query";
 import { intervalToDuration } from "date-fns";
 import Ape from "../ape";
-import {
-  getContributorsList,
-  getReleasesFromGitHub,
-  getSupportersList,
-} from "../utils/json-data";
+import { getContributorsList, getReleasesFromGitHub } from "../utils/json-data";
 import { getNumberWithMagnitude, numberWithSpaces } from "../utils/numbers";
 import { baseKey } from "./utils/keys";
 import { format as dateFormat } from "date-fns/format";
@@ -13,7 +9,6 @@ import { format as dateFormat } from "date-fns/format";
 const queryKeys = {
   root: () => baseKey("public"),
   contributors: () => [...queryKeys.root(), "contributors"],
-  supporters: () => [...queryKeys.root(), "supporters"],
   typingStats: () => [...queryKeys.root(), "typingStats"],
   speedHistogram: () => [...queryKeys.root(), "speedHistogram"],
   versionHistory: () => [...queryKeys.root(), "versionHistory"],
@@ -27,14 +22,6 @@ export const getContributorsQueryOptions = () =>
   queryOptions({
     queryKey: queryKeys.contributors(),
     queryFn: getContributorsList,
-    staleTime,
-  });
-
-// oxlint-disable-next-line typescript/explicit-function-return-type
-export const getSupportersQueryOptions = () =>
-  queryOptions({
-    queryKey: queryKeys.supporters(),
-    queryFn: getSupportersList,
     staleTime,
   });
 
