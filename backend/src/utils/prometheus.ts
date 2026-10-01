@@ -75,7 +75,7 @@ const leaderboardUpdate = new Gauge({
 });
 
 export function incrementAuth(
-  type: "Bearer" | "ApeKey" | "None" | "GithubWebhook",
+  type: "Bearer" | "Session" | "ApeKey" | "None" | "GithubWebhook",
 ): void {
   auth.inc({ type });
 }

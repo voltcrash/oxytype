@@ -5,7 +5,7 @@ import { hash } from "bcrypt";
 import { ObjectId } from "mongodb";
 import { base64UrlEncode } from "../../src/utils/misc";
 import * as ApeKeyDal from "../../src/dal/ape-keys";
-import { DecodedIdToken } from "firebase-admin/auth";
+import { AuthenticatedSession } from "../../src/utils/auth";
 import * as AuthUtils from "../../src/utils/auth";
 
 export async function mockAuthenticateWithApeKey(
@@ -57,7 +57,7 @@ export type BearerAuthenticationMock = {
    * modify the token returned by the mock. This can be used to e.g. return a stale token.
    * @param customize
    */
-  modifyToken: (customize: Partial<DecodedIdToken>) => void;
+  modifyToken: (customize: Partial<AuthenticatedSession>) => void;
 };
 export function mockBearerAuthentication(
   uid: string,
@@ -65,27 +65,27 @@ export function mockBearerAuthentication(
   const mockDecodedToken = {
     uid,
     email: "newuser@mail.com",
-    iat: Date.now(),
-  } as DecodedIdToken;
-  const verifyIdTokenMock = vi.spyOn(AuthUtils, "verifyIdToken");
+    createdAt: new Date(),
+  };
+  const verifySessionMock = vi.spyOn(AuthUtils, "verifySession");
 
   return {
     beforeEach: (): void => {
-      verifyIdTokenMock.mockClear();
-      verifyIdTokenMock.mockResolvedValue(mockDecodedToken);
+      verifySessionMock.mockClear();
+      verifySessionMock.mockResolvedValue(mockDecodedToken);
     },
 
     noAuth: (): void => {
-      verifyIdTokenMock.mockClear();
+      verifySessionMock.mockClear();
     },
 
     expectToHaveBeenCalled: (): void => {
-      expect(verifyIdTokenMock).toHaveBeenCalled();
+      expect(verifySessionMock).toHaveBeenCalled();
     },
 
-    modifyToken: (customize: Partial<DecodedIdToken>): void => {
-      verifyIdTokenMock.mockClear();
-      verifyIdTokenMock.mockResolvedValue({
+    modifyToken: (customize: Partial<AuthenticatedSession>): void => {
+      verifySessionMock.mockClear();
+      verifySessionMock.mockResolvedValue({
         ...mockDecodedToken,
         ...customize,
       });

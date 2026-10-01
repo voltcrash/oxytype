@@ -182,7 +182,9 @@ export function isDevEnvironment(): boolean {
 }
 
 export function getFrontendUrl(): string {
-  if (isDevEnvironment()) return "http://localhost:3000";
+  if (isDevEnvironment()) {
+    return process.env["FRONTEND_URL"] ?? "http://localhost:3000";
+  }
 
   const frontendUrl = process.env["FRONTEND_URL"];
   if (frontendUrl === undefined || frontendUrl === "") {

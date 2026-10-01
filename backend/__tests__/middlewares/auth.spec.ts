@@ -8,7 +8,7 @@ import {
 } from "vite-plus/test";
 import * as AuthUtils from "../../src/utils/auth";
 import * as Auth from "../../src/middlewares/auth";
-import { DecodedIdToken } from "firebase-admin/auth";
+import { AuthenticatedSession } from "../../src/utils/auth";
 import { HttpRequest } from "../../src/api/http";
 import { invokeMiddleware } from "../__testData__/middleware";
 import { getCachedConfiguration } from "../../src/init/configuration";
@@ -29,13 +29,13 @@ import { Context } from "../../src/middlewares/context";
 const signature = `sha256=${"0".repeat(64)}`;
 
 enableMonkeyErrorExpects();
-const mockDecodedToken: DecodedIdToken = {
+const mockDecodedToken: AuthenticatedSession = {
   uid: "123456789",
   email: "newuser@mail.com",
-  iat: 0,
-} as DecodedIdToken;
+  createdAt: new Date(0),
+};
 
-vi.spyOn(AuthUtils, "verifyIdToken").mockResolvedValue(mockDecodedToken);
+vi.spyOn(AuthUtils, "verifySession").mockResolvedValue(mockDecodedToken);
 
 const mockApeKey = {
   _id: new ObjectId(),
@@ -186,6 +186,35 @@ describe("middlewares/auth", () => {
       expect(decodedToken?.email).toBe(mockDecodedToken.email);
       expect(decodedToken?.uid).toBe(mockDecodedToken.uid);
       expect(nextFunction).toHaveBeenCalledTimes(1);
+    });
+    it("authenticates browser session cookies", async () => {
+      const result = await authenticate(
+        { headers: { cookie: "oxytype.session_token=signed-token" } },
+        {},
+      );
+      expect(result.decodedToken).toMatchObject({
+        type: "Session",
+        uid: mockDecodedToken.uid,
+      });
+    });
+    it("ignores unrelated cookies on public endpoints", async () => {
+      const result = await authenticate(
+        { headers: { cookie: "theme=dark" } },
+        { isPublic: true },
+      );
+      expect(result.decodedToken?.type).toBe("None");
+    });
+    it("rejects stale sessions on sensitive cookie endpoints", async () => {
+      vi.spyOn(AuthUtils, "verifySession").mockResolvedValueOnce({
+        ...mockDecodedToken,
+        createdAt: new Date(Date.now() - 120000),
+      });
+      await expect(
+        authenticate(
+          { headers: { cookie: "oxytype.session_token=stale" } },
+          { requireFreshToken: true },
+        ),
+      ).rejects.toThrow("This endpoint requires a fresh token");
     });
     it("should allow the request without authentication on public endpoint", async () => {
       //WHEN
