@@ -22,7 +22,7 @@ export async function activateSentry(): Promise<void> {
   Sentry.init({
     release: envConfig.clientVersion,
     dsn,
-    sendDefaultPii: false,
+    dataCollection: { userInfo: false },
     environment: envConfig.isDevelopment ? "development" : "production",
     integrations: [
       Sentry.browserTracingIntegration(),
