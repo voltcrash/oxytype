@@ -20,11 +20,13 @@ The root is a private pnpm workspace. Node 24, pnpm 11, TypeScript 7, and Turbor
 
 ## Frontend
 
-Vite 8 builds the browser app. SolidJS 1.9 powers newer `.tsx` components, while substantial older UI and controller code remains vanilla TypeScript and HTML. The two styles run together, so a feature may cross a Solid component, a legacy controller, and shared state.
+Vite 8 builds the browser app; SolidJS 1.9 renders its `.tsx` UI. Solid Router 1.0 owns route matching, links, URL state, and browser history. `components/AppRouter.tsx` mounts the router; `navigation/routes.ts` defines routes. `components/core/NavigationRuntime.tsx` connects routing to auth redirects, startup loading, active-test guards, and the existing page lifecycle/animations. Page owners and typing-test refs stay cached across navigation.
 
-Tailwind CSS 4 supplies utility classes and semantic theme colors. Existing Sass styles still cover much of the legacy app. Font Awesome 5 is used in legacy markup; new components use the `Fa` component. The app also uses TanStack Query/DB for data access, Chart.js for graphs, Firebase client SDKs for account authentication, and a service worker for offline assets.
+Tailwind CSS 4 supplies utility classes and semantic theme colors; compatibility CSS retains theme/funbox selectors. Icons use the `Fa` component. The app also uses TanStack Query/DB for data access, Chart.js for graphs, Firebase client SDKs for account authentication, and a service worker for offline assets.
 
-Useful entry points: `frontend/src/index.html`, `frontend/src/ts/index.ts`, `frontend/src/ts/ready.ts`, `frontend/src/ts/components/`, and `frontend/vite.config.ts`. `frontend/src/ts/ape/` is the API client layer. `frontend/src/ts/test/` contains the typing test engine, not only automated tests.
+Internal anchors use `Link` (or `Button` with `router-link`), which marks them for Solid Router's native anchor handling. Modified clicks, downloads, and external links retain browser behavior. Imperative callers use `navigation/navigation.ts`: `navigate()` awaits page transitions; `replaceUrl()` updates filters/deep links without a page transition or history entry. Forced navigation bypasses busy-page guards, but cannot leave an active `no_quit` test. Auth redirects replace the requested URL rather than adding a redirect history entry.
+
+Useful entry points: `frontend/src/index.html`, `frontend/src/ts/index.ts`, `frontend/src/ts/components/`, and `frontend/vite.config.ts`. `frontend/src/ts/ape/` is the API client layer. `frontend/src/ts/test/` contains the typing test engine, not only automated tests.
 
 ## Backend and data
 
