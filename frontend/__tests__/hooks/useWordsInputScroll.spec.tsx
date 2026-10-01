@@ -1,5 +1,12 @@
 import { cleanup, render } from "@solidjs/testing-library";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 
 import { useWordsInputScroll } from "../../src/ts/hooks/useWordsInputScroll";
 import { centerWordsInputEvent } from "../../src/ts/states/words-layout";

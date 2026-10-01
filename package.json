@@ -11,6 +11,7 @@
     "pre-commit": "lint-staged",
     "ts-check": "turbo run ts-check",
     "lint": "turbo run lint",
+    "lint-check-config": "node packages/oxlint-config/check-application-defaults.ts",
     "lint-be": "turbo run lint --filter @oxytype/backend",
     "lint-fe": "turbo run lint --filter @oxytype/frontend",
     "lint-pkg": "turbo run lint --filter=\"./packages/*\"",
@@ -37,18 +38,18 @@
     "start-fe": "turbo run start --filter @oxytype/frontend",
     "docker": "cd backend && npm run docker",
     "audit-fe": "cd frontend && npm run audit",
-    "preview-fe": "monkeytype-release --preview-fe",
-    "release": "monkeytype-release",
-    "release-fe": "monkeytype-release --fe",
-    "release-be": "monkeytype-release --be",
-    "release-no-deploy": "monkeytype-release --no-deploy",
-    "release-dry": "monkeytype-release --dry",
-    "hotfix": "monkeytype-release --hotfix",
-    "hotfix-fe": "monkeytype-release --hotfix --fe",
-    "hotfix-be": "monkeytype-release --hotfix --be",
-    "hotfix-dry": "monkeytype-release --hotfix --dry",
-    "format-check": "oxfmt . --check",
-    "format-fix": "oxfmt .",
+    "preview-fe": "oxytype-release --preview-fe",
+    "release": "oxytype-release",
+    "release-fe": "oxytype-release --fe",
+    "release-be": "oxytype-release --be",
+    "release-no-deploy": "oxytype-release --no-deploy",
+    "release-dry": "oxytype-release --dry",
+    "hotfix": "oxytype-release --hotfix",
+    "hotfix-fe": "oxytype-release --hotfix --fe",
+    "hotfix-be": "oxytype-release --hotfix --be",
+    "hotfix-dry": "oxytype-release --hotfix --dry",
+    "format-check": "vp fmt . --check",
+    "format-fix": "vp fmt .",
     "lint-styles": "stylelint \"**/*.{scss,css}\"",
     "lint-styles-fix": "stylelint \"**/*.{scss,css}\" --fix",
     "lint-json-assets": "turbo lint-json --filter @oxytype/frontend",
@@ -56,38 +57,34 @@
     "check-assets-quotes": "turbo check-assets --filter @oxytype/frontend  -- quotes",
     "check-assets-languages": "turbo check-assets --filter @oxytype/frontend  -- languages",
     "check-assets-others": "turbo check-assets --filter @oxytype/frontend  -- others",
-    "knip": "knip",
-    "update-oxc": "pnpm up -D -r oxlint@latest oxfmt@latest oxlint-tsgolint@latest"
+    "knip": "knip"
   },
   "devDependencies": {
     "@commitlint/cli": "20.5.2",
     "@commitlint/config-conventional": "19.2.2",
     "@oxytype/release": "workspace:*",
     "@types/node": "24.9.1",
-    "@vitest/coverage-v8": "4.1.5",
+    "@vitest/coverage-v8": "catalog:",
     "caniuse-lite": "1.0.30001778",
     "conventional-changelog": "6.0.0",
     "husky": "8.0.1",
     "knip": "2.19.2",
     "lint-staged": "13.2.3",
     "only-allow": "1.2.1",
-    "oxfmt": "0.62.0",
-    "oxlint": "1.77.0",
-    "oxlint-tsgolint": "7.0.2001",
-    "prettier": "3.7.1",
     "stylelint": "17.6.0",
     "stylelint-config-standard": "40.0.0",
     "stylelint-config-standard-scss": "17.0.0",
     "turbo": "2.9.14",
-    "vitest": "4.1.0",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:",
     "yaml": "2.8.3"
   },
   "lint-staged": {
     "*": [
-      "oxfmt --no-error-on-unmatched-pattern"
+      "vp fmt --no-error-on-unmatched-pattern"
     ],
     "*.{ts,tsx,js}": [
-      "oxlint --type-aware --type-check --format agent"
+      "vp lint --type-aware --type-check --format agent"
     ],
     "*.{scss,css}": [
       "stylelint"

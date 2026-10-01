@@ -1,5 +1,5 @@
 import { cleanup, render } from "@solidjs/testing-library";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 vi.mock("../../../../../src/ts/anim", () => ({ animateAsync: vi.fn() }));
 vi.mock("../../../../../src/ts/states/notifications", () => ({

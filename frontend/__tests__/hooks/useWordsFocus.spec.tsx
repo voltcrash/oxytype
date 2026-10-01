@@ -1,5 +1,5 @@
 import { cleanup, render } from "@solidjs/testing-library";
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, expect, it, vi } from "vite-plus/test";
 
 const state = vi.hoisted(() => ({
   setWarning: undefined as ((value: boolean) => void) | undefined,

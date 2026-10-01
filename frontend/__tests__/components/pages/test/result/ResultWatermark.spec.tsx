@@ -1,5 +1,5 @@
 import { cleanup, render } from "@solidjs/testing-library";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import { ResultWatermark } from "../../../../../src/ts/components/pages/test/result/ResultWatermark";
 import { setIsScreenshotting } from "../../../../../src/ts/states/core";

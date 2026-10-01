@@ -7,7 +7,7 @@ import {
   signInWithEmailAndPassword,
   verifyPasswordResetCode,
 } from "firebase/auth";
-import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
 
 import { EmailHandler } from "../../../src/ts/components/standalone/EmailHandler";
 

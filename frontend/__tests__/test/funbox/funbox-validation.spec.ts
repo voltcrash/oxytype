@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { canSetConfigWithCurrentFunboxes } from "../../../src/ts/config/funbox-validation";
 
 import { FunboxName } from "@oxytype/schemas/configs";

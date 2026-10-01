@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { getDefaultConfig } from "../../src/ts/constants/default-config";
 import { migrateConfig } from "../../src/ts/config/utils";
 import { PartialConfig } from "@oxytype/schemas/configs";

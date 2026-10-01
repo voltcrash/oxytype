@@ -1,5 +1,5 @@
 import { cleanup, render } from "@solidjs/testing-library";
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, expect, it, vi } from "vite-plus/test";
 
 import { SkillIssue } from "../../../src/ts/components/core/SkillIssue";
 

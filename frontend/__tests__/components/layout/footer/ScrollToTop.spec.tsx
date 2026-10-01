@@ -1,6 +1,6 @@
 import { render } from "@solidjs/testing-library";
 import { userEvent } from "@testing-library/user-event";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
 
 import { ScrollToTop } from "../../../../src/ts/components/layout/footer/ScrollToTop";
 import * as CoreSignals from "../../../../src/ts/states/core";

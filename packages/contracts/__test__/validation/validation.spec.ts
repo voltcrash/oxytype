@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import * as Validation from "@oxytype/schemas/validation/validation";
 
 const containsDisallowedWords = Validation.__testing.containsDisallowedWords;

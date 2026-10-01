@@ -1,5 +1,12 @@
 import { cleanup, render } from "@solidjs/testing-library";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 
 const { deferred, lifecycle, guards, ui, services } = vi.hoisted(() => {
   const deferred = (): { promise: Promise<void>; resolve: () => void } => {

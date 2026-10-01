@@ -5,7 +5,7 @@ import {
   useQuery,
 } from "@tanstack/solid-query";
 import { JSXElement, Show } from "solid-js";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import AsyncContent, {
   Props,

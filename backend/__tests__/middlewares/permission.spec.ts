@@ -1,6 +1,13 @@
 import { EndpointMetadata } from "@oxytype/contracts/util/api";
 import { Response } from "express";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import { TsRestRequestWithContext } from "../../src/api/types";
 import * as AdminUids from "../../src/dal/admin-uids";
 import * as UserDal from "../../src/dal/user";

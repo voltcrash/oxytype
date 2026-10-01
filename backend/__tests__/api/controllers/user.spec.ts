@@ -7,7 +7,7 @@ import {
   beforeAll,
   afterAll,
   vi,
-} from "vitest";
+} from "vite-plus/test";
 import { setup } from "../../__testData__/controller-test";
 import * as Configuration from "../../../src/init/configuration";
 import { generateCurrentTestActivity } from "../../../src/api/controllers/user";
@@ -36,6 +36,11 @@ import * as WeeklyXpLeaderboard from "../../../src/services/weekly-xp-leaderboar
 import * as ConnectionsDal from "../../../src/dal/connections";
 import { pb } from "../../__testData__/users";
 import Test from "supertest/lib/test";
+
+vi.mock("../../../src/queues/email-queue", () => ({
+  __esModule: true,
+  default: { sendVerificationEmail: vi.fn() },
+}));
 
 const { mockApp, uid, mockAuth } = setup();
 const configuration = Configuration.getCachedConfiguration();
@@ -294,11 +299,6 @@ describe("user controller test", () => {
         generateEmailVerificationLink: adminGenerateVerificationLinkMock,
       }),
     } as any);
-
-    vi.mock("../../../src/queues/email-queue", () => ({
-      __esModule: true,
-      default: { sendVerificationEmail: vi.fn() },
-    }));
 
     beforeEach(() => {
       adminGetUserMock.mockClear().mockResolvedValue({ emailVerified: false });

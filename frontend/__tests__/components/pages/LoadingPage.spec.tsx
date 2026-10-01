@@ -1,6 +1,6 @@
 import { cleanup, render } from "@solidjs/testing-library";
 import { AnimationParams } from "animejs";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 const { mockAnimate } = vi.hoisted(() => ({
   mockAnimate: vi.fn((_el: HTMLElement, params: AnimationParams) => {

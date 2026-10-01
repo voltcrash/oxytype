@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vite-plus/test";
 
 vi.mock("../../src/ts/states/test", () => ({
   getActiveWordIndex: () => 0,

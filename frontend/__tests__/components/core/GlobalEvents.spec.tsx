@@ -1,5 +1,12 @@
 import { cleanup, render } from "@solidjs/testing-library";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 
 const { state, focusWords, unfocus, popupVisible, notify } = vi.hoisted(() => ({
   state: {

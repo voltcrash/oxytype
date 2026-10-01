@@ -1,4 +1,4 @@
-import { describe, it, expect, afterAll, vi } from "vitest";
+import { describe, it, expect, afterAll, vi } from "vite-plus/test";
 import * as DateAndTime from "../src/date-and-time";
 
 describe("date-and-time", () => {

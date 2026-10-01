@@ -1,6 +1,6 @@
 import { cleanup, render } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { Button } from "../../../src/ts/components/common/Button";
 import { FaSolidIcon } from "../../../src/ts/types/font-awesome";

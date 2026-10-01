@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vite-plus/test";
 
 // Baseline for what test/result.ts#update shows on the result screen (stat
 // texts, hover labels, test type/other info, crown). Stats are rendered by

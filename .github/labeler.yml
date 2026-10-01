@@ -32,5 +32,5 @@ packages:
           - "**/turbo.json"
           - "**/tsconfig.json"
           - "**/knip.json"
-          - "**/.prettierrc.json"
-          - "**/.oxlintrc.json"
+          - "**/vite.config.ts"
+          - "packages/oxlint-config/**"

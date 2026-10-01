@@ -1,5 +1,5 @@
 import { cleanup, render } from "@solidjs/testing-library";
-import { afterEach, expect, it } from "vitest";
+import { afterEach, expect, it } from "vite-plus/test";
 
 import { PageHead } from "../../../src/ts/components/core/PageHead";
 import {

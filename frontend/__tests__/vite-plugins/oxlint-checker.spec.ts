@@ -1,5 +1,5 @@
 import { EventEmitter } from "node:events";
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, expect, it, vi } from "vite-plus/test";
 import type { ViteDevServer } from "vite";
 
 vi.mock("child_process", async (importOriginal) => {
@@ -40,15 +40,24 @@ it("counts agent diagnostics and passes the required output format to both lint 
     } as unknown as ViteDevServer,
   );
   expect(spawn).toHaveBeenLastCalledWith(
-    "npx",
-    ["oxlint", ".", "--format", "agent"],
+    "pnpm",
+    ["exec", "vp", "lint", ".", "--format", "agent"],
     expect.any(Object),
   );
   children[0]?.emit("close", 0);
   await vi.waitFor(() => expect(children).toHaveLength(2));
   expect(spawn).toHaveBeenLastCalledWith(
-    "npx",
-    ["oxlint", ".", "--format", "agent", "--type-check", "--type-aware"],
+    "pnpm",
+    [
+      "exec",
+      "vp",
+      "lint",
+      ".",
+      "--format",
+      "agent",
+      "--type-check",
+      "--type-aware",
+    ],
     expect.any(Object),
   );
   children[1]?.stdout.emit(

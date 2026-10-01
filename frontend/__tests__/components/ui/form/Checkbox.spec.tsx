@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { AnyFieldApi } from "@tanstack/solid-form";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 
 import { Checkbox } from "../../../../src/ts/components/ui/form/Checkbox";
 

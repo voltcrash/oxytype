@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vite-plus/test";
 import { replace } from "../../src/ts/test/british-english";
 import { Config } from "../../src/ts/config/store";
 

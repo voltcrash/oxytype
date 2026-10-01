@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
 import { getCommitCharacterType } from "../../../src/ts/input/helpers/util";
 import * as FunboxList from "../../../src/ts/test/funbox/list";
 

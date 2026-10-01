@@ -1,5 +1,5 @@
 import { createComputed, createRoot } from "solid-js";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import * as Composition from "../../src/ts/states/composition";
 import * as PageTransition from "../../src/ts/states/page-transition";

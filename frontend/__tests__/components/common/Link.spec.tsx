@@ -1,5 +1,5 @@
 import { fireEvent, render } from "@solidjs/testing-library";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 const { dispatch } = vi.hoisted(() => ({ dispatch: vi.fn() }));
 vi.mock("../../../src/ts/events/navigation", () => ({

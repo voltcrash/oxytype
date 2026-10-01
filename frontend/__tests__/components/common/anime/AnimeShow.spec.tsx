@@ -1,6 +1,13 @@
 import { cleanup, render, screen } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 
 const { mockAnimate } = vi.hoisted(() => ({
   mockAnimate: vi.fn().mockImplementation(() => {

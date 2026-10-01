@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { matchCommands } from "../../src/ts/commandline/matching";
 import type { Command } from "../../src/ts/commandline/types";
 

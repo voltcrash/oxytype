@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render } from "@solidjs/testing-library";
 import { onMount } from "solid-js";
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, expect, it, vi } from "vite-plus/test";
 
 import { useInputListener } from "../../src/ts/hooks/useInputListener";
 import { useRef } from "../../src/ts/hooks/useRef";

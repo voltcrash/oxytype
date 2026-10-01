@@ -1,3 +1,4 @@
+import { frontendLint } from "./lint.config";
 import {
   defineConfig,
   loadEnv,
@@ -5,7 +6,7 @@ import {
   BuildEnvironmentOptions,
   PluginOption,
   CSSOptions,
-} from "vite";
+} from "vite-plus";
 import path from "node:path";
 import injectHTML from "vite-plugin-html-inject";
 import childProcess from "child_process";
@@ -353,6 +354,7 @@ export default defineConfig(({ mode }): UserConfig => {
   }
 
   return {
+    lint: { ...frontendLint },
     plugins: getPlugins({ isDevelopment, useSentry: useSentry, env }),
     build: getBuildOptions({ enableSourceMaps: useSentry }),
     css: getCssOptions({ isDevelopment }),

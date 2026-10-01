@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vite-plus/test";
 
 // The input element and the event log are the two things delete-on-error
 // writes to, and they must agree. The element is faked (mirroring the real

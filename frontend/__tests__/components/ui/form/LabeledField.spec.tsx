@@ -1,5 +1,5 @@
 import { render, screen } from "@solidjs/testing-library";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 
 import { LabeledField } from "../../../../src/ts/components/ui/form/LabeledField";
 

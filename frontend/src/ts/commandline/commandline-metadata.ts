@@ -39,11 +39,12 @@ type SkippedConfigKeys =
   | "funbox"; //is using a special non schema command at the top to clear funboxes
 
 export type CommandlineConfigMetadataObject = {
-  [K in keyof Omit<
-    ConfigSchemas.Config,
-    ConfigKeysWithoutCommands | SkippedConfigKeys
-    // oxlint-disable-next-line no-explicit-any
-  >]: CommandlineConfigMetadata<K, any>;
+  [
+    K in keyof Omit<
+      ConfigSchemas.Config,
+      ConfigKeysWithoutCommands | SkippedConfigKeys
+    >
+  ]: CommandlineConfigMetadata<K, any>; // oxlint-disable-line typescript/no-explicit-any
 };
 
 export type InputProps<T extends keyof ConfigSchemas.Config> = {

@@ -1,0 +1,7 @@
+{
+  "extends": "../typescript-config/base.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["config.ts", "check-application-defaults.ts"]
+}

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 vi.mock("../../src/ts/utils/json-data", () => ({
   getLanguage: vi.fn(),

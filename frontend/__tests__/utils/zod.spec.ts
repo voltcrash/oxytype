@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { z, ZodString, ZodNumber } from "zod";
 import { unwrapSchema } from "../../src/ts/utils/zod";
 

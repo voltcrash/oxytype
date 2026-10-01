@@ -4,22 +4,22 @@
   "license": "GPL-3.0",
   "type": "module",
   "scripts": {
-    "lint": "oxlint . --type-aware --type-check --format agent",
-    "lint-fast": "oxlint . --format agent",
+    "lint": "vp lint . --type-aware --type-check --format agent",
+    "lint-fast": "vp lint . --format agent",
     "lint-styles": "stylelint \"**/*.{scss,css}\"",
     "lint-styles-fix": "stylelint \"**/*.{scss,css}\" --fix",
     "lint-json": "eslint static/**/*.json",
     "check-assets": "tsx ./scripts/check-assets.ts",
     "audit": "vite-bundle-visualizer",
     "dep-graph": "madge -c -i \"dep-graph.png\" ./src/ts",
-    "ts-check": "oxlint . --type-aware --type-check --format agent",
-    "build": "npm run madge && vite build",
+    "ts-check": "vp lint . --type-aware --type-check --format agent",
+    "build": "npm run madge && vp build",
     "madge": "madge --circular --extensions ts,tsx ./src",
-    "start": "vite preview --port 3000",
-    "dev": "vite dev",
-    "test": "vitest run",
-    "test-coverage": "vitest run --coverage",
-    "dev-test": "concurrently --kill-others \"vite dev\" \"vitest\"",
+    "start": "vp preview --port 3000",
+    "dev": "vp dev",
+    "test": "vp test run",
+    "test-coverage": "vp test run --coverage",
+    "dev-test": "concurrently --kill-others \"vp dev\" \"vp test watch\"",
     "tsc": "tsc",
     "docker": "docker compose -f docker/compose.dev.yml up",
     "storybook": "cd storybook && pnpm run storybook",
@@ -95,7 +95,7 @@
     "@types/object-hash": "3.0.6",
     "@types/subset-font": "1.4.3",
     "@types/throttle-debounce": "5.0.2",
-    "@vitest/coverage-v8": "4.1.5",
+    "@vitest/coverage-v8": "catalog:",
     "autoprefixer": "10.4.27",
     "caniuse-lite": "1.0.30001778",
     "concurrently": "8.2.2",
@@ -109,8 +109,6 @@
     "madge": "8.0.0",
     "magic-string": "0.30.17",
     "normalize.css": "8.0.1",
-    "oxlint": "1.77.0",
-    "oxlint-tsgolint": "7.0.2001",
     "postcss": "8.5.24",
     "sass": "1.70.0",
     "solid-devtools": "0.34.5",
@@ -120,21 +118,22 @@
     "tsx": "4.21.0",
     "typescript": "7.0.2",
     "unplugin-inject-preload": "3.0.0",
-    "vite": "8.0.5",
+    "vite": "catalog:",
     "vite-bundle-visualizer": "1.2.1",
     "vite-plugin-html-inject": "1.1.2",
     "vite-plugin-inspect": "11.3.3",
     "vite-plugin-minify": "2.1.0",
     "vite-plugin-pwa": "1.1.0",
     "vite-plugin-solid": "2.11.11",
-    "vitest": "4.1.0"
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   },
   "lint-staged": {
     "*": [
-      "oxfmt --no-error-on-unmatched-pattern -c ../.oxfmtrc.json"
+      "vp fmt --no-error-on-unmatched-pattern"
     ],
     "*.{ts,js,tsx}": [
-      "oxlint --type-aware --type-check --format agent"
+      "vp lint --type-aware --type-check --format agent"
     ]
   },
   "browserslist": [

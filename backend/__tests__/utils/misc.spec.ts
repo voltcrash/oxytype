@@ -1,4 +1,4 @@
-import { describe, it, expect, afterAll, vi } from "vitest";
+import { describe, it, expect, afterAll, vi } from "vite-plus/test";
 import * as Misc from "../../src/utils/misc";
 import { ObjectId } from "mongodb";
 

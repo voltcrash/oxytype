@@ -137,3 +137,4 @@ frontend/.standalone-generated
 .pnpm-store
 keylogs
 frontend/scripts/keylog-report.ts
+.vitest/

@@ -1,4 +1,11 @@
-import { describe, it, expect, beforeAll, beforeEach, vi } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  beforeEach,
+  vi,
+} from "vite-plus/test";
 
 // Baseline for the word/letter markup test-ui.ts produces. Asserts the
 // `.word > letter` structure + classes only (themes/funbox css target these),

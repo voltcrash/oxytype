@@ -182,7 +182,7 @@ jobs:
       - name: Check formatting (changed files)
         if: steps.get-changed-files.outputs.has-files == 'true'
         run: |
-          xargs -0 pnpm oxfmt --check --no-error-on-unmatched-pattern < /tmp/changed-files.txt
+          xargs -0 pnpm exec vp fmt --check --no-error-on-unmatched-pattern < /tmp/changed-files.txt
 
   ci-be:
     name: ci-be
@@ -191,10 +191,6 @@ jobs:
     if: needs.pre-ci.outputs.should-build-be == 'true' || needs.pre-ci.outputs.should-build-pkg == 'true' || contains(github.event.pull_request.labels.*.name, 'force-full-ci')
     steps:
       - uses: actions/checkout@v6
-        with:
-          sparse-checkout: |
-            backend
-            packages
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -239,10 +235,6 @@ jobs:
     if: needs.pre-ci.outputs.should-build-fe == 'true' || needs.pre-ci.outputs.should-build-pkg == 'true' || contains(github.event.pull_request.labels.*.name, 'force-full-ci')
     steps:
       - uses: actions/checkout@v6
-        with:
-          sparse-checkout: |
-            frontend
-            packages
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -291,10 +283,6 @@ jobs:
     if: needs.pre-ci.outputs.assets-or-styles == 'true' || needs.pre-ci.outputs.should-build-pkg == 'true' || contains(github.event.pull_request.labels.*.name, 'force-full-ci')
     steps:
       - uses: actions/checkout@v6
-        with:
-          sparse-checkout: |
-            frontend
-            packages
 
       - uses: dorny/paths-filter@v4
         id: filter
@@ -369,9 +357,6 @@ jobs:
     if: needs.pre-ci.outputs.should-build-pkg == 'true' || contains(github.event.pull_request.labels.*.name, 'force-full-ci')
     steps:
       - uses: actions/checkout@v6
-        with:
-          sparse-checkout: |
-            packages
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -400,11 +385,21 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Check shared lint configuration
+        run: npm run lint-check-config
+
       - name: Check lint
         run: npm run lint-fast-pkg && npm run lint-pkg
 
       - name: Build
         run: npm run build-pkg
+
+      - name: Create stub firebase config
+        working-directory: ./frontend/src/ts/constants
+        run: cp ./firebase-config-example.ts ./firebase-config.ts && cp ./firebase-config.ts ./firebase-config-live.ts
+
+      - name: Check workspace root lint
+        run: pnpm exec vp lint . --type-aware --type-check --format agent
 
       - name: Test
         run: npm run test-pkg

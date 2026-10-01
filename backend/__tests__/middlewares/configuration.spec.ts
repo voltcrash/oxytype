@@ -1,7 +1,14 @@
 import { RequireConfiguration } from "@oxytype/contracts/require-configuration/index";
 import { Configuration } from "@oxytype/schemas/configuration";
 import { Response } from "express";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import { TsRestRequestWithContext } from "../../src/api/types";
 import { verifyRequiredConfiguration } from "../../src/middlewares/configuration";
 import MonkeyError from "../../src/utils/error";

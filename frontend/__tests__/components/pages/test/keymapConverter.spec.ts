@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { convertLayoutToKeymap } from "../../../../src/ts/components/pages/test/keymapConverter";
 
 import qwertyLayout from "../../../../static/layouts/qwerty.json";

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import * as pb from "../../src/utils/pb";
 import { Mode, PersonalBests } from "@oxytype/schemas/shared";
 import { Result } from "@oxytype/schemas/results";

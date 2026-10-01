@@ -9,8 +9,8 @@
     "dev": "nodemon --watch src --exec \"node ./src/index.js --dry\"",
     "dev-hotfix": "nodemon --watch src --exec \"node ./src/index.js --dry --hotfix\"",
     "dev-changelog": "nodemon ./src/buildChangelog.js",
-    "lint": "oxlint . --type-aware --type-check --format agent",
-    "lint-fast": "oxlint . --format agent",
+    "lint": "vp lint . --type-aware --type-check --format agent",
+    "lint-fast": "vp lint . --format agent",
     "purge-cf-cache": "./bin/purgeCfCache.sh"
   },
   "dependencies": {
@@ -20,7 +20,6 @@
   },
   "devDependencies": {
     "nodemon": "3.1.14",
-    "oxlint": "1.77.0",
-    "oxlint-tsgolint": "7.0.2001"
+    "vite-plus": "catalog:"
   }
 }

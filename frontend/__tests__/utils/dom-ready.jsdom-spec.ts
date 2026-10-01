@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
 import { onDOMReady, __testing } from "../../src/ts/utils/dom-ready";
 const resetReady = __testing.resetReady;
 

@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render } from "@solidjs/testing-library";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 const mocks = vi.hoisted(() => ({ navigate: vi.fn() }));
 

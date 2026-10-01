@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import * as ConfigDal from "../../../src/dal/config";
 
 const getConfigCollection = ConfigDal.__testing.getConfigCollection;

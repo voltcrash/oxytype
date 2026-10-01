@@ -1,6 +1,6 @@
 //import type { ConfigMetadata } from "../../src/ts/config/metadata";
 
-import { describe, it, expect, afterAll, vi } from "vitest";
+import { describe, it, expect, afterAll, vi } from "vite-plus/test";
 import * as Util from "../../src/ts/commandline/util";
 
 import type { CommandlineConfigMetadata } from "../../src/ts/commandline/commandline-metadata";
@@ -11,12 +11,12 @@ import { Command } from "../../src/ts/commandline/types";
 
 const buildCommandForConfigKey = Util.__testing._buildCommandForConfigKey;
 
-describe("CommandlineUtils", () => {
-  vi.mock("../../src/ts/config/metadata", () => ({ configMetadata: [] }));
-  vi.mock("../../src/ts/commandline/commandline-metadata", () => ({
-    commandlineConfigMetadata: [],
-  }));
+vi.mock("../../src/ts/config/metadata", () => ({ configMetadata: [] }));
+vi.mock("../../src/ts/commandline/commandline-metadata", () => ({
+  commandlineConfigMetadata: [],
+}));
 
+describe("CommandlineUtils", () => {
   afterAll(() => {
     vi.resetModules();
     vi.restoreAllMocks();

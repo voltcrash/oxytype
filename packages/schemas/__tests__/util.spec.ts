@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { nameWithSeparators, slug } from "../src/util";
 
 describe("Schema Validation Tests", () => {

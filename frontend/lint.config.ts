@@ -1,41 +1,55 @@
-{
-  "ignorePatterns": [
+import { createRequire } from "node:module";
+import { sharedLint, pluginLint } from "../packages/oxlint-config/config";
+import type { OxlintConfig } from "vite-plus/lint";
+
+const require = createRequire(import.meta.url);
+
+export const frontendLint: OxlintConfig = {
+  ignorePatterns: [
     "node_modules",
     "dist",
     "coverage",
     ".firebase",
     ".turbo",
-    ".standalone-generated"
+    ".standalone-generated",
   ],
-  "extends": [
-    "../packages/oxlint-config/index.jsonc",
-    "../packages/oxlint-config/plugin.jsonc"
-    // "@oxytype/oxlint-config"
-  ],
-  "jsPlugins": ["eslint-plugin-compat"],
-  "rules": {
-    "compat/compat": "error"
+  extends: [sharedLint, pluginLint],
+  options: {
+    typeAware: false,
+    typeCheck: false,
   },
-  "overrides": [
+  jsPlugins: [
+    require.resolve("eslint-plugin-compat"),
     {
-      "files": ["**/*.ts"],
-      "rules": {
-        //
-      }
+      name: "vite-plus",
+      specifier: "vite-plus/oxlint-plugin",
+    },
+  ],
+  rules: {
+    "compat/compat": "error",
+    "vite-plus/prefer-vite-plus-imports": "error",
+  },
+  overrides: [
+    {
+      files: ["**/*.ts"],
+      rules: {},
     },
     {
-      "files": ["storybook/**/*.tsx"],
-      "rules": {
+      files: ["storybook/**/*.tsx"],
+      rules: {
         "explicit-function-return-type": "off",
         "no-explicit-any": "off",
         "no-unsafe-assignment": "off",
-        "no-empty-function": "off"
-      }
+        "no-empty-function": "off",
+      },
     },
     {
-      "jsPlugins": ["eslint-plugin-solid", "@tanstack/eslint-plugin-query"],
-      "files": ["src/**/*.tsx"],
-      "rules": {
+      jsPlugins: [
+        require.resolve("eslint-plugin-solid"),
+        require.resolve("@tanstack/eslint-plugin-query"),
+      ],
+      files: ["src/**/*.tsx"],
+      rules: {
         "explicit-function-return-type": "off",
         "solid/components-return-once": "error",
         "solid/event-handlers": "error",
@@ -56,8 +70,8 @@
         "solid/self-closing-comp": [
           "error",
           {
-            "html": "void"
-          }
+            html: "void",
+          },
         ],
         "solid/style-prop": "error",
         "@tanstack/query/exhaustive-deps": "error",
@@ -66,8 +80,8 @@
         "@tanstack/query/no-unstable-deps": "error",
         "@tanstack/query/infinite-query-property-order": "error",
         "@tanstack/query/no-void-query-fn": "error",
-        "@tanstack/query/mutation-property-order": "error"
-      }
-    }
-  ]
-}
+        "@tanstack/query/mutation-property-order": "error",
+      },
+    },
+  ],
+};

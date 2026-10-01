@@ -1,6 +1,12 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [".env"],
+  "globalDependencies": [
+    ".env",
+    "vite.config.ts",
+    "frontend/lint.config.ts",
+    "backend/lint.config.ts",
+    "packages/oxlint-config/**"
+  ],
   "tasks": {
     "parallel": {
       "dependsOn": ["^parallel"]

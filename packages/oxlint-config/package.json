@@ -6,6 +6,8 @@
     ".": "./index.json"
   },
   "devDependencies": {
-    "@oxlint/plugins": "1.43.0"
+    "@types/node": "24.9.1",
+    "jsonc-parser": "3.3.1",
+    "vite-plus": "catalog:"
   }
 }

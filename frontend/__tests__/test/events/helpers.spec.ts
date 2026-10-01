@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vite-plus/test";
 
 const mockConfig = vi.hoisted(() => ({ funbox: "" }));
 vi.mock("../../../src/ts/config/store", () => ({
