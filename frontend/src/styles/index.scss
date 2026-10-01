@@ -16,7 +16,7 @@
 }
 
 @layer custom-styles {
-  @import "animations", "caret", "core", "fonts", "inputs", "scroll", "test",
+  @import "animations", "caret", "core", "fonts", "scroll", "test",
     "media-queries";
 
   .chartCanvas {
