@@ -22,7 +22,22 @@ export async function activateSentry(): Promise<void> {
   Sentry.init({
     release: envConfig.clientVersion,
     dsn,
-    dataCollection: { userInfo: false },
+    // Preserve sendDefaultPii: false; Sentry 11 otherwise collects more data.
+    dataCollection: {
+      userInfo: false,
+      cookies: false,
+      httpHeaders: {
+        request: { deny: ["forwarded", "-ip", "remote-", "via", "-user"] },
+        response: { deny: ["forwarded", "-ip", "remote-", "via", "-user"] },
+      },
+      httpBodies: [],
+      urlQueryParams: { deny: ["forwarded", "-ip", "remote-", "via", "-user"] },
+      genAI: { inputs: false, outputs: false },
+      databaseQueryData: false,
+      queues: false,
+      graphQL: { document: false, variables: false },
+      frameContextLines: 7,
+    },
     environment: envConfig.isDevelopment ? "development" : "production",
     integrations: [
       Sentry.browserTracingIntegration(),
