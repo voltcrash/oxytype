@@ -8,7 +8,7 @@ import results from "./results";
 import presets from "./presets";
 import apeKeys from "./ape-keys";
 import admin from "./admin";
-import docs from "./docs";
+import { createDocsRoutes } from "./docs";
 import webhooks from "./webhooks";
 import dev from "./dev";
 import configs from "./configs";
@@ -52,7 +52,7 @@ const router = s.router(contract, {
   connections,
 });
 
-export function addApiRoutes(app: Hono<ApiEnv>): void {
+export function addApiRoutes(app: Hono<ApiEnv>, docsRoot?: string): void {
   if (isDevEnvironment()) {
     app.use(async (c, next) => {
       c.header("Content-Security-Policy", "");
@@ -101,7 +101,7 @@ export function addApiRoutes(app: Hono<ApiEnv>): void {
       }),
     ),
   );
-  app.route(`${BASE_ROUTE}/docs`, docs);
+  app.route(`${BASE_ROUTE}/docs`, createDocsRoutes(docsRoot));
   createHonoEndpoints(contract, router, app, [
     authenticateTsRestRequest(),
     rateLimitRequest(),

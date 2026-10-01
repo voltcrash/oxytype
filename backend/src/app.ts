@@ -14,7 +14,7 @@ import { requestBodyLimit, parseRequestBody } from "./middlewares/body";
 import { etagMiddleware } from "./middlewares/etag";
 import { ApiEnv } from "./api/http";
 
-export function buildApp(): Hono<ApiEnv> {
+export function buildApp(options: { docsRoot?: string } = {}): Hono<ApiEnv> {
   const app = new Hono<ApiEnv>({ strict: false });
   app.onError(errorHandlingMiddleware);
   app.use(etagMiddleware);
@@ -58,7 +58,7 @@ export function buildApp(): Hono<ApiEnv> {
   app.use(contextMiddleware);
   app.use(badAuthRateLimiterHandler);
   app.use(rootRateLimiter);
-  addApiRoutes(app);
+  addApiRoutes(app, options.docsRoot);
   return app;
 }
 
