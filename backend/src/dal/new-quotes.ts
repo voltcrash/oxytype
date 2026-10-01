@@ -10,7 +10,6 @@ import { ApproveQuote, Quote } from "@monkeytype/schemas/quotes";
 import { WithObjectId } from "../utils/misc";
 import { parseWithSchema as parseJsonWithSchema } from "@monkeytype/util/json";
 import { z } from "zod";
-import { tryCatchSync } from "@monkeytype/util/trycatch";
 import { Language } from "@monkeytype/schemas/languages";
 
 const JsonQuoteSchema = z.object({
@@ -29,10 +28,13 @@ const QuoteDataSchema = z.object({
 });
 
 const quoteRepositoryPath = process.env["OXYTYPE_QUOTES_REPO_PATH"];
-const git = quoteRepositoryPath ? simpleGit(quoteRepositoryPath) : undefined;
+const git =
+  quoteRepositoryPath !== undefined && quoteRepositoryPath !== ""
+    ? simpleGit(quoteRepositoryPath)
+    : undefined;
 
 function requireQuoteRepositoryPath(): string {
-  if (!quoteRepositoryPath || !git) {
+  if (quoteRepositoryPath === undefined || quoteRepositoryPath === "" || !git) {
     throw new MonkeyError(503, "Oxytype quote repository is not configured.");
   }
   return quoteRepositoryPath;
@@ -50,7 +52,8 @@ async function verifyQuoteRepositoryRemote(): Promise<
     await quoteGit.raw(["remote", "get-url", "origin"])
   ).trim();
   if (
-    !expectedRemote ||
+    expectedRemote === undefined ||
+    expectedRemote === "" ||
     actualRemote !== expectedRemote ||
     /monkeytypegame/i.test(actualRemote)
   ) {
