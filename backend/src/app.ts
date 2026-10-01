@@ -1,3 +1,6 @@
+import { getSessionCookie } from "better-auth/cookies";
+import { addAuthRoutes } from "./auth/routes";
+import { getFrontendUrl } from "./utils/misc";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { secureHeaders } from "hono/secure-headers";
@@ -37,9 +40,10 @@ export function buildApp(options: { docsRoot?: string } = {}): Hono<ApiEnv> {
   app.onError(errorHandlingMiddleware);
   app.use(etagMiddleware);
   app.use(requestBodyLimit);
-  app.use(parseRequestBody);
   app.use(
     cors({
+      origin: new URL(getFrontendUrl()).origin,
+      credentials: true,
       exposeHeaders: [COMPATIBILITY_CHECK_HEADER],
       allowMethods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
     }),
@@ -71,6 +75,20 @@ export function buildApp(options: { docsRoot?: string } = {}): Hono<ApiEnv> {
       routeCsp = c.res.headers.get("Content-Security-Policy");
     });
     if (routeCsp !== null) c.header("Content-Security-Policy", routeCsp);
+  });
+  addAuthRoutes(app);
+  app.use(parseRequestBody);
+  app.use(async (c, next) => {
+    if (
+      !["GET", "HEAD", "OPTIONS"].includes(c.req.method) &&
+      typeof getSessionCookie(c.req.raw, { cookiePrefix: "oxytype" }) ===
+        "string" &&
+      c.req.header("authorization") === undefined &&
+      c.req.header("origin") !== new URL(getFrontendUrl()).origin
+    ) {
+      return c.json({ message: "Untrusted origin" }, 403);
+    }
+    return next();
   });
   app.use(compatibilityCheckMiddleware);
   app.use(contextMiddleware);

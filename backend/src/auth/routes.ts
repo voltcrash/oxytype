@@ -1,0 +1,56 @@
+import type { Hono } from "hono";
+import type { ApiEnv } from "../api/http";
+import * as UserDAL from "../dal/user";
+import * as AuthUtils from "../utils/auth";
+import { NewPasswordSchema } from "@oxytype/schemas/users";
+import { getAuth } from "../init/auth";
+import { getFrontendUrl, isDevEnvironment } from "../utils/misc";
+
+/** Auth owns its request body, cookies, CSRF checks, and rate limits. */
+export function addAuthRoutes(app: Hono<ApiEnv>): void {
+  app.all("/auth/*", async (c) => {
+    const auth = getAuth();
+    // Existing infrastructure strips /api before requests reach Hono.
+    const publicUrl = new URL(
+      process.env["BETTER_AUTH_URL"] ?? "http://localhost:5005/auth",
+    );
+    publicUrl.pathname = `${publicUrl.pathname.replace(/\/$/, "")}${c.req.path.slice("/auth".length)}`;
+    publicUrl.search = new URL(c.req.url).search;
+    const request = new Request(publicUrl, c.req.raw);
+    if (c.req.method !== "GET" && c.req.method !== "HEAD") {
+      const origin = c.req.header("origin");
+      if (origin !== new URL(getFrontendUrl()).origin) {
+        return c.json({ message: "Untrusted origin" }, 403);
+      }
+    }
+    const headers = request.headers;
+    if (c.req.path === "/auth/cancel-sign-up" && c.req.method === "POST") {
+      const session = await AuthUtils.verifySession(headers);
+      const existing = await UserDAL.getUsersCollection().findOne({
+        uid: session.uid,
+      });
+      if (existing !== null) {
+        return c.json(
+          { message: "Account registration is already complete" },
+          409,
+        );
+      }
+      await AuthUtils.deleteUser(session.uid);
+      return c.json({ status: true });
+    }
+    if (c.req.path === "/auth/set-password" && c.req.method === "POST") {
+      const body = await c.req.json<{ newPassword: string }>();
+      if (
+        !isDevEnvironment() &&
+        !NewPasswordSchema.safeParse(body.newPassword).success
+      ) {
+        return c.json(
+          { message: "Password does not meet the password requirements" },
+          400,
+        );
+      }
+      return auth.api.setPassword({ headers, body, asResponse: true });
+    }
+    return auth.handler(request);
+  });
+}
