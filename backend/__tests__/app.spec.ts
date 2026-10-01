@@ -472,6 +472,37 @@ describe("Hono HTTP application", () => {
       }
     }
   });
+  it("keeps static GET/HEAD validators and date/range responses consistent", async () => {
+    const client = createClient();
+    const get = await client.get("/docs/public").expect(200);
+    const tag = get.headers["etag"] as string;
+    const modified = get.headers["last-modified"] as string;
+    const head = await client.head("/docs/public").expect(200);
+    expect(head.headers["etag"]).toBe(tag);
+    expect(head.headers["last-modified"]).toBe(modified);
+    expect(head.headers["cache-control"]).toBe("public, max-age=0");
+    await client.get("/docs/public").set("If-None-Match", tag).expect(304);
+    await client.head("/docs/public").set("If-None-Match", tag).expect(304);
+    await client
+      .get("/docs/public")
+      .set("If-Modified-Since", modified)
+      .expect(304);
+    await client
+      .get("/docs/public")
+      .set("If-Modified-Since", "invalid")
+      .expect(200);
+    await client
+      .get("/docs/public")
+      .set("If-None-Match", tag)
+      .set("If-Modified-Since", "Thu, 01 Jan 1970 00:00:00 GMT")
+      .expect(200);
+    const partial = await client
+      .get("/docs/public")
+      .set("Range", "bytes=0-9")
+      .expect(206);
+    expect(partial.headers["etag"]).toBe(tag);
+    expect(partial.text).toHaveLength(10);
+  });
   it("serves development configuration assets only on development", async () => {
     await createClient()
       .get("/configure")
