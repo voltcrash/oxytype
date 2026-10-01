@@ -27,15 +27,15 @@ import {
   UserEmailSchema,
   UserNameSchema,
   FriendSchema,
-} from "@monkeytype/schemas/users";
+} from "@oxytype/schemas/users";
 import {
   Mode2Schema,
   ModeSchema,
   PersonalBestSchema,
-} from "@monkeytype/schemas/shared";
-import { IdSchema, StringNumberSchema } from "@monkeytype/schemas/util";
-import { LanguageSchema } from "@monkeytype/schemas/languages";
-import { CustomThemeColorsSchema } from "@monkeytype/schemas/configs";
+} from "@oxytype/schemas/shared";
+import { IdSchema, StringNumberSchema } from "@oxytype/schemas/util";
+import { LanguageSchema } from "@oxytype/schemas/languages";
+import { CustomThemeColorsSchema } from "@oxytype/schemas/configs";
 
 export const GetUserResponseSchema = responseWithData(
   UserSchema.extend({

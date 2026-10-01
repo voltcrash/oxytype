@@ -1,4 +1,4 @@
-import { FunboxName } from "@monkeytype/schemas/configs";
+import { FunboxName } from "@oxytype/schemas/configs";
 import { createSignal } from "solid-js";
 
 export const [getFunboxBodyClasses, setFunboxBodyClasses] = createSignal<

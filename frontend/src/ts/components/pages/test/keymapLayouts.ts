@@ -1,5 +1,5 @@
-import { KeymapStyle } from "@monkeytype/schemas/configs";
-import { LayoutObject } from "@monkeytype/schemas/layouts";
+import { KeymapStyle } from "@oxytype/schemas/configs";
+import { LayoutObject } from "@oxytype/schemas/layouts";
 import {
   FormatDisplayOptions,
   formatForDisplay,

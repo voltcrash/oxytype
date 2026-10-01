@@ -31,7 +31,7 @@ vi.mock("../../src/ts/states/test", async (importOriginal) => ({
 
 import { setTestElements } from "../../src/ts/states/test-dom";
 import { __testing } from "../../src/ts/config/testing";
-import type { Config as ConfigType } from "@monkeytype/schemas/configs";
+import type { Config as ConfigType } from "@oxytype/schemas/configs";
 import { words as TestWords } from "../../src/ts/test/test-words";
 
 type TestUIModule = typeof import("../../src/ts/test/test-ui");

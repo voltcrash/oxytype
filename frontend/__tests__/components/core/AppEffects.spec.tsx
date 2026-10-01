@@ -31,7 +31,6 @@ const { deferred, lifecycle, guards, ui, services } = vi.hoisted(() => {
     },
     services: {
       sync: vi.fn(),
-      merch: vi.fn(),
       unregister: vi.fn(),
       cancel: vi.fn(),
       animate: vi.fn(),
@@ -98,9 +97,6 @@ vi.mock("../../../src/ts/utils/quick-restart", () => ({
 }));
 vi.mock("../../../src/ts/ape/server-configuration", () => ({
   sync: services.sync,
-}));
-vi.mock("../../../src/ts/elements/merch-banner", () => ({
-  showIfNotClosedBefore: services.merch,
 }));
 vi.mock("../../../src/ts/components/core/GlobalEvents", () => ({
   GlobalEvents: () => null,
@@ -239,7 +235,6 @@ describe("App effects", () => {
       duration: 250,
     });
     expect(services.sync).toHaveBeenCalledOnce();
-    expect(services.merch).toHaveBeenCalledOnce();
     expect(services.unregister).toHaveBeenCalledOnce();
   });
 

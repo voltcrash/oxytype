@@ -1,5 +1,5 @@
 {
-  "name": "@monkeytype/funbox",
+  "name": "@oxytype/funbox",
   "private": true,
   "exports": {
     ".": {
@@ -18,12 +18,12 @@
     "lint-fast": "oxlint . --format agent"
   },
   "dependencies": {
-    "@monkeytype/schemas": "workspace:*",
-    "@monkeytype/util": "workspace:*"
+    "@oxytype/schemas": "workspace:*",
+    "@oxytype/util": "workspace:*"
   },
   "devDependencies": {
-    "@monkeytype/tsup-config": "workspace:*",
-    "@monkeytype/typescript-config": "workspace:*",
+    "@oxytype/tsup-config": "workspace:*",
+    "@oxytype/typescript-config": "workspace:*",
     "@types/node": "24.9.1",
     "madge": "8.0.0",
     "oxlint": "1.77.0",

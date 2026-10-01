@@ -5,7 +5,7 @@ import type {
   TooltipItem,
 } from "chart.js";
 
-import { typedKeys } from "@monkeytype/util/objects";
+import { typedKeys } from "@oxytype/util/objects";
 import { For, JSXElement, onCleanup, Show } from "solid-js";
 
 import { Theme } from "../../../../constants/themes";

@@ -1,5 +1,5 @@
 import { updateClassNames } from "../utils/cn";
-import { CaretStyle } from "@monkeytype/schemas/configs";
+import { CaretStyle } from "@oxytype/schemas/configs";
 import { Config } from "../config/store";
 import { isWordRightToLeft } from "../utils/strings";
 import { requestDebouncedAnimationFrame } from "../utils/debounced-animation-frame";

@@ -17,7 +17,7 @@ import { getQuoteStats } from "../states/quote-rate";
 import * as GlarsesMode from "../states/glarses-mode";
 import * as SlowTimer from "../states/slow-timer";
 import * as Misc from "../utils/misc";
-import * as Numbers from "@monkeytype/util/numbers";
+import * as Numbers from "@oxytype/util/numbers";
 import * as Arrays from "../utils/arrays";
 import { get as getTypingSpeedUnit } from "../utils/typing-speed-units";
 import * as TodayTracker from "./today-tracker";
@@ -30,9 +30,9 @@ import type {
   AnnotationOptions,
   LabelPosition,
 } from "chartjs-plugin-annotation";
-import { CompletedEvent } from "@monkeytype/schemas/results";
+import { CompletedEvent } from "@oxytype/schemas/results";
 import { getActiveFunboxes } from "./funbox/list";
-import { getFunbox } from "@monkeytype/funbox";
+import { getFunbox } from "@oxytype/funbox";
 import {
   getLocalTagPB,
   saveLocalTagPB,

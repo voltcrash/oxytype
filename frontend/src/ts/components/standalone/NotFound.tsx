@@ -11,7 +11,11 @@ export function StandaloneNotFound() {
           id="page404"
         >
           <div class="content grid grid-flow-col grid-cols-[300px_300px] gap-16">
-            <div class="image aspect-[300/199] w-full self-center rounded bg-[url('/images/monkeymeme.jpg')] bg-contain"></div>
+            <img
+              src="/images/oxytype-404.svg"
+              alt="Oxytype typing keys"
+              class="image aspect-[300/199] w-full self-center rounded"
+            />
             <div class="side grid justify-items-center gap-4 text-center">
               <div class="title self-center text-[5rem] leading-[4rem] text-main">
                 404

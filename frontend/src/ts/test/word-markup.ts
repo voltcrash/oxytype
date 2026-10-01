@@ -1,4 +1,4 @@
-import type { Config } from "@monkeytype/schemas/configs";
+import type { Config } from "@oxytype/schemas/configs";
 import * as Hangul from "hangul-js";
 
 import * as Strings from "../utils/strings";

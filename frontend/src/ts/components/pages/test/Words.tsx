@@ -1,4 +1,4 @@
-import * as Numbers from "@monkeytype/util/numbers";
+import * as Numbers from "@oxytype/util/numbers";
 import { animate } from "animejs";
 import { createEffect, JSXElement, onCleanup, onMount } from "solid-js";
 

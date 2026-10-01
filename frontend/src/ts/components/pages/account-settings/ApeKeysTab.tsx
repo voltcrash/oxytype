@@ -1,5 +1,5 @@
-import { ApeKeyNameSchema } from "@monkeytype/schemas/ape-keys";
-import { tryCatch } from "@monkeytype/util/trycatch";
+import { ApeKeyNameSchema } from "@oxytype/schemas/ape-keys";
+import { tryCatch } from "@oxytype/util/trycatch";
 import { createColumnHelper } from "@tanstack/solid-table";
 import { format as dateFormat } from "date-fns";
 import { createMemo, Show } from "solid-js";
@@ -33,11 +33,7 @@ export function ApeKeysTab() {
         fa={{ icon: "fa-key" }}
         description=<>
           Generate Ape Keys to access certain API endpoints (
-          <Button
-            text="documentation"
-            href="https://api.monkeytype.com/docs"
-            variant="text"
-          />
+          <Button text="documentation" href="/api/docs" variant="text" />
           ).
         </>
         button={{

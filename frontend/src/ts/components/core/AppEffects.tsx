@@ -16,7 +16,6 @@ import * as ServerConfiguration from "../../ape/server-configuration";
 import { configLoadPromise } from "../../config/lifecycle";
 import { Config } from "../../config/store";
 import { useAdLifecycle } from "../../controllers/ad-controller";
-import * as MerchBanner from "../../elements/merch-banner";
 import { configEvent } from "../../events/config";
 import { authPromise } from "../../firebase";
 import {
@@ -226,7 +225,6 @@ export function AppEffects(props: AppElements): JSXElement {
       if (disposed) return;
 
       setReady(true);
-      MerchBanner.showIfNotClosedBefore();
       animation = animate(element, {
         opacity: [0, 1],
         duration: applyReducedMotion(250),

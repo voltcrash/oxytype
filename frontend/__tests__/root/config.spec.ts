@@ -9,7 +9,7 @@ import {
   ConfigKey,
   Config as ConfigType,
   CaretStyleSchema,
-} from "@monkeytype/schemas/configs";
+} from "@oxytype/schemas/configs";
 import * as FunboxValidation from "../../src/ts/config/funbox-validation";
 import * as ConfigValidation from "../../src/ts/config/validation";
 import { configEvent } from "../../src/ts/events/config";
@@ -307,7 +307,7 @@ describe("Config", () => {
       expect(miscTriggerResizeMock).not.toHaveBeenCalled();
     });
 
-    it("calls afterSet", () => {
+    it("changes ad settings without enabling upstream reload behavior", () => {
       //GIVEN
       isDevEnvironmentMock.mockReturnValue(false);
       replaceConfig({ ads: "off" });
@@ -316,10 +316,8 @@ describe("Config", () => {
       Config.setConfig("ads", "sellout");
 
       //THEN
-      expect(notificationAddMock).toHaveBeenCalledWith(
-        "Ad settings changed. Refreshing...",
-      );
-      expect(miscReloadAfterMock).toHaveBeenCalledWith(3);
+      expect(notificationAddMock).not.toHaveBeenCalled();
+      expect(miscReloadAfterMock).not.toHaveBeenCalled();
     });
   });
 

@@ -1,5 +1,5 @@
-import { CompletedEvent } from "@monkeytype/schemas/results";
-import * as Numbers from "@monkeytype/util/numbers";
+import { CompletedEvent } from "@oxytype/schemas/results";
+import * as Numbers from "@oxytype/util/numbers";
 import { Config } from "../config/store";
 import type { Theme } from "../constants/themes";
 import Format from "../singletons/format";

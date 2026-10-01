@@ -50,27 +50,13 @@ export function Footer(): JSXElement {
               icon: "fa-code",
               fixedWidth: true,
             }}
-            href="https://github.com/monkeytypegame/monkeytype"
+            href="https://github.com/voltcrash/oxytype"
           />
           <Button
             variant="text"
-            text="discord"
-            fa={{
-              icon: "fa-discord",
-              variant: "brand",
-              fixedWidth: true,
-            }}
-            href="https://www.discord.gg/monkeytype"
-          />
-          <Button
-            variant="text"
-            text="twitter"
-            fa={{
-              icon: "fa-twitter",
-              variant: "brand",
-              fixedWidth: true,
-            }}
-            href="https://x.com/monkeytype"
+            text="discussions"
+            fa={{ icon: "fa-comments", fixedWidth: true }}
+            href="https://github.com/voltcrash/oxytype/discussions"
           />
           <Button
             variant="text"

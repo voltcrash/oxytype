@@ -1,4 +1,5 @@
 import { exec } from "child_process";
+import { getRepositoryUrl } from "./repository.js";
 
 // const stream = conventionalChangelog(
 //   {
@@ -88,11 +89,11 @@ const titles = {
 
 function getPrLink(pr) {
   const prNum = pr.replace("#", "");
-  return `[#${prNum}](https://github.com/monkeytypegame/monkeytype/pull/${prNum})`;
+  return `[#${prNum}](${getRepositoryUrl()}/pull/${prNum})`;
 }
 
 function getCommitLink(hash, longHash) {
-  return `[${hash}](https://github.com/monkeytypegame/monkeytype/commit/${longHash})`;
+  return `[${hash}](${getRepositoryUrl()}/commit/${longHash})`;
 }
 
 function buildItems(items, mergeTypeAndScope = false) {

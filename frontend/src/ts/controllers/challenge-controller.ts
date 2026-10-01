@@ -11,10 +11,10 @@ import { setConfig } from "../config/setters";
 import { Config } from "../config/store";
 import { configEvent } from "../events/config";
 
-import { ChallengeSettings, getChallenge } from "@monkeytype/challenges";
-import { ChallengeName } from "@monkeytype/schemas/challenges";
-import { CompletedEvent } from "@monkeytype/schemas/results";
-import { typedKeys } from "@monkeytype/util/objects";
+import { ChallengeSettings, getChallenge } from "@oxytype/challenges";
+import { ChallengeName } from "@oxytype/schemas/challenges";
+import { CompletedEvent } from "@oxytype/schemas/results";
+import { typedKeys } from "@oxytype/util/objects";
 import { hideLoaderBar, showLoaderBar } from "../states/loader-bar";
 import {
   isTestRestarting,

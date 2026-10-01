@@ -1,4 +1,4 @@
-import { FontName } from "@monkeytype/schemas/fonts";
+import { FontName } from "@oxytype/schemas/fonts";
 
 import { Config } from "./config/store";
 import {

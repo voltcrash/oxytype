@@ -122,8 +122,6 @@ export function EmailHandler(props: {
 
   onMount(() => {
     // Initialize after rendering, preserving the loading UI if SDK setup fails.
-    // The legacy SDK initialization was outside the mode-handler's try/catch.
-    auth = props.initializeAuth();
     try {
       const mode = getParameterByName("mode");
       actionCode = getParameterByName("oobCode") ?? "";
@@ -137,10 +135,11 @@ export function EmailHandler(props: {
         setText("Action code parameter not found");
         return;
       }
+      auth = props.initializeAuth();
       switch (mode) {
         case "resetPassword":
           setLabel("Reset Password");
-          document.title = "Reset Password | Monkeytype";
+          document.title = "Reset Password | Oxytype";
           showResetPassword();
           break;
         case "recoverEmail":
@@ -148,7 +147,7 @@ export function EmailHandler(props: {
           break;
         case "verifyEmail":
           setLabel("Verify Email");
-          document.title = "Verify Email | Monkeytype";
+          document.title = "Verify Email | Oxytype";
           void verifyEmail();
           break;
         default:

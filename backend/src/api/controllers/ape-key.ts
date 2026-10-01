@@ -12,8 +12,8 @@ import {
   ApeKeyParams,
   EditApeKeyRequest,
   GetApeKeyResponse,
-} from "@monkeytype/contracts/ape-keys";
-import { ApeKey } from "@monkeytype/schemas/ape-keys";
+} from "@oxytype/contracts/ape-keys";
+import { ApeKey } from "@oxytype/schemas/ape-keys";
 import { MonkeyRequest } from "../types";
 
 function cleanApeKey(apeKey: ApeKeysDAL.DBApeKey): ApeKey {

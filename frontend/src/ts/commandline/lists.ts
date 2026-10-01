@@ -30,7 +30,7 @@ import { COMMAND_SEPARATOR_HTML, buildCommandForConfigKey } from "./util";
 import { CommandlineConfigMetadataObject } from "./commandline-metadata";
 import { isAuthAvailable, signOut } from "../firebase";
 import { isAuthenticated } from "../states/core";
-import { ConfigKey } from "@monkeytype/schemas/configs";
+import { ConfigKey } from "@oxytype/schemas/configs";
 import {
   hideFpsCounter,
   showFpsCounter,
@@ -330,11 +330,11 @@ export const commands: CommandsSubgroup = {
       },
     },
     {
-      id: "joinDiscord",
-      display: "Join the Discord server",
+      id: "openDiscussions",
+      display: "Open project discussions",
       icon: "fa-users",
       exec: (): void => {
-        window.open("https://discord.gg/monkeytype");
+        window.open("https://github.com/voltcrash/oxytype/discussions");
       },
     },
     {

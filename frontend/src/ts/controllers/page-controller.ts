@@ -140,13 +140,11 @@ const pages = {
 function updateTitle(nextPage: { id: string; display?: string }): void {
   const local = isDevEnvironment() ? "localhost - " : "";
   if (nextPage.id === "test") {
-    setPageTitle(
-      `${local}Monkeytype | A minimalistic, customizable typing test`,
-    );
+    setPageTitle(`${local}Oxytype | A minimalistic, customizable typing test`);
   } else {
     const titleString =
       nextPage.display ?? Strings.capitalizeFirstLetterOfEachWord(nextPage.id);
-    setPageTitle(`${local}${titleString} | Monkeytype`);
+    setPageTitle(`${local}${titleString} | Oxytype`);
   }
 }
 

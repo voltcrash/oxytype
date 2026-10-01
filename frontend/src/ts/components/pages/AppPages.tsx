@@ -1,4 +1,4 @@
-import { typedKeys } from "@monkeytype/util/objects";
+import { typedKeys } from "@oxytype/util/objects";
 import { animate } from "animejs";
 import { For, JSXElement, onCleanup, Show } from "solid-js";
 

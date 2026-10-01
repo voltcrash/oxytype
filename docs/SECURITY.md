@@ -1,16 +1,7 @@
 # Security Policy
 
-We take the security and integrity of Monkeytype very seriously. If you have found a vulnerability, please report it ASAP so we can quickly remediate the issue.
+Please report Oxytype vulnerabilities privately. Use [GitHub private vulnerability reporting](https://github.com/voltcrash/oxytype/security/advisories/new) if it is available. If that form is unavailable, open an issue requesting a private contact channel without disclosing the vulnerability.
 
-### Reporting a Vulnerability
+Include the affected version, steps to reproduce, and likely impact. Use [public issues](https://github.com/voltcrash/oxytype/issues) for ordinary bugs.
 
-For vulnerabilities that impact the confidentiality, integrity, and availability of Monkeytype services, please send your disclosure via [email](mailto:contact@monkeytype.com). For non-security related platform bugs, follow the bug submission [guidelines](https://github.com/monkeytypegame/monkeytype#bug-report-or-feature-request). Include as much detail as possible to ensure reproducibility. At a minimum, vulnerability disclosures should include:
-
-- Vulnerability Description
-- Proof of Concept
-- Impact
-- Screenshots or Proof
-
-### Submission Guidelines
-
-Do not engage in activities that might cause a denial of service condition, create significant strains on critical resources, or negatively impact users of the site outside of test accounts.
+The planned security contact is `contact@voltcrash.com`. It will be listed as an active reporting channel after the mailbox is configured.

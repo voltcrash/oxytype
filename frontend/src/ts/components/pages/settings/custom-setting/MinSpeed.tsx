@@ -1,4 +1,4 @@
-import { MinWpmCustomSpeedSchema } from "@monkeytype/schemas/configs";
+import { MinWpmCustomSpeedSchema } from "@oxytype/schemas/configs";
 import { createForm } from "@tanstack/solid-form";
 import { JSXElement } from "solid-js";
 

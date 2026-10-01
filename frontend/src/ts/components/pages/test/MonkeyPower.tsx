@@ -1,4 +1,4 @@
-import { isSafeNumber } from "@monkeytype/util/numbers";
+import { isSafeNumber } from "@oxytype/util/numbers";
 import { JSXElement, onCleanup, onMount } from "solid-js";
 
 import { Config } from "../../../config/store";

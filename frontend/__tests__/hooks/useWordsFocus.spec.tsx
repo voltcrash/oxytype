@@ -10,11 +10,11 @@ vi.mock("../../src/ts/states/test", async () => {
   state.setWarning = setWarning;
   return { showOutOfFocusWarning };
 });
+import { useWordsFocus } from "../../src/ts/hooks/useWordsFocus";
 import {
   setReadAheadDisabled,
   setWordsVisible,
 } from "../../src/ts/states/funbox";
-import { useWordsFocus } from "../../src/ts/hooks/useWordsFocus";
 
 afterEach(() => {
   cleanup();

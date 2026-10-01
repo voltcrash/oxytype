@@ -24,7 +24,7 @@ import Inspect from "vite-plugin-inspect";
 import { ViteMinifyPlugin } from "vite-plugin-minify";
 import { VitePWA } from "vite-plugin-pwa";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
-import { KnownFontName } from "@monkeytype/schemas/fonts";
+import { KnownFontName } from "@oxytype/schemas/fonts";
 import solidPlugin from "vite-plugin-solid";
 import devtools from "solid-devtools/vite";
 import tailwindcss from "@tailwindcss/vite";
@@ -129,21 +129,21 @@ function getPlugins({
       injectRegister: null,
       registerType: "autoUpdate",
       manifest: {
-        short_name: "Monkeytype",
-        name: "Monkeytype",
+        short_name: "Oxytype",
+        name: "Oxytype",
         start_url: "/",
         icons: [
           {
-            src: "/images/icons/maskable_icon_x512.png",
-            sizes: "512x512",
+            src: "/images/icons/oxytype-192.png",
+            sizes: "192x192",
             type: "image/png",
-            purpose: "maskable",
+            purpose: "any maskable",
           },
           {
-            src: "/images/icons/general_icon_x512.png",
+            src: "/images/icons/oxytype-512.png",
             sizes: "512x512",
             type: "image/png",
-            purpose: "any",
+            purpose: "any maskable",
           },
         ],
         background_color: "#323437",
@@ -160,7 +160,9 @@ function getPlugins({
         runtimeCaching: [
           {
             urlPattern: (options) => {
-              const isApi = options.url.hostname === "api.monkeytype.com";
+              const isApi =
+                options.url.pathname === "/api" ||
+                options.url.pathname.startsWith("/api/");
               return options.sameOrigin && !isApi;
             },
             handler: "NetworkFirst",
@@ -180,12 +182,12 @@ function getPlugins({
     useSentry
       ? sentryVitePlugin({
           authToken: env["SENTRY_AUTH_TOKEN"],
-          org: "monkeytype",
-          project: "frontend",
+          org: env["SENTRY_ORG"],
+          project: env["SENTRY_PROJECT"],
           release: {
             name: clientVersion,
           },
-          applicationKey: "monkeytype-frontend",
+          applicationKey: "oxytype-frontend",
         })
       : null,
     injectPreload(),
@@ -209,7 +211,7 @@ function getBuildOptions({
     assetsInlineLimit: 0, //dont inline small files as data
     rolldownOptions: {
       input: {
-        monkeytype: path.resolve(__dirname, "src/index.html"),
+        oxytype: path.resolve(__dirname, "src/index.html"),
         email: path.resolve(__dirname, "src/email-handler.html"),
         privacy: path.resolve(__dirname, "src/privacy-policy.html"),
         security: path.resolve(__dirname, "src/security-policy.html"),
@@ -258,7 +260,7 @@ function getBuildOptions({
               test: /node_modules\/@tanstack\//,
             },
             {
-              name: "monkeytype-packages",
+              name: "oxytype-packages",
               test: /monkeytype\/packages\//,
             },
             {
@@ -266,7 +268,7 @@ function getBuildOptions({
               test: /node_modules\/chart/,
             },
             {
-              name: "monkeytype-utils",
+              name: "oxytype-utils",
               test: /src\/ts\/utils\//,
             },
             {
@@ -330,15 +332,23 @@ function getCssOptions({
 
 export default defineConfig(({ mode }): UserConfig => {
   const env = loadEnv(mode, process.cwd(), "");
-  const useSentry = env["SENTRY"] !== undefined;
+  const useSentry = Boolean(env["SENTRY_AUTH_TOKEN"]);
   const isDevelopment = mode !== "production";
 
   if (!isDevelopment) {
     if (env["RECAPTCHA_SITE_KEY"] === undefined) {
       throw new Error(`${mode}: RECAPTCHA_SITE_KEY is not defined`);
     }
-    if (useSentry && env["SENTRY_AUTH_TOKEN"] === undefined) {
-      throw new Error(`${mode}: SENTRY_AUTH_TOKEN is not defined`);
+    if (
+      useSentry &&
+      (env["SENTRY_ORG"] === undefined ||
+        env["SENTRY_ORG"] === "" ||
+        env["SENTRY_PROJECT"] === undefined ||
+        env["SENTRY_PROJECT"] === "")
+    ) {
+      throw new Error(
+        `${mode}: SENTRY_ORG and SENTRY_PROJECT are required for source map uploads`,
+      );
     }
   }
 

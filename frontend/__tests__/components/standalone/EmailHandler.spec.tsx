@@ -49,6 +49,21 @@ it.each([
   expect(container.querySelector(".icon .fa-times")).not.toBeNull();
 });
 
+it("shows initialization failures instead of leaving the page blank", () => {
+  window.history.replaceState(null, "", "/?mode=verifyEmail&oobCode=code");
+  const { container } = render(() => (
+    <EmailHandler
+      initializeAuth={() => {
+        throw new Error("Firebase is not configured");
+      }}
+    />
+  ));
+  expect(container.querySelector(".preloader .text")).toHaveTextContent(
+    "Fatal error: Firebase is not configured",
+  );
+  expect(container.querySelector(".icon .fa-times")).not.toBeNull();
+});
+
 it("verifies a decoded code and updates title and completion text", async () => {
   vi.mocked(applyActionCode).mockResolvedValue();
   const { container } = mount("mode=verifyEmail&oobCode=a%2Bb+code");
@@ -56,7 +71,7 @@ it("verifies a decoded code and updates title and completion text", async () => 
     expect(container.querySelector(".fa-check")).not.toBeNull(),
   );
   expect(applyActionCode).toHaveBeenCalledWith(auth, "a+b code");
-  expect(document.title).toBe("Verify Email | Monkeytype");
+  expect(document.title).toBe("Verify Email | Oxytype");
   expect(container.querySelector("#logo span")?.textContent).toBe(
     "Verify Email",
   );

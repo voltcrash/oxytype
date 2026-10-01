@@ -1,5 +1,5 @@
-import { ConfigSchema } from "@monkeytype/schemas/configs";
-import { FontNameSchema } from "@monkeytype/schemas/fonts";
+import { ConfigSchema } from "@oxytype/schemas/configs";
+import { FontNameSchema } from "@oxytype/schemas/fonts";
 import { createResource, For, JSXElement, Show } from "solid-js";
 import { z } from "zod";
 

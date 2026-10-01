@@ -1,8 +1,8 @@
-import { ResultFilters, ResultFiltersSchema } from "@monkeytype/schemas/users";
+import { ResultFilters, ResultFiltersSchema } from "@oxytype/schemas/users";
 
 import defaultResultFilters from "../../../constants/default-result-filters";
 import { sanitize } from "../../../utils/sanitize";
-import { typedKeys } from "@monkeytype/util/objects";
+import { typedKeys } from "@oxytype/util/objects";
 
 export function mergeWithDefaultFilters(
   filters: Partial<ResultFilters>,

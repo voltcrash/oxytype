@@ -1,294 +1,35 @@
-/* oxlint-disable no-unsafe-member-access */
-import {
-  removeAdSlots,
-  setAdMessage,
-  setAdWithLeft,
-  setShellAdsVisible,
-} from "../states/ads";
-import { debounce } from "throttle-debounce";
-import { configEvent } from "../events/config";
-import { Config } from "../config/store";
-import * as EG from "./eg-ad-controller";
-import * as PW from "./pw-ad-controller";
-import { onCleanup, onMount } from "solid-js";
-import { isTestActive } from "../states/test";
-// import { createEffect } from "solid-js";
-
-const breakpoint = 900;
-let widerThanBreakpoint = true;
-
-const breakpoint2 = 1330;
-let widerThanBreakpoint2 = true;
-
-let initialised = false;
-let refreshInterval: ReturnType<typeof setInterval> | undefined;
-
-export let adBlock: boolean;
-export let cookieBlocker: boolean;
-
-// export let choice: "eg" | "pw" = Math.random() < 0.5 ? "eg" : "pw";
-const choice: "eg" | "pw" = "pw";
-
-// console.log("AB choice: " + choice);
-
-// const adChoiceForce = window.localStorage.getItem("adChoiceForce");
-// if (adChoiceForce === "eg") {
-//   choice = "eg";
-//   console.log("AB choice forced: " + choice);
-// } else if (adChoiceForce === "pw") {
-//   choice = "pw";
-//   console.log("AB choice forced: " + choice);
-// }
-
-function init(): void {
-  if (choice === "eg") {
-    EG.init();
-  } else {
-    PW.init();
-  }
-
-  refreshInterval = setInterval(() => {
-    if (isTestActive()) {
-      return;
-    }
-    if (choice === "eg") {
-      void EG.refreshVisible();
-    } else {
-      void PW.refreshVisible();
-    }
-  }, 60000);
-
-  initialised = true;
-}
-
-function removeAll(): void {
-  removeSellout();
-  removeOn();
-  removeResult();
-}
-
-function removeSellout(): void {
-  removeAdSlots.dispatch([
-    "ad-footer",
-    "ad-settings-1",
-    "ad-settings-2",
-    "ad-settings-3",
-    "ad-account-1",
-    "ad-account-2",
-  ]);
-}
-function removeOn(): void {
-  removeAdSlots.dispatch(["ad-vertical-right", "ad-vertical-left"]);
-}
-function removeResult(): void {
-  removeAdSlots.dispatch(["ad-result"]);
-}
-
-function updateBreakpoint(noReinstate = false): void {
-  const beforeUpdate = widerThanBreakpoint;
-
-  if (window.innerWidth > breakpoint) {
-    widerThanBreakpoint = true;
-  } else {
-    widerThanBreakpoint = false;
-  }
-  if (noReinstate) return;
-  if (Config.ads === "off" || !initialised) return;
-  if (beforeUpdate !== widerThanBreakpoint) {
-    if (choice === "eg") {
-      EG.reinstate();
-    } else {
-      PW.reinstate();
-    }
-  }
-}
-
-function updateBreakpoint2(noReinstate = false): void {
-  if (choice !== "pw") return;
-  const beforeUpdate = widerThanBreakpoint2;
-
-  if (window.innerWidth > breakpoint2) {
-    widerThanBreakpoint2 = true;
-  } else {
-    widerThanBreakpoint2 = false;
-  }
-  if (noReinstate) return;
-  if (Config.ads === "off" || !initialised) return;
-  if (beforeUpdate !== widerThanBreakpoint2) {
-    PW.reinstate();
-  }
-}
-
-async function _refreshVisible(): Promise<void> {
-  if (choice === "eg") {
-    await EG.refreshVisible();
-  } else {
-    await PW.refreshVisible();
-  }
-}
+// Oxytype has no configured advertising provider.
+export const adBlock = false;
+export const cookieBlocker = false;
 
 export async function checkAdblock(): Promise<void> {
-  return new Promise((resolve) => {
-    if (choice === "eg") {
-      if (adBlock === undefined) {
-        //@ts-expect-error 3rd party ad code
-        if (window.egAdPack === undefined) {
-          adBlock = true;
-        } else {
-          adBlock = false;
-        }
-      }
-    } else if (choice === "pw") {
-      //@ts-expect-error 3rd party ad code
-      if (window.ramp === undefined) {
-        adBlock = true;
-      }
-    }
-    resolve();
-  });
+  return;
 }
 
 export async function checkCookieblocker(): Promise<void> {
-  return new Promise((resolve) => {
-    if (cookieBlocker === undefined) {
-      if (choice === "pw") {
-        cookieBlocker = false;
-        resolve();
-        return;
-      }
-
-      //@ts-expect-error 3rd party ad code
-      if (window.__tcfapi === undefined) {
-        cookieBlocker = true;
-        resolve();
-        return;
-      }
-      //@ts-expect-error 3rd party ad code
-      // oxlint-disable-next-line no-unsafe-call
-      window.__tcfapi("getTCData", 2, (tcData, success) => {
-        if (success as boolean) {
-          if (tcData.eventStatus === "cmpuishown") {
-            cookieBlocker = true;
-          } else {
-            cookieBlocker = false;
-          }
-        } else {
-          cookieBlocker = true;
-        }
-      });
-    }
-    resolve();
-  });
+  return;
 }
 
 export async function reinstate(): Promise<boolean> {
-  if (Config.ads === "off") return false;
-  if (!initialised) {
-    init();
-    return true;
-  }
-  await checkAdblock();
-  await checkCookieblocker();
-  if (adBlock || cookieBlocker) return false;
-
-  if (choice === "eg") {
-    return EG.reinstate();
-  } else {
-    return PW.reinstate();
-  }
+  return false;
 }
 
 export async function renderResult(): Promise<void> {
-  if (Config.ads === "off") return;
-  if (!initialised) {
-    init();
-  }
-  await checkAdblock();
-  await checkCookieblocker();
-
-  if (adBlock) {
-    setAdMessage("adblock");
-    return;
-  }
-  if (cookieBlocker) {
-    setAdMessage("cookies");
-    return;
-  }
-
-  if (choice === "eg") {
-    EG.renderResult(widerThanBreakpoint);
-  } else {
-    void PW.renderResult();
-  }
+  return;
 }
 
-export function updateFooterAndVerticalAds(visible: boolean): void {
-  setShellAdsVisible(visible);
+export function updateFooterAndVerticalAds(_visible: boolean): void {
+  return;
 }
 
 export function showConsentPopup(): void {
-  if (choice === "eg") {
-    //@ts-expect-error 3rd party ad code, doesnt have types
-    // oxlint-disable-next-line no-unsafe-call
-    window.__tcfapi("displayConsentUi", 2, function () {
-      //
-    });
-  } else {
-    //@ts-expect-error 3rd party ad code, doesnt have types
-    // oxlint-disable-next-line no-unsafe-call
-    ramp.showCmpModal();
-  }
+  return;
 }
 
 export function destroyResult(): void {
-  if (choice === "pw") {
-    PW.destroyAll();
-  }
-  // $("#ad-result-wrapper").empty();
-  // $("#ad-result-small-wrapper").empty();
+  return;
 }
 
-const debouncedBreakpointUpdate = debounce(500, updateBreakpoint);
-const debouncedBreakpoint2Update = debounce(500, updateBreakpoint2);
-
-configEvent.subscribe(({ key, newValue }) => {
-  if (key === "ads") {
-    if (newValue === "off") {
-      removeAll();
-    } else if (newValue === "result") {
-      removeSellout();
-      removeOn();
-    } else if (newValue === "on") {
-      removeSellout();
-    }
-  }
-});
-
 export function useAdLifecycle(): void {
-  onMount(() => {
-    updateBreakpoint(true);
-    updateBreakpoint2();
-    const resize = (): void => {
-      debouncedBreakpointUpdate();
-      debouncedBreakpoint2Update();
-    };
-    window.addEventListener("resize", resize);
-    const previousError = window.onerror;
-    window.onerror = (error): void => {
-      if (
-        choice === "eg" &&
-        typeof error === "string" &&
-        error.startsWith("EG APS")
-      ) {
-        setAdWithLeft(true);
-      }
-    };
-    onCleanup(() => {
-      window.removeEventListener("resize", resize);
-      debouncedBreakpointUpdate.cancel();
-      debouncedBreakpoint2Update.cancel();
-      window.onerror = previousError;
-      clearInterval(refreshInterval);
-    });
-  });
+  return;
 }

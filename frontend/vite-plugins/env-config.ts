@@ -32,18 +32,23 @@ export function envConfig(options: {
           recaptchaSiteKey: "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI",
           quickLoginEmail: options.env["QUICK_LOGIN_EMAIL"],
           quickLoginPassword: options.env["QUICK_LOGIN_PASSWORD"],
+          sentryDsn:
+            options.env["SENTRY_DSN"] === ""
+              ? undefined
+              : options.env["SENTRY_DSN"],
         };
 
         const prodConfig: EnvConfig = {
           isDevelopment: false,
-          backendUrl: fallback(
-            options.env["BACKEND_URL"],
-            "https://api.monkeytype.com",
-          ),
+          backendUrl: fallback(options.env["BACKEND_URL"], "/api"),
           recaptchaSiteKey: options.env["RECAPTCHA_SITE_KEY"] ?? "",
           quickLoginEmail: undefined,
           quickLoginPassword: undefined,
           clientVersion: options.clientVersion,
+          sentryDsn:
+            options.env["SENTRY_DSN"] === ""
+              ? undefined
+              : options.env["SENTRY_DSN"],
         };
 
         const envConfig = options.isDevelopment ? devConfig : prodConfig;

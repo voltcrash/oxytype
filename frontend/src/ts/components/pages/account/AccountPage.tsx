@@ -1,4 +1,4 @@
-import { Mode } from "@monkeytype/schemas/shared";
+import { Mode } from "@oxytype/schemas/shared";
 import { createMemo, createSignal, JSXElement, Show } from "solid-js";
 
 import {

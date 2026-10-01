@@ -22,7 +22,7 @@ export function ResultWatermark(): JSXElement {
           </Show>
           <span>{watermark().date}</span>
           <span class="pipe">|</span>
-          <span>monkeytype.com</span>
+          <span>oxytype</span>
         </div>
       )}
     </Show>

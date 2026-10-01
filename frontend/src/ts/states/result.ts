@@ -1,8 +1,8 @@
 import type { CartesianScaleOptions, Chart, ChartDataset } from "chart.js";
 import { createSignal } from "solid-js";
 import { createStore } from "solid-js/store";
-import { Language } from "@monkeytype/schemas/languages";
-import { TypingSpeedUnit } from "@monkeytype/schemas/configs";
+import { Language } from "@oxytype/schemas/languages";
+import { TypingSpeedUnit } from "@oxytype/schemas/configs";
 import type { WordsHistoryItem } from "../test/word-markup";
 import { createEvent } from "../hooks/createEvent";
 import type { SupportsFlags } from "../controllers/user-flag-controller";

@@ -1,4 +1,3 @@
-import { setAnalyticsMarkupEnabled } from "../states/third-party";
 import {
   Analytics as AnalyticsType,
   logEvent,
@@ -29,7 +28,6 @@ export function activateAnalytics(): void {
   try {
     analytics = getAnalytics();
     setAnalyticsCollectionEnabled(analytics, true);
-    setAnalyticsMarkupEnabled(true);
   } catch (e) {
     console.error(createErrorMessage(e, "Failed to activate analytics"));
   }

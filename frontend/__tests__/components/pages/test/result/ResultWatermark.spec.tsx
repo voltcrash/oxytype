@@ -22,7 +22,7 @@ describe("ResultWatermark", () => {
       [...container.querySelectorAll(".ssWatermark span")].map(
         (s) => s.textContent,
       ),
-    ).toEqual(["01 Jan 2026 10:00", "|", "monkeytype.com"]);
+    ).toEqual(["01 Jan 2026 10:00", "|", "oxytype"]);
   });
 
   it("shows the user name and flag icons", () => {

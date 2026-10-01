@@ -111,8 +111,8 @@ import {
 import { resultState, type ResultStats } from "../../src/ts/states/result";
 import { __testing } from "../../src/ts/config/testing";
 import { Config } from "../../src/ts/config/store";
-import type { CompletedEvent } from "@monkeytype/schemas/results";
-import type { Config as ConfigType } from "@monkeytype/schemas/configs";
+import type { CompletedEvent } from "@oxytype/schemas/results";
+import type { Config as ConfigType } from "@oxytype/schemas/configs";
 import type { Quote } from "../../src/ts/controllers/quotes-controller";
 
 const { replaceConfig } = __testing;

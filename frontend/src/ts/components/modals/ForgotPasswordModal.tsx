@@ -1,4 +1,4 @@
-import { UserEmailSchema } from "@monkeytype/schemas/users";
+import { UserEmailSchema } from "@oxytype/schemas/users";
 import { createForm } from "@tanstack/solid-form";
 
 import Ape from "../../ape";

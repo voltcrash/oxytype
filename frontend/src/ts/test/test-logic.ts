@@ -5,7 +5,7 @@ import * as TestUI from "./test-ui";
 import * as Strings from "../utils/strings";
 import * as Misc from "../utils/misc";
 import * as JSONData from "../utils/json-data";
-import * as Numbers from "@monkeytype/util/numbers";
+import * as Numbers from "@oxytype/util/numbers";
 import {
   showNoticeNotification,
   showErrorNotification,
@@ -75,11 +75,11 @@ import * as AnalyticsController from "../controllers/analytics-controller";
 import { getAuthenticatedUser } from "../firebase";
 import { highlight } from "../events/keymap";
 import * as LazyModeState from "../states/remember-lazy-mode";
-import { Mode } from "@monkeytype/schemas/shared";
+import { Mode } from "@oxytype/schemas/shared";
 import {
   CompletedEvent,
   CompletedEventCustomText,
-} from "@monkeytype/schemas/results";
+} from "@oxytype/schemas/results";
 import {
   findSingleActiveFunboxWithFunction,
   getActiveFunboxes,
@@ -88,11 +88,11 @@ import {
   isFunboxActive,
   isFunboxActiveWithProperty,
 } from "./funbox/list";
-import { getFunbox } from "@monkeytype/funbox";
+import { getFunbox } from "@oxytype/funbox";
 import * as CompositionState from "../states/composition";
 import { SnapshotResult } from "../constants/default-snapshot";
 import { WordGenError } from "../utils/word-gen-error";
-import { tryCatch } from "@monkeytype/util/trycatch";
+import { tryCatch } from "@oxytype/util/trycatch";
 import * as Sentry from "../sentry";
 import { showLoaderBar, hideLoaderBar } from "../states/loader-bar";
 import { canQuickRestart } from "../utils/quick-restart";

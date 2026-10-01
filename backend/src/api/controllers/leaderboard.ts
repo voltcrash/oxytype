@@ -18,13 +18,13 @@ import {
   GetWeeklyXpLeaderboardRankQuery,
   GetWeeklyXpLeaderboardRankResponse,
   GetWeeklyXpLeaderboardResponse,
-} from "@monkeytype/contracts/leaderboards";
-import { Configuration } from "@monkeytype/schemas/configuration";
+} from "@oxytype/contracts/leaderboards";
+import { Configuration } from "@oxytype/schemas/configuration";
 import {
   getCurrentDayTimestamp,
   getCurrentWeekTimestamp,
   MILLISECONDS_IN_DAY,
-} from "@monkeytype/util/date-and-time";
+} from "@oxytype/util/date-and-time";
 import { MonkeyRequest } from "../types";
 import { omit } from "../../utils/misc";
 
