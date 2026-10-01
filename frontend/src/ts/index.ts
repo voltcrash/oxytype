@@ -14,7 +14,6 @@ import * as Result from "./test/result";
 import { onAuthStateChanged } from "./auth";
 import { enable } from "./states/glarses-mode";
 import "./controllers/route-controller";
-import { egVideoListener } from "./components/popups/VideoAdPopup";
 import "./states/connection";
 import "./test/tts";
 import { addToGlobal } from "./utils/misc";
@@ -79,7 +78,6 @@ addToGlobal({
   enableTimerDebug: TestTimer.enableTimerDebug,
   getTimerStats: TestTimer.getTimerStats,
   toggleSmoothedBurst: Result.toggleSmoothedBurst,
-  egVideoListener: egVideoListener,
   toggleDebugLogs: Logger.toggleDebugLogs,
   toggleSentryDebug: Sentry.toggleDebug,
   lastEventLog: () => getLastEventLog(),

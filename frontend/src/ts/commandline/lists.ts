@@ -24,7 +24,6 @@ import {
   clearAllNotifications,
   showSuccessNotification,
 } from "../states/notifications";
-import { showVideoAdPopup } from "../components/popups/VideoAdPopup";
 import { Command, CommandlineListKey, CommandsSubgroup } from "./types";
 import { COMMAND_SEPARATOR_HTML, buildCommandForConfigKey } from "./util";
 import { CommandlineConfigMetadataObject } from "./commandline-metadata";
@@ -214,15 +213,6 @@ export const commands: CommandsSubgroup = {
     //other
     ...LoadChallengeCommands,
     ...NavigationCommands,
-    {
-      id: "watchVideoAd",
-      display: "Watch video ad",
-      alias: "support donate",
-      icon: "fa-ad",
-      exec: (): void => {
-        void showVideoAdPopup();
-      },
-    },
     {
       id: "importSettingsJSON",
       display: "Import settings JSON",
