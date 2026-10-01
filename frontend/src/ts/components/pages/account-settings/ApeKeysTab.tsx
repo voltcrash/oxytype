@@ -33,11 +33,7 @@ export function ApeKeysTab() {
         fa={{ icon: "fa-key" }}
         description=<>
           Generate Ape Keys to access certain API endpoints (
-          <Button
-            text="documentation"
-            href="/api/docs"
-            variant="text"
-          />
+          <Button text="documentation" href="/api/docs" variant="text" />
           ).
         </>
         button={{
