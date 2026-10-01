@@ -86,7 +86,7 @@
 }
 
 @utility debug {
-  @apply border border-dashed border-debug!;
+  @apply border! border-dashed! border-debug!;
 }
 
 @utility text-em-xs {
