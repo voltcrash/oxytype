@@ -168,6 +168,7 @@ Perf critical: per-keystroke work must not regress. Measure with `utils/profiler
   > Note: `AppPages` owns Show attachment, classes, refs and fades; controller retains lifecycle/loading orchestration via `states/page-transition.ts`. Component owners/test refs stay cached across navigation to preserve legacy input/caret bindings and page-local state; existing `Page` gates still own active-page content. Deleted unused Skeleton. Added transition/ref-retention tests; full smoke/frontend checks pass with the Knip baseline exception.
 - [x] **P5.3** Router: `route-controller.ts` → keep own router (D2; no `@solidjs/router`); replace `[router-link]` delegated handler with `<A>`-like `Link` component; remove `pages/page.ts` `element: ElementWithUtils` field.
   > Note: internal anchors use `Link` (including Button, logo and result login); removed delegated clicks and `Page.element`. Custom router/guards/history and modified-click behavior retained; added Link/Button routing tests. Full smoke/frontend checks pass with the documented Knip baseline exception.
+  > Follow-up (1 October 2026): D2 superseded. Solid Router now owns matching, native links and history; custom route controller/navigation event bus removed. Component-owned `NavigationRuntime` retains auth/loading, test guards and page lifecycles; URL replacements use the mounted router. Cached page owners/ref bindings and transition animations remain.
 - [x] **P5.4** `legacy-states/*` → move to `states/` as signals (composition, connection, glarses-mode, page-transition, remember-lazy-mode, slow-timer). Delete `legacy-states/`.
   > Note: all six modules now use signals in `states/`; APIs, offline-banner debounce and lazy validated storage reads/writes preserved. Added reactivity/transition/slow-timer/persistence tests. Full frontend checks pass; root Knip retains the documented Storybook error, scoped findings match baseline.
 - [x] **P5.5** `ui.ts` / `ready.ts` / `elements/no-css.ts` / `event-handlers/global.ts` DOM bits → App effects or `onMount`. `body.loading` class → App.
@@ -223,6 +224,6 @@ Parallel agents: one on P1, one on P2, one on P3 is safe (disjoint files) — ex
 ## 7. Decisions (fill in)
 
 - **D1** ✅ Word rendering: imperative DOM inside Solid component (A). Reason: keystroke perf, low risk; fully reactive `<For>` (B) = possible follow-up PR with benchmarks.
-- **D2** ✅ Router: keep custom `route-controller`. Reason: navigation guards + page lifecycle/loading modes already built in; `@solidjs/router` = possible follow-up PR.
+- **D2** ✅ Router: use `@solidjs/router` 1.0 (follow-up, 1 October 2026). Standard matching/history with component-owned navigation guards and auth/loading bridge; existing page lifecycle/animations and cached typing-test refs retained. Supersedes the initial decision to keep `route-controller`.
 - **D3** ✅ Convert each migrated component's styles to Tailwind in the same task/commit. Delete replaced SCSS.
 - **D4** ✅ Keep this file in final PR (P6.6: tick all boxes, don't delete).

@@ -477,6 +477,9 @@ importers:
       '@solidjs/meta':
         specifier: 0.29.4
         version: 0.29.4(solid-js@1.9.15)
+      '@solidjs/router':
+        specifier: 1.0.0
+        version: 1.0.0(solid-js@1.9.15)
       '@tanstack/pacer-lite':
         specifier: 0.3.0
         version: 0.3.0
@@ -594,7 +597,7 @@ importers:
         version: 0.33.5(solid-js@1.9.15)
       '@solidjs/testing-library':
         specifier: 0.8.10
-        version: 0.8.10(solid-js@1.9.15)
+        version: 0.8.10(@solidjs/router@1.0.0(solid-js@1.9.15))(solid-js@1.9.15)
       '@tailwindcss/vite':
         specifier: 4.3.3
         version: 4.3.3(@voidzero-dev/vite-plus-core@1.0.0(@types/node@24.19.0)(esbuild@0.27.7)(jiti@2.7.0)(sass@1.105.1)(terser@5.49.1)(tsx@4.23.15)(typescript@7.0.2)(yaml@2.9.1))
@@ -4413,6 +4416,11 @@ packages:
     resolution: {integrity: sha512-zdIWBGpR9zGx1p1bzIPqF5Gs+Ks/BH8R6fWhmUa/dcK1L2rUC8BAcZJzNRYBQv74kScf1TSOs0EY//Vd/I0V8g==}
     peerDependencies:
       solid-js: '>=1.8.4'
+
+  '@solidjs/router@1.0.0':
+    resolution: {integrity: sha512-cCSk1hvgCowiMa9bzzYWHiLu1U4E22+DfJe6/rOwAyECKrxc3jrd5QnoW3sDDJtW+e077cz/M67bPl3DqOBw1Q==}
+    peerDependencies:
+      solid-js: ^1.8.6
 
   '@solidjs/testing-library@0.8.10':
     resolution: {integrity: sha512-qdeuIerwyq7oQTIrrKvV0aL9aFeuwTd86VYD3afdq5HYEwoox1OBTJy4y8A3TFZr8oAR0nujYgCzY/8wgHGfeQ==}
@@ -14786,10 +14794,16 @@ snapshots:
     dependencies:
       solid-js: 1.9.15
 
-  '@solidjs/testing-library@0.8.10(solid-js@1.9.15)':
+  '@solidjs/router@1.0.0(solid-js@1.9.15)':
+    dependencies:
+      solid-js: 1.9.15
+
+  '@solidjs/testing-library@0.8.10(@solidjs/router@1.0.0(solid-js@1.9.15))(solid-js@1.9.15)':
     dependencies:
       '@testing-library/dom': 10.4.2
       solid-js: 1.9.15
+    optionalDependencies:
+      '@solidjs/router': 1.0.0(solid-js@1.9.15)
 
   '@standard-schema/spec@1.1.0': {}
 

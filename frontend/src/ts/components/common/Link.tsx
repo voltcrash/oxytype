@@ -1,6 +1,5 @@
 import { JSX, JSXElement, splitProps } from "solid-js";
 
-import { navigationEvent } from "../../events/navigation";
 import { cn } from "../../utils/cn";
 
 type LinkProps = Omit<
@@ -17,16 +16,8 @@ export function Link(props: LinkProps): JSXElement {
       {...rest}
       class={cn(local.class)}
       router-link
-      onClick={(event) => {
-        local.onClick?.(event);
-        if (event.currentTarget.href) {
-          event.preventDefault();
-          navigationEvent.dispatch({
-            url: event.currentTarget.href,
-            options: {},
-          });
-        }
-      }}
+      {...{ link: true, noScroll: true }}
+      onClick={(event) => local.onClick?.(event)}
     >
       {props.children}
     </a>

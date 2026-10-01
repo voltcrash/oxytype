@@ -3,6 +3,7 @@ import { serialize } from "zod-urlsearchparams";
 import { z } from "zod/v3";
 
 import { useRef } from "../../hooks/useRef";
+import { replaceUrl } from "../../navigation/navigation";
 import {
   showErrorNotification,
   showSuccessNotification,
@@ -141,10 +142,10 @@ function DeepLinkButton(props: { key: string }) {
           },
         });
         const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
-        window.history.replaceState({}, "", newUrl);
-
-        navigator.clipboard
-          .writeText(window.location.toString())
+        replaceUrl(newUrl)
+          .then(async () =>
+            navigator.clipboard.writeText(window.location.toString()),
+          )
           .then(() => {
             showSuccessNotification("Link copied to clipboard");
           })

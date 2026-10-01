@@ -13,7 +13,6 @@ import * as TestTimer from "./test/test-timer";
 import * as Result from "./test/result";
 import { onAuthStateChanged } from "./auth";
 import { enable } from "./states/glarses-mode";
-import "./controllers/route-controller";
 import "./states/connection";
 import "./test/tts";
 import { addToGlobal } from "./utils/misc";
@@ -25,7 +24,7 @@ import "./elements/psa";
 import "./controllers/url-handler";
 import { applyEngineSettings } from "./anim";
 import { render } from "solid-js/web";
-import { App } from "./components/App";
+import { AppRouter } from "./components/AppRouter";
 import { setVersion } from "./states/core";
 import { loadFromLocalStorage } from "./config/lifecycle";
 
@@ -88,7 +87,7 @@ const appElement = document.getElementById("app");
 if (!appElement) throw new Error("App mount not found");
 render(
   () =>
-    App({
+    AppRouter({
       element: appElement,
       body: document.body as HTMLBodyElement,
       noCssWarning: document.getElementById("nocss"),

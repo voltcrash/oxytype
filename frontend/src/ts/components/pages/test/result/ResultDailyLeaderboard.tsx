@@ -2,7 +2,7 @@ import { animate } from "animejs";
 import { JSXElement, Show } from "solid-js";
 
 import { Config } from "../../../../config/store";
-import { navigate } from "../../../../controllers/route-controller";
+import { navigate } from "../../../../navigation/navigation";
 import Format from "../../../../singletons/format";
 import { resultState } from "../../../../states/result";
 import { applyReducedMotion, getMode2 } from "../../../../utils/misc";
