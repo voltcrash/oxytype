@@ -1,6 +1,6 @@
 # Oxytype architecture
 
-Snapshot: 29 September 2026. Package versions come from the workspace manifests and lockfile. This describes the codebase, including inherited architecture; Oxytype branding and deployment ownership are being updated in separate PRs.
+Snapshot: 1 October 2026. Package versions come from the workspace manifests and lockfile. This describes the codebase, including inherited architecture; Oxytype branding and deployment ownership are being updated in separate PRs.
 
 ## Repository map
 

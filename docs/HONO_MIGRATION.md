@@ -86,3 +86,25 @@ None. Preserve public contracts; explicitly describe the stats replacement.
   domain metrics remain; new HTTP counter/latency metrics use contract paths.
 - Documentation file tests use temporary fixtures and work without generated
   docs. The real Redoc/OpenAPI generation is verified separately by the build.
+
+## Final verification
+
+- Backend unit suite: `pnpm vitest run --project unit-backend` — 585 tests pass
+  across 27 files. This includes 42 new HTTP/adapter/prefix regression tests.
+- Backend build: `pnpm --filter @oxytype/backend run build` — passes, including
+  real OpenAPI/Redoc generation and compilation.
+- Typecheck: `pnpm oxlint --type-aware --type-check --format agent --tsconfig
+  backend/tsconfig.json backend/src` — no errors; standalone default lint emits
+  warnings. The workspace exposes Oxlint transitively through Vite+, so the local
+  binary was made available for this requested command.
+- Repository-configured lint/typecheck: `pnpm vp lint backend --type-aware
+  --type-check --format agent` — passes.
+- Formatting: `pnpm vp fmt backend --check` — passes. `git diff --check` passes.
+- Dependency/import audit: no backend Express-stack imports or dependencies;
+  `pnpm --filter @oxytype/backend why express @ts-rest/express express-rate-limit
+  cors helmet swagger-stats` reports none.
+- MongoDB/Redis integration: attempted
+  `pnpm vitest run backend/__tests__/__integration__/dal/config.spec.ts`; blocked
+  before tests because no working container runtime is available. Docker's
+  configured socket is absent. These integration suites still need CI/runtime
+  verification.
