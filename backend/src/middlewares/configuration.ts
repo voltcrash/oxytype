@@ -1,5 +1,4 @@
-import type { Response, NextFunction } from "express";
-import { TsRestRequestHandler } from "@ts-rest/express";
+import { ApiMiddleware } from "../api/http";
 import { EndpointMetadata } from "@oxytype/contracts/util/api";
 import MonkeyError from "../utils/error";
 import { Configuration } from "@oxytype/schemas/configuration";
@@ -8,21 +7,14 @@ import {
   RequireConfiguration,
 } from "@oxytype/contracts/require-configuration/index";
 import { getMetadata } from "./utility";
-import { TsRestRequestWithContext } from "../api/types";
-import { AppRoute, AppRouter } from "@ts-rest/core";
 
-export function verifyRequiredConfiguration<
-  T extends AppRouter | AppRoute,
->(): TsRestRequestHandler<T> {
-  return async (
-    req: TsRestRequestWithContext,
-    _res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
+export function verifyRequiredConfiguration(): ApiMiddleware {
+  return async (c, next): Promise<void> => {
+    const req = c.get("request");
     const requiredConfigurations = getRequireConfigurations(getMetadata(req));
 
     if (requiredConfigurations === undefined) {
-      next();
+      await next();
       return;
     }
     try {
@@ -39,11 +31,10 @@ export function verifyRequiredConfiguration<
           );
         }
       }
-      next();
+      await next();
       return;
     } catch (e) {
-      next(e);
-      return;
+      throw e;
     }
   };
 }
