@@ -479,11 +479,11 @@ importers:
         specifier: 0.2.2
         version: 0.2.2
       '@tanstack/query-db-collection':
-        specifier: 1.0.40
-        version: 1.0.40(@tanstack/query-core@5.104.0)(typescript@7.0.2)
+        specifier: 1.3.1
+        version: 1.3.1(@tanstack/query-core@5.104.0)(typescript@7.0.2)
       '@tanstack/solid-db':
-        specifier: 0.2.22
-        version: 0.2.22(solid-js@1.9.15)(typescript@7.0.2)
+        specifier: 0.3.0
+        version: 0.3.0(solid-js@1.9.15)(typescript@7.0.2)
       '@tanstack/solid-form':
         specifier: 1.33.0
         version: 1.33.0(solid-js@1.9.15)
@@ -4280,13 +4280,13 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7 || ^8
 
-  '@tanstack/db-ivm@0.1.18':
-    resolution: {integrity: sha512-+pZJiRKdoKRM5Epq9T7otD9ZJl82pRFauo7LKuJGrarjVKQ7r+QQlPe3kGdN9LEKSnuNGIWjX9OOY4M8kH4eLw==}
+  '@tanstack/db-ivm@0.1.24':
+    resolution: {integrity: sha512-xWm66aVw/eXS4KjcuwBqQw231qYV1M1ipRLDseIhPZMBjhmOW4doog36Ba2jub8/k+9Cbjy4foZuEVIXsbkq8Q==}
     peerDependencies:
       typescript: '>=4.7'
 
-  '@tanstack/db@0.6.8':
-    resolution: {integrity: sha512-1dzwxYH7jizvpOzVsVmxZ8dGwMPDaA+YcinEmAszoUYF7mgSL0RiIiGHFBAc0WyVvHES7vSHg6x0WslX8C+TTQ==}
+  '@tanstack/db@0.11.0':
+    resolution: {integrity: sha512-O4ukDucpipXg2NDndRMflVbodREqWdC4O0ysjM7Rvk+VAMYFv4fiRCegXCRAx3GyDkREfElGlcIgmdCobMELcw==}
     peerDependencies:
       typescript: '>=4.7'
 
@@ -4375,8 +4375,8 @@ packages:
   '@tanstack/query-core@5.104.0':
     resolution: {integrity: sha512-JrC2r/JQlXt7khBSdUpsgxNvybzOg+aITa+ARRMlP2AFo93Y8vIqz077rp+e61mJetSZ0T6AJbwW1JHer1vrPQ==}
 
-  '@tanstack/query-db-collection@1.0.40':
-    resolution: {integrity: sha512-93iWTBvNwLmhH4L7BL66Khr/pan2pXbdXa0uRtjThW5KRvwBCH13E5CM0PVd1QO9EcrSM+HcNg3MLUPR0EJGPg==}
+  '@tanstack/query-db-collection@1.3.1':
+    resolution: {integrity: sha512-IWTvPoRLiNoMuenEb1RycYJCYauGaEBo2EDSbHP2dIHPwtkH9bbl1heEN1YahuE4WvWjg/YxwvkgC/TfCrkkwg==}
     peerDependencies:
       '@tanstack/query-core': ^5.0.0
       typescript: '>=4.7'
@@ -4384,8 +4384,8 @@ packages:
   '@tanstack/query-devtools@5.104.0':
     resolution: {integrity: sha512-snKyFLVFC5LuNoyUTpyqCD2Z8cRlCWrAeO3xub0nGi81IMz8YAUWq2Z+XdpGSGT7bCxqVdOHUjyiA3CtDuBjfQ==}
 
-  '@tanstack/solid-db@0.2.22':
-    resolution: {integrity: sha512-q+Q8eFgPR7aREdJ9tjoHVN95gHhJwiw9eRWwlMOSsCWhYSN6Jm+yTSgWWbHq0rJOPOy1t1NQE7hMuXjH5WLbsA==}
+  '@tanstack/solid-db@0.3.0':
+    resolution: {integrity: sha512-mmEvUrw79HfYMbIVhw+ZnCnobY5qPYYxT6MDSiPDYiGE6f7U3f7tCfSjW5L7S2oA++6UA/YMLQVr1BIP5zqJsg==}
     peerDependencies:
       solid-js: '>=1.9.0'
 
@@ -14454,7 +14454,7 @@ snapshots:
 
   '@solid-primitives/trigger@1.2.3(solid-js@1.9.15)':
     dependencies:
-      '@solid-primitives/utils': 6.4.0(solid-js@1.9.15)
+      '@solid-primitives/utils': 6.4.1(solid-js@1.9.15)
       solid-js: 1.9.15
 
   '@solid-primitives/utils@6.3.2(solid-js@1.9.15)':
@@ -14648,16 +14648,16 @@ snapshots:
       tailwindcss: 4.3.3
       vite: '@voidzero-dev/vite-plus-core@1.0.0(@types/node@24.19.0)(esbuild@0.27.7)(jiti@2.7.0)(sass@1.98.0)(terser@5.49.1)(tsx@4.21.0)(typescript@7.0.2)(yaml@2.9.1)'
 
-  '@tanstack/db-ivm@0.1.18(typescript@7.0.2)':
+  '@tanstack/db-ivm@0.1.24(typescript@7.0.2)':
     dependencies:
       fractional-indexing: 3.2.0
       sorted-btree: 1.8.1
       typescript: 7.0.2
 
-  '@tanstack/db@0.6.8(typescript@7.0.2)':
+  '@tanstack/db@0.11.0(typescript@7.0.2)':
     dependencies:
       '@standard-schema/spec': 1.1.0
-      '@tanstack/db-ivm': 0.1.18(typescript@7.0.2)
+      '@tanstack/db-ivm': 0.1.24(typescript@7.0.2)
       '@tanstack/pacer-lite': 0.2.2
       typescript: 7.0.2
 
@@ -14750,10 +14750,10 @@ snapshots:
 
   '@tanstack/query-core@5.104.0': {}
 
-  '@tanstack/query-db-collection@1.0.40(@tanstack/query-core@5.104.0)(typescript@7.0.2)':
+  '@tanstack/query-db-collection@1.3.1(@tanstack/query-core@5.104.0)(typescript@7.0.2)':
     dependencies:
       '@standard-schema/spec': 1.1.0
-      '@tanstack/db': 0.6.8(typescript@7.0.2)
+      '@tanstack/db': 0.11.0(typescript@7.0.2)
       '@tanstack/query-core': 5.104.0
       typescript: 7.0.2
 
@@ -14773,10 +14773,10 @@ snapshots:
     transitivePeerDependencies:
       - csstype
 
-  '@tanstack/solid-db@0.2.22(solid-js@1.9.15)(typescript@7.0.2)':
+  '@tanstack/solid-db@0.3.0(solid-js@1.9.15)(typescript@7.0.2)':
     dependencies:
       '@solid-primitives/map': 0.7.3(solid-js@1.9.15)
-      '@tanstack/db': 0.6.8(typescript@7.0.2)
+      '@tanstack/db': 0.11.0(typescript@7.0.2)
       solid-js: 1.9.15
     transitivePeerDependencies:
       - typescript
