@@ -1,7 +1,7 @@
 import { MILLISECONDS_IN_DAY } from "@oxytype/util/date-and-time";
 import { roundTo2 } from "@oxytype/util/numbers";
 export { sanitizeString } from "@oxytype/util/strings";
-import uaparser from "ua-parser-js";
+import { UAParser } from "ua-parser-js";
 import { MonkeyRequest } from "../api/types";
 import { ObjectId } from "mongodb";
 
@@ -29,7 +29,7 @@ type AgentLog = {
 };
 
 export function buildAgentLog(req: MonkeyRequest): AgentLog {
-  const agent = uaparser(req.raw.headers["user-agent"]);
+  const agent = new UAParser(req.raw.headers["user-agent"]).getResult();
 
   const agentLog: AgentLog = {
     ip:
