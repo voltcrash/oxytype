@@ -5,12 +5,14 @@ import {
   type ServerInferResponses,
   checkZodSchema,
   isAppRoute,
+  isAppRouteNoBody,
+  isAppRouteOtherResponse,
   parseJsonQueryObject,
   TsRestResponseError,
 } from "@ts-rest/core";
 import type { Hono } from "hono";
-import type { ContentfulStatusCode } from "hono/utils/http-status";
-import type { ApiEnv, ApiMiddleware, HttpRequest } from "./http";
+import type { ContentfulStatusCode, StatusCode } from "hono/utils/http-status";
+import type { ApiContext, ApiEnv, ApiMiddleware, HttpRequest } from "./http";
 
 export type RouteImplementation<T extends AppRoute> = {
   middleware?: ApiMiddleware[];
@@ -74,6 +76,7 @@ export function createHonoEndpoints<T extends AppRouter>(
         route.method,
         route.path.replace(/\/$/, "") || "/",
         async (c, next) => {
+          decodeURIComponent(new URL(c.req.url).pathname);
           const req = c.get("request");
           req.tsRestRoute = route;
           req.params = c.req.param();
@@ -135,6 +138,21 @@ export function createHonoEndpoints<T extends AppRouter>(
           } catch (error) {
             if (!(error instanceof TsRestResponseError)) throw error;
             response = { status: error.statusCode, body: error.body };
+          }
+          const responseType = route.responses[response.status];
+          if (responseType !== undefined && isAppRouteNoBody(responseType))
+            return c.body(null, response.status as StatusCode);
+          if (
+            responseType !== undefined &&
+            isAppRouteOtherResponse(responseType)
+          ) {
+            return c.newResponse(
+              response.body as Parameters<ApiContext["newResponse"]>[0],
+              response.status as StatusCode,
+              {
+                "Content-Type": responseType.contentType,
+              },
+            );
           }
           return c.json(response.body, response.status as ContentfulStatusCode);
         },
