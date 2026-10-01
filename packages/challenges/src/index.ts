@@ -13,15 +13,7 @@ export type Challenge = {
   display: string;
   description: string;
   isHidden?: boolean;
-  category:
-    | "other"
-    | "endurance"
-    | "script"
-    | "speed"
-    | "accuracy"
-    | "funbox"
-    | "champions"
-    | "roleCount";
+  category: "other" | "endurance" | "script" | "speed" | "accuracy" | "funbox";
   settings: ChallengeSettings;
 };
 
