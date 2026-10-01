@@ -26,7 +26,9 @@ const PROJECT_ROOT = path.resolve(DIRNAME, "../../../");
 function getFirebaseProjectId() {
   const projectId = process.env.OXYTYPE_FIREBASE_PROJECT_ID?.trim();
   if (!projectId || !/^[a-z0-9][a-z0-9-]*$/.test(projectId)) {
-    throw new Error("Set OXYTYPE_FIREBASE_PROJECT_ID in packages/release/.env before deploying frontend");
+    throw new Error(
+      "Set OXYTYPE_FIREBASE_PROJECT_ID in packages/release/.env before deploying frontend",
+    );
   }
   return projectId;
 }
@@ -213,7 +215,9 @@ const purgeCache = () => {
   console.log("Purging Cloudflare cache...");
   const p = path.resolve(DIRNAME, "../bin/purgeCfCache.sh");
   if (!process.env.CF_ZONE_ID || !process.env.CF_API_KEY) {
-    console.log("Cloudflare cache purge skipped: credentials are not configured");
+    console.log(
+      "Cloudflare cache purge skipped: credentials are not configured",
+    );
     return;
   }
   runCommand(`bash ${p}`);
@@ -331,13 +335,16 @@ const main = async () => {
   checkUncommittedChanges();
 
   if (!isDryRun && !hotfix && !process.env.GITHUB_TOKEN) {
-    throw new Error("Set GITHUB_TOKEN in packages/release/.env before creating a release");
+    throw new Error(
+      "Set GITHUB_TOKEN in packages/release/.env before creating a release",
+    );
   }
   if (!isDryRun && !noDeploy) {
     if (!isBackend || isFrontend) getFirebaseProjectId();
     if (!isFrontend || isBackend) {
       for (const key of ["BE_HOST", "BE_USER", "BE_SCRIPT_PATH"]) {
-        if (!process.env[key]) throw new Error(`Set ${key} before deploying backend`);
+        if (!process.env[key])
+          throw new Error(`Set ${key} before deploying backend`);
       }
     }
   }

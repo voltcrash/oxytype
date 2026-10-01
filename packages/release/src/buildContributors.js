@@ -39,9 +39,7 @@ async function main() {
   }
 
   total = total
-    .filter(
-      (c) => !c.name?.includes("[bot]"),
-    )
+    .filter((c) => !c.name?.includes("[bot]"))
     .sort((a, b) => b.contributions - a.contributions);
 
   // dedupe
