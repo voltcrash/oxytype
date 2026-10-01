@@ -65,13 +65,6 @@ function getClientVersion(isDevelopment: boolean): string {
   }
 }
 
-/** Enable for font awesome v6 */
-/*
-function sassList(values) {
-  return values.map((it) => `"${it}"`).join(",");
-}
-*/
-
 function getPlugins({
   isDevelopment,
   env,
@@ -269,37 +262,11 @@ function getBuildOptions({
   };
 }
 
-function getCssOptions({
-  isDevelopment,
-}: {
-  isDevelopment: boolean;
-}): CSSOptions {
+function getCssOptions(): CSSOptions {
   return {
     devSourcemap: true,
     postcss: {
       plugins: [autoprefixer({})],
-    },
-    preprocessorOptions: {
-      scss: {
-        additionalData(source: string, fp: string) {
-          if (isDevelopment || fp.endsWith("index.scss")) {
-            /** Enable for font awesome v6 */
-            /*
-                const fontawesomeClasses = getFontawesomeConfig();
-
-                //inject variables into sass context
-                $fontawesomeBrands: ${sassList(
-                  fontawesomeClasses.brands
-                )};             
-                $fontawesomeSolid: ${sassList(fontawesomeClasses.solid)};
-              */
-
-            return `${isDevelopment ? '$fontAwesomeOverride:"@fortawesome/fontawesome-free/webfonts";' : ""}\n${source}`;
-          } else {
-            return source;
-          }
-        },
-      },
     },
   };
 }
@@ -330,7 +297,7 @@ export default defineConfig(({ mode }): UserConfig => {
     lint: { ...frontendLint },
     plugins: getPlugins({ isDevelopment, useSentry: useSentry, env }),
     build: getBuildOptions({ enableSourceMaps: useSentry }),
-    css: getCssOptions({ isDevelopment }),
+    css: getCssOptions(),
     server: {
       open: env["SERVER_OPEN"] !== "false",
       port: 3000,

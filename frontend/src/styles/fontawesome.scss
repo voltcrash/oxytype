@@ -1,9 +1,0 @@
-$fontAwesomeOverride: "/webfonts-generated" !default;
-
-@use "@fortawesome/fontawesome-free/scss/variables" with (
-  $font-path: $fontAwesomeOverride
-);
-@use "@fortawesome/fontawesome-free/scss/fontawesome";
-@use "@fortawesome/fontawesome-free/scss/solid";
-@use "@fortawesome/fontawesome-free/scss/regular";
-@use "@fortawesome/fontawesome-free/scss/brands";
