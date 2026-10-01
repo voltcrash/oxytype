@@ -3,6 +3,8 @@ import { setup } from "../../__testData__/controller-test";
 import GeorgeQueue from "../../../src/queues/george-queue";
 import crypto from "crypto";
 
+const signature = `sha256=${"0".repeat(64)}`;
+
 const { mockApp } = setup();
 
 describe("WebhooksController", () => {
@@ -24,7 +26,7 @@ describe("WebhooksController", () => {
       //WHEN
       const { body } = await mockApp
         .post("/webhooks/githubRelease")
-        .set("x-hub-signature-256", "the-signature")
+        .set("x-hub-signature-256", signature)
         .send({ action: "published", release: { id: 1 } })
         .expect(200);
 
@@ -39,14 +41,14 @@ describe("WebhooksController", () => {
         Buffer.from(
           "sha256=ff0f3080539e9df19153f6b5b5780f66e558d61038e6cf5ecf4efdc7266a7751",
         ),
-        Buffer.from("the-signature"),
+        Buffer.from(signature),
       );
     });
     it("should ignore non-published actions", async () => {
       //WHEN
       const { body } = await mockApp
         .post("/webhooks/githubRelease")
-        .set("x-hub-signature-256", "the-signature")
+        .set("x-hub-signature-256", signature)
         .send({ action: "created" })
         .expect(200);
 
@@ -58,7 +60,7 @@ describe("WebhooksController", () => {
       //WHEN
       await mockApp
         .post("/webhooks/githubRelease")
-        .set("x-hub-signature-256", "the-signature")
+        .set("x-hub-signature-256", signature)
         .send({
           action: "published",
           extra: "value",
@@ -70,7 +72,7 @@ describe("WebhooksController", () => {
       //WHEN
       const { body } = await mockApp
         .post("/webhooks/githubRelease")
-        .set("x-hub-signature-256", "the-signature")
+        .set("x-hub-signature-256", signature)
         .send({ action: "published" })
         .expect(422);
 

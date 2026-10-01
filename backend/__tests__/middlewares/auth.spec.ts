@@ -26,6 +26,8 @@ import * as Prometheus from "../../src/utils/prometheus";
 import { enableMonkeyErrorExpects } from "../__testData__/monkey-error";
 import { Context } from "../../src/middlewares/context";
 
+const signature = `sha256=${"0".repeat(64)}`;
+
 enableMonkeyErrorExpects();
 const mockDecodedToken: DecodedIdToken = {
   uid: "123456789",
@@ -440,7 +442,7 @@ describe("middlewares/auth", () => {
       //WHEN
       const result = await authenticate(
         {
-          headers: { "x-hub-signature-256": "the-signature" },
+          headers: { "x-hub-signature-256": signature },
           body: { action: "published", release: { id: 1 } },
         },
         { isGithubWebhook: true },
@@ -459,7 +461,7 @@ describe("middlewares/auth", () => {
         Buffer.from(
           "sha256=ff0f3080539e9df19153f6b5b5780f66e558d61038e6cf5ecf4efdc7266a7751",
         ),
-        Buffer.from("the-signature"),
+        Buffer.from(signature),
       );
     });
     it("should fail githubwebhook with mismatched signature", async () => {
@@ -469,7 +471,7 @@ describe("middlewares/auth", () => {
       await expect(async () =>
         authenticate(
           {
-            headers: { "x-hub-signature-256": "the-signature" },
+            headers: { "x-hub-signature-256": signature },
             body: { action: "published", release: { id: 1 } },
           },
           { isGithubWebhook: true },
@@ -511,7 +513,7 @@ describe("middlewares/auth", () => {
       await expect(async () =>
         authenticate(
           {
-            headers: { "x-hub-signature-256": "the-signature" },
+            headers: { "x-hub-signature-256": signature },
             body: { action: "published", release: { id: 1 } },
           },
           { isGithubWebhook: true },
@@ -535,7 +537,7 @@ describe("middlewares/auth", () => {
       await expect(async () =>
         authenticate(
           {
-            headers: { "x-hub-signature-256": "the-signature" },
+            headers: { "x-hub-signature-256": signature },
             body: { action: "published", release: { id: 1 } },
           },
           { isGithubWebhook: true },

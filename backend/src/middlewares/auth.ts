@@ -332,7 +332,9 @@ export function authenticateGithubWebhook(
       .digest("hex");
     const trusted = Buffer.from(`sha256=${signature}`, "ascii");
     const untrusted = Buffer.from(authHeader, "ascii");
-    const isSignatureValid = crypto.timingSafeEqual(trusted, untrusted);
+    const isSignatureValid =
+      trusted.length === untrusted.length &&
+      crypto.timingSafeEqual(trusted, untrusted);
 
     if (!isSignatureValid) {
       throw new MonkeyError(401, "Github webhook signature invalid");
