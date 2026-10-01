@@ -54,7 +54,7 @@
     "ua-parser-js": "2.0.10",
     "uuid": "14.0.2",
     "winston": "3.19.0",
-    "zod": "3.23.8"
+    "zod": "4.6.5"
   },
   "devDependencies": {
     "@oxytype/oxlint-config": "workspace:*",

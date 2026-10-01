@@ -24,6 +24,6 @@
     "typescript": "7.0.2",
     "vite-plus": "catalog:",
     "vitest": "catalog:",
-    "zod": "3.23.8"
+    "zod": "4.6.5"
   }
 }
