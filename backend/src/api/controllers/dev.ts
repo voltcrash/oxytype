@@ -1,6 +1,6 @@
 import { MonkeyResponse } from "../../utils/monkey-response";
 import * as UserDal from "../../dal/user";
-import FirebaseAdmin from "../../init/firebase-admin";
+import { getAuth } from "../../init/auth";
 import Logger from "../../utils/logger";
 import * as DateUtils from "date-fns";
 import { UTCDate } from "@date-fns/utc";
@@ -90,12 +90,13 @@ async function getOrCreateUser(
 
   const email = `${username}@example.com`;
   Logger.success(`create user ${username}`);
-  const { uid } = await FirebaseAdmin().auth().createUser({
-    displayName: username,
-    password: password,
-    email,
-    emailVerified: true,
+  const { user } = await getAuth().api.signUpEmail({
+    body: { name: username, password, email },
   });
+  const uid = user.id;
+  await (
+    await getAuth().$context
+  ).internalAdapter.updateUser(uid, { emailVerified: true });
 
   await UserDal.addUser(username, email, uid);
   return UserDal.getUser(uid, "getOrCreateUser");

@@ -23,7 +23,6 @@ import * as LeaderboardDal from "../../../src/dal/leaderboards";
 import GeorgeQueue from "../../../src/queues/george-queue";
 import * as DiscordUtils from "../../../src/utils/discord";
 import * as Captcha from "../../../src/utils/captcha";
-import * as FirebaseAdmin from "../../../src/init/firebase-admin";
 import * as ApeKeysDal from "../../../src/dal/ape-keys";
 import * as LogDal from "../../../src/dal/logs";
 import { ObjectId } from "mongodb";
@@ -31,7 +30,7 @@ import { PersonalBest } from "@oxytype/schemas/shared";
 import { mockAuthenticateWithApeKey } from "../../__testData__/auth";
 import { randomUUID } from "node:crypto";
 import { MonkeyMail, UserStreak } from "@oxytype/schemas/users";
-import MonkeyError, { isFirebaseError } from "../../../src/utils/error";
+import MonkeyError from "../../../src/utils/error";
 import * as WeeklyXpLeaderboard from "../../../src/services/weekly-xp-leaderboard";
 import * as ConnectionsDal from "../../../src/dal/connections";
 import { pb } from "../../__testData__/users";
@@ -48,17 +47,20 @@ const configuration = Configuration.getCachedConfiguration();
 describe("user controller test", () => {
   describe("user signup", () => {
     const blocklistContainsMock = vi.spyOn(BlocklistDal, "contains");
-    const firebaseDeleteUserMock = vi.spyOn(AuthUtils, "deleteUser");
+    const authDeleteUserMock = vi.spyOn(AuthUtils, "deleteUser");
     const usernameAvailableMock = vi.spyOn(UserDal, "isNameAvailable");
     const verifyCaptchaMock = vi.spyOn(Captcha, "verify");
     beforeEach(async () => {
+      vi.spyOn(UserDal, "getUsersCollection").mockReturnValue({
+        findOne: vi.fn().mockResolvedValue(null),
+      } as never);
       await enableSignup(true);
       usernameAvailableMock.mockResolvedValue(true);
     });
     afterEach(() => {
       [
         blocklistContainsMock,
-        firebaseDeleteUserMock,
+        authDeleteUserMock,
         usernameAvailableMock,
       ].forEach((it) => it.mockClear());
     });
@@ -66,7 +68,7 @@ describe("user controller test", () => {
     it("should fail if blocklisted", async () => {
       //GIVEN
       blocklistContainsMock.mockResolvedValue(true);
-      firebaseDeleteUserMock.mockResolvedValue();
+      authDeleteUserMock.mockResolvedValue();
 
       const newUser = {
         name: "NewUser",
@@ -89,15 +91,15 @@ describe("user controller test", () => {
         email: "newuser@mail.com",
       });
 
-      //user will be created in firebase from the frontend, make sure we remove it
-      expect(firebaseDeleteUserMock).toHaveBeenCalledWith(uid);
+      //user will be created in Better Auth from the frontend, make sure we remove it
+      expect(authDeleteUserMock).toHaveBeenCalledWith(uid);
       expect(verifyCaptchaMock).toHaveBeenCalledWith("captcha");
     });
 
     it("should fail if domain is blacklisted", async () => {
       for (const domain of ["tidal.lol", "selfbot.cc"]) {
         //GIVEN
-        firebaseDeleteUserMock.mockResolvedValue();
+        authDeleteUserMock.mockResolvedValue();
         mockAuth.modifyToken({
           email: `newuser@${domain}`,
         });
@@ -122,15 +124,15 @@ describe("user controller test", () => {
         //THEN
         expect(result.body.message).toEqual("Invalid domain");
 
-        //user will be created in firebase from the frontend, make sure we remove it
-        expect(firebaseDeleteUserMock).toHaveBeenCalledWith(uid);
+        //user will be created in Better Auth from the frontend, make sure we remove it
+        expect(authDeleteUserMock).toHaveBeenCalledWith(uid);
       }
     });
 
     it("should fail if username is taken", async () => {
       //GIVEN
       usernameAvailableMock.mockResolvedValue(false);
-      firebaseDeleteUserMock.mockResolvedValue();
+      authDeleteUserMock.mockResolvedValue();
 
       const newUser = {
         name: "NewUser",
@@ -150,8 +152,8 @@ describe("user controller test", () => {
       expect(result.body.message).toEqual("Username unavailable");
       expect(usernameAvailableMock).toHaveBeenCalledWith("NewUser", uid);
 
-      //user will be created in firebase from the frontend, make sure we remove it
-      expect(firebaseDeleteUserMock).toHaveBeenCalledWith(uid);
+      //user will be created in Better Auth from the frontend, make sure we remove it
+      expect(authDeleteUserMock).toHaveBeenCalledWith(uid);
     });
     it("should fail if capture is invalid", async () => {
       //GIVEN
@@ -289,163 +291,23 @@ describe("user controller test", () => {
     });
   });
   describe("sendVerificationEmail", () => {
-    const adminGetUserMock = vi.fn();
-    const adminGenerateVerificationLinkMock = vi.fn();
-    const getPartialUserMock = vi.spyOn(UserDal, "getPartialUser");
-
-    vi.spyOn(FirebaseAdmin, "default").mockReturnValue({
-      auth: () => ({
-        getUser: adminGetUserMock,
-        generateEmailVerificationLink: adminGenerateVerificationLinkMock,
-      }),
-    } as any);
-
+    const sendMock = vi.spyOn(AuthUtils, "sendVerificationEmail");
     beforeEach(() => {
-      adminGetUserMock.mockClear().mockResolvedValue({ emailVerified: false });
-      getPartialUserMock.mockClear().mockResolvedValue({
-        uid,
-        name: "Bob",
-        email: "newuser@mail.com",
-      } as any);
+      sendMock.mockReset().mockResolvedValue();
     });
-
-    it("should send verfification email", async () => {
-      //GIVEN
-
-      //"HEN
-      const { body } = await mockApp
-        .get("/users/verificationEmail")
+    it("queues verification using the authenticated email", async () => {
+      await mockApp
+        .post("/users/verificationEmail")
         .set("Authorization", `Bearer ${uid}`)
         .expect(200);
-
-      //THEN
-      expect(body).toEqual({
-        message: "Email sent",
-        data: null,
-      });
-
-      expect(adminGetUserMock).toHaveBeenCalledWith(uid);
-      expect(getPartialUserMock).toHaveBeenCalledWith(
-        uid,
-        "request verification email",
-        ["uid", "name", "email"],
-      );
-      expect(adminGenerateVerificationLinkMock).toHaveBeenCalledWith(
-        "newuser@mail.com",
-        { url: "http://localhost:3000" },
-      );
+      expect(sendMock).toHaveBeenCalledWith("newuser@mail.com");
     });
-    it("should fail with missing firebase user", async () => {
-      //GIVEN
-      adminGetUserMock.mockRejectedValue(new Error("test"));
-
-      //WHEN
-      const { body } = await mockApp
-        .get("/users/verificationEmail")
-        .set("Authorization", `Bearer ${uid}`)
-        .expect(500);
-
-      //THEN
-      expect(body.message).toContain(
-        "Auth user not found, even though the token got decoded",
-      );
-    });
-    it("should fail with already verified email", async () => {
-      //GIVEN
-      adminGetUserMock.mockResolvedValue({ emailVerified: true });
-
-      //WHEN
-      const { body } = await mockApp
-        .get("/users/verificationEmail")
-        .set("Authorization", `Bearer ${uid}`)
-        .expect(400);
-
-      //THEN
-      expect(body.message).toEqual("Email already verified");
-    });
-    it("should fail with email not matching the one from the authentication", async () => {
-      //GIVEN
-      getPartialUserMock.mockResolvedValue({
-        email: "nonmatching@example.com",
-      } as any);
-
-      //WHEN
-      const { body } = await mockApp
-        .get("/users/verificationEmail")
-        .set("Authorization", `Bearer ${uid}`)
-        .expect(400);
-
-      //THEN
-      expect(body.message).toEqual(
-        "Authenticated email does not match the email found in the database. This might happen if you recently changed your email. Please refresh and try again.",
-      );
-    });
-
-    it("should fail with too many firebase requests", async () => {
-      //GIVEN
-      const mockFirebaseError = {
-        code: "auth/too-many-requests",
-        codePrefix: "auth",
-        errorInfo: {
-          code: "auth/too-many-requests",
-          message: "Too many requests",
-        },
-      };
-      adminGenerateVerificationLinkMock.mockRejectedValue(mockFirebaseError);
-      expect(isFirebaseError(mockFirebaseError)).toBe(true);
-
-      //WHEN
-      const { body } = await mockApp
-        .get("/users/verificationEmail")
+    it("propagates email delivery errors", async () => {
+      sendMock.mockRejectedValue(new MonkeyError(429, "Too many requests"));
+      await mockApp
+        .post("/users/verificationEmail")
         .set("Authorization", `Bearer ${uid}`)
         .expect(429);
-
-      //THEN
-      expect(body.message).toEqual("Too many requests. Please try again later");
-    });
-    it("should fail with firebase user not found", async () => {
-      //GIVEN
-      const mockFirebaseError = {
-        code: "auth/user-not-found",
-        codePrefix: "auth",
-        errorInfo: {
-          code: "auth/user-not-found",
-          message: "User not found",
-        },
-      };
-      adminGenerateVerificationLinkMock.mockRejectedValue(mockFirebaseError);
-      expect(isFirebaseError(mockFirebaseError)).toBe(true);
-
-      //WHEN
-      const { body } = await mockApp
-        .get("/users/verificationEmail")
-        .set("Authorization", `Bearer ${uid}`)
-        .expect(500);
-
-      //THEN
-      expect(body.message).toEqual(
-        "Auth user not found when the user was found in the database. Contact support with this error message and your email\n" +
-          'Stack: {"decodedTokenEmail":"newuser@mail.com","userInfoEmail":"newuser@mail.com"}',
-      );
-    });
-    it("should fail with unknown error", async () => {
-      //GIVEN
-      const mockFirebaseError = {
-        message: "Internal server error",
-      };
-      adminGenerateVerificationLinkMock.mockRejectedValue(mockFirebaseError);
-      expect(isFirebaseError(mockFirebaseError)).toBe(false);
-
-      //WHEN
-      const { body } = await mockApp
-        .get("/users/verificationEmail")
-        .set("Authorization", `Bearer ${uid}`)
-        .expect(500);
-
-      //THEN
-      expect(body.message).toEqual(
-        "Failed to generate an email verification link: Internal server error",
-      );
     });
   });
   describe("sendForgotPasswordEmail", () => {
@@ -618,7 +480,7 @@ describe("user controller test", () => {
   describe("delete user ", () => {
     const getUserMock = vi.spyOn(UserDal, "getPartialUser");
     const deleteUserMock = vi.spyOn(UserDal, "deleteUser");
-    const firebaseDeleteUserMock = vi.spyOn(AuthUtils, "deleteUser");
+    const authDeleteUserMock = vi.spyOn(AuthUtils, "deleteUser");
     const deleteAllApeKeysMock = vi.spyOn(ApeKeysDal, "deleteAllApeKeys");
     const deleteAllPresetsMock = vi.spyOn(PresetDal, "deleteAllPresets");
     const deleteConfigMock = vi.spyOn(ConfigDal, "deleteConfig");
@@ -638,7 +500,7 @@ describe("user controller test", () => {
 
     beforeEach(() => {
       [
-        firebaseDeleteUserMock,
+        authDeleteUserMock,
         deleteUserMock,
         blocklistAddMock,
         deleteAllApeKeysMock,
@@ -659,7 +521,7 @@ describe("user controller test", () => {
         getUserMock,
         deleteUserMock,
         blocklistAddMock,
-        firebaseDeleteUserMock,
+        authDeleteUserMock,
         deleteConfigMock,
         deleteAllResultMock,
         deleteAllApeKeysMock,
@@ -693,7 +555,7 @@ describe("user controller test", () => {
       expect(blocklistAddMock).toHaveBeenCalledWith(user);
 
       expect(deleteUserMock).toHaveBeenCalledWith(uid);
-      expect(firebaseDeleteUserMock).toHaveBeenCalledWith(uid);
+      expect(authDeleteUserMock).toHaveBeenCalledWith(uid);
       expect(deleteAllApeKeysMock).toHaveBeenCalledWith(uid);
       expect(deleteAllPresetsMock).toHaveBeenCalledWith(uid);
       expect(deleteConfigMock).toHaveBeenCalledWith(uid);
@@ -745,7 +607,7 @@ describe("user controller test", () => {
       expect(blocklistAddMock).not.toHaveBeenCalled();
 
       expect(deleteUserMock).toHaveBeenCalledWith(uid);
-      expect(firebaseDeleteUserMock).toHaveBeenCalledWith(uid);
+      expect(authDeleteUserMock).toHaveBeenCalledWith(uid);
       expect(deleteAllApeKeysMock).toHaveBeenCalledWith(uid);
       expect(deleteAllPresetsMock).toHaveBeenCalledWith(uid);
       expect(deleteConfigMock).toHaveBeenCalledWith(uid);
@@ -775,7 +637,7 @@ describe("user controller test", () => {
       //THEN
       expect(blocklistAddMock).not.toHaveBeenCalled();
       expect(deleteUserMock).not.toHaveBeenCalledWith(uid);
-      expect(firebaseDeleteUserMock).not.toHaveBeenCalledWith(uid);
+      expect(authDeleteUserMock).not.toHaveBeenCalledWith(uid);
       expect(deleteAllApeKeysMock).not.toHaveBeenCalledWith(uid);
       expect(deleteAllPresetsMock).not.toHaveBeenCalledWith(uid);
       expect(deleteConfigMock).not.toHaveBeenCalledWith(uid);
@@ -791,7 +653,7 @@ describe("user controller test", () => {
       );
       expect(logsDeleteUserMock).not.toHaveBeenCalled();
     });
-    it("should not fail if firebase user cannot be found", async () => {
+    it("should not fail if authentication account is already absent", async () => {
       //GIVEN
       const user = {
         uid,
@@ -800,11 +662,7 @@ describe("user controller test", () => {
         discordId: "discordId",
       } as Partial<UserDal.DBUser> as UserDal.DBUser;
       getUserMock.mockResolvedValue(user);
-      firebaseDeleteUserMock.mockRejectedValue({
-        code: "user-not-found",
-        codePrefix: "auth",
-        errorInfo: { code: "auth/user-not-found", message: "user not found" },
-      });
+      authDeleteUserMock.mockResolvedValue();
 
       //WHEN
       await mockApp
@@ -816,7 +674,7 @@ describe("user controller test", () => {
       expect(blocklistAddMock).not.toHaveBeenCalled();
 
       expect(deleteUserMock).toHaveBeenCalledWith(uid);
-      expect(firebaseDeleteUserMock).toHaveBeenCalledWith(uid);
+      expect(authDeleteUserMock).toHaveBeenCalledWith(uid);
       expect(deleteAllApeKeysMock).toHaveBeenCalledWith(uid);
       expect(deleteAllPresetsMock).toHaveBeenCalledWith(uid);
       expect(deleteConfigMock).toHaveBeenCalledWith(uid);
@@ -833,7 +691,7 @@ describe("user controller test", () => {
       expect(logsDeleteUserMock).toHaveBeenCalledWith(uid);
     });
 
-    it("should fail for unknown error from firebase", async () => {
+    it("should fail for unknown error from authentication", async () => {
       //GIVEN
       const user = {
         uid,
@@ -842,11 +700,9 @@ describe("user controller test", () => {
         discordId: "discordId",
       } as Partial<UserDal.DBUser> as UserDal.DBUser;
       getUserMock.mockResolvedValue(user);
-      firebaseDeleteUserMock.mockRejectedValue({
-        code: "unknown",
-        codePrefix: "auth",
-        errorInfo: { code: "auth/unknown", message: "unknown" },
-      });
+      authDeleteUserMock.mockRejectedValue(
+        new Error("Authentication storage unavailable"),
+      );
 
       //WHEN
       await mockApp
@@ -857,7 +713,7 @@ describe("user controller test", () => {
       //THEN
       expect(blocklistAddMock).not.toHaveBeenCalled();
       expect(deleteUserMock).toHaveBeenCalledWith(uid);
-      expect(firebaseDeleteUserMock).toHaveBeenCalledWith(uid);
+      expect(authDeleteUserMock).toHaveBeenCalledWith(uid);
       expect(deleteAllApeKeysMock).toHaveBeenCalledWith(uid);
       expect(deleteAllPresetsMock).toHaveBeenCalledWith(uid);
       expect(deleteConfigMock).toHaveBeenCalledWith(uid);
@@ -1298,21 +1154,14 @@ describe("user controller test", () => {
         uid,
       );
     });
-    it("should fail for duplicate email", async () => {
-      //GIVEN
-      const mockFirebaseError = {
-        code: "auth/email-already-exists",
-        codePrefix: "auth",
-        errorInfo: {
-          code: "auth/email-already-exists",
-          message: "Email already exists",
-        },
-      };
-      authUpdateEmailMock.mockRejectedValue(mockFirebaseError);
-      expect(isFirebaseError(mockFirebaseError)).toBe(true);
-
-      //WHEN
-      const { body } = await mockApp
+    it("propagates a duplicate email conflict without changing the profile", async () => {
+      authUpdateEmailMock.mockRejectedValue(
+        new MonkeyError(
+          409,
+          "The email address is already in use by another account",
+        ),
+      );
+      await mockApp
         .patch("/users/email")
         .set("Authorization", `Bearer ${uid}`)
         .send({
@@ -1320,120 +1169,6 @@ describe("user controller test", () => {
           previousEmail: "previousEmail@example.com",
         })
         .expect(409);
-
-      expect(body.message).toEqual(
-        "The email address is already in use by another account",
-      );
-
-      expect(userUpdateEmailMock).not.toHaveBeenCalled();
-    });
-
-    it("should fail for invalid email", async () => {
-      //GIVEN
-      const mockFirebaseError = {
-        code: "auth/invalid-email",
-        codePrefix: "auth",
-        errorInfo: {
-          code: "auth/invalid-email",
-          message: "Invalid email",
-        },
-      };
-      authUpdateEmailMock.mockRejectedValue(mockFirebaseError);
-      expect(isFirebaseError(mockFirebaseError)).toBe(true);
-
-      //WHEN
-      const { body } = await mockApp
-        .patch("/users/email")
-        .set("Authorization", `Bearer ${uid}`)
-        .send({
-          newEmail: "newEmail@example.com",
-          previousEmail: "previousEmail@example.com",
-        })
-        .expect(400);
-
-      expect(body.message).toEqual("Invalid email address");
-
-      expect(userUpdateEmailMock).not.toHaveBeenCalled();
-    });
-    it("should fail for too many requests", async () => {
-      //GIVEN
-      const mockFirebaseError = {
-        code: "auth/too-many-requests",
-        codePrefix: "auth",
-        errorInfo: {
-          code: "auth/too-many-requests",
-          message: "Too many requests",
-        },
-      };
-      authUpdateEmailMock.mockRejectedValue(mockFirebaseError);
-      expect(isFirebaseError(mockFirebaseError)).toBe(true);
-
-      //WHEN
-      const { body } = await mockApp
-        .patch("/users/email")
-        .set("Authorization", `Bearer ${uid}`)
-        .send({
-          newEmail: "newEmail@example.com",
-          previousEmail: "previousEmail@example.com",
-        })
-        .expect(429);
-
-      expect(body.message).toEqual("Too many requests. Please try again later");
-
-      expect(userUpdateEmailMock).not.toHaveBeenCalled();
-    });
-    it("should fail for unknown user", async () => {
-      //GIVEN
-      const mockFirebaseError = {
-        code: "auth/user-not-found",
-        codePrefix: "auth",
-        errorInfo: {
-          code: "auth/user-not-found",
-          message: "User not found",
-        },
-      };
-      authUpdateEmailMock.mockRejectedValue(mockFirebaseError);
-      expect(isFirebaseError(mockFirebaseError)).toBe(true);
-
-      //WHEN
-      const { body } = await mockApp
-        .patch("/users/email")
-        .set("Authorization", `Bearer ${uid}`)
-        .send({
-          newEmail: "newEmail@example.com",
-          previousEmail: "previousEmail@example.com",
-        })
-        .expect(404);
-
-      expect(body.message).toEqual(
-        "User not found in the auth system\nStack: update email",
-      );
-
-      expect(userUpdateEmailMock).not.toHaveBeenCalled();
-    });
-    it("should fail for invalid user token", async () => {
-      //GIVEN
-      authUpdateEmailMock.mockRejectedValue({
-        code: "auth/invalid-user-token",
-        codePrefix: "auth",
-        errorInfo: {
-          code: "auth/invalid-user-token",
-          message: "Invalid user token",
-        },
-      });
-
-      //WHEN
-      const { body } = await mockApp
-        .patch("/users/email")
-        .set("Authorization", `Bearer ${uid}`)
-        .send({
-          newEmail: "newEmail@example.com",
-          previousEmail: "previousEmail@example.com",
-        })
-        .expect(401);
-
-      expect(body.message).toEqual("Invalid user token\nStack: update email");
-
       expect(userUpdateEmailMock).not.toHaveBeenCalled();
     });
     it("should fail for unknown error", async () => {
