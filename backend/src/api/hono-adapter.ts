@@ -1,3 +1,4 @@
+import type { ZodIssue } from "zod/v3";
 import {
   type AppRoute,
   type AppRouter,
@@ -110,10 +111,12 @@ export function createHonoEndpoints<T extends AppRouter>(
             return c.json(
               {
                 message: failure.message,
-                validationErrors: failure.result.error.issues.map(
-                  (issue) =>
-                    `${issue.path.length > 0 ? `"${issue.path.join(".")}" ` : ""}${issue.message}`,
-                ),
+                validationErrors: failure.result.error.issues
+                  .flatMap(formatValidationIssue)
+                  .map(
+                    (issue) =>
+                      `${issue.path.length > 0 ? `"${issue.path.join(".")}" ` : ""}${issue.message}`,
+                  ),
               },
               422,
             );
@@ -160,4 +163,22 @@ export function createHonoEndpoints<T extends AppRouter>(
       );
     }
   }
+}
+
+// Zod's compatibility API wraps failed optional-string refinements in a union.
+// Retain the useful validation errors when the other branch only accepts "".
+function formatValidationIssue(issue: ZodIssue): ZodIssue[] {
+  if (issue.code === "invalid_union" && issue.unionErrors.length === 2) {
+    const [valueError, emptyError] = issue.unionErrors;
+    if (emptyError?.issues.length === 1) {
+      const emptyIssue = emptyError.issues[0];
+      if (
+        emptyIssue?.code === "invalid_literal" &&
+        emptyIssue.expected === ""
+      ) {
+        return valueError?.issues.flatMap(formatValidationIssue) ?? [issue];
+      }
+    }
+  }
+  return [issue];
 }
