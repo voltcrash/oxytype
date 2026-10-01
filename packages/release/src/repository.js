@@ -2,8 +2,16 @@ const DEFAULT_OWNER = "voltcrash";
 const DEFAULT_REPO = "oxytype";
 
 export function getRepository() {
-  const owner = process.env.OXYTYPE_GITHUB_OWNER?.trim() || DEFAULT_OWNER;
-  const repo = process.env.OXYTYPE_GITHUB_REPO?.trim() || DEFAULT_REPO;
+  const configuredOwner = process.env.OXYTYPE_GITHUB_OWNER?.trim();
+  const owner =
+    configuredOwner === undefined || configuredOwner === ""
+      ? DEFAULT_OWNER
+      : configuredOwner;
+  const configuredRepo = process.env.OXYTYPE_GITHUB_REPO?.trim();
+  const repo =
+    configuredRepo === undefined || configuredRepo === ""
+      ? DEFAULT_REPO
+      : configuredRepo;
 
   if (!/^[\w.-]+$/.test(owner) || !/^[\w.-]+$/.test(repo)) {
     throw new Error("Invalid Oxytype GitHub repository configuration");
