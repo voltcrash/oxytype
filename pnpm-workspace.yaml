@@ -48,3 +48,5 @@ minimumReleaseAgeExclude:
   - dotenv@18.0.5
   - "@redocly/cli@2.57.0"
   - "@chromatic-com/storybook@5.4.0"
+  - knip@6.39.0
+  - stylelint@17.16.0
