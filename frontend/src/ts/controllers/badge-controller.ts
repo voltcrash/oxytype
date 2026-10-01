@@ -44,55 +44,11 @@ export const badges: Record<number, UserBadge> = {
         "linear-gradient(45deg in hsl longer hue, hsl(330, 90%, 30%) 0%, hsl(250, 90%, 30%) 100%)",
     },
   },
-  3: {
-    id: 3,
-    name: "Server Mod",
-    description: "Discord server moderator",
-    icon: "fa-hammer",
-    color: "white",
-    customStyle: {
-      animation: "rgb-bg 10s linear infinite",
-      background:
-        "linear-gradient(45deg in hsl longer hue, hsl(330, 90%, 30%) 0%, hsl(250, 90%, 30%) 100%)",
-    },
-  },
   4: {
     id: 4,
     name: "OG Account",
     description: "First 1000 users on the site",
     icon: "fa-baby",
-    color: "var(--bg-color)",
-    background: "var(--main-color)",
-  },
-  5: {
-    id: 5,
-    name: "OG Discordian",
-    description: "First 1000 Discord server members",
-    icon: "fa-baby",
-    color: "var(--bg-color)",
-    background: "var(--main-color)",
-  },
-  6: {
-    id: 6,
-    name: "Supporter",
-    description: "Donated money",
-    icon: "fa-heart",
-    color: "var(--text-color)",
-    background: "var(--sub-color)",
-  },
-  7: {
-    id: 7,
-    name: "Sugar Daddy",
-    description: "Donated a lot of money",
-    icon: "fa-gem",
-    color: "var(--bg-color)",
-    background: "var(--main-color)",
-  },
-  8: {
-    id: 8,
-    name: "Monkey Supporter",
-    description: "Donated more money",
-    icon: "fa-heart",
     color: "var(--bg-color)",
     background: "var(--main-color)",
   },
@@ -147,46 +103,6 @@ export const badges: Record<number, UserBadge> = {
     icon: "fa-fire",
     color: "var(--bg-color)",
     background: "var(--main-color)",
-  },
-  15: {
-    id: 15,
-    name: "Insane",
-    description: "I typed for 69 hours straight",
-    icon: "fa-bomb",
-    color: "white",
-    background: "#093d79",
-    customStyle: {
-      animation: "gold-shimmer 10s cubic-bezier(0.5, 0, 0.5, 1) infinite",
-      background:
-        "linear-gradient(90deg, rgb(8 31 84) 0%, rgb(18 134 158) 100%)",
-      "background-size": "200% 200%",
-    },
-  },
-  16: {
-    id: 16,
-    name: "Perfection",
-    description: "Longest test with zero mistakes - 4 hours and 1 minute",
-    icon: "fa-bullseye",
-    color: "white",
-    customStyle: {
-      animation:
-        "gold-shimmer 10s cubic-bezier(0.5, -0.15, 0.5, 1.15) infinite",
-      background:
-        "linear-gradient(45deg, #b8860b 0%, #daa520 25%, #ffd700 50%, #daa520 75%, #b8860b 100%)",
-      "background-size": "200% 200%",
-    },
-  },
-  17: {
-    id: 17,
-    name: "Phineas",
-    description: "Ferb, I know what we're gonna do today...",
-    icon: "fa-sun",
-    color: "white",
-    customStyle: {
-      animation: "rgb-bg 10s linear infinite",
-      background:
-        "linear-gradient(45deg in hsl longer hue, hsl(330, 90%, 30%) 0%, hsl(250, 90%, 30%) 100%)",
-    },
   },
 };
 
