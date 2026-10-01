@@ -1,24 +1,28 @@
-FROM node:24.21.0-alpine3.22 AS builder
+FROM node:24.21.0-alpine3.24 AS builder
 
 WORKDIR /app
 
 #copy
 COPY ["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml", "turbo.json", "./"]
+COPY patches patches
 COPY packages packages
 COPY backend backend
+COPY frontend/package.json frontend/package.json
+COPY frontend/storybook/package.json frontend/storybook/package.json
 
 #gimme pnpm + build
-RUN npm i -g pnpm@12.8.1 && \
+ARG TARGETARCH
+RUN --mount=type=cache,id=oxytype-pnpm-${TARGETARCH},target=/root/.local/share/pnpm/store,sharing=locked npm i -g pnpm@12.8.1 && \
     pnpm i --frozen-lockfile && \
-    npm run build
+    pnpm run build-be
 
 #deploy (install all non-dev dependencies in a single node_module folder)
-RUN pnpm deploy --legacy --filter backend --prod /prod/backend
+RUN pnpm --config.allowUnusedPatches=true deploy --legacy --filter @oxytype/backend --prod /prod/backend
 
 #---------------------------------
 
 ## target image
-FROM node:24.21.0-alpine3.22
+FROM node:24.21.0-alpine3.24
 
 ## get server_version from build-arg, default to UNKNOWN
 ARG server_version=UNKNOWN
