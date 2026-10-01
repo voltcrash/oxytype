@@ -56,12 +56,14 @@ export function LeaderboardPage(): JSXElement {
   //prefetch next page
   createEffect(() => {
     if (isOpen()) {
-      void queryClient.prefetchQuery(
-        getLeaderboardQueryOptions({
-          ...getSelection(),
-          page: getPage() + 1,
-        }),
-      );
+      void queryClient
+        .query(
+          getLeaderboardQueryOptions({
+            ...getSelection(),
+            page: getPage() + 1,
+          }),
+        )
+        .catch(() => undefined);
     }
   });
 
