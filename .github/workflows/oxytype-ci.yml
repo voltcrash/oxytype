@@ -121,7 +121,7 @@ jobs:
 
       - name: Get changed files and write to temp
         id: get-changed-files
-        uses: actions/github-script@v9
+        uses: actions/github-script@v9.0.0
         with:
           script: |
             let files;
