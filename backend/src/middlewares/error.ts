@@ -4,6 +4,7 @@ import Logger from "../utils/logger";
 import MonkeyError, { getErrorMessage } from "../utils/error";
 import { incrementBadAuth } from "./rate-limit";
 import { ApiContext } from "../api/http";
+import { HTTPException } from "hono/http-exception";
 import { isCustomCode } from "../constants/monkey-status-codes";
 
 import {
@@ -35,6 +36,7 @@ async function errorHandlingMiddleware(
   error: Error,
   c: ApiContext,
 ): Promise<Response> {
+  if (error instanceof HTTPException) return error.getResponse();
   const req = c.get("request");
   try {
     const monkeyError = error as MonkeyError;
