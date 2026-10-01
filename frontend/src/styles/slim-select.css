@@ -4,13 +4,11 @@
     box-shadow: inherit;
   }
   &:focus-visible {
-    box-shadow:
-      0 0 0 0.1rem var(--bg-color),
-      0 0 0 0.2rem var(--text-color);
+    @apply shadow-control-focus;
   }
   .ss-arrow path {
     @apply stroke-text;
-    transition: none;
+    @apply transition-none;
   }
   &.ss-disabled {
     @apply opacity-[0.33] pointer-events-none bg-sub-alt cursor-pointer;
@@ -33,7 +31,7 @@
       .ss-value-delete {
         @apply border-l-[1px] [border-left-style:solid] border-l-bg bg-main h-full box-border w-min;
         border-radius: 0 calc(var(--roundness) / 2) calc(var(--roundness) / 2) 0;
-        transition: background 0.125s;
+        @apply transition-[background] duration-125 ease-[ease];
         svg path {
           @apply stroke-bg;
         }
@@ -52,16 +50,14 @@
 }
 
 .ss-content {
-  transition: none;
+  @apply transition-none;
   @apply border-none bg-sub-alt text-text;
   .ss-search {
     @apply p-[0.5em] border-t-[0.1em] [border-top-style:solid] border-t-bg border-b-[0.1em] [border-bottom-style:solid] border-b-bg;
     input {
       @apply border-none bg-bg text-[1em] p-[0.5em];
       &:focus-visible {
-        box-shadow:
-          0 0 0 0.1rem var(--bg-color),
-          0 0 0 0.2rem var(--text-color);
+        @apply shadow-control-focus;
       }
       &:focus {
         @apply border-none;

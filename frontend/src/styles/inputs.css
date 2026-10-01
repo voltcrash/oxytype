@@ -2,9 +2,7 @@ input,
 textarea {
   @apply outline-none border-none rounded bg-sub-alt text-text p-[0.5em] text-[1em] font-(family-name:--font) caret-main leading-[1.25em];
   &:focus-visible {
-    box-shadow:
-      0 0 0 0.1rem var(--bg-color),
-      0 0 0 0.2rem var(--text-color);
+    @apply shadow-control-focus;
   }
 }
 
@@ -34,15 +32,13 @@ input[type="range"] {
     }
   }
   &:focus-visible {
-    box-shadow:
-      0 0 0 0.1rem var(--bg-color),
-      0 0 0 0.2rem var(--text-color);
+    @apply shadow-control-focus;
   }
 }
 
 input[type="checkbox"] {
   @apply appearance-none h-[1.25em] w-[1.25em] rounded-half relative;
-  transition: background 0.125s;
+  @apply transition-[background] duration-125 ease-[ease];
   @apply shrink-0;
   &::after {
     font-family: "Font Awesome";
@@ -50,7 +46,7 @@ input[type="checkbox"] {
     @apply top-0 left-0 w-full h-full;
     border-radius: calc((var(--roundness) / 2) - 0.1em);
     @apply font-black absolute grid justify-center content-center text-[0.75em];
-    transition: color 0.125s;
+    @apply transition-[color] duration-125 ease-[ease];
     @apply text-transparent;
   }
 

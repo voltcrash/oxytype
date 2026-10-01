@@ -1,6 +1,6 @@
 a.button,
 a.textButton {
-  text-decoration: none;
+  @apply no-underline;
 }
 
 button,
@@ -26,12 +26,9 @@ input[type="button"],
 input[type="reset"],
 input[type="submit"] {
   @apply text-text cursor-pointer;
-  transition:
-    background 0.125s,
-    color 0.125s,
-    opacity 0.125s;
+  @apply transition-[background,color,opacity] duration-125 ease-[ease];
   @apply p-[0.5em] rounded bg-sub-alt;
-  text-align: center;
+  @apply text-center;
   @apply select-none content-center items-center h-min leading-[1.25] appearance-none border-none font-[inherit] text-[1em] inline-flex gap-[0.5em] justify-center justify-items-center;
 
   &.danger {
@@ -63,9 +60,7 @@ input[type="submit"] {
     @apply text-bg bg-text outline-none;
   }
   &:focus-visible {
-    box-shadow:
-      0 0 0 0.1rem var(--bg-color),
-      0 0 0 0.2rem var(--text-color);
+    @apply shadow-control-focus;
     @apply outline-none;
   }
   &:active {
@@ -77,12 +72,9 @@ button.text,
 .button.text,
 .textButton {
   @apply text-sub cursor-pointer;
-  transition:
-    background 0.125s,
-    color 0.125s,
-    opacity 0.125s;
+  @apply transition-[background,color,opacity] duration-125 ease-[ease];
   @apply p-[0.5em] rounded bg-none bg-transparent;
-  text-align: center;
+  @apply text-center;
   @apply select-none content-center h-min leading-[1.25] appearance-none border-none font-[inherit] text-[1em] inline-flex gap-[0.5em] items-baseline justify-center;
 
   &.danger {
@@ -113,7 +105,7 @@ button.text,
     @apply text-text bg-none bg-transparent outline-none;
   }
   &:focus-visible {
-    box-shadow: 0 0 0 0.1rem var(--text-color);
+    @apply shadow-text-focus;
     @apply outline-none;
   }
   &:active {
