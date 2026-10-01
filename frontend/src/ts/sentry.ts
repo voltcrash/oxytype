@@ -10,7 +10,7 @@ let activated = false;
 
 export async function activateSentry(): Promise<void> {
   const dsn = envConfig.sentryDsn;
-  if (!dsn) return;
+  if (dsn === undefined || dsn === "") return;
   if (activated) {
     console.warn("Sentry already activated");
     return;
