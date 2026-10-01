@@ -53,7 +53,6 @@ vi.mock("../../../src/ts/states/notifications", () => ({
 
 import { NavigationRuntime } from "../../../src/ts/components/core/NavigationRuntime";
 import { authEvent } from "../../../src/ts/events/auth";
-import { navigationEvent } from "../../../src/ts/events/navigation";
 import { navigate, replaceUrl } from "../../../src/ts/navigation/navigation";
 import { appRoutes } from "../../../src/ts/navigation/routes";
 
@@ -220,13 +219,10 @@ describe("Solid Router page integration", () => {
     expect(state.change).toHaveBeenLastCalledWith("about", { force: true });
   });
 
-  it("routes navigation events and browser back/forward through the lifecycle", async () => {
+  it("routes browser back/forward through the lifecycle", async () => {
     const { getByRole } = mount();
     await ready();
-    navigationEvent.dispatch({
-      url: "/settings?highlight=fontSize",
-      options: {},
-    });
+    await navigate("/settings?highlight=fontSize");
     await waitFor(() => expect(window.location.pathname).toBe("/settings"));
     await navigate("/about");
     window.history.back();
@@ -283,7 +279,6 @@ describe("Solid Router page integration", () => {
       type: "authStateChanged",
       data: { isUserSignedIn: false, loadPromise: Promise.resolve() },
     });
-    navigationEvent.dispatch({ url: "/about", options: {} });
     await expect(navigate("/about")).rejects.toThrow(
       "App router is not mounted",
     );

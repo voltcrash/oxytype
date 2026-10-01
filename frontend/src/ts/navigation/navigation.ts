@@ -1,4 +1,11 @@
-import type { NavigateOptions } from "../events/navigation";
+import type { LoadingOptions } from "../pages/page";
+
+export type NavigateOptions = {
+  force?: boolean;
+  empty?: boolean;
+  data?: unknown;
+  loadingOptions?: LoadingOptions;
+};
 
 type Navigation = {
   navigate: (

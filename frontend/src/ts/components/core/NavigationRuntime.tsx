@@ -10,10 +10,13 @@ import { batch, createEffect, createSignal, on, onCleanup } from "solid-js";
 
 import * as PageController from "../../controllers/page-controller";
 import { authEvent } from "../../events/auth";
-import { navigationEvent, NavigateOptions } from "../../events/navigation";
 import { isAuthAvailable } from "../../firebase";
 import { canNavigate } from "../../navigation/guard";
-import { bindNavigation, navigate } from "../../navigation/navigation";
+import {
+  bindNavigation,
+  navigate,
+  NavigateOptions,
+} from "../../navigation/navigation";
 import { AppRouteInfo } from "../../navigation/routes";
 import { setAppLoading } from "../../states/app";
 import { isAuthenticated } from "../../states/core";
@@ -155,9 +158,6 @@ export function NavigationRuntime(): null {
     }),
   );
 
-  navigationEvent.useListener(({ url, options }) => {
-    void navigate(url, options);
-  });
   authEvent.useListener((event) => {
     if (event.type !== "authStateChanged") return;
     void navigate(undefined, {

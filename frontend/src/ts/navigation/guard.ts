@@ -1,4 +1,4 @@
-import { NavigateOptions } from "../events/navigation";
+import type { NavigateOptions } from "./navigation";
 import * as PageTransition from "../states/page-transition";
 import { showNoticeNotification } from "../states/notifications";
 import {
