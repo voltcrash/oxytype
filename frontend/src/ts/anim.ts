@@ -1,6 +1,6 @@
 import { animate, AnimationParams, engine } from "animejs";
 import { LocalStorageWithSchema } from "./utils/local-storage-with-schema";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { createSignal } from "solid-js";
 
 export const fpsLimitSchema = z.number().int().min(15).max(1000);
@@ -50,8 +50,8 @@ export async function animateAsync(
   await new Promise<void>((resolve) => {
     animate(element, {
       ...options,
-      onComplete: (self, event) => {
-        options.onComplete?.(self, event);
+      onComplete: (self) => {
+        options.onComplete?.(self);
         resolve();
       },
     });
