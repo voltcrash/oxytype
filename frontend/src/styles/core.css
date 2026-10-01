@@ -1,0 +1,208 @@
+:root {
+  --roundness: 0.5rem;
+  --font: "Roboto Mono", "Vazirharf", monospace;
+  scroll-padding-top: 2rem;
+  @apply font-normal;
+  --crt-bg-color-shine: color-mix(
+    in oklab,
+    var(--main-color) 5%,
+    var(--bg-color)
+  );
+  --crt-bg-color-stripe: color-mix(in oklab, black 50%, var(--bg-color));
+  --crt-sub-color-glow: color-mix(in srgb, var(--sub-color) 20%, transparent);
+  --crt-sub-alt-color-glow: color-mix(
+    in srgb,
+    var(--sub-alt-color) 20%,
+    transparent
+  );
+  --crt-text-color-glow: color-mix(in srgb, var(--text-color) 20%, transparent);
+  --crt-main-color-glow: color-mix(in srgb, var(--main-color) 20%, transparent);
+  --crt-error-color-glow: color-mix(
+    in srgb,
+    var(--error-color) 20%,
+    transparent
+  );
+  --crt-caret-color-glow: color-mix(
+    in srgb,
+    var(--caret-color) 20%,
+    transparent
+  );
+
+  --balloon-font-size: 1rem;
+  --balloon-border-radius: calc(var(--roundness) / 2);
+}
+
+::placeholder {
+  @apply text-sub opacity-100;
+  /* Firefox */
+}
+
+::selection {
+  @apply bg-main text-sub-alt;
+}
+.content-grid {
+  --padding-inline: 2rem;
+  --content-max-width: 1536px;
+
+  --breakout-size: calc(
+    (calc(var(--content-max-width) + 12rem) - var(--content-max-width)) / 2
+  );
+
+  @apply justify-center grid;
+  grid-template-columns:
+    [full-width-start]
+    var(--padding-inline)
+    [full-width-padding-start]
+    minmax(0, 1fr)
+    [breakout-start]
+    minmax(0, var(--breakout-size))
+    [content-start]
+    min(100% - (var(--padding-inline) * 2), var(--content-max-width))
+    [content-end]
+    minmax(0, var(--breakout-size))
+    [breakout-end]
+    minmax(0, 1fr)
+    [full-width-padding-end]
+    var(--padding-inline)
+    [full-width-end];
+
+  @variant max-2xl {
+    --content-max-width: 1280px;
+  }
+  @variant max-xl {
+    --content-max-width: 1024px;
+  }
+  @variant max-lg {
+    --content-max-width: 768px;
+  }
+  @variant max-md {
+    --content-max-width: 640px;
+  }
+  @variant max-sm {
+    --content-max-width: 100%;
+    --padding-inline: 1rem;
+  }
+}
+
+.content-grid > :not(.breakout, .full-width, .full-width-padding) {
+  grid-column: content;
+}
+
+.content-grid > .breakout {
+  grid-column: breakout;
+}
+
+.content-grid > .full-width {
+  grid-column: full-width;
+}
+
+.content-grid > .full-width-padding {
+  grid-column: full-width-padding;
+}
+
+#ad-vertical-left-wrapper,
+#ad-vertical-right-wrapper {
+  grid-row: content;
+  @apply mr-[2rem] fixed;
+}
+
+#ad-vertical-left-wrapper {
+  grid-column: full-width-start/content-start;
+  @apply left-0;
+}
+
+#ad-vertical-right-wrapper {
+  grid-column: content-end/full-width-end;
+  @apply right-[-2rem];
+}
+
+#nocss {
+  display: none !important;
+  @apply pointer-events-none;
+}
+
+.ffscroll,
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sub-color) transparent;
+}
+
+.modal {
+  @apply overscroll-y-none;
+}
+
+html {
+  @apply overflow-y-scroll scroll-smooth leading-[1.25];
+}
+
+a {
+  @apply inline-block text-sub;
+  transition:
+    color 0.125s,
+    opacity 0.125s,
+    background 0.125s;
+  &:hover {
+    @apply text-text;
+  }
+  &:focus-visible {
+    @apply outline-none;
+    box-shadow:
+      0 0 0 0.1rem var(--bg-color),
+      0 0 0 0.2rem var(--text-color);
+    @apply rounded-half;
+  }
+}
+
+a[router-link] * {
+  @apply pointer-events-none;
+}
+
+body {
+  @apply m-0 p-0 min-h-screen font-(family-name:--font) text-text overflow-x-hidden bg-bg;
+}
+
+kbd {
+  @apply text-bg bg-sub;
+
+  @apply py-[0.2em] px-[0.4em] rounded-[0.25em] text-[0.75em];
+}
+
+* {
+  @apply box-border;
+}
+
+.badge {
+  @apply bg-sub text-text rounded-half select-none grid;
+  grid-template-columns: max-content auto;
+  @apply items-baseline;
+  --spacing: 0.5em;
+  --horizontalScale: 1.25;
+  .fas,
+  .far {
+    margin-right: calc(var(--spacing) * var(--horizontalScale));
+    margin-left: calc(var(--spacing) * var(--horizontalScale));
+    margin-top: var(--spacing);
+    margin-bottom: var(--spacing);
+    @apply text-[0.9em];
+  }
+  .text {
+    margin-right: calc(var(--spacing) * var(--horizontalScale));
+  }
+}
+[aria-label][data-balloon-pos]::after {
+  @apply font-(family-name:--font);
+  font-size: var(--balloon-font-size);
+  line-height: var(--balloon-font-size);
+}
+@supports selector(:focus-visible) {
+  [aria-label][data-balloon-pos]:focus:not(:focus-visible):not(:hover)::before,
+  [aria-label][data-balloon-pos]:focus:not(:focus-visible):not(:hover)::after {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
+
+table {
+  @apply z-0;
+}

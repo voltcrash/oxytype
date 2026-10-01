@@ -15,11 +15,29 @@ export default {
 
     "at-rule-no-unknown": [
       true,
-      { ignoreAtRules: ["theme", "utility", "tailwind", "apply", "source"] },
+      {
+        ignoreAtRules: [
+          "theme",
+          "utility",
+          "tailwind",
+          "apply",
+          "source",
+          "variant",
+        ],
+      },
     ], // source for lightningCss and the rest for tailwind //default: true
     "at-rule-prelude-no-invalid": [
       true,
-      { ignoreAtRules: ["theme", "utility", "tailwind", "apply", "source"] },
+      {
+        ignoreAtRules: [
+          "theme",
+          "utility",
+          "tailwind",
+          "apply",
+          "source",
+          "variant",
+        ],
+      },
     ],
     "selector-type-no-unknown": [
       true,
