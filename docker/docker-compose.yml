@@ -1,12 +1,12 @@
 services:
-  monkeytype-proxy:
-    container_name: monkeytype-proxy
+  oxytype-proxy:
+    container_name: oxytype-proxy
     image: traefik:v3.7
     restart: on-failure
     depends_on:
-      monkeytype-backend:
+      oxytype-backend:
         condition: service_healthy
-      monkeytype-frontend:
+      oxytype-frontend:
         condition: service_healthy
     ports:
       - "${HTTP_PORT:-80}:80"
@@ -34,9 +34,9 @@ services:
       #- "--api.insecure=true"
       #- "--log.level=DEBUG"
 
-  monkeytype-frontend:
-    container_name: monkeytype-frontend
-    image: monkeytype/monkeytype-frontend:latest
+  oxytype-frontend:
+    container_name: oxytype-frontend
+    image: ghcr.io/voltcrash/oxytype-frontend:latest
     #uncomment if you want to expose the frontend server directly (not recommended)
     #ports:
     #  - "${FRONTEND_PORT:-8080}:80"
@@ -63,7 +63,7 @@ services:
       - FIREBASE_STORAGEBUCKET=${FIREBASE_STORAGEBUCKET:-}
       - FIREBASE_MESSAGINGSENDERID=${FIREBASE_MESSAGINGSENDERID:-}
       - FIREBASE_APPID=${FIREBASE_APPID:-}
-      - MONKEYTYPE_BACKENDURL=${BASE_URL:-http://localhost}/api
+      - OXYTYPE_BACKEND_URL=${BASE_URL:-http://localhost}/api
       - RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY:-}
     healthcheck:
       test: ["CMD", "nc", "-z", "localhost", "80"]
@@ -72,9 +72,9 @@ services:
       retries: 15
       start_period: 5s
 
-  monkeytype-backend:
-    container_name: monkeytype-backend
-    image: monkeytype/monkeytype-backend:latest
+  oxytype-backend:
+    container_name: oxytype-backend
+    image: ghcr.io/voltcrash/oxytype-backend:latest
     #uncomment if you want to expose the backend server (not recommended)
     #ports:
     #  - "${BACKEND_PORT:-5005}:5005"
@@ -83,9 +83,9 @@ services:
       - isolated # access to the databases
     restart: on-failure
     environment:
-      - DB_NAME=monkeytype
-      - DB_URI=mongodb://monkeytype-mongodb:27017
-      - REDIS_URI=redis://monkeytype-redis:6379
+      - DB_NAME=oxytype
+      - DB_URI=mongodb://oxytype-mongodb:27017
+      - REDIS_URI=redis://oxytype-redis:6379
       - FRONTEND_URL=${BASE_URL:-http://localhost}
       - RECAPTCHA_SECRET=${RECAPTCHA_SECRET:-}
       - EMAIL_HOST=${EMAIL_HOST:-}
@@ -93,6 +93,7 @@ services:
       - EMAIL_USER=${EMAIL_USER:-}
       - EMAIL_PASS=${EMAIL_PASS:-}
       - EMAIL_FROM=${EMAIL_FROM:-}
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID:-}
     volumes:
       #uncomment to enable the account system, check the SELF_HOSTING.md file
       #- type: bind
@@ -104,9 +105,9 @@ services:
         target: /app/backend/dist/backend-configuration.json
         read_only: true
     depends_on:
-      monkeytype-redis:
+      oxytype-redis:
         condition: service_healthy
-      monkeytype-mongodb:
+      oxytype-mongodb:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "nc", "-z", "localhost", "5005"]
@@ -123,10 +124,10 @@ services:
       - "traefik.http.routers.backend.entrypoints=web"
       - "traefik.http.services.backend.loadbalancer.server.port=5005"
       - "traefik.enable=true"
-      - "traefik.docker.network=monkeytype-public"
+      - "traefik.docker.network=oxytype-public"
 
-  monkeytype-redis:
-    container_name: monkeytype-redis
+  oxytype-redis:
+    container_name: oxytype-redis
     image: redis:6.2.6
     #uncomment if you want to expose the redis server (not recommended)
     #ports:
@@ -145,8 +146,8 @@ services:
       retries: 15
       start_period: 10s
 
-  monkeytype-mongodb:
-    container_name: monkeytype-mongodb
+  oxytype-mongodb:
+    container_name: oxytype-mongodb
     image: mongo:5.0.13
     restart: on-failure
     volumes:
@@ -167,13 +168,13 @@ services:
 
 volumes:
   mongo-data:
-    name: monkeytype_mongo_data
+    name: oxytype_mongo_data
   redis-data:
-    name: monkeytype_redis_data
+    name: oxytype_redis_data
 
 networks:
   isolated:
-    name: monkeytype-isolated
+    name: oxytype-isolated
     internal: true
   public:
-    name: monkeytype-public
+    name: oxytype-public
