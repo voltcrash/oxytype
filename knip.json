@@ -3,7 +3,7 @@
     "backend": {
       "entry": "src/server.ts",
       "project": "src/**/*.ts",
-      "ignoreDependencies": ["@monkeytype/oxlint-config"],
+      "ignoreDependencies": ["@oxytype/oxlint-config"],
       "ignoreBinaries": ["dist"]
     },
     "frontend": {
@@ -20,7 +20,7 @@
         "src/ts/utils/debug.ts"
       ],
       "ignoreDependencies": [
-        "@monkeytype/oxlint-config",
+        "@oxytype/oxlint-config",
         "@tanstack/eslint-plugin-query",
         "eslint-plugin-compat",
         "eslint-plugin-solid",
