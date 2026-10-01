@@ -27,16 +27,16 @@ export function Logo(): JSXElement {
         viewBox="0 0 48 48"
         aria-hidden="true"
         class={cn(
-          "h-full fill-none stroke-current text-main transition-colors",
+          "h-full fill-none stroke-current stroke-[6] text-main transition-colors",
           {
             "text-sub": getFocus(),
           },
         )}
       >
-        <circle cx="24" cy="24" r="16" stroke-width="6"></circle>
+        <circle cx="24" cy="24" r="16"></circle>
         <path
           d="M24 5v13"
-          stroke-width="6"
+
           class="[stroke-linecap:round]"
         ></path>
       </svg>
