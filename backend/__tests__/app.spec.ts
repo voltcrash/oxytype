@@ -24,6 +24,7 @@ import {
   COMPATIBILITY_CHECK_HEADER,
 } from "@oxytype/contracts";
 import * as Configuration from "../src/init/configuration";
+import * as UserDal from "../src/dal/user";
 import GeorgeQueue from "../src/queues/george-queue";
 import MonkeyError from "../src/utils/error";
 import { MAX_BODY_SIZE } from "../src/middlewares/body";
@@ -291,6 +292,13 @@ describe("Hono HTTP application", () => {
     await createClient().get("/configuration/").expect(200);
     await createClient().post("/connections/").expect(401);
   });
+  it("keeps static route matching case-insensitive and preserves parameter case", async () => {
+    const client = createClient();
+    await client.get("/CONFIGURATION/").expect(200);
+    const name = vi.spyOn(UserDal, "isNameAvailable").mockResolvedValue(true);
+    await client.get("/USERS/CHECKNAME/MixedCaseName").expect(200);
+    expect(name).toHaveBeenCalledWith("MixedCaseName", "");
+  });
   it("preserves custom status and Node reason phrases", async () => {
     const response = await createClient().get("/custom-error").expect(479);
     expect(response.body).toEqual({
@@ -393,6 +401,12 @@ describe("Hono HTTP application", () => {
       .send(payload)
       .expect(200);
     expect(send).toHaveBeenCalledWith("42");
+    await client
+      .post("/webhooks/githubRelease")
+      .type("json")
+      .set("X-Hub-Signature-256", "invalid-length")
+      .send(payload)
+      .expect(401);
     await client
       .post("/webhooks/githubRelease")
       .type("json")

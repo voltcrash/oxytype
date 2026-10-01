@@ -13,9 +13,28 @@ import { COMPATIBILITY_CHECK_HEADER } from "@oxytype/contracts";
 import { requestBodyLimit, parseRequestBody } from "./middlewares/body";
 import { etagMiddleware } from "./middlewares/etag";
 import { ApiEnv } from "./api/http";
+import { contract } from "@oxytype/contracts";
+import { createPathNormalizer } from "./api/path";
 
 export function buildApp(options: { docsRoot?: string } = {}): Hono<ApiEnv> {
-  const app = new Hono<ApiEnv>({ strict: false });
+  const docsPrefix =
+    process.env["API_PATH_OVERRIDE"] === undefined
+      ? "/docs"
+      : `/${process.env["API_PATH_OVERRIDE"]}/docs`;
+  const getPath = createPathNormalizer(contract, [
+    "/",
+    "/configure",
+    "/stats",
+    "/stats/ui",
+    "/stats/swagger-stats",
+    "/stats/metrics",
+    "/stats/swagger.json",
+    docsPrefix,
+    ...["internal", "internal.json", "public", "public.json"].map(
+      (path) => `${docsPrefix}/${path}`,
+    ),
+  ]);
+  const app = new Hono<ApiEnv>({ getPath });
   app.onError(errorHandlingMiddleware);
   app.use(etagMiddleware);
   app.use(requestBodyLimit);
