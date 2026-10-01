@@ -1,11 +1,8 @@
-import { AppRoute, AppRouter } from "@ts-rest/core";
-import { TsRestRequest } from "@ts-rest/express";
+import { HttpRequest } from "./http";
 import { MonkeyResponse } from "../utils/monkey-response";
-import { Context } from "../middlewares/context";
 import { MonkeyRequest } from "./types";
 
 export function callController<
-  TRoute extends AppRoute | AppRouter,
   TQuery,
   TBody,
   TParams,
@@ -15,7 +12,7 @@ export function callController<
   TStatus = 200,
 >(
   handler: MonkeyHandler<TQuery, TBody, TParams, TResponse>,
-): (all: TypeSafeTsRestRequest<TRoute, TQuery, TBody, TParams>) => Promise<{
+): (all: TypeSafeTsRestRequest<TQuery, TBody, TParams>) => Promise<{
   status: TStatus;
   body: MonkeyResponse<TResponse>;
 }> {
@@ -25,7 +22,7 @@ export function callController<
       query: all.query as TQuery,
       params: all.params as TParams,
       raw: all.req,
-      ctx: all.req["ctx"] as Context,
+      ctx: all.req.ctx,
     };
 
     const result = await handler(req);
@@ -67,12 +64,11 @@ type MonkeyHandler<TQuery, TBody, TParams, TResponse> = (
 ) => Promise<MonkeyResponse<TResponse>>;
 
 type TypeSafeTsRestRequest<
-  TRoute extends AppRoute | AppRouter,
   TQuery,
   TBody,
   TParams,
 > = {
-  req: TsRestRequest<TRoute>;
+  req: HttpRequest;
 } & (TQuery extends undefined ? WithoutQuery : WithQuery<TQuery>) &
   (TBody extends undefined ? WithoutBody : WithBody<TBody>) &
   (TParams extends undefined ? WithoutParams : WithParams<TParams>);

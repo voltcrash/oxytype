@@ -1,5 +1,5 @@
 import { resultsContract } from "@oxytype/contracts/results";
-import { initServer } from "@ts-rest/express";
+import { initServer } from "../hono-adapter";
 import * as ResultController from "../controllers/result";
 import { callController } from "../ts-rest-adapter";
 

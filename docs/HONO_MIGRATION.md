@@ -12,9 +12,8 @@ No Express request/response adapter remains in production.
   JSON query decoding, repeated query keys, Zod transformations, defaults, and
   422 validation messages for params, query, body, and headers.
 - Preserve middleware order: parse body; CORS/security/compatibility; context;
-  bad-auth/root limits; stats; maintenance; endpoint validation;
-  authentication; endpoint limits; configuration; permissions; endpoint middleware;
-  controller. Return the existing JSON envelopes and custom status codes.
+  bad-auth/root limits; stats; maintenance; authentication; endpoint limits; configuration;
+  permissions; endpoint middleware; endpoint validation; controller. Return the existing JSON envelopes and custom status codes.
 - Preserve Bearer, ApeKey, development Uid, public routes, fresh-token checks,
   permission checks, and configuration gates. Verify GitHub signatures against
   original body bytes, before schema transformations.

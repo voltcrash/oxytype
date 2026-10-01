@@ -1,0 +1,120 @@
+import {
+  type AppRoute,
+  type AppRouter,
+  type ServerInferRequest,
+  type ServerInferResponses,
+  checkZodSchema,
+  isAppRoute,
+  parseJsonQueryObject,
+  TsRestResponseError,
+} from "@ts-rest/core";
+import type { Hono } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
+import type { ApiEnv, ApiMiddleware, HttpRequest } from "./http";
+
+export type RouteImplementation<T extends AppRoute> = {
+  middleware?: ApiMiddleware[];
+  handler: (
+    input: ServerInferRequest<T> & { req: HttpRequest },
+  ) => Promise<ServerInferResponses<T>>;
+};
+export type RouterImplementation<T extends AppRouter> = {
+  [K in keyof T]: T[K] extends AppRoute
+    ? RouteImplementation<T[K]>
+    : T[K] extends AppRouter
+      ? RouterImplementation<T[K]>
+      : never;
+};
+
+/** Keep implementations checked against the shared client/OpenAPI contract. */
+export function initServer(): {
+  router: <T extends AppRouter>(
+    contract: T,
+    router: RouterImplementation<T>,
+  ) => RouterImplementation<T>;
+} {
+  return { router: (_contract, router) => router };
+}
+
+type RuntimeRoute = {
+  middleware?: ApiMiddleware[];
+  handler: (input: {
+    req: HttpRequest;
+    params: unknown;
+    headers: unknown;
+    query: unknown;
+    body: unknown;
+  }) => Promise<{ status: number; body: unknown }>;
+};
+type RuntimeRouter = { [key: string]: RuntimeRoute | RuntimeRouter };
+
+export function createHonoEndpoints<T extends AppRouter>(
+  contract: T,
+  router: RouterImplementation<T>,
+  app: Hono<ApiEnv>,
+  globalMiddleware: ApiMiddleware[],
+): void {
+  registerRouter(contract, router as unknown as RuntimeRouter);
+
+  function registerRouter(schema: AppRouter, implementation: RuntimeRouter): void {
+    for (const [key, route] of Object.entries(schema)) {
+      const entry = implementation[key];
+      if (entry === undefined) throw new Error(`Missing route implementation: ${key}`);
+      if (!isAppRoute(route)) {
+        registerRouter(route, entry as RuntimeRouter);
+        continue;
+      }
+      const endpoint = entry as RuntimeRoute;
+      app.on(
+        route.method,
+        route.path,
+        async (c, next) => {
+          const req = c.get("request");
+          req.tsRestRoute = route;
+          req.params = c.req.param();
+          await next();
+        },
+        ...globalMiddleware,
+        ...(endpoint.middleware ?? []),
+        async (c) => {
+          const req = c.get("request");
+          const params = checkZodSchema(req.params, route.pathParams, { passThroughExtraKeys: true });
+          const headers = checkZodSchema(req.headers, route.headers, { passThroughExtraKeys: true });
+          const query = checkZodSchema(parseJsonQueryObject(req.query as Record<string, string>), route.query);
+          const body = checkZodSchema(req.body, "body" in route ? route.body : null);
+          const failure = [
+            { result: params, message: "Invalid path parameter schema" },
+            { result: query, message: "Invalid query schema" },
+            { result: body, message: "Invalid request data schema" },
+            { result: headers, message: "Invalid header schema" },
+          ].find(({ result }) => !result.success);
+          if (failure !== undefined && !failure.result.success) {
+            return c.json({
+              message: failure.message,
+              validationErrors: failure.result.error.issues.map((issue) =>
+                `${issue.path.length > 0 ? `"${issue.path.join(".")}" ` : ""}${issue.message}`,
+              ),
+            }, 422);
+          }
+          if (!params.success || !headers.success || !query.success || !body.success) {
+            throw new Error("Unrecognized contract validation failure");
+          }
+          let response: { status: number; body: unknown };
+          try {
+            response = await endpoint.handler({
+              req,
+              params: params.data,
+              headers: headers.data,
+              query: query.data,
+              body: body.data,
+            });
+          } catch (error) {
+            if (!(error instanceof TsRestResponseError)) throw error;
+            response = { status: error.statusCode, body: error.body };
+          }
+          return c.json(response.body, response.status as ContentfulStatusCode);
+        },
+      );
+    }
+  }
+}

@@ -1,18 +1,4 @@
-import { TsRestRequest as TsRestRequestGeneric } from "@ts-rest/express";
-import { Request as ExpressRequest } from "express";
-import { Context } from "../middlewares/context";
-
-// oxlint-disable-next-line no-explicit-any
-export type TsRestRequest = TsRestRequestGeneric<any>;
-
-export type ExpressRequestWithContext = {
-  ctx: Readonly<Context>;
-} & ExpressRequest;
-
-export type TsRestRequestWithContext = {
-  ctx: Readonly<Context>;
-} & TsRestRequest &
-  ExpressRequest;
+import { HttpRequest } from "./http";
 
 export type MonkeyRequest<
   TQuery = undefined,
@@ -23,5 +9,5 @@ export type MonkeyRequest<
   body: Readonly<TBody>;
   params: Readonly<TParams>;
   ctx: Readonly<Context>;
-  raw: Readonly<TsRestRequest>;
+  raw: Readonly<HttpRequest>;
 };

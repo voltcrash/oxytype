@@ -1,5 +1,5 @@
 import { psasContract } from "@oxytype/contracts/psas";
-import { initServer } from "@ts-rest/express";
+import { initServer } from "../hono-adapter";
 import * as PsaController from "../controllers/psa";
 import { callController } from "../ts-rest-adapter";
 import { recordClientVersion } from "../../middlewares/utility";

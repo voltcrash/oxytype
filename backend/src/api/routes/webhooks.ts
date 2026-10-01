@@ -1,6 +1,6 @@
 // import joi from "joi";
 import { webhooksContract } from "@oxytype/contracts/webhooks";
-import { initServer } from "@ts-rest/express";
+import { initServer } from "../hono-adapter";
 import * as WebhooksController from "../controllers/webhooks";
 import { callController } from "../ts-rest-adapter";
 

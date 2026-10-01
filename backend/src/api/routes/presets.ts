@@ -1,5 +1,5 @@
 import { presetsContract } from "@oxytype/contracts/presets";
-import { initServer } from "@ts-rest/express";
+import { initServer } from "../hono-adapter";
 import * as PresetController from "../controllers/preset";
 import { callController } from "../ts-rest-adapter";
 
