@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "./caret.css" layer(custom-styles);
+@import "./scroll.css" layer(custom-styles);
 @import "./accessibility.css" layer(custom-styles);
 @import "./core.css" layer(custom-styles);
 @import "./slim-select.css" layer(custom-styles);

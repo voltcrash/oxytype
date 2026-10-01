@@ -11,6 +11,12 @@
   --color-colorful-error: var(--colorful-error-color);
   --color-colorful-error-extra: var(--colorful-error-extra-color);
 
+  /* Diagnostic colors retained for caret/layout debugging. */
+  --color-debug: hotpink;
+  --color-debug-caret: white;
+  --color-debug-target: red;
+  --color-debug-target-secondary: yellow;
+
   /* decide on rem or em */
   --spacing: 0.25rem;
   --em-spacing: 0.25em;
@@ -73,7 +79,7 @@
 }
 
 @utility debug {
-  border: 1px dashed hotpink !important;
+  @apply border border-dashed border-debug!;
 }
 
 @utility text-em-xs {

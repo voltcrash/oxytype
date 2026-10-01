@@ -1,29 +1,29 @@
 /* width */
 ::-webkit-scrollbar {
-  width: 7px;
+  @apply w-[7px];
 }
 
 /* Track */
 ::-webkit-scrollbar-track {
-  background: transparent;
+  @apply bg-transparent;
 }
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: var(--sub-color);
-  transition: 0.125s;
-  border-radius: 2px !important;
+  @apply bg-sub;
+  @apply transition-all duration-125 ease-[ease];
+  @apply rounded-[2px]!;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-color);
+  @apply bg-text;
 }
 
 ::-webkit-scrollbar-thumb:active {
-  background: var(--main-color);
+  @apply bg-main;
 }
 
 ::-webkit-scrollbar-corner {
-  background: var(--sub-color);
+  @apply bg-sub;
 }
