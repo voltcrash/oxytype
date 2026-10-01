@@ -26,6 +26,7 @@ import { setConfig } from "../config/setters";
 import { Config } from "../config/store";
 import * as DB from "../db";
 import { authEvent } from "../events/auth";
+import { replaceUrl } from "../navigation/navigation";
 import { hideLoaderBar, showLoaderBar } from "../states/loader-bar";
 import {
   showErrorNotification,
@@ -42,7 +43,7 @@ export async function linkDiscord(hashOverride: string): Promise<void> {
   if (!hashOverride) return;
   const fragment = new URLSearchParams(hashOverride.slice(1));
   if (fragment.has("access_token")) {
-    history.replaceState(null, "", "/");
+    await replaceUrl("/");
     const accessToken = fragment.get("access_token") as string;
     const tokenType = fragment.get("token_type") as string;
     const state = fragment.get("state") as string;

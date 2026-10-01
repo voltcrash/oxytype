@@ -1,5 +1,5 @@
 import { createEvent } from "../hooks/createEvent";
-import { LoadingOptions } from "../pages/page";
+import type { LoadingOptions } from "../pages/page";
 
 export type NavigateOptions = {
   force?: boolean;

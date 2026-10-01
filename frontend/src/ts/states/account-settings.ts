@@ -1,6 +1,7 @@
 import { createSignal } from "solid-js";
 import { z } from "zod/v3";
 import { createEffectOn } from "../hooks/effects";
+import { replaceUrl } from "../navigation/navigation";
 import { FaSolidIcon } from "../types/font-awesome";
 import { getActivePage, isAuthenticated } from "./core";
 import { serialize as serializeUrlSearchParams } from "zod-urlsearchparams";
@@ -69,5 +70,5 @@ createEffectOn(getCurrentTab, (tab) => {
     data,
   });
   const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
-  window.history.replaceState({}, "", newUrl);
+  void replaceUrl(newUrl);
 });

@@ -261,13 +261,15 @@ describe("Solid Router page integration", () => {
     await ready();
     state.transition = true;
     const length = window.history.length;
-    replaceUrl("/settings?highlight=fontSize#details");
+    state.change.mockClear();
+    await replaceUrl("/settings?highlight=fontSize#details");
     await waitFor(() =>
       expect(getByRole("status")).toHaveTextContent(
         "/settings?highlight=fontSize#details",
       ),
     );
     expect(window.history.length).toBe(length);
+    expect(state.change).not.toHaveBeenCalled();
     await navigate(undefined, { force: true });
     expect(window.location.search).toBe("?highlight=fontSize");
   });

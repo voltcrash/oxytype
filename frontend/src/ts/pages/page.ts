@@ -1,4 +1,5 @@
 import { z } from "zod/v3";
+import { replaceUrl } from "../navigation/navigation";
 import {
   safeParse as parseUrlSearchParams,
   serialize as serializeUrlSearchParams,
@@ -146,13 +147,13 @@ export class PageWithUrlParams<T, U extends UrlParamsSchema> extends Page<T> {
     return parsed.data;
   }
 
-  public setUrlParams(params: z.infer<U>): void {
+  public async setUrlParams(params: z.infer<U>): Promise<void> {
     const urlParams = serializeUrlSearchParams({
       schema: this.urlSchema,
       data: params,
     });
     const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
-    window.history.replaceState({}, "", newUrl);
+    await replaceUrl(newUrl);
   }
 
   public override async beforeShow(options: Options<T>): Promise<void> {

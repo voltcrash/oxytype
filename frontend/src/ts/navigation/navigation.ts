@@ -1,11 +1,11 @@
-import { NavigateOptions } from "../events/navigation";
+import type { NavigateOptions } from "../events/navigation";
 
 type Navigation = {
   navigate: (
     url: string | undefined,
     options: NavigateOptions,
   ) => Promise<void>;
-  replaceUrl: (url: string) => void;
+  replaceUrl: (url: string) => Promise<void>;
 };
 
 let navigation: Navigation | undefined;
@@ -26,7 +26,7 @@ export async function navigate(
   await navigation.navigate(url, options);
 }
 
-export function replaceUrl(url: string): void {
+export async function replaceUrl(url: string): Promise<void> {
   if (navigation === undefined) throw new Error("App router is not mounted");
-  navigation.replaceUrl(url);
+  await navigation.replaceUrl(url);
 }

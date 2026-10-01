@@ -4,6 +4,7 @@ import { Accessor, createEffect, createSignal, Setter } from "solid-js";
 import { z } from "zod/v3";
 import { serialize as serializeUrlSearchParams } from "zod-urlsearchparams";
 import { useLocalStorage } from "../hooks/useLocalStorage";
+import { replaceUrl } from "../navigation/navigation";
 
 import { get as getServerConfiguration } from "../ape/server-configuration";
 import { getSnapshot } from "./snapshot";
@@ -123,7 +124,7 @@ export function updateGetParameters(
     data: params,
   });
   const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
-  window.history.replaceState({}, "", newUrl);
+  void replaceUrl(newUrl);
 }
 
 function lsSelection(): [Accessor<Selection>, Setter<Selection>] {

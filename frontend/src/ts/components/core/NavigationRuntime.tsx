@@ -35,6 +35,7 @@ export function NavigationRuntime(): null {
   let ready = false;
   let replacingUrl = false;
   let pending: NavigationRequest | undefined;
+  const urlReplacements = new Set<() => void>();
   let disposed = false;
 
   const currentUrl = () => location.pathname + location.search + location.hash;
@@ -78,25 +79,37 @@ export function NavigationRuntime(): null {
           });
         });
       },
-      replaceUrl: (url) => {
-        replacingUrl = true;
-        try {
-          solidNavigate(path(url), {
-            resolve: false,
-            replace: true,
-            scroll: false,
-            state: location.state,
+      replaceUrl: async (url) => {
+        const target = path(url);
+        await new Promise<void>((resolve) => {
+          batch(() => {
+            urlReplacements.add(resolve);
+            replacingUrl = true;
+            try {
+              solidNavigate(target, {
+                resolve: false,
+                replace: true,
+                scroll: false,
+                state: location.state,
+              });
+              setRevision((value) => value + 1);
+            } finally {
+              replacingUrl = false;
+            }
           });
-        } finally {
-          replacingUrl = false;
-        }
+        });
       },
     }),
   );
 
   createEffect(
     on([currentUrl, isRouting, revision], () => {
-      if (!ready || isRouting()) return;
+      if (isRouting()) return;
+      const urlOnly = urlReplacements.size > 0;
+      for (const resolve of urlReplacements) resolve();
+      urlReplacements.clear();
+      // Filter/deep-link updates preserve the current page and its local state.
+      if (!ready || (urlOnly && pending === undefined)) return;
       const match = matches().at(-1);
       if (match === undefined) return;
       const { page, access } = match.route.info as AppRouteInfo;
@@ -174,6 +187,7 @@ export function NavigationRuntime(): null {
   onCleanup(() => {
     disposed = true;
     pending?.resolve();
+    for (const resolve of urlReplacements) resolve();
   });
 
   return null;
