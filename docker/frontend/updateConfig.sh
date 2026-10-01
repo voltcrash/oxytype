@@ -9,8 +9,8 @@ sed -i "s/###FIREBASE_MESSAGINGSENDERID###/${FIREBASE_MESSAGINGSENDERID}/g" js/f
 sed -i "s/###FIREBASE_APPID###/${FIREBASE_APPID}/g" js/firebase-config-live.*.js
 
 
-echo "use backend url ${MONKEYTYPE_BACKENDURL}"
-sed -i "s/###MONKEYTYPE_BACKENDURL###/${MONKEYTYPE_BACKENDURL//\//\\/}/g" js/*.js
+echo "use backend url ${OXYTYPE_BACKEND_URL}"
+sed -i "s/###OXYTYPE_BACKEND_URL###/${OXYTYPE_BACKEND_URL//\//\\/}/g" js/*.js
 
 echo "use recaptcha ${RECAPTCHA_SITE_KEY}"
 sed -i "s/###RECAPTCHA_SITE_KEY###/${RECAPTCHA_SITE_KEY//\//\\/}/g" js/*.js

@@ -1,8 +1,7 @@
-name: monkeytype
-version: "3.8"
+name: oxytype
 services:
   redis:
-    container_name: monkeytype-redis
+    container_name: oxytype-redis
     image: redis:6.2.6
     restart: on-failure
     ports:
@@ -11,7 +10,7 @@ services:
       - redis-data:/data
 
   mongodb:
-    container_name: monkeytype-mongodb
+    container_name: oxytype-mongodb
     image: mongo:5.0.13
     restart: on-failure
     ports:
