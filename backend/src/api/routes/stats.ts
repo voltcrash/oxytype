@@ -18,7 +18,12 @@ const duration = new Histogram({
   labelNames: ["path", "method", "status"],
   buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10],
 });
-const stats = { startedAt: Date.now(), requests: 0, errors: 0, totalDurationMs: 0 };
+const stats = {
+  startedAt: Date.now(),
+  requests: 0,
+  errors: 0,
+  totalDurationMs: 0,
+};
 
 /** Replaces the Express-only Swagger Stats middleware. */
 export function addStatsRoutes(app: Hono<ApiEnv>): void {
@@ -27,7 +32,9 @@ export function addStatsRoutes(app: Hono<ApiEnv>): void {
     await next();
     const elapsed = performance.now() - start;
     const labels = {
-      path: c.get("request")?.tsRestRoute?.path ?? (c.res.status === 404 ? "unmatched" : c.req.routePath),
+      path:
+        c.get("request")?.tsRestRoute?.path ??
+        (c.res.status === 404 ? "unmatched" : c.req.routePath),
       method: c.req.method,
       status: String(c.res.status),
     };
@@ -41,26 +48,43 @@ export function addStatsRoutes(app: Hono<ApiEnv>): void {
     realm: "Oxytype API stats",
     verifyUser: (username, password) =>
       Boolean(process.env["STATS_USERNAME"] && process.env["STATS_PASSWORD"]) &&
-      username === process.env["STATS_USERNAME"] && password === process.env["STATS_PASSWORD"],
+      username === process.env["STATS_USERNAME"] &&
+      password === process.env["STATS_PASSWORD"],
   });
   app.use(async (c, next) => {
-    if (!isDevEnvironment() && (c.req.path === "/stats" || c.req.path.startsWith("/stats/"))) {
+    if (
+      !isDevEnvironment() &&
+      (c.req.path === "/stats" || c.req.path.startsWith("/stats/"))
+    ) {
       return authenticate(c, next);
     }
     await next();
   });
-  const summary = (): typeof stats & { uptime: number; averageDurationMs: number } => ({
+  const summary = (): typeof stats & {
+    uptime: number;
+    averageDurationMs: number;
+  } => ({
     ...stats,
     uptime: Date.now() - stats.startedAt,
-    averageDurationMs: stats.requests === 0 ? 0 : stats.totalDurationMs / stats.requests,
+    averageDurationMs:
+      stats.requests === 0 ? 0 : stats.totalDurationMs / stats.requests,
   });
   app.get("/stats", (c) => c.redirect("/stats/ui"));
   app.get("/stats/", (c) => c.redirect("/stats/ui"));
-  app.get("/stats/ui", (c) => c.html(`<!doctype html><html lang="en"><meta charset="utf-8"><title>Oxytype API stats</title><h1>Oxytype API stats</h1><p>Refresh to update.</p><pre>${JSON.stringify(summary(), null, 2)}</pre><a href="/stats/swagger-stats">JSON stats</a> <a href="/stats/metrics">Prometheus metrics</a></html>`));
+  app.get("/stats/ui", (c) =>
+    c.html(
+      `<!doctype html><html lang="en"><meta charset="utf-8"><title>Oxytype API stats</title><h1>Oxytype API stats</h1><p>Refresh to update.</p><pre>${JSON.stringify(summary(), null, 2)}</pre><a href="/stats/swagger-stats">JSON stats</a> <a href="/stats/metrics">Prometheus metrics</a></html>`,
+    ),
+  );
   app.get("/stats/swagger-stats", (c) => c.json(summary()));
   app.get("/stats/metrics", async (c) => {
     c.header("Content-Type", register.contentType);
     return c.body(await register.metrics());
   });
-  app.get("/stats/swagger.json", serveStatic({ path: join(__dirname, "../../../dist/static/api/openapi.json") }));
+  app.get(
+    "/stats/swagger.json",
+    serveStatic({
+      path: join(__dirname, "../../../dist/static/api/openapi.json"),
+    }),
+  );
 }

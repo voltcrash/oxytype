@@ -52,22 +52,29 @@ const router = s.router(contract, {
   connections,
 });
 
-
 export function addApiRoutes(app: Hono<ApiEnv>): void {
   if (isDevEnvironment()) {
     app.use(async (c, next) => {
       await next();
       c.header("Content-Security-Policy", "");
     });
-    app.get("/configure", serveStatic({ path: join(__dirname, "../../../private/index.html") }));
-    app.get("/configure/*", serveStatic({
-      root: join(__dirname, "../../../private"),
-      rewriteRequestPath: (path) => path.replace(/^\/configure/, ""),
-    }));
+    app.get(
+      "/configure",
+      serveStatic({ path: join(__dirname, "../../../private/index.html") }),
+    );
+    app.get(
+      "/configure/*",
+      serveStatic({
+        root: join(__dirname, "../../../private"),
+        rewriteRequestPath: (path) => path.replace(/^\/configure/, ""),
+      }),
+    );
     app.use(async (c, next) => {
       const slowdown = (await getLiveConfiguration()).dev.responseSlowdownMs;
       if (slowdown > 0) {
-        Logger.info(`Simulating ${slowdown}ms delay for ${c.req.method} ${c.req.path}`);
+        Logger.info(
+          `Simulating ${slowdown}ms delay for ${c.req.method} ${c.req.path}`,
+        );
         await new Promise((resolve) => setTimeout(resolve, slowdown));
       }
       await next();
@@ -76,16 +83,23 @@ export function addApiRoutes(app: Hono<ApiEnv>): void {
 
   addStatsRoutes(app);
   app.use(async (c, next) => {
-    if (!c.req.path.startsWith("/configuration") &&
-      (process.env["MAINTENANCE"] === "true" || c.get("request").ctx.configuration.maintenance)) {
+    if (
+      !c.req.path.startsWith("/configuration") &&
+      (process.env["MAINTENANCE"] === "true" ||
+        c.get("request").ctx.configuration.maintenance)
+    ) {
       return c.json({ message: "Server is down for maintenance" }, 503);
     }
     await next();
   });
-  app.get("/", (c) => c.json(new MonkeyResponse("ok", {
-    uptime: Date.now() - APP_START_TIME,
-    version,
-  })));
+  app.get("/", (c) =>
+    c.json(
+      new MonkeyResponse("ok", {
+        uptime: Date.now() - APP_START_TIME,
+        version,
+      }),
+    ),
+  );
   app.route(`${BASE_ROUTE}/docs`, docs);
   createHonoEndpoints(contract, router, app, [
     authenticateTsRestRequest(),
@@ -93,7 +107,13 @@ export function addApiRoutes(app: Hono<ApiEnv>): void {
     verifyRequiredConfiguration(),
     verifyPermissions(),
   ]);
-  app.notFound((c) => c.json(new MonkeyResponse(
-    `Unknown request URL (${c.req.method}: ${c.req.path})`, null,
-  ), 404));
+  app.notFound((c) =>
+    c.json(
+      new MonkeyResponse(
+        `Unknown request URL (${c.req.method}: ${c.req.path})`,
+        null,
+      ),
+      404,
+    ),
+  );
 }
