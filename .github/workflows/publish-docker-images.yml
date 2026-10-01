@@ -30,7 +30,7 @@ jobs:
 
       - name: Backend image metadata
         id: backend-meta
-        uses: docker/metadata-action@v6
+        uses: docker/metadata-action@v6.2.0
         with:
           images: ${{ env.BE_REPO }}
           tags: |
@@ -51,7 +51,7 @@ jobs:
 
       - name: Frontend image metadata
         id: frontend-meta
-        uses: docker/metadata-action@v6
+        uses: docker/metadata-action@v6.2.0
         with:
           images: ${{ env.FE_REPO }}
           tags: |
