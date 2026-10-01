@@ -5,6 +5,9 @@ const generateETag = createETagGenerator({ weak: true });
 
 export const etagMiddleware: ApiMiddleware = async (c, next) => {
   await next();
+  if (c.res.headers.get("content-type") === "application/json") {
+    c.header("Content-Type", "application/json; charset=utf-8");
+  }
   const response = c.res;
   if (
     response.status === 204 ||

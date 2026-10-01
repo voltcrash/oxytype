@@ -26,28 +26,34 @@ export function buildApp(): Hono<ApiEnv> {
       allowMethods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
     }),
   );
-  app.use(
-    secureHeaders({
-      crossOriginResourcePolicy: false,
-      crossOriginOpenerPolicy: false,
-      originAgentCluster: false,
-      xFrameOptions: "SAMEORIGIN",
-      strictTransportSecurity: "max-age=15552000; includeSubDomains",
-      xDnsPrefetchControl: "off",
-      contentSecurityPolicy: {
-        defaultSrc: ["'self'"],
-        baseUri: ["'self'"],
-        fontSrc: ["'self'", "https:", "data:"],
-        frameAncestors: ["'self'"],
-        imgSrc: ["'self'", "data:"],
-        objectSrc: ["'none'"],
-        scriptSrc: ["'self'"],
-        scriptSrcAttr: ["'none'"],
-        styleSrc: ["'self'", "https:", "'unsafe-inline'"],
-        upgradeInsecureRequests: [],
-      },
-    }),
-  );
+  const security = secureHeaders({
+    crossOriginResourcePolicy: false,
+    crossOriginOpenerPolicy: false,
+    originAgentCluster: false,
+    xFrameOptions: "SAMEORIGIN",
+    strictTransportSecurity: "max-age=15552000; includeSubDomains",
+    xDnsPrefetchControl: "off",
+    contentSecurityPolicy: {
+      defaultSrc: ["'self'"],
+      baseUri: ["'self'"],
+      fontSrc: ["'self'", "https:", "data:"],
+      frameAncestors: ["'self'"],
+      imgSrc: ["'self'", "data:"],
+      objectSrc: ["'none'"],
+      scriptSrc: ["'self'"],
+      scriptSrcAttr: ["'none'"],
+      styleSrc: ["'self'", "https:", "'unsafe-inline'"],
+      upgradeInsecureRequests: [],
+    },
+  });
+  app.use(async (c, next) => {
+    let routeCsp: string | null = null;
+    await security(c, async () => {
+      await next();
+      routeCsp = c.res.headers.get("Content-Security-Policy");
+    });
+    if (routeCsp !== null) c.header("Content-Security-Policy", routeCsp);
+  });
   app.use(compatibilityCheckMiddleware);
   app.use(contextMiddleware);
   app.use(badAuthRateLimiterHandler);

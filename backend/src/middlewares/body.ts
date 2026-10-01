@@ -58,7 +58,7 @@ export const parseRequestBody: ApiMiddleware = async (c, next) => {
     if (rawBody.length > 0) {
       if (type === "application/json") {
         // Match strict JSON parsing: primitives are not accepted as request bodies.
-        if (!/^[\s\uFEFF]*[\[{]/.test(rawBody)) {
+        if (!/^[\s\uFEFF]*[[{]/.test(rawBody)) {
           throw new SyntaxError("Invalid JSON request body");
         }
         c.set("body", JSON.parse(rawBody.replace(/^\uFEFF/, "")) as unknown);

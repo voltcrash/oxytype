@@ -55,8 +55,8 @@ const router = s.router(contract, {
 export function addApiRoutes(app: Hono<ApiEnv>): void {
   if (isDevEnvironment()) {
     app.use(async (c, next) => {
-      await next();
       c.header("Content-Security-Policy", "");
+      await next();
     });
     app.get(
       "/configure",

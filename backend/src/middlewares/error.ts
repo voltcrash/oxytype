@@ -121,6 +121,9 @@ function handleErrorResponse(
   message: string,
   data?: ErrorData,
 ): Response {
+  if (isCustomCode(status) && c.env.outgoing !== undefined) {
+    c.env.outgoing.statusMessage = message;
+  }
   return c.newResponse(JSON.stringify({ message, data: data ?? null }), {
     status: status as import("hono/utils/http-status").StatusCode,
     statusText: isCustomCode(status) ? message : undefined,

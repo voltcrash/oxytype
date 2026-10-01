@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { join } from "path";
-import { ApiEnv } from "../http";
+import { ApiEnv, ApiMiddleware } from "../http";
 import MonkeyError from "../../utils/error";
 
 const router = new Hono<ApiEnv>({ strict: false });
@@ -16,12 +16,13 @@ for (const [route, file] of [
   ["/", "public.html"],
   ["/public.json", "public.json"],
 ] as const) {
+  const setCsp: ApiMiddleware = async (c, next) => {
+    if (file.endsWith(".html")) c.header("Content-Security-Policy", CSP);
+    await next();
+  };
   router.get(
     route,
-    async (c, next) => {
-      if (file.endsWith(".html")) c.header("Content-Security-Policy", CSP);
-      await next();
-    },
+    setCsp,
     serveStatic({
       path: join(root, file),
       onNotFound: () => {
