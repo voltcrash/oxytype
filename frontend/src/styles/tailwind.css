@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./buttons.css" layer(custom-styles);
 
 @theme {
   --color-*: initial;
