@@ -262,7 +262,7 @@ function getBuildOptions({
             },
             {
               name: "oxytype-packages",
-              test: /monkeytype\/packages\//,
+              test: /\/packages\//,
             },
             {
               name: "vendor-chart",
