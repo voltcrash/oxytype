@@ -1,4 +1,4 @@
-import { z, ZodSchema } from "zod";
+import { z, ZodSchema } from "zod/v3";
 import { RateLimitIds, RateLimiterId } from "../rate-limit";
 import { RequireConfiguration } from "../require-configuration";
 

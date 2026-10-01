@@ -5,7 +5,7 @@ import {
   ConnectionStatusSchema,
   ConnectionTypeSchema,
 } from "@oxytype/schemas/connections";
-import { z } from "zod";
+import { z } from "zod/v3";
 import {
   CommonResponses,
   meta,
