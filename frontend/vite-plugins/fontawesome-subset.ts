@@ -108,7 +108,9 @@ function getFontawesomeConfig(debug = false): FontawesomeConfig {
   const srcFiles = findAllFiles(
     "./src",
     (filename) =>
-      !filename.endsWith("fontawesome.scss") && !filename.endsWith(".d.ts"), //ignore CSS and type declarations
+      !filename.endsWith("fontawesome.scss") &&
+      !filename.endsWith("fontawesome.css") &&
+      !filename.endsWith(".d.ts"), //ignore CSS and type declarations
   );
   const staticFiles = findAllFiles(
     "./static",

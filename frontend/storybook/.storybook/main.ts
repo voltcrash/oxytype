@@ -1,5 +1,6 @@
 import { defineMain } from "storybook-solidjs-vite";
 import tailwindcss from "@tailwindcss/vite";
+import { fontStyles } from "../../vite-plugins/font-styles";
 import type { Plugin } from "vite";
 
 function stubVirtualEnvConfig(): Plugin {
@@ -64,6 +65,9 @@ export default defineMain({
   ],
   viteFinal(config) {
     config.plugins ??= [];
+    config.plugins.push(
+      fontStyles({ isDevelopment: true }) as unknown as Plugin,
+    );
     config.plugins.push(tailwindcss());
     config.plugins.push(stubVirtualEnvConfig());
     config.plugins.push(stubVirtualLanguageHashes());
