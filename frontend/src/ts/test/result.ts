@@ -41,7 +41,7 @@ import {
 } from "../collections/tags";
 import { canQuickRestart as canQuickRestartFn } from "../utils/quick-restart";
 import { LocalStorageWithSchema } from "../utils/local-storage-with-schema";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { blurInputElement } from "../input/input-element";
 import * as ConnectionState from "../states/connection";
 import { getTheme } from "../states/theme";
@@ -173,7 +173,7 @@ async function updateChartData(): Promise<void> {
           family: Config.fontFamily.replace(/_/g, " "),
           size: 11,
           style: "normal",
-          weight: Chart.defaults.font.weight as string,
+          weight: Chart.defaults.font.weight,
           lineHeight: Chart.defaults.font.lineHeight as number,
         },
         color: subcolor,
@@ -320,7 +320,7 @@ export async function updateChartPBLine(): Promise<void> {
         family: Config.fontFamily.replace(/_/g, " "),
         size: 11,
         style: "normal",
-        weight: Chart.defaults.font.weight as string,
+        weight: Chart.defaults.font.weight,
         lineHeight: Chart.defaults.font.lineHeight as number,
       },
       color: themecolors.bg,
@@ -542,7 +542,7 @@ async function updateTags(dontSave: boolean): Promise<void> {
               family: Config.fontFamily.replace(/_/g, " "),
               size: 11,
               style: "normal",
-              weight: Chart.defaults.font.weight as string,
+              weight: Chart.defaults.font.weight,
               lineHeight: Chart.defaults.font.lineHeight as number,
             },
             color: themecolors.bg,

@@ -83,18 +83,36 @@ export function ChartJs<T extends ChartType, TData = DefaultDataPoint<T>>(
   const [canvasRef, canvasEl] = useRef<HTMLCanvasElement>();
 
   let chart: Chart<T, TData> | undefined;
+  let mountObserver: MutationObserver | undefined;
 
   onMount(() => {
     const canvas = canvasEl();
     if (canvas === undefined) return;
     if (chart !== undefined) return;
 
-    chart = new Chart(canvas, {
-      type: props.type,
-      data: props.data,
-      options: addColorsToOptions(props.options as ChartOptions<T>, getTheme),
-    });
-    props.onChartInit?.(chart);
+    // Cached pages can own a canvas before Solid attaches it to the document.
+    // Chart.js needs a connected canvas to read styles and observe its size.
+    const initialize = (): void => {
+      if (!canvas.isConnected || chart !== undefined) return;
+      mountObserver?.disconnect();
+      chart = new Chart(canvas, {
+        type: props.type,
+        data: props.data,
+        options:
+          props.options === undefined
+            ? undefined
+            : addColorsToOptions(props.options, getTheme),
+      });
+      props.onChartInit?.(chart);
+    };
+    initialize();
+    if (chart === undefined) {
+      mountObserver = new MutationObserver(initialize);
+      mountObserver.observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+      });
+    }
   });
 
   const updateChart = (data: ChartData<T, TData>): void => {
@@ -114,6 +132,7 @@ export function ChartJs<T extends ChartType, TData = DefaultDataPoint<T>>(
   createEffectOn(deferredData, (data) => updateChart(data), { defer: true });
 
   onCleanup(() => {
+    mountObserver?.disconnect();
     chart?.destroy();
   });
 
@@ -134,7 +153,7 @@ function addColorsToOptions<TType extends ChartType = ChartType>(
 ): ChartOptions<TType> {
   //axis colors
   const chartScaleOptions = options as ScaleChartOptions<TType>;
-  Object.keys(chartScaleOptions.scales).forEach((scaleID) => {
+  Object.keys(chartScaleOptions.scales ?? {}).forEach((scaleID) => {
     const axis = chartScaleOptions.scales[scaleID] as CartesianScaleOptions;
     axis.ticks = {
       ...axis.ticks,
@@ -144,11 +163,11 @@ function addColorsToOptions<TType extends ChartType = ChartType>(
       ...axis.title,
       color: theme().sub,
     };
+    axis.border = { ...axis.border, color: theme().subAlt };
     axis.grid = {
       ...axis.grid,
       color: theme().subAlt,
       tickColor: theme().subAlt,
-      borderColor: theme().subAlt,
     };
   });
 

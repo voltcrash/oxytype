@@ -1,3 +1,5 @@
+import type {} from "chartjs-plugin-trendline";
+
 import { roundTo2 } from "@oxytype/util/numbers";
 import { TooltipItem } from "chart.js";
 import { format as dateFormat } from "date-fns/format";
@@ -42,11 +44,9 @@ export function DailyActivityChart(props: {
                   data: dataQueryData().map((it) => it.timeTyping / 60),
                   backgroundColor: getTheme().main,
                   trendlineLinear: {
+                    style: getTheme().sub,
                     lineStyle: "dotted",
                     width: 2,
-                    //@ts-expect-error colorMin and colorMax missing from the type definition
-                    colorMin: getTheme().sub,
-                    colorMax: getTheme().sub,
                   },
                   order: 3,
                 },
