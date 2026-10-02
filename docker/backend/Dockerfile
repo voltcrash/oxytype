@@ -44,11 +44,10 @@ COPY ["docker/backend/entry-point.sh", "./"]
 
 RUN echo "${server_version}" > /app/backend/dist/server.version
 
-#run in prod mode, but don't require anti-cheat, email client or firebase
+#run in prod mode, but don't require anti-cheat, email client
 ENV MODE=prod
 ENV BYPASS_ANTICHEAT=true
 ENV BYPASS_EMAILCLIENT=true
-ENV BYPASS_FIREBASE=true
 
 EXPOSE 5005
 USER node
