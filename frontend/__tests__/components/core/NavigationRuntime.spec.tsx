@@ -26,7 +26,7 @@ const state = vi.hoisted(() => ({
 vi.mock("../../../src/ts/controllers/page-controller", () => ({
   change: state.change,
 }));
-vi.mock("../../../src/ts/firebase", () => ({
+vi.mock("../../../src/ts/auth-client", () => ({
   isAuthAvailable: () => state.authAvailable,
 }));
 vi.mock("../../../src/ts/states/core", () => ({
@@ -169,7 +169,7 @@ describe("Solid Router page integration", () => {
     expect(state.change).toHaveBeenLastCalledWith("friends", {});
   });
 
-  it("returns auth routes to the test when Firebase is unavailable", async () => {
+  it("returns auth routes to the test when authentication is unavailable", async () => {
     state.authAvailable = false;
     mount("/account");
     await ready();

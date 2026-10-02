@@ -1,7 +1,8 @@
+import { getSessionCookie } from "better-auth/cookies";
 import { compare } from "bcrypt";
 import { getApeKey, updateLastUsedOn } from "../dal/ape-keys";
 import MonkeyError from "../utils/error";
-import { verifyIdToken } from "../utils/auth";
+import { verifySession } from "../utils/auth";
 import { base64UrlDecode, isDevEnvironment } from "../utils/misc";
 import { ApiMiddleware, HttpRequest } from "../api/http";
 import statuses from "../constants/monkey-status-codes";
@@ -20,7 +21,7 @@ import { Configuration } from "@oxytype/schemas/configuration";
 import { getMetadata } from "./utility";
 
 export type DecodedToken = {
-  type: "Bearer" | "ApeKey" | "None" | "GithubWebhook";
+  type: "Bearer" | "Session" | "ApeKey" | "None" | "GithubWebhook";
   uid: string;
   email: string;
 };
@@ -67,6 +68,17 @@ export function authenticateTsRestRequest(): ApiMiddleware {
           authHeader,
           req.ctx.configuration,
           options,
+        );
+      } else if (
+        typeof getSessionCookie(
+          new Headers({ cookie: req.headers["cookie"] ?? "" }),
+          { cookiePrefix: "oxytype" },
+        ) === "string"
+      ) {
+        token = await authenticateWithSession(
+          new Headers({ cookie: req.headers["cookie"] ?? "" }),
+          options,
+          "Session",
         );
       } else if (isPublic === true) {
         token = {
@@ -157,73 +169,30 @@ async function authenticateWithBearerToken(
   token: string,
   options: RequestAuthenticationOptions,
 ): Promise<DecodedToken> {
-  try {
-    const decodedToken = await verifyIdToken(
-      token,
-      (options.requireFreshToken ?? false) || (options.noCache ?? false),
+  return authenticateWithSession(
+    new Headers({ authorization: `Bearer ${token}` }),
+    options,
+    "Bearer",
+  );
+}
+
+async function authenticateWithSession(
+  headers: Headers,
+  options: RequestAuthenticationOptions,
+  type: "Bearer" | "Session",
+): Promise<DecodedToken> {
+  const session = await verifySession(headers);
+  if (
+    options.requireFreshToken &&
+    Date.now() - session.createdAt.getTime() > 60 * 1000
+  ) {
+    throw new MonkeyError(
+      401,
+      "Unauthorized",
+      "This endpoint requires a fresh token",
     );
-
-    if (options.requireFreshToken) {
-      const now = Date.now();
-      const tokenIssuedAt = new Date(decodedToken.iat * 1000).getTime();
-
-      if (now - tokenIssuedAt > 60 * 1000) {
-        throw new MonkeyError(
-          401,
-          "Unauthorized",
-          `This endpoint requires a fresh token`,
-        );
-      }
-    }
-
-    return {
-      type: "Bearer",
-      uid: decodedToken.uid,
-      email: decodedToken.email ?? "",
-    };
-  } catch (error) {
-    if (
-      error instanceof Error &&
-      error.message.includes("An internal error has occurred")
-    ) {
-      throw new MonkeyError(
-        503,
-        "Firebase returned an internal error when trying to verify the token.",
-        "authenticateWithBearerToken",
-      );
-    }
-
-    // oxlint-disable-next-line no-unsafe-member-access
-    const errorCode = error?.errorInfo?.code as string | undefined;
-
-    if (errorCode?.includes("auth/id-token-expired")) {
-      throw new MonkeyError(
-        401,
-        "Token expired - please login again",
-        "authenticateWithBearerToken",
-      );
-    } else if (errorCode?.includes("auth/id-token-revoked")) {
-      throw new MonkeyError(
-        401,
-        "Token revoked - please login again",
-        "authenticateWithBearerToken",
-      );
-    } else if (errorCode?.includes("auth/user-not-found")) {
-      throw new MonkeyError(
-        404,
-        "User not found",
-        "authenticateWithBearerToken",
-      );
-    } else if (errorCode?.includes("auth/argument-error")) {
-      throw new MonkeyError(
-        400,
-        "Incorrect Bearer token format",
-        "authenticateWithBearerToken",
-      );
-    } else {
-      throw error;
-    }
   }
+  return { type, uid: session.uid, email: session.email };
 }
 
 async function authenticateWithApeKey(

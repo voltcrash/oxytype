@@ -61,6 +61,7 @@ afterAll(async () => {
   await rm(docsRoot, { recursive: true, force: true });
 });
 beforeEach(() => {
+  vi.stubEnv("FRONTEND_URL", "http://localhost:3000");
   configuration = structuredClone(BASE_CONFIGURATION);
   vi.spyOn(Configuration, "getCachedConfiguration").mockResolvedValue(
     configuration,
@@ -124,7 +125,10 @@ async function postBytes(
 
 describe("Hono HTTP application", () => {
   it("serves health, compatibility, CORS, security and limiter headers", async () => {
-    const response = await createClient().get("/").expect(200);
+    const response = await createClient()
+      .get("/")
+      .set("Origin", "http://localhost:3000")
+      .expect(200);
     expect(response.body).toEqual({
       message: "ok",
       data: { uptime: expect.any(Number), version: expect.any(String) },
@@ -132,7 +136,10 @@ describe("Hono HTTP application", () => {
     expect(response.headers[COMPATIBILITY_CHECK_HEADER.toLowerCase()]).toBe(
       String(COMPATIBILITY_CHECK),
     );
-    expect(response.headers["access-control-allow-origin"]).toBe("*");
+    expect(response.headers["access-control-allow-origin"]).toBe(
+      "http://localhost:3000",
+    );
+    expect(response.headers["access-control-allow-credentials"]).toBe("true");
     expect(response.headers["access-control-expose-headers"]).toContain(
       COMPATIBILITY_CHECK_HEADER,
     );
@@ -150,7 +157,7 @@ describe("Hono HTTP application", () => {
     vi.stubEnv("MAINTENANCE", "true");
     const response = await createClient()
       .options("/users")
-      .set("Origin", "https://example.com")
+      .set("Origin", "http://localhost:3000")
       .set("Access-Control-Request-Method", "POST")
       .set("Access-Control-Request-Headers", "authorization,content-type")
       .expect(204);
@@ -161,6 +168,13 @@ describe("Hono HTTP application", () => {
       "authorization,content-type",
     );
     expect(response.text).toBe("");
+  });
+  it("does not grant cross-origin access to untrusted sites", async () => {
+    const response = await createClient()
+      .get("/")
+      .set("Origin", "https://attacker.example")
+      .expect(200);
+    expect(response.headers["access-control-allow-origin"]).toBeUndefined();
   });
   it("uses the existing unknown-route envelope", async () => {
     const response = await createClient().get("/unknown?query=1").expect(404);

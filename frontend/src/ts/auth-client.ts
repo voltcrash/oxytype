@@ -1,0 +1,239 @@
+import { createAuthClient } from "better-auth/client";
+import { envConfig } from "virtual:env-config";
+import { createSignal } from "solid-js";
+import { promiseWithResolvers } from "./utils/misc";
+import { setUserId, setUserVerified } from "./states/core";
+import { googleSignUpEvent } from "./events/google-sign-up";
+import { createEvent } from "./hooks/createEvent";
+
+const baseURL = `${envConfig.backendUrl.replace(/\/$/, "")}/auth`;
+export const authClient = createAuthClient({
+  baseURL,
+  basePath: new URL(baseURL, window.location.origin).pathname,
+  fetchOptions: { credentials: "include" },
+});
+import type { AuthUser, UserCredential, SocialProvider } from "./auth-types";
+export type { AuthUser, UserCredential, SocialProvider } from "./auth-types";
+const [getAuthenticatedUser, setAuthenticatedUser] =
+  createSignal<AuthUser | null>(null);
+export { getAuthenticatedUser };
+let available = false;
+let ignoreAuthCallback = false;
+type ReadyCallback = (success: boolean, user: AuthUser | null) => Promise<void>;
+let readyCallback: ReadyCallback | undefined;
+const { promise: authPromise, resolve: resolveAuthPromise } =
+  promiseWithResolvers();
+export { authPromise };
+
+export function checkAuthResult<T>(result: {
+  data: T;
+  error: { message?: string } | null;
+}): T {
+  if (result.error !== null) {
+    throw new Error(result.error.message ?? "Authentication failed");
+  }
+  return result.data;
+}
+
+export function setUserState(user: AuthUser | null): void {
+  setAuthenticatedUser(user);
+  setUserId(user?.uid ?? null);
+  setUserVerified(user?.emailVerified ?? false);
+}
+
+export async function refreshSession(notify = true): Promise<AuthUser | null> {
+  const previous = getAuthenticatedUser();
+  const session = checkAuthResult(await authClient.getSession());
+  let user: AuthUser | null = null;
+  if (session) {
+    const accounts = checkAuthResult(await authClient.listAccounts());
+    user = {
+      uid: session.user.id,
+      email: session.user.email,
+      emailVerified: session.user.emailVerified,
+      displayName: session.user.name,
+      providerData: (accounts ?? []).map((account) => ({
+        providerId:
+          account.providerId === "credential" ? "password" : account.providerId,
+        email: session.user.email,
+      })),
+    };
+  }
+  setAuthenticatedUser(user);
+  if (
+    notify &&
+    !ignoreAuthCallback &&
+    (previous?.uid !== user?.uid ||
+      previous?.email !== user?.email ||
+      previous?.emailVerified !== user?.emailVerified)
+  ) {
+    setUserState(user);
+    await readyCallback?.(true, user);
+  }
+  return user;
+}
+
+export async function init(callback: ReadyCallback): Promise<void> {
+  readyCallback = callback;
+  try {
+    available = true;
+    const user = await refreshSession(false);
+    if (user !== null) {
+      // A social sign-in can return before the username/captcha onboarding is complete.
+      const response = await fetch(`${envConfig.backendUrl}/users`, {
+        credentials: "include",
+        headers: { "X-Client-Version": envConfig.clientVersion },
+      });
+      if (response.status === 404) {
+        ignoreAuthCallback = true;
+        googleSignUpEvent.dispatch({ signedInUser: { user }, isNewUser: true });
+        return;
+      }
+    }
+    setUserState(user);
+    await callback(true, user);
+  } catch (error) {
+    available = false;
+    console.error("Better Auth failed to initialize", error);
+    setUserState(null);
+    await callback(false, null);
+  } finally {
+    resolveAuthPromise();
+  }
+}
+export function isAuthAvailable(): boolean {
+  return available;
+}
+export async function signOut(): Promise<void> {
+  checkAuthResult(await authClient.signOut());
+  setUserState(null);
+  ignoreAuthCallback = false;
+  await readyCallback?.(true, null);
+}
+export async function signInWithEmailAndPassword(
+  email: string,
+  password: string,
+  rememberMe: boolean,
+): Promise<UserCredential> {
+  checkAuthResult(
+    await authClient.signIn.email({ email, password, rememberMe }),
+  );
+  const user = await refreshSession();
+  if (!user) throw new Error("Sign in did not create a session");
+  return { user };
+}
+export async function createUserWithEmailAndPassword(
+  name: string,
+  email: string,
+  password: string,
+): Promise<UserCredential> {
+  ignoreAuthCallback = true;
+  try {
+    checkAuthResult(await authClient.signUp.email({ name, email, password }));
+    const user = await refreshSession(false);
+    if (!user) throw new Error("Sign up did not create a session");
+    return { user };
+  } catch (error) {
+    ignoreAuthCallback = false;
+    throw error;
+  }
+}
+export function resetIgnoreAuthCallback(): void {
+  ignoreAuthCallback = false;
+}
+export async function updateProfile(name: string): Promise<void> {
+  checkAuthResult(await authClient.updateUser({ name }));
+  await refreshSession(false);
+}
+export async function sendEmailVerification(): Promise<void> {
+  const user = getAuthenticatedUser();
+  if (user && !user.emailVerified) {
+    checkAuthResult(
+      await authClient.sendVerificationEmail({
+        email: user.email,
+        callbackURL: `${window.location.origin}/email-handler?mode=verifyEmail`,
+      }),
+    );
+  }
+}
+export async function deleteUnfinishedUser(): Promise<void> {
+  checkAuthResult(
+    await authClient.$fetch("/cancel-sign-up", { method: "POST" }),
+  );
+}
+
+type OAuthRequest = {
+  provider: SocialProvider;
+  link: boolean;
+  rememberMe: boolean;
+  resolve: () => void;
+  reject: (error: Error) => void;
+};
+export const oauthRequestEvent = createEvent<OAuthRequest>();
+export async function requestOAuth(
+  provider: SocialProvider,
+  link = false,
+  rememberMe = true,
+): Promise<void> {
+  return new Promise((resolve, reject) =>
+    oauthRequestEvent.dispatch({ provider, link, rememberMe, resolve, reject }),
+  );
+}
+export async function signInWithPopup(
+  provider: SocialProvider,
+  rememberMe: boolean,
+): Promise<void> {
+  ignoreAuthCallback = true;
+  try {
+    await requestOAuth(provider, false, rememberMe);
+    const user = await refreshSession(false);
+    if (!user) throw new Error("Sign in did not create a session");
+    const response = await fetch(`${envConfig.backendUrl}/users`, {
+      credentials: "include",
+      headers: { "X-Client-Version": envConfig.clientVersion },
+    });
+    if (response.status === 404) {
+      googleSignUpEvent.dispatch({ signedInUser: { user }, isNewUser: true });
+    } else if (response.ok) {
+      ignoreAuthCallback = false;
+      setUserState(user);
+      await readyCallback?.(true, user);
+    } else {
+      throw new Error("Failed to load account");
+    }
+  } catch (error) {
+    ignoreAuthCallback = false;
+    throw error;
+  }
+}
+
+/** Better Auth refreshes and broadcasts sessions while a component owns this subscription. */
+export function observeAuthSession(): () => void {
+  let syncing = false;
+  return authClient.useSession.subscribe((state) => {
+    if (
+      state.isPending ||
+      state.isRefetching ||
+      state.error !== null ||
+      ignoreAuthCallback ||
+      syncing ||
+      !available
+    ) {
+      return;
+    }
+    const current = getAuthenticatedUser();
+    if (
+      (state.data?.user.id ?? null) === (current?.uid ?? null) &&
+      state.data?.user.emailVerified === current?.emailVerified &&
+      state.data?.user.email === current?.email
+    ) {
+      return;
+    }
+    syncing = true;
+    void refreshSession()
+      .catch((error: unknown) => console.error("Session refresh failed", error))
+      .finally(() => {
+        syncing = false;
+      });
+  });
+}

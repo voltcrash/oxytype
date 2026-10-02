@@ -8,7 +8,7 @@
     - [Git](#git)
     - [NodeJS and PNPM](#nodejs-and-pnpm)
     - [Docker (Recommended but Optional)](#docker-recommended-but-optional)
-    - [Firebase (optional)](#firebase-optional)
+    - [Better Auth](#better-auth)
     - [Config file](#config-file)
     - [Databases (optional if running frontend only)](#databases-optional-if-running-frontend-only)
   - [Building and Running Oxytype](#building-and-running-oxytype)
@@ -21,7 +21,7 @@
 
 ## Prerequisites
 
-This contribution guide is for cases in which you need to test the functionality of your changes, or if you need to take screenshots of your changes. You will need a computer with a stable internet connection, a text editor, Git, and NodeJS with version 24.21.0. There are some additional requirements depending on what you're looking to contribute, such as Firebase for authentication, and Mongo and Docker for the backend. Read the below sections to understand how to set up each of these tools.
+This contribution guide is for cases in which you need to test the functionality of your changes, or if you need to take screenshots of your changes. You will need a computer with a stable internet connection, a text editor, Git, and NodeJS with version 24.21.0. There are some additional requirements depending on what you're looking to contribute, such as MongoDB for authentication and Docker for the backend. Read the below sections to understand how to set up each of these tools.
 
 ### Git
 
@@ -46,57 +46,25 @@ For package management, we use `pnpm` instead of `npm` or `yarn`. You can instal
 
 You can use docker to run the frontend and backend. This will take care of OS-specific problems but might be a bit more resource-intensive. You can download it from the [Docker website](https://www.docker.com/get-started/#h_installation).
 
-### Firebase (optional)
+### Better Auth
 
-The account system will not let you create an account without a Firebase project. You can skip this if you don't think you will need it (you can always set it up later)
+Email/password authentication uses the backend's MongoDB database. No external auth project or frontend credentials are needed. Copy `backend/example.env` to `backend/.env`, start MongoDB/Redis, and run the backend.
 
-1. Create a Firebase account if you already haven't done so.
-1. [Create a new Firebase project.](https://console.firebase.google.com/u/0/)
-   - The project name doesn't matter, but the name `oxytype` would be preferred.
-   - Google Analytics is not necessary.
+Local defaults use `http://localhost:3000` for the frontend and `http://localhost:5005/auth` for auth. Production requires `BETTER_AUTH_SECRET` (at least 32 characters), `BETTER_AUTH_URL` (public auth URL), and `FRONTEND_URL` (frontend origin). Generate a secret with `openssl rand -base64 32`.
 
-1. Enable Firebase Authentication
-   - In the Firebase console, go to `Build > Authentication > Sign-in method`
-   - Click on `Email/Password`, enable it, and save
-   - Click on `Google`, add a support email, and save
+Optional Google/GitHub sign-in uses backend-only `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, and `GITHUB_CLIENT_SECRET`. Register `BETTER_AUTH_URL/callback/google` and `BETTER_AUTH_URL/callback/github` with the providers. SMTP enables verification and password reset emails.
 
-1. Generate a Firebase Admin private key (optional, only needed if you want to work on the backend)
-   - In your Firebase console, go to Project Settings > Service Accounts
-   - Click "Generate New Private Key"
-   - Save as `serviceAccountKey.json` inside the `backend/src/credentials/` directory.
-
-1. Run `pnpm add -g firebase-tools` to install the Firebase Command Line Interface.
-1. Run `firebase login` on your terminal to log in to the same Google account you just used to create the project.
-1. Within the `frontend` directory, duplicate `.firebaserc_example`, rename the new file to `.firebaserc` and change the project name to the firebase project id you just created.
-   - Run `firebase projects:list` to find your firebase project ID.
-   - If `.firebaserc_example` does not exist after cloning, create your own with:
-
-   ```.firebaserc
-    {
-        "projects": {
-            "default": "your-firebase-project-id"
-        }
-    }
-   ```
+Existing authentication accounts are not imported. Create a new account after switching to Better Auth. Firebase Hosting remains an optional static deployment target for the release CLI; it is unrelated to authentication.
 
 ### Config file
-
-Within the `frontend/src/ts/constants` directory, duplicate `firebase-config-example.ts`, rename it to `firebase-config.ts`
-
-- If you skipped the Firebase step, you can leave the fields blank
-- Otherwise:
-  1. Navigate to `Project Settings > General > Your apps`
-  2. If there are no apps in your project, create a new web app
-  3. In the `SDK setup and configuration` section, select `npm`
-  4. The Firebase config will be visible below
-  5. Paste the config into `firebase-config.ts`
-  6. Ensure there is an `export` statement before `const firebaseConfig`
 
 If you want to access the frontend from other machines on your network create a file `frontend/.env` with this content:
 
 ```
-BACKEND_URL="http://<Your IP>:5005"
+BACKEND_URL="https://<Your backend host>"
 ```
+
+Set backend `FRONTEND_URL` and `BETTER_AUTH_URL` to matching public URLs; serve both on the same site over HTTPS.
 
 ### Databases (optional if running frontend only)
 

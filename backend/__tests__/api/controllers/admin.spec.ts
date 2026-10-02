@@ -646,6 +646,7 @@ describe("AdminController", () => {
 
     beforeEach(() => {
       sendForgotPasswordEmailMock.mockClear();
+      sendForgotPasswordEmailMock.mockResolvedValue();
     });
 
     it("should send forgot password link", async () => {

@@ -4,7 +4,7 @@ import "./dev/signal-tracker";
 //enable solidjs-devtools
 import "solid-devtools";
 
-import { init } from "./firebase";
+import { init } from "./auth-client";
 import * as Logger from "./utils/logger";
 import * as DB from "./db";
 import "./controllers/ad-controller";

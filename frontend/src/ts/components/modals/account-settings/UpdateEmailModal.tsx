@@ -61,7 +61,7 @@ export function showUpdateEmailModal(): void {
       const response = await Ape.users.updateEmail({
         body: {
           newEmail: email,
-          previousEmail: reauth.user.email as string,
+          previousEmail: reauth.user.email,
         },
       });
 

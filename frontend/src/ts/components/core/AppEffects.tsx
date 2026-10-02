@@ -13,11 +13,11 @@ import { spread } from "solid-js/web";
 import { debounce, throttle } from "throttle-debounce";
 
 import * as ServerConfiguration from "../../ape/server-configuration";
+import { authPromise } from "../../auth-client";
 import { configLoadPromise } from "../../config/lifecycle";
 import { Config } from "../../config/store";
 import { useAdLifecycle } from "../../controllers/ad-controller";
 import { configEvent } from "../../events/config";
-import { authPromise } from "../../firebase";
 import {
   getFontFace,
   getFontFamily,
@@ -52,6 +52,7 @@ import { convertRemToPixels } from "../../utils/numbers";
 import { canQuickRestart } from "../../utils/quick-restart";
 import { GlobalEvents } from "./GlobalEvents";
 import { NoCssFallback } from "./NoCssFallback";
+import { OAuthRuntime } from "./OAuthRuntime";
 
 export type AppElements = {
   element: HTMLElement;
@@ -257,6 +258,7 @@ export function AppEffects(props: AppElements): JSXElement {
 
   return (
     <>
+      <OAuthRuntime />
       <MetaProvider>
         <Style class="customFont">{getFontFace()}</Style>
       </MetaProvider>

@@ -1,110 +1,92 @@
-import FirebaseAdmin from "./../init/firebase-admin";
-import { LRUCache } from "lru-cache";
-import {
-  recordTokenCacheAccess,
-  setTokenCacheLength,
-  setTokenCacheSize,
-} from "./prometheus";
-import { type DecodedIdToken, UserRecord } from "firebase-admin/auth";
+import { getAuth } from "../init/auth";
 import { getFrontendUrl } from "./misc";
-import emailQueue from "../queues/email-queue";
-import * as UserDAL from "../dal/user";
-import { isFirebaseError } from "./error";
+import MonkeyError from "./error";
 
-const tokenCache = new LRUCache<string, DecodedIdToken>({
-  max: 20000,
-  maxSize: 50000000, // 50MB
-  sizeCalculation: (token, key): number =>
-    JSON.stringify(token).length + key.length, //sizeInBytes
-});
+export type AuthenticatedSession = {
+  uid: string;
+  email: string;
+  createdAt: Date;
+};
 
-const TOKEN_CACHE_BUFFER = 1000 * 60 * 5; // 5 minutes
-
-export async function verifyIdToken(
-  idToken: string,
-  noCache = false,
-): Promise<DecodedIdToken> {
-  if (noCache) {
-    return await FirebaseAdmin().auth().verifyIdToken(idToken, true);
+export async function verifySession(
+  headers: Headers,
+): Promise<AuthenticatedSession> {
+  const result = await getAuth().api.getSession({
+    headers,
+    query: { disableCookieCache: true },
+  });
+  if (result === null) {
+    throw new MonkeyError(
+      401,
+      "Session expired or revoked - please login again",
+    );
   }
-
-  setTokenCacheLength(tokenCache.size);
-  setTokenCacheSize(tokenCache.calculatedSize ?? 0);
-
-  const cached = tokenCache.get(idToken);
-
-  if (cached) {
-    const expirationDate = cached.exp * 1000 - TOKEN_CACHE_BUFFER;
-
-    if (expirationDate < Date.now()) {
-      recordTokenCacheAccess("hit_expired");
-      tokenCache.delete(idToken);
-    } else {
-      recordTokenCacheAccess("hit");
-      return cached;
-    }
-  } else {
-    recordTokenCacheAccess("miss");
-  }
-
-  const decoded = await FirebaseAdmin().auth().verifyIdToken(idToken, true);
-  tokenCache.set(idToken, decoded);
-  return decoded;
+  return {
+    uid: result.user.id,
+    email: result.user.email,
+    createdAt: result.session.createdAt,
+  };
 }
 
 export async function updateUserEmail(
   uid: string,
   email: string,
-): Promise<UserRecord> {
-  await revokeTokensByUid(uid);
-  return await FirebaseAdmin().auth().updateUser(uid, {
+): Promise<void> {
+  const context = await getAuth().$context;
+  const existing = await context.internalAdapter.findUserByEmail(email);
+  if (existing && existing.user.id !== uid) {
+    throw new MonkeyError(
+      409,
+      "The email address is already in use by another account",
+    );
+  }
+  await context.internalAdapter.updateUser(uid, {
     email,
     emailVerified: false,
   });
+  await revokeTokensByUid(uid);
 }
 
 export async function updateUserPassword(
   uid: string,
   password: string,
-): Promise<UserRecord> {
-  await revokeTokensByUid(uid);
-  return await FirebaseAdmin().auth().updateUser(uid, {
-    password,
+): Promise<void> {
+  const context = await getAuth().$context;
+  const accounts = await context.internalAdapter.findAccounts(uid);
+  const credential = accounts.find(
+    (account) => account.providerId === "credential",
+  );
+  if (!credential) {
+    throw new MonkeyError(400, "Password authentication is not enabled");
+  }
+  await context.internalAdapter.updateAccount(credential.id, {
+    password: await context.password.hash(password),
   });
+  await revokeTokensByUid(uid);
 }
 
 export async function deleteUser(uid: string): Promise<void> {
-  await revokeTokensByUid(uid);
-  await FirebaseAdmin().auth().deleteUser(uid);
+  await (await getAuth().$context).internalAdapter.deleteUser(uid);
 }
 
 export async function revokeTokensByUid(uid: string): Promise<void> {
-  await FirebaseAdmin().auth().revokeRefreshTokens(uid);
-  for (const entry of tokenCache.entries()) {
-    if (entry[1].uid === uid) {
-      tokenCache.delete(entry[0]);
-    }
-  }
+  await (await getAuth().$context).internalAdapter.deleteUserSessions(uid);
+}
+
+export async function sendVerificationEmail(email: string): Promise<void> {
+  await getAuth().api.sendVerificationEmail({
+    body: {
+      email,
+      callbackURL: `${getFrontendUrl()}/email-handler?mode=verifyEmail`,
+    },
+  });
 }
 
 export async function sendForgotPasswordEmail(email: string): Promise<void> {
-  try {
-    const uid = (await FirebaseAdmin().auth().getUserByEmail(email)).uid;
-    const { name } = await UserDAL.getPartialUser(
-      uid,
-      "request forgot password email",
-      ["name"],
-    );
-
-    const link = await FirebaseAdmin()
-      .auth()
-      .generatePasswordResetLink(email, { url: getFrontendUrl() });
-
-    await emailQueue.sendForgotPasswordEmail(email, name, link);
-  } catch (err) {
-    if (isFirebaseError(err) && err.errorInfo.code !== "auth/user-not-found") {
-      // oxlint-disable-next-line only-throw-error
-      throw err;
-    }
-  }
+  await getAuth().api.requestPasswordReset({
+    body: {
+      email,
+      redirectTo: `${getFrontendUrl()}/email-handler?mode=resetPassword`,
+    },
+  });
 }

@@ -22,7 +22,7 @@ The root is a private pnpm workspace. Node 24, pnpm 11, TypeScript 7, and Turbor
 
 Vite 8 builds the browser app; SolidJS 1.9 renders its `.tsx` UI. Solid Router 1.0 owns route matching, links, URL state, and browser history. `components/AppRouter.tsx` mounts the router; `navigation/routes.ts` defines routes. `components/core/NavigationRuntime.tsx` connects routing to auth redirects, startup loading, active-test guards, and the existing page lifecycle/animations. Page owners and typing-test refs stay cached across navigation.
 
-Tailwind CSS 4 supplies utility classes and semantic theme colors; compatibility CSS retains theme/funbox selectors. Icons use the `Fa` component. The app also uses TanStack Query/DB for data access, Chart.js for graphs, Firebase client SDKs for account authentication, and a service worker for offline assets.
+Tailwind CSS 4 supplies utility classes and semantic theme colors; compatibility CSS retains theme/funbox selectors. Icons use the `Fa` component. The app also uses TanStack Query/DB for data access, Chart.js for graphs, Better Auth clients for account authentication, and a service worker for offline assets.
 
 Internal anchors use `Link` (or `Button` with `router-link`), which marks them for Solid Router's native anchor handling. Modified clicks, downloads, and external links retain browser behavior. Imperative callers use `navigation/navigation.ts`: `navigate()` awaits page transitions; `replaceUrl()` updates filters/deep links without a page transition or history entry. Forced navigation bypasses busy-page guards, but cannot leave an active `no_quit` test. Auth redirects replace the requested URL rather than adding a redirect history entry.
 
@@ -30,7 +30,7 @@ Useful entry points: `frontend/src/index.html`, `frontend/src/ts/index.ts`, `fro
 
 ## Backend and data
 
-Hono serves the API through `@hono/node-server`. `@ts-rest` contracts and Zod schemas are shared with the frontend, so request and response shapes live in workspace packages. The backend uses MongoDB for durable records, Redis for cache/coordination, and BullMQ for background jobs. Firebase Admin handles account identity. Nodemailer and MJML render account emails. Redocly builds API documentation; Hono stats and Prometheus metrics provide operational visibility.
+Hono serves the API through `@hono/node-server`. `@ts-rest` contracts and Zod schemas are shared with the frontend, so request and response shapes live in workspace packages. The backend uses MongoDB for durable records, Redis for cache/coordination, and BullMQ for background jobs. Better Auth handles account identity, OAuth, and HttpOnly cookie sessions in dedicated MongoDB collections. Nodemailer and MJML render account emails. Redocly builds API documentation; Hono stats and Prometheus metrics provide operational visibility.
 
 `backend/src/api/hono-adapter.ts` registers all 93 contract endpoints directly
 with Hono. It uses ts-rest core inference and Zod validation while controllers
@@ -53,11 +53,11 @@ Start with `backend/src/server.ts`, `backend/src/app.ts`, `backend/src/api/`, `b
 ```mermaid
 flowchart LR
   Browser[Browser app] --> API[Hono API]
-  Browser --> Firebase[Firebase authentication]
   API --> Mongo[(MongoDB)]
   API --> Redis[(Redis)]
   API --> Queue[BullMQ workers]
-  API --> Admin[Firebase Admin]
+  API --> Auth[Better Auth]
+  Auth --> Mongo
   Queue --> Mail[SMTP email]
 ```
 
@@ -70,6 +70,6 @@ flowchart LR
 
 ## Oxytype ownership boundaries
 
-The fork must use its own Firebase project, API endpoint, error reporting destination, email sender, Discord application, container registry, and release credentials before those integrations are enabled. The planned site `oxytype.voltcrash.com` and mailbox `contact@voltcrash.com` are not active. Until they are, public contact and security reporting use the Oxytype repository and its security policy. The original GPL license and contributor attribution remain in place.
+The fork must use its own auth secret and OAuth applications, API endpoint, error reporting destination, email sender, Discord application, container registry, and release credentials before those integrations are enabled. The planned site `oxytype.voltcrash.com` and mailbox `contact@voltcrash.com` are not active. Until they are, public contact and security reporting use the Oxytype repository and its security policy. The original GPL license and contributor attribution remain in place.
 
 See [development setup](./CONTRIBUTING_ADVANCED.md), [self-hosting](./SELF_HOSTING.md), and [security reporting](./SECURITY.md) for operational details.

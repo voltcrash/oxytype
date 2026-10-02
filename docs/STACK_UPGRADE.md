@@ -17,8 +17,7 @@ Vite+ 1.0.0 manages runtime selection, installs, updates, builds, tests, linting
 | Hono | 4.13.12 |
 | ts-rest | 3.52.1 |
 | Zod | 4.6.5 |
-| Firebase | 12.19.0 |
-| Firebase Admin | 14.5.0 |
+| Better Auth | 1.7.7 |
 | MongoDB driver | 7.7.0 |
 | ioredis | 6.0.0 |
 | BullMQ | 6.3.11 |
@@ -41,7 +40,7 @@ Vite+ 1.0.0 manages runtime selection, installs, updates, builds, tests, linting
 - TanStack Table 9 uses explicit features and a component-owned table instance. Form selectors, QueryClient calls, disabled DB queries, SlimSelect exports, UTC date types, and Anime callbacks use their current APIs.
 - Chart.js 4 uses scale borders and requires a connected canvas. Cached Solid pages defer chart initialization until their canvas attaches, then disconnect their observer during initialization or cleanup.
 - Sentry 11 data collection explicitly preserves the earlier restrictive defaults, following its [migration guide](https://github.com/getsentry/sentry-javascript/blob/develop/MIGRATION.md#senddefaultpii-is-replaced-by-datacollection).
-- Firebase Admin uses modular initialization. BullMQ no longer creates obsolete queue schedulers. UAParser uses its v2 constructor.
+- Better Auth runs inside Hono with MongoDB-backed credentials and sessions. BullMQ no longer creates obsolete queue schedulers. UAParser uses its v2 constructor.
 - Font Awesome 7 styles, aliases, subsets, and generated icon types come from the package's official metadata. Regenerate types with `vp -C frontend run generate-icon-types`.
 - MJML 5 renders asynchronously; email templates are awaited before Mustache substitution and delivery.
 - Docker builders include every workspace manifest for pnpm 12's frozen-lockfile validation. Backend deployment permits patches belonging only to frontend dependencies to be unused in its production subset.
@@ -58,7 +57,7 @@ vp -C frontend/storybook run build-storybook
 vp test run --maxWorkers=2
 ```
 
-Frontend builds need the local Firebase configuration files described in the contributor guide. Integration tests create disposable MongoDB/Redis containers. Files sharing a database run serially; the tests still exercise concurrent reward claims within each file.
+Authentication setup is described in the contributor guide; frontend builds do not require auth credentials. Integration tests create disposable MongoDB/Redis containers. Files sharing a database run serially; the tests still exercise concurrent reward claims within each file.
 
 Latest packages retain some older peer-version declarations: TypeScript 7 exceeds Madge/ESLint helper ranges; Storybook declares Vite+ 0.x and Vite+ declares browser-playwright 5.0.1. Actual builds and checks use Vite+ 1.0.0 and aligned Vitest 5.0.3 packages.
 

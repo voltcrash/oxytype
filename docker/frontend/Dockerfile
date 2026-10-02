@@ -11,8 +11,6 @@ COPY packages packages
 COPY frontend frontend
 COPY backend/package.json backend/package.json
 
-COPY docker/frontend/firebase-config-live.ts frontend/src/ts/constants/firebase-config.ts
-COPY docker/frontend/firebase-config-live.ts frontend/src/ts/constants/firebase-config-live.ts
 
 #gimme pnpm + build
 ARG TARGETARCH

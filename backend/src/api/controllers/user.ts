@@ -1,13 +1,9 @@
 import * as UserDAL from "../../dal/user";
-import MonkeyError, {
-  getErrorMessage,
-  isFirebaseError,
-} from "../../utils/error";
+import MonkeyError from "../../utils/error";
 import { MonkeyResponse } from "../../utils/monkey-response";
 import * as DiscordUtils from "../../utils/discord";
 import {
   buildAgentLog,
-  getFrontendUrl,
   omit,
   replaceObjectId,
   replaceObjectIds,
@@ -26,8 +22,6 @@ import { deleteUserAccount } from "../../services/user-deletion";
 import { v4 as uuidv4 } from "uuid";
 import { ObjectId } from "mongodb";
 import * as ReportDAL from "../../dal/report";
-import emailQueue from "../../queues/email-queue";
-import FirebaseAdmin from "../../init/firebase-admin";
 import * as AuthUtil from "../../utils/auth";
 import * as Dates from "date-fns";
 import { UTCDateMini } from "@date-fns/utc";
@@ -114,6 +108,9 @@ export async function createNewUser(
   const { name, captcha } = req.body;
   const { email, uid } = req.ctx.decodedToken;
 
+  const existingUser = await UserDAL.getUsersCollection().findOne({ uid });
+  if (existingUser) throw new MonkeyError(409, "Account already registered");
+
   try {
     await verifyCaptcha(captcha);
 
@@ -136,8 +133,8 @@ export async function createNewUser(
 
     return new MonkeyResponse("User created", null);
   } catch (e) {
-    //user was created in firebase from the frontend, remove it
-    await firebaseDeleteUserIgnoreError(uid);
+    // Remove an unfinished authentication account after registration fails.
+    await authDeleteUserIgnoreError(uid);
     throw e;
   }
 }
@@ -145,104 +142,8 @@ export async function createNewUser(
 export async function sendVerificationEmail(
   req: MonkeyRequest,
 ): Promise<MonkeyResponse> {
-  const { email, uid } = req.ctx.decodedToken;
-  const isVerified = (
-    await FirebaseAdmin()
-      .auth()
-      .getUser(uid)
-      .catch((e: unknown) => {
-        throw new MonkeyError(
-          500, // this should never happen, but it does. it mightve been caused by auth token cache, will see if disabling cache fixes it
-          "Auth user not found, even though the token got decoded",
-          JSON.stringify({
-            uid,
-            email,
-            stack: e instanceof Error ? e.stack : JSON.stringify(e),
-          }),
-          uid,
-        );
-      })
-  ).emailVerified;
-  if (isVerified) {
-    throw new MonkeyError(400, "Email already verified");
-  }
-
-  const userInfo = await UserDAL.getPartialUser(
-    uid,
-    "request verification email",
-    ["uid", "name", "email"],
-  );
-
-  if (userInfo.email !== email) {
-    throw new MonkeyError(
-      400,
-      "Authenticated email does not match the email found in the database. This might happen if you recently changed your email. Please refresh and try again.",
-    );
-  }
-
-  const { data: link, error } = await tryCatch(
-    FirebaseAdmin()
-      .auth()
-      .generateEmailVerificationLink(email, { url: getFrontendUrl() }),
-  );
-
-  if (error) {
-    if (isFirebaseError(error)) {
-      if (error.errorInfo.code === "auth/user-not-found") {
-        throw new MonkeyError(
-          500,
-          "Auth user not found when the user was found in the database. Contact support with this error message and your email",
-          JSON.stringify({
-            decodedTokenEmail: email,
-            userInfoEmail: userInfo.email,
-          }),
-          userInfo.uid,
-        );
-      } else if (error.errorInfo.code === "auth/too-many-requests") {
-        throw new MonkeyError(429, "Too many requests. Please try again later");
-      } else if (
-        error.errorInfo.code === "auth/internal-error" &&
-        error.errorInfo.message.toLowerCase().includes("too_many_attempts")
-      ) {
-        throw new MonkeyError(
-          429,
-          "Too many Firebase requests. Please try again later",
-        );
-      } else {
-        throw new MonkeyError(
-          500,
-          `Firebase failed to generate an email verification link: ${
-            error.errorInfo.message
-          }`,
-          JSON.stringify(error),
-        );
-      }
-    } else {
-      const message = getErrorMessage(error);
-      if (message === undefined) {
-        throw new MonkeyError(
-          500,
-          "Failed to generate an email verification link. Unknown error occured",
-        );
-      } else {
-        if (message.toLowerCase().includes("too_many_attempts")) {
-          throw new MonkeyError(
-            429,
-            "Too many requests. Please try again later",
-          );
-        } else {
-          throw new MonkeyError(
-            500,
-            `Failed to generate an email verification link: ${message}`,
-            error.stack,
-          );
-        }
-      }
-    }
-  }
-
-  await emailQueue.sendVerificationEmail(email, userInfo.name, link);
-
+  const { email } = req.ctx.decodedToken;
+  await AuthUtil.sendVerificationEmail(email);
   return new MonkeyResponse("Email sent", null);
 }
 
@@ -405,34 +306,8 @@ export async function updateEmail(
   newEmail = newEmail.toLowerCase();
   previousEmail = previousEmail.toLowerCase();
 
-  try {
-    await AuthUtil.updateUserEmail(uid, newEmail);
-    await UserDAL.updateEmail(uid, newEmail);
-  } catch (e) {
-    if (isFirebaseError(e)) {
-      if (e.code === "auth/email-already-exists") {
-        throw new MonkeyError(
-          409,
-          "The email address is already in use by another account",
-        );
-      } else if (e.code === "auth/invalid-email") {
-        throw new MonkeyError(400, "Invalid email address");
-      } else if (e.code === "auth/too-many-requests") {
-        throw new MonkeyError(429, "Too many requests. Please try again later");
-      } else if (e.code === "auth/user-not-found") {
-        throw new MonkeyError(
-          404,
-          "User not found in the auth system",
-          "update email",
-          uid,
-        );
-      } else if (e.code === "auth/invalid-user-token") {
-        throw new MonkeyError(401, "Invalid user token", "update email", uid);
-      }
-    } else {
-      throw e;
-    }
-  }
+  await AuthUtil.updateUserEmail(uid, newEmail);
+  await UserDAL.updateEmail(uid, newEmail);
 
   void addImportantLog(
     "user_email_updated",
@@ -1213,7 +1088,7 @@ export async function getTestActivity(
   );
 }
 
-async function firebaseDeleteUserIgnoreError(uid: string): Promise<void> {
+async function authDeleteUserIgnoreError(uid: string): Promise<void> {
   try {
     await AuthUtil.deleteUser(uid);
   } catch (e) {
