@@ -28,7 +28,7 @@ export const projects = [
       globalSetup: "__tests__/global-setup.ts",
       setupFiles: [
         "__tests__/__harness__/mock-dom.ts",
-        "__tests__/__harness__/mock-firebase.ts",
+        "__tests__/__harness__/mock-auth.ts",
         "__tests__/__harness__/mock-env-config.ts",
         "__tests__/__harness__/mock-static.ts",
       ],
