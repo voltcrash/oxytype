@@ -1,7 +1,7 @@
-import type { Redis } from "ioredis";
-import { Worker, Job, type ConnectionOptions } from "bullmq";
 import Logger from "../utils/logger";
-import { addToInboxBulk } from "../dal/user";
+import { statement, encode, binding } from "../db/client";
+import { createHash } from "node:crypto";
+import type { Configuration } from "@oxytype/schemas/configuration";
 import GeorgeQueue from "../queues/george-queue";
 import { buildMonkeyMail } from "../utils/monkey-mail";
 import { DailyLeaderboard } from "../utils/daily-leaderboards";
@@ -39,8 +39,8 @@ async function handleDailyLeaderboardResults(
   const dailyLeaderboard = new DailyLeaderboard(modeRule, yesterdayTimestamp);
 
   const results = await dailyLeaderboard.getResults(
-    0,
-    maxRankToGet,
+    Math.floor((ctx.offset ?? 0) / 20),
+    20,
     dailyLeaderboardsConfig,
     false,
   );
@@ -55,36 +55,55 @@ async function handleDailyLeaderboardResults(
       mail: MonkeyMail[];
     }[] = [];
 
-    results.entries.forEach((entry) => {
-      const rank = entry.rank ?? maxResults;
-      const wpm = Math.round(entry.wpm);
+    results.entries
+      .filter((entry) => entry.rank <= maxRankToGet)
+      .forEach((entry) => {
+        const rank = entry.rank ?? maxResults;
+        const wpm = Math.round(entry.wpm);
 
-      const placementString = getOrdinalNumberString(rank);
+        const placementString = getOrdinalNumberString(rank);
 
-      const xpReward = calculateXpReward(xpRewardBrackets, rank);
+        const xpReward = calculateXpReward(xpRewardBrackets, rank);
 
-      if (!isSafeNumber(xpReward)) return;
+        if (!isSafeNumber(xpReward)) return;
 
-      const rewardMail = buildMonkeyMail({
-        subject: "Daily leaderboard placement",
-        body: `Congratulations ${entry.name} on placing ${placementString} with ${wpm} wpm in the ${language} ${mode} ${mode2} daily leaderboard!`,
-        rewards: [
-          {
-            type: "xp",
-            item: Math.round(xpReward),
-          },
-        ],
+        const rewardMail = buildMonkeyMail({
+          subject: "Daily leaderboard placement",
+          body: `Congratulations ${entry.name} on placing ${placementString} with ${wpm} wpm in the ${language} ${mode} ${mode2} daily leaderboard!`,
+          rewards: [
+            {
+              type: "xp",
+              item: Math.round(xpReward),
+            },
+          ],
+        });
+
+        rewardMail.id = rewardId(
+          `daily:${yesterdayTimestamp}:${language}:${mode}:${mode2}:${entry.uid}`,
+        );
+        mailEntries.push({
+          uid: entry.uid,
+          mail: [rewardMail],
+        });
       });
 
-      mailEntries.push({
-        uid: entry.uid,
-        mail: [rewardMail],
-      });
-    });
-
-    await addToInboxBulk(mailEntries, inboxConfig);
+    await enqueueRewards(mailEntries, inboxConfig);
   }
 
+  if ((ctx.offset ?? 0) + 20 < maxRankToGet) {
+    await LaterQueue.add(
+      "todo-tomorrow",
+      {
+        taskName: "daily-leaderboard-results",
+        ctx: { ...ctx, offset: (ctx.offset ?? 0) + 20 },
+      },
+      {
+        jobId: `daily:${yesterdayTimestamp}:${language}:${mode}:${mode2}:${(ctx.offset ?? 0) + 20}`,
+        delay: 0,
+      },
+    );
+  }
+  if ((ctx.offset ?? 0) > 0) return;
   const topResults = results.entries.slice(
     0,
     dailyLeaderboardsConfig.topResultsToAnnounce,
@@ -95,6 +114,7 @@ async function handleDailyLeaderboardResults(
     leaderboardId,
     yesterdayTimestamp,
     topResults,
+    `daily-announcement:${yesterdayTimestamp}:${language}:${mode}:${mode2}`,
   );
 }
 
@@ -107,7 +127,7 @@ async function handleWeeklyXpLeaderboardResults(
   } = await getCachedConfiguration(false);
 
   const { enabled, xpRewardBrackets } = weeklyXpConfig;
-  if (!enabled || xpRewardBrackets.length < 0) {
+  if (!enabled || xpRewardBrackets.length === 0) {
     return;
   }
 
@@ -119,8 +139,8 @@ async function handleWeeklyXpLeaderboardResults(
   );
 
   const allResults = await weeklyXpLeaderboard.getResults(
-    0,
-    maxRankToGet,
+    Math.floor((ctx.offset ?? 0) / 20),
+    20,
     weeklyXpConfig,
     false,
   );
@@ -134,42 +154,60 @@ async function handleWeeklyXpLeaderboardResults(
     mail: MonkeyMail[];
   }[] = [];
 
-  allResults?.entries.forEach((entry) => {
-    // just in case, gonna ignore this error
-    // oxlint-disable-next-line typescript/no-useless-default-assignment
-    const { uid, name, rank = maxRankToGet, totalXp, timeTypedSeconds } = entry;
+  allResults.entries
+    .filter((entry) => entry.rank <= maxRankToGet)
+    .forEach((entry) => {
+      // just in case, gonna ignore this error
+      // oxlint-disable-next-line typescript/no-useless-default-assignment
+      const { uid, name, rank, totalXp, timeTypedSeconds } = entry;
 
-    const xp = Math.round(totalXp);
-    const placementString = getOrdinalNumberString(rank);
+      const xp = Math.round(totalXp);
+      const placementString = getOrdinalNumberString(rank);
 
-    const xpReward = calculateXpReward(xpRewardBrackets, rank);
+      const xpReward = calculateXpReward(xpRewardBrackets, rank);
 
-    if (!isSafeNumber(xpReward)) return;
+      if (!isSafeNumber(xpReward)) return;
 
-    const rewardMail = buildMonkeyMail({
-      subject: "Weekly XP Leaderboard placement",
-      body: `Congratulations ${name} on placing ${placementString} with ${xp} xp! Last week, you typed for a total of ${formatSeconds(
-        timeTypedSeconds,
-      )}! Keep up the good work :)`,
-      rewards: [
-        {
-          type: "xp",
-          item: Math.round(xpReward),
-        },
-      ],
+      const rewardMail = buildMonkeyMail({
+        subject: "Weekly XP Leaderboard placement",
+        body: `Congratulations ${name} on placing ${placementString} with ${xp} xp! Last week, you typed for a total of ${formatSeconds(
+          timeTypedSeconds,
+        )}! Keep up the good work :)`,
+        rewards: [
+          {
+            type: "xp",
+            item: Math.round(xpReward),
+          },
+        ],
+      });
+
+      rewardMail.id = rewardId(`weekly:${lastWeekTimestamp}:${uid}`);
+      mailEntries.push({
+        uid: uid,
+        mail: [rewardMail],
+      });
     });
 
-    mailEntries.push({
-      uid: uid,
-      mail: [rewardMail],
-    });
-  });
-
-  await addToInboxBulk(mailEntries, inboxConfig);
+  await enqueueRewards(mailEntries, inboxConfig);
+  if ((ctx.offset ?? 0) + 20 < maxRankToGet) {
+    await LaterQueue.add(
+      "todo-next-week",
+      {
+        taskName: "weekly-xp-leaderboard-results",
+        ctx: { ...ctx, offset: (ctx.offset ?? 0) + 20 },
+      },
+      {
+        jobId: `weekly:${lastWeekTimestamp}:${(ctx.offset ?? 0) + 20}`,
+        delay: 0,
+      },
+    );
+  }
 }
 
-async function jobHandler(job: Job<LaterTask<LaterTaskType>>): Promise<void> {
-  const { taskName, ctx } = job.data;
+export async function jobHandler(
+  task: LaterTask<LaterTaskType>,
+): Promise<void> {
+  const { taskName, ctx } = task;
 
   Logger.info(`Starting job: ${taskName}`);
 
@@ -206,18 +244,26 @@ function calculateXpReward(
   return rewards.length ? Math.max(...rewards) : undefined;
 }
 
-export default (redisConnection?: Redis): Worker => {
-  const worker = new Worker(LaterQueue.queueName, jobHandler, {
-    autorun: false,
-    connection: redisConnection as ConnectionOptions,
-  });
-  worker.on("failed", (job, error) => {
-    Logger.error(
-      `Job: ${job?.data.taskName ?? "unknown"} - failed with error "${error.message}"`,
-    );
-  });
-  return worker;
-};
+function rewardId(origin: string): string {
+  return createHash("sha256").update(origin).digest("hex").slice(0, 24);
+}
+async function enqueueRewards(
+  entries: { uid: string; mail: MonkeyMail[] }[],
+  inboxConfig: Configuration["users"]["inbox"],
+): Promise<void> {
+  if (!inboxConfig.enabled || entries.length === 0) return;
+  await binding().batch(
+    entries.map((entry) =>
+      statement(
+        "INSERT INTO outbox(id,type,uid,created_at,data) VALUES(?, 'reward',?,?,?) ON CONFLICT(id) DO NOTHING",
+        `reward:${entry.mail[0]?.id ?? ""}`,
+        entry.uid,
+        Date.now(),
+        encode({ ...entry, inboxConfig }),
+      ),
+    ),
+  );
+}
 
 export const __testing = {
   calculateXpReward,
