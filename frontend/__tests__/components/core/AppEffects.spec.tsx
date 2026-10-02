@@ -49,7 +49,9 @@ vi.mock("../../../src/ts/config/lifecycle", () => ({
     return lifecycle.config.promise;
   },
 }));
-vi.mock("../../../src/ts/firebase", () => ({
+vi.mock("../../../src/ts/auth-client", () => ({
+  observeAuthSession: () => () => undefined,
+  oauthRequestEvent: { subscribe: () => () => undefined },
   get authPromise() {
     return lifecycle.auth.promise;
   },
