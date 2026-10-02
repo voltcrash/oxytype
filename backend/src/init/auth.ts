@@ -50,6 +50,7 @@ export function createAuth(
     advanced: {
       database: { generateId: () => randomUUID() },
       cookiePrefix: "oxytype",
+      ipAddress: { ipAddressHeaders: ["x-oxytype-auth-ip"] },
     },
     user: {
       modelName: "authUsers",

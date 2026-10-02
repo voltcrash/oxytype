@@ -5,6 +5,7 @@ import * as AuthUtils from "../utils/auth";
 import { NewPasswordSchema } from "@oxytype/schemas/users";
 import { getAuth } from "../init/auth";
 import { getFrontendUrl, isDevEnvironment } from "../utils/misc";
+import { getClientIp } from "../middlewares/rate-limit";
 
 /** Auth owns its request body, cookies, CSRF checks, and rate limits. */
 export function addAuthRoutes(app: Hono<ApiEnv>): void {
@@ -17,6 +18,8 @@ export function addAuthRoutes(app: Hono<ApiEnv>): void {
     publicUrl.pathname = `${publicUrl.pathname.replace(/\/$/, "")}${c.req.path.slice("/auth".length)}`;
     publicUrl.search = new URL(c.req.url).search;
     const request = new Request(publicUrl, c.req.raw);
+    // Resolve through the API's proxy policy; never trust this caller-supplied header.
+    request.headers.set("x-oxytype-auth-ip", getClientIp(c));
     if (c.req.method !== "GET" && c.req.method !== "HEAD") {
       const origin = c.req.header("origin");
       if (origin !== new URL(getFrontendUrl()).origin) {
