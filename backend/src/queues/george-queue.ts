@@ -86,6 +86,7 @@ class GeorgeQueue extends MonkeyQueue<GeorgeTask> {
     leaderboardId: string,
     leaderboardTimestamp: number,
     topResults: LeaderboardEntry[],
+    jobId?: string,
   ): Promise<void> {
     const taskName = "announceDailyLeaderboardTopResults";
 
@@ -95,7 +96,11 @@ class GeorgeQueue extends MonkeyQueue<GeorgeTask> {
       topResults,
     ]);
 
-    await this.add(taskName, dailyLeaderboardTopResultsTask);
+    await this.add(
+      taskName,
+      dailyLeaderboardTopResultsTask,
+      jobId === undefined ? undefined : { jobId },
+    );
   }
 }
 
