@@ -7,7 +7,7 @@ Snapshot: 1 October 2026. Package versions come from the workspace manifests and
 | Path | Role |
 | --- | --- |
 | `frontend/` | Browser app, static assets, Vite build, Storybook, frontend tests |
-| `backend/` | HTTP API, workers, persistence, email, API docs, backend tests |
+| `backend/` | HTTP API, workers, persistence, API docs, backend tests |
 | `packages/contracts/` | Shared typed API contracts |
 | `packages/schemas/` | Shared Zod schemas and domain types |
 | `packages/util/`, `packages/funbox/`, `packages/challenges/` | Shared helpers and typing features |
@@ -30,9 +30,9 @@ Useful entry points: `frontend/src/index.html`, `frontend/src/ts/index.ts`, `fro
 
 ## Backend and data
 
-Hono serves the API through `@hono/node-server`. `@ts-rest` contracts and Zod schemas are shared with the frontend, so request and response shapes live in workspace packages. The backend uses MongoDB for durable records, Redis for cache/coordination, and BullMQ for background jobs. Better Auth handles account identity, OAuth, and HttpOnly cookie sessions in dedicated MongoDB collections. Nodemailer and MJML render account emails. Redocly builds API documentation; Hono stats and Prometheus metrics provide operational visibility.
+Hono serves the API through `@hono/node-server`. `@ts-rest` contracts and Zod schemas are shared with the frontend, so request and response shapes live in workspace packages. The backend uses MongoDB for durable records, Redis for cache/coordination, and BullMQ for background jobs. Better Auth handles Google/GitHub identity, OAuth, and HttpOnly cookie sessions in dedicated MongoDB collections. Redocly builds API documentation; Hono stats and Prometheus metrics provide operational visibility.
 
-`backend/src/api/hono-adapter.ts` registers all 93 contract endpoints directly
+`backend/src/api/hono-adapter.ts` registers contract endpoints directly
 with Hono. It uses ts-rest core inference and Zod validation while controllers
 receive a transport-independent `MonkeyRequest`. Native Hono middleware handles
 authentication, configuration/permission gates, in-memory rate limits, error
@@ -58,7 +58,6 @@ flowchart LR
   API --> Queue[BullMQ workers]
   API --> Auth[Better Auth]
   Auth --> Mongo
-  Queue --> Mail[SMTP email]
 ```
 
 ## Development and delivery
@@ -70,6 +69,6 @@ flowchart LR
 
 ## Oxytype ownership boundaries
 
-The fork must use its own auth secret and OAuth applications, API endpoint, error reporting destination, email sender, Discord application, container registry, and release credentials before those integrations are enabled. The planned site `oxytype.voltcrash.com` and mailbox `contact@voltcrash.com` are not active. Until they are, public contact and security reporting use the Oxytype repository and its security policy. The original GPL license and contributor attribution remain in place.
+The fork must use its own auth secret and OAuth applications, API endpoint, error reporting destination, Discord application, container registry, and release credentials before those integrations are enabled. The planned site `oxytype.voltcrash.com` and mailbox `contact@voltcrash.com` are not active. Until they are, public contact and security reporting use the Oxytype repository and its security policy. The original GPL license and contributor attribution remain in place.
 
 See [development setup](./CONTRIBUTING_ADVANCED.md), [self-hosting](./SELF_HOSTING.md), and [security reporting](./SECURITY.md) for operational details.
