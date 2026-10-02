@@ -5,7 +5,7 @@ import {
   Result,
 } from "@oxytype/schemas/results";
 import { Mode } from "@oxytype/schemas/shared";
-import { ObjectId } from "mongodb";
+import { newId } from "./id";
 import { WithObjectId } from "./misc";
 import { FunboxName } from "@oxytype/schemas/configs";
 
@@ -23,7 +23,7 @@ export function buildDbResult(
 ): DBResult {
   const ce = completedEvent;
   const res: DBResult = {
-    _id: new ObjectId(),
+    _id: newId(),
     uid: ce.uid,
     wpm: ce.wpm,
     rawWpm: ce.rawWpm,

@@ -1,0 +1,93 @@
+import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
+import { createTestRuntime } from "./helpers";
+import { withRuntime } from "../../src/runtime/env";
+import * as UserDAL from "../../src/dal/user";
+import { atomicUser, mutateUser, stage } from "../../src/db/mutation";
+import { statement } from "../../src/db/client";
+import { BASE_CONFIGURATION } from "../../src/constants/base-configuration";
+import type { MonkeyMail } from "@oxytype/schemas/users";
+
+describe("D1 user mutations", () => {
+  let test: Awaited<ReturnType<typeof createTestRuntime>>;
+  beforeAll(async () => {
+    test = await createTestRuntime();
+  });
+  afterAll(async () => {
+    await test?.dispose();
+  });
+  it("serializes concurrent increments without lost updates", async () => {
+    await withRuntime(test.env, async () => {
+      await UserDAL.addUser(
+        "Concurrent",
+        "concurrent@example.com",
+        "concurrent",
+      );
+      await Promise.all([
+        UserDAL.incrementXp("concurrent", 10),
+        UserDAL.incrementXp("concurrent", 20),
+        UserDAL.incrementXp("concurrent", 30),
+      ]);
+      expect((await UserDAL.getUser("concurrent", "test")).xp).toBe(60);
+    });
+  });
+  it("rolls back user changes together with dependent writes", async () => {
+    await withRuntime(test.env, async () => {
+      await expect(
+        atomicUser("concurrent", async () => {
+          await UserDAL.incrementXp("concurrent", 100);
+          await stage(
+            statement("INSERT INTO mutation_guards(id,valid) VALUES('fail',0)"),
+          );
+        }),
+      ).rejects.toThrow(/Concurrent update/);
+      expect((await UserDAL.getUser("concurrent", "test")).xp).toBe(60);
+    });
+  });
+  it("claims each mail once across concurrent reads and deletes", async () => {
+    await withRuntime(test.env, async () => {
+      await UserDAL.addUser("Rewards", "rewards@example.com", "rewards");
+      const mail: MonkeyMail = {
+        id: "reward1",
+        timestamp: Date.now(),
+        subject: "Reward",
+        body: "Earned",
+        read: false,
+        rewards: [{ type: "xp", item: 50 }],
+      };
+      const config = { ...BASE_CONFIGURATION.users.inbox, enabled: true };
+      await UserDAL.addToInbox("rewards", [mail], config);
+      await Promise.all([
+        UserDAL.updateInbox("rewards", [mail.id], []),
+        UserDAL.updateInbox("rewards", [], [mail.id]),
+      ]);
+      await UserDAL.addToInbox("rewards", [mail], config);
+      await UserDAL.updateInbox("rewards", [mail.id], []);
+      expect((await UserDAL.getUser("rewards", "test")).xp).toBe(50);
+    });
+  });
+  it("enforces bounded arrays within the versioned update", async () => {
+    await withRuntime(test.env, async () => {
+      await mutateUser("concurrent", (user) => {
+        user.tags = Array.from({ length: 14 }, (_, i) => ({
+          _id: String(i),
+          name: String(i),
+          personalBests: {
+            time: {},
+            words: {},
+            quote: {},
+            zen: {},
+            custom: {},
+          },
+        }));
+      });
+      const attempts = await Promise.allSettled([
+        UserDAL.addTag("concurrent", "first"),
+        UserDAL.addTag("concurrent", "second"),
+      ]);
+      expect(
+        attempts.filter((result) => result.status === "fulfilled"),
+      ).toHaveLength(1);
+      expect(await UserDAL.getTags("concurrent")).toHaveLength(15);
+    });
+  });
+});

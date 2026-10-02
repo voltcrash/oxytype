@@ -1,9 +1,10 @@
+import { Buffer } from "node:buffer";
 import { MILLISECONDS_IN_DAY } from "@oxytype/util/date-and-time";
 import { roundTo2 } from "@oxytype/util/numbers";
 export { sanitizeString } from "@oxytype/util/strings";
 import { UAParser } from "ua-parser-js";
 import { MonkeyRequest } from "../api/types";
-import { ObjectId } from "mongodb";
+import type { StoredId } from "./id";
 
 //todo split this file into smaller util files (grouped by functionality)
 
@@ -195,17 +196,17 @@ export function getFrontendUrl(): string {
 
 /**
  * convert database object into api object
- * @param data  database object with `_id: ObjectId`
+ * @param data  database object with `_id: StoredId`
  * @returns api object with `id: string`
  */
 
-export function replaceObjectId<T extends { _id: ObjectId }>(
+export function replaceObjectId<T extends { _id: StoredId }>(
   data: T,
 ): T & { _id: string };
-export function replaceObjectId<T extends { _id: ObjectId }>(
+export function replaceObjectId<T extends { _id: StoredId }>(
   data: T | null,
 ): (T & { _id: string }) | null;
-export function replaceObjectId<T extends { _id: ObjectId }>(
+export function replaceObjectId<T extends { _id: StoredId }>(
   data: T | null,
 ): (T & { _id: string }) | null {
   if (data === null) {
@@ -220,17 +221,17 @@ export function replaceObjectId<T extends { _id: ObjectId }>(
 
 /**
  * convert database objects into api objects
- * @param data  database objects with `_id: ObjectId`
+ * @param data  database objects with `_id: StoredId`
  * @returns api objects with `id: string`
  */
-export function replaceObjectIds<T extends { _id: ObjectId }>(
+export function replaceObjectIds<T extends { _id: StoredId }>(
   data: T[],
 ): (T & { _id: string })[] {
   if (data === undefined) return data;
   return data.map((it) => replaceObjectId(it));
 }
 export type WithObjectId<T extends { _id: string }> = Omit<T, "_id"> & {
-  _id: ObjectId;
+  _id: StoredId;
 };
 
 export function omit<T extends object, K extends keyof T>(

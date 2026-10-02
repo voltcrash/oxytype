@@ -1,19 +1,25 @@
-import { canFunboxGetPb, checkAndUpdatePb, LbPersonalBests } from "../utils/pb";
-import * as db from "../init/db";
-import MonkeyError from "../utils/error";
+import { eq, and, desc, inArray } from "drizzle-orm";
 import {
-  Collection,
-  ObjectId,
-  Long,
-  type UpdateFilter,
-  type Filter,
-} from "mongodb";
-import { flattenObjectDeep, isPlainObject, WithObjectId } from "../utils/misc";
+  canFunboxGetPb,
+  checkAndUpdatePb,
+  type LbPersonalBests,
+} from "../utils/pb";
+import MonkeyError from "../utils/error";
+import { type WithObjectId } from "../utils/misc";
+import { newId, type StoredId } from "../utils/id";
+import {
+  database,
+  statement,
+  encode,
+  isUniqueViolation,
+  chunks,
+} from "../db/client";
+import { mutateUser, readUser, stage } from "../db/mutation";
+import { users, inbox, rewardGrants, connections } from "../db/schema";
 import { getCachedConfiguration } from "../init/configuration";
 import { getDayOfYear } from "date-fns";
 import { UTCDate } from "@date-fns/utc";
-import {
-  AllRewards,
+import type {
   Badge,
   CustomTheme,
   MonkeyMail,
@@ -27,18 +33,17 @@ import {
   CountByYearAndDay,
   Friend,
 } from "@oxytype/schemas/users";
-import {
+import type {
   Mode,
   Mode2,
   PersonalBest,
   PersonalBests,
 } from "@oxytype/schemas/shared";
-import { addImportantLog } from "./logs";
-import { Result as ResultType } from "@oxytype/schemas/results";
-import { Configuration } from "@oxytype/schemas/configuration";
+import type { Result as ResultType } from "@oxytype/schemas/results";
+import type { Configuration } from "@oxytype/schemas/configuration";
 import { isToday, isYesterday } from "@oxytype/util/date-and-time";
+import { addImportantLog } from "./logs";
 import GeorgeQueue from "../queues/george-queue";
-import { aggregateWithAcceptedConnections } from "./connections";
 
 export type DBUserTag = WithObjectId<UserTag>;
 
@@ -51,7 +56,7 @@ export type DBUser = Omit<
   | "allTimeLbs"
   | "testActivity"
 > & {
-  _id: ObjectId;
+  _id: StoredId;
   resultFilterPresets?: WithObjectId<ResultFilters>[];
   tags?: DBUserTag[];
   lbPersonalBests?: LbPersonalBests;
@@ -69,97 +74,91 @@ export type DBUser = Omit<
   note?: string;
 };
 
-const SECONDS_PER_HOUR = 3600;
-
 type Result = Omit<ResultType<Mode>, "_id" | "name">;
-
 export type DBFriend = Friend;
-
-// Export for use in tests
-export const getUsersCollection = (): Collection<DBUser> =>
-  db.collection<DBUser>("users");
+const emptyPb = (): PersonalBests => ({
+  time: {},
+  words: {},
+  quote: {},
+  zen: {},
+  custom: {},
+});
 
 export async function addUser(
   name: string,
   email: string,
   uid: string,
 ): Promise<void> {
-  const newUserDocument: Partial<DBUser> = {
+  const user: DBUser = {
+    _id: newId(),
     name,
     email,
     uid,
     addedAt: Date.now(),
-    personalBests: {
-      time: {},
-      words: {},
-      quote: {},
-      zen: {},
-      custom: {},
-    },
+    personalBests: emptyPb(),
     testActivity: {},
   };
-
-  const result = await getUsersCollection().updateOne(
-    { uid },
-    { $setOnInsert: newUserDocument },
-    { upsert: true },
-  );
-
-  if (result.upsertedCount === 0) {
-    throw new MonkeyError(409, "User document already exists", "addUser");
+  try {
+    await database().insert(users).values({
+      uid,
+      id: user._id.toString(),
+      name,
+      nameKey: name.toLowerCase(),
+      email,
+      addedAt: user.addedAt,
+      data: user,
+    });
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      throw new MonkeyError(
+        409,
+        "User document or name already exists",
+        "addUser",
+      );
+    }
+    throw error;
   }
 }
-
+export async function exists(uid: string): Promise<boolean> {
+  return (await readUser(uid)) !== undefined;
+}
 export async function deleteUser(uid: string): Promise<void> {
-  await getUsersCollection().deleteOne({ uid });
+  await database().delete(users).where(eq(users.uid, uid));
 }
-
 export async function resetUser(uid: string): Promise<void> {
-  await getUsersCollection().updateOne(
-    { uid },
-    {
-      $set: {
-        personalBests: {
-          time: {},
-          words: {},
-          quote: {},
-          zen: {},
-          custom: {},
-        },
-        lbPersonalBests: {
-          time: {},
-        },
-        completedTests: 0,
-        startedTests: 0,
-        timeTyping: 0,
-        lbMemory: {},
-        bananas: 0,
-        profileDetails: {
-          bio: "",
-          keyboard: "",
-          socialProfiles: {},
-        },
-        favoriteQuotes: {},
-        customThemes: [],
-        tags: [],
-        xp: 0,
-        streak: {
-          length: 0,
-          lastResultTimestamp: 0,
-          maxLength: 0,
-        },
-        testActivity: {},
-      },
-      $unset: {
-        discordAvatar: "",
-        discordId: "",
-        lbOptOut: "",
-        inbox: "",
-      },
-    },
-  );
+  await mutateUser(uid, async (user) => {
+    Object.assign(user, {
+      personalBests: emptyPb(),
+      lbPersonalBests: { time: {} },
+      completedTests: 0,
+      startedTests: 0,
+      timeTyping: 0,
+      lbMemory: {},
+      bananas: 0,
+      profileDetails: { bio: "", keyboard: "", socialProfiles: {} },
+      favoriteQuotes: {},
+      customThemes: [],
+      tags: [],
+      xp: 0,
+      streak: { length: 0, lastResultTimestamp: 0, maxLength: 0 },
+      testActivity: {},
+    });
+    delete user.discordAvatar;
+    delete user.discordId;
+    delete user.lbOptOut;
+    delete user.inbox;
+    for (const table of [
+      "inbox",
+      "reward_grants",
+      "user_activity",
+      "leaderboard_bests",
+      "daily_entries",
+      "weekly_entries",
+    ]) {
+      await stage(statement(`DELETE FROM ${table} WHERE uid=?`, uid));
+    }
+  });
 }
-
 export async function updateName(
   uid: string,
   name: string,
@@ -168,270 +167,169 @@ export async function updateName(
   if (name === previousName) {
     throw new MonkeyError(400, "New name is the same as the old name");
   }
-
-  if (
-    name?.toLowerCase() !== previousName?.toLowerCase() &&
-    !(await isNameAvailable(name, uid))
-  ) {
-    throw new MonkeyError(409, "Username already taken", name);
+  try {
+    await mutateUser(uid, (user) => {
+      user.name = name;
+      user.lastNameChange = Date.now();
+      delete user.needsToChangeName;
+      (user.nameHistory ??= []).push(previousName);
+    });
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      throw new MonkeyError(409, "Username already taken", name);
+    }
+    throw error;
   }
-
-  await getUsersCollection().updateOne(
-    { uid },
-    {
-      $set: { name, lastNameChange: Date.now() },
-      $unset: { needsToChangeName: "" },
-      $push: { nameHistory: previousName },
-    },
-  );
 }
-
 export async function flagForNameChange(uid: string): Promise<void> {
-  await getUsersCollection().updateOne(
-    { uid },
-    { $set: { needsToChangeName: true } },
-  );
+  await mutateUser(uid, (user) => {
+    user.needsToChangeName = true;
+  });
 }
-
 export async function clearPb(uid: string): Promise<void> {
-  await getUsersCollection().updateOne(
-    { uid },
-    {
-      $set: {
-        personalBests: {
-          time: {},
-          words: {},
-          quote: {},
-          zen: {},
-          custom: {},
-        },
-        lbPersonalBests: {
-          time: {},
-        },
-      },
-    },
-  );
+  await mutateUser(uid, async (user) => {
+    user.personalBests = emptyPb();
+    user.lbPersonalBests = { time: {} };
+    await stage(statement("DELETE FROM leaderboard_bests WHERE uid=?", uid));
+  });
 }
-
 export async function optOutOfLeaderboards(uid: string): Promise<void> {
-  await getUsersCollection().updateOne(
-    { uid },
-    {
-      $set: {
-        lbOptOut: true,
-        lbPersonalBests: {
-          time: {},
-        },
-      },
-    },
-  );
+  await mutateUser(uid, async (user) => {
+    user.lbOptOut = true;
+    user.lbPersonalBests = { time: {} };
+    for (const table of [
+      "leaderboard_bests",
+      "daily_entries",
+      "weekly_entries",
+    ]) {
+      await stage(statement(`DELETE FROM ${table} WHERE uid=?`, uid));
+    }
+  });
 }
-
 export async function updateQuoteRatings(
   uid: string,
   quoteRatings: UserQuoteRatings,
 ): Promise<boolean> {
-  await updateUser(
-    { uid },
-    { $set: { quoteRatings } },
-    { stack: "update quote ratings" },
-  );
+  await mutateUser(uid, (user) => {
+    user.quoteRatings = quoteRatings;
+  });
   return true;
 }
-
 export async function getUser(uid: string, stack: string): Promise<DBUser> {
-  const user = await getUsersCollection().findOne({ uid });
+  const user = await readUser(uid);
   if (!user) throw new MonkeyError(404, "User not found", stack);
-  return migrateUser(user);
+  user.personalBests ??= emptyPb();
+  return user;
 }
-
-/**
- * Get user document only containing requested fields
- * @param uid  user id
- * @param stack stack description used in the error
- * @param fields list of fields
- * @returns partial DBUser only containing requested fields
- * @throws MonkeyError if user does not exist
- */
 export async function getPartialUser<K extends keyof DBUser>(
   uid: string,
   stack: string,
   fields: K[],
 ): Promise<Pick<DBUser, K>> {
-  const projection = new Map(fields.map((it) => [it, 1]));
-  const partialUser = await getUsersCollection().findOne(
-    { uid },
-    { projection },
-  );
-  if (partialUser === null) throw new MonkeyError(404, "User not found", stack);
-
-  if (fields.includes("personalBests" as K)) {
-    return migrateUser(partialUser);
-  }
-  return partialUser;
+  const user = await getUser(uid, stack);
+  return Object.fromEntries(
+    fields
+      .filter((key) => user[key] !== undefined)
+      .map((key) => [key, user[key]]),
+  ) as Pick<DBUser, K>;
 }
-
 export async function findByName(name: string): Promise<DBUser | undefined> {
-  const found = await getUsersCollection().findOne(
-    { name },
-    { collation: { locale: "en", strength: 1 } },
-  );
-
-  return found ?? undefined;
+  const row = await database()
+    .select()
+    .from(users)
+    .where(eq(users.nameKey, name.toLowerCase()))
+    .get();
+  return row?.data as unknown as DBUser | undefined;
 }
-
 export async function isNameAvailable(
   name: string,
   uid: string,
 ): Promise<boolean> {
   const user = await findByName(name);
-  // if the user found by name is the same as the user we are checking for, then the name is available
-  // this means that the user can update the casing of their name without it being taken
-  return user === undefined || user.uid === uid;
+  return !user || user.uid === uid;
 }
-
 export async function getUserByName(
   name: string,
   stack: string,
 ): Promise<DBUser> {
   const user = await findByName(name);
   if (!user) throw new MonkeyError(404, "User not found", stack);
-  return migrateUser(user);
+  return user;
 }
-
 export async function isDiscordIdAvailable(
   discordId: string,
 ): Promise<boolean> {
-  const user = await getUsersCollection().findOne(
-    { discordId },
-    { projection: { _id: 1 } },
-  );
-  return user === null;
+  return !(await database()
+    .select({ uid: users.uid })
+    .from(users)
+    .where(eq(users.discordId, discordId))
+    .get());
 }
-
 export async function addResultFilterPreset(
   uid: string,
   resultFilter: ResultFilters,
   maxFiltersPerUser: number,
-): Promise<ObjectId> {
-  if (maxFiltersPerUser === 0) {
-    throw new MonkeyError(
-      409,
-      "Maximum number of custom filters reached",
-      "add result filter preset",
-    );
-  }
-
-  const _id = new ObjectId();
-  const filter = { uid };
-  filter[`resultFilterPresets.${maxFiltersPerUser - 1}`] = { $exists: false };
-
-  await updateUser(
-    filter,
-    { $push: { resultFilterPresets: { ...resultFilter, _id } } },
-    {
-      statusCode: 409,
-      message: "Maximum number of custom filters reached",
-      stack: "add result filter preset",
-    },
-  );
-
-  return _id;
+): Promise<StoredId> {
+  const id = newId();
+  await mutateUser(uid, (user) => {
+    if ((user.resultFilterPresets?.length ?? 0) >= maxFiltersPerUser) {
+      throw new MonkeyError(409, "Maximum number of custom filters reached");
+    }
+    (user.resultFilterPresets ??= []).push({ ...resultFilter, _id: id });
+  });
+  return id;
 }
-
 export async function removeResultFilterPreset(
   uid: string,
-  _id: string,
+  id: string,
 ): Promise<void> {
-  const presetId = new ObjectId(_id);
-
-  await updateUser(
-    { uid, "resultFilterPresets._id": presetId },
-    { $pull: { resultFilterPresets: { _id: presetId } } },
-    {
-      statusCode: 404,
-      message: "Custom filter not found",
-      stack: "remove result filter preset",
-    },
-  );
+  await mutateUser(uid, (user) => {
+    if (!user.resultFilterPresets?.some((item) => item._id.toString() === id)) {
+      throw new MonkeyError(404, "Custom filter not found");
+    }
+    user.resultFilterPresets = user.resultFilterPresets.filter(
+      (item) => item._id.toString() !== id,
+    );
+  });
 }
-
 export async function addTag(uid: string, name: string): Promise<DBUserTag> {
-  const toPush = {
-    _id: new ObjectId(),
-    name,
-    personalBests: {
-      time: {},
-      words: {},
-      quote: {},
-      zen: {},
-      custom: {},
-    },
-  };
-
-  await updateUser(
-    { uid, "tags.14": { $exists: false } },
-    { $push: { tags: toPush } },
-    {
-      statusCode: 400,
-      message: "Maximum number of tags reached",
-      stack: "add tag",
-    },
-  );
-
-  return toPush;
+  const tag = { _id: newId(), name, personalBests: emptyPb() };
+  await mutateUser(uid, (user) => {
+    if ((user.tags?.length ?? 0) >= 15) {
+      throw new MonkeyError(400, "Maximum number of tags reached");
+    }
+    (user.tags ??= []).push(tag);
+  });
+  return tag;
 }
-
 export async function getTags(uid: string): Promise<DBUserTag[]> {
-  const user = await getPartialUser(uid, "get tags", ["tags"]);
-
-  return user.tags ?? [];
+  return (await getUser(uid, "get tags")).tags ?? [];
 }
-
+function tagById(user: DBUser, id: string): DBUserTag {
+  const tag = user.tags?.find((item) => item._id.toString() === id);
+  if (!tag) throw new MonkeyError(404, "Tag not found");
+  return tag;
+}
 export async function editTag(
   uid: string,
-  _id: string,
+  id: string,
   name: string,
 ): Promise<void> {
-  const tagId = new ObjectId(_id);
-
-  await updateUser(
-    { uid, "tags._id": tagId },
-    { $set: { "tags.$.name": name } },
-    { statusCode: 404, message: "Tag not found", stack: "edit tag" },
-  );
+  await mutateUser(uid, (user) => {
+    tagById(user, id).name = name;
+  });
 }
-
-export async function removeTag(uid: string, _id: string): Promise<void> {
-  const tagId = new ObjectId(_id);
-
-  await updateUser(
-    { uid, "tags._id": tagId },
-    { $pull: { tags: { _id: tagId } } },
-    { statusCode: 404, message: "Tag not found", stack: "remove tag" },
-  );
+export async function removeTag(uid: string, id: string): Promise<void> {
+  await mutateUser(uid, (user) => {
+    tagById(user, id);
+    user.tags = user.tags?.filter((item) => item._id.toString() !== id);
+  });
 }
-
-export async function removeTagPb(uid: string, _id: string): Promise<void> {
-  const tagId = new ObjectId(_id);
-
-  await updateUser(
-    { uid, "tags._id": tagId },
-    {
-      $set: {
-        "tags.$.personalBests": {
-          time: {},
-          words: {},
-          quote: {},
-          zen: {},
-          custom: {},
-        },
-      },
-    },
-    { statusCode: 404, message: "Tag not found", stack: "remove tag pb" },
-  );
+export async function removeTagPb(uid: string, id: string): Promise<void> {
+  await mutateUser(uid, (user) => {
+    tagById(user, id).personalBests = emptyPb();
+  });
 }
-
 export async function updateLbMemory(
   uid: string,
   mode: Mode,
@@ -439,934 +337,575 @@ export async function updateLbMemory(
   language: string,
   rank: number,
 ): Promise<void> {
-  const partialUpdate = {};
-  partialUpdate[`lbMemory.${mode}.${mode2}.${language}`] = rank;
-
-  await updateUser(
-    { uid },
-    { $set: partialUpdate },
-    { stack: "update lb memory" },
+  await mutateUser(uid, (user) => {
+    user.lbMemory ??= {};
+    user.lbMemory[mode] ??= {};
+    user.lbMemory[mode][mode2] ??= {};
+    user.lbMemory[mode][mode2][language] = rank;
+  });
+}
+function pbEligible(result: Result): boolean {
+  return (
+    canFunboxGetPb(result) &&
+    !(
+      "stopOnLetter" in result &&
+      result.stopOnLetter === true &&
+      result.acc < 100
+    ) &&
+    result.mode !== "quote"
   );
 }
-
 export async function checkIfPb(
   uid: string,
-  user: Pick<DBUser, "personalBests" | "lbPersonalBests">,
+  _user: Pick<DBUser, "personalBests" | "lbPersonalBests">,
   result: Result,
 ): Promise<boolean> {
-  const { mode } = result;
-
-  if (!canFunboxGetPb(result)) return false;
-  if (
-    "stopOnLetter" in result &&
-    result.stopOnLetter === true &&
-    result.acc < 100
-  ) {
-    return false;
-  }
-
-  if (mode === "quote") {
-    return false;
-  }
-
-  user.personalBests ??= {
-    time: {},
-    custom: {},
-    quote: {},
-    words: {},
-    zen: {},
-  };
-  user.lbPersonalBests ??= {
-    time: {},
-  };
-
-  const pb = checkAndUpdatePb(user.personalBests, user.lbPersonalBests, result);
-
-  if (!pb.isPb) return false;
-
-  const setFields: Record<string, unknown> = {
-    personalBests: pb.personalBests,
-  };
-  if (pb.lbPersonalBests) {
-    setFields["lbPersonalBests"] = pb.lbPersonalBests;
-  }
-
-  await getUsersCollection().updateOne({ uid }, { $set: setFields });
-  return true;
-}
-
-export async function checkIfTagPb(
-  uid: string,
-  user: Pick<DBUser, "tags">,
-  result: Result,
-): Promise<string[]> {
-  if (user.tags === undefined || user.tags.length === 0) {
-    return [];
-  }
-
-  const { mode, tags: resultTags } = result;
-  if (!canFunboxGetPb(result)) return [];
-  if (
-    "stopOnLetter" in result &&
-    result.stopOnLetter === true &&
-    result.acc < 100
-  ) {
-    return [];
-  }
-
-  if (mode === "quote") {
-    return [];
-  }
-
-  const tagsToCheck: DBUserTag[] = [];
-  user.tags.forEach((userTag) => {
-    for (const resultTag of resultTags ?? []) {
-      if (resultTag === userTag._id.toHexString()) {
-        tagsToCheck.push(userTag);
+  if (!pbEligible(result)) return false;
+  return await mutateUser(uid, async (user) => {
+    const pb = checkAndUpdatePb(
+      user.personalBests ?? emptyPb(),
+      user.lbPersonalBests ?? { time: {} },
+      result,
+    );
+    user.personalBests = pb.personalBests;
+    user.lbPersonalBests = pb.lbPersonalBests;
+    for (const [duration, languages] of Object.entries(
+      user.lbPersonalBests?.time ?? {},
+    )) {
+      for (const [language, best] of Object.entries(languages)) {
+        await stage(
+          statement(
+            "INSERT INTO leaderboard_bests(uid,board,wpm,acc,timestamp,data) VALUES(?,?,?,?,?,?) ON CONFLICT(uid,board) DO UPDATE SET wpm=excluded.wpm,acc=excluded.acc,timestamp=excluded.timestamp,data=excluded.data",
+            uid,
+            `${language}_time_${duration}`,
+            best.wpm,
+            best.acc,
+            best.timestamp,
+            encode(best),
+          ),
+        );
       }
     }
+    return pb.isPb;
   });
-
-  const ret: string[] = [];
-
-  for (const tag of tagsToCheck) {
-    tag.personalBests ??= {
-      time: {},
-      words: {},
-      quote: {},
-      zen: {},
-      custom: {},
-    };
-
-    const tagpb = checkAndUpdatePb(tag.personalBests, undefined, result);
-    if (tagpb.isPb) {
-      ret.push(tag._id.toHexString());
-      await getUsersCollection().updateOne(
-        { uid, "tags._id": new ObjectId(tag._id) },
-        { $set: { "tags.$.personalBests": tagpb.personalBests } },
+}
+export async function checkIfTagPb(
+  uid: string,
+  _user: Pick<DBUser, "tags">,
+  result: Result,
+): Promise<string[]> {
+  if (!pbEligible(result)) return [];
+  return await mutateUser(uid, (user) => {
+    const updated: string[] = [];
+    for (const tag of user.tags ?? []) {
+      if (!result.tags?.includes(tag._id.toString())) continue;
+      const pb = checkAndUpdatePb(
+        tag.personalBests ?? emptyPb(),
+        undefined,
+        result,
       );
+      if (pb.isPb) {
+        tag.personalBests = pb.personalBests;
+        updated.push(tag._id.toString());
+      }
     }
-  }
-
-  return ret;
+    return updated;
+  });
 }
-
 export async function resetPb(uid: string): Promise<void> {
-  await updateUser(
-    { uid },
-    {
-      $set: {
-        personalBests: {
-          time: {},
-          words: {},
-          quote: {},
-          zen: {},
-          custom: {},
-        },
-      },
-    },
-    { stack: "reset pb" },
-  );
+  await clearPb(uid);
 }
-
 export async function updateLastHashes(
   uid: string,
   lastHashes: string[],
 ): Promise<void> {
-  await getUsersCollection().updateOne(
-    { uid },
-    {
-      $set: {
-        lastReultHashes: lastHashes, //TODO fix typo
-      },
-    },
-  );
+  await mutateUser(uid, (user) => {
+    user.lastReultHashes = lastHashes;
+  });
 }
-
 export async function updateTypingStats(
   uid: string,
   restartCount: number,
   timeTyping: number,
 ): Promise<void> {
-  await getUsersCollection().updateOne(
-    { uid },
-    {
-      $inc: {
-        startedTests: restartCount + 1,
-        completedTests: 1,
-        timeTyping,
-      },
-    },
-  );
+  await mutateUser(uid, (user) => {
+    user.startedTests = (user.startedTests ?? 0) + restartCount + 1;
+    user.completedTests = (user.completedTests ?? 0) + 1;
+    user.timeTyping = (user.timeTyping ?? 0) + timeTyping;
+  });
 }
-
 export async function linkDiscord(
   uid: string,
   discordId: string,
   discordAvatar?: string,
 ): Promise<void> {
-  const updates: Partial<DBUser> = { discordId };
-  if (discordAvatar !== undefined && discordAvatar !== null) {
-    updates.discordAvatar = discordAvatar;
-  }
-
-  await updateUser({ uid }, { $set: updates }, { stack: "link discord" });
+  await mutateUser(uid, (user) => {
+    user.discordId = discordId;
+    if (discordAvatar !== undefined) user.discordAvatar = discordAvatar;
+  });
 }
-
 export async function unlinkDiscord(uid: string): Promise<void> {
-  await updateUser(
-    { uid },
-    { $unset: { discordId: "", discordAvatar: "" } },
-    { stack: "unlink discord" },
-  );
+  await mutateUser(uid, (user) => {
+    delete user.discordId;
+    delete user.discordAvatar;
+  });
 }
-
 export async function incrementBananas(
   uid: string,
   wpm: number,
 ): Promise<void> {
-  //don't throw on missing user
-  await getUsersCollection().updateOne(
-    {
-      uid,
-      "personalBests.time.60": { $exists: true, $not: { $size: 0 } },
-      $expr: {
-        // wpm needs to be >= 75% of the the highest  time 60 PB
-        $gte: [
-          wpm,
-          {
-            $multiply: [
-              //highest wpm with 0.75
-              {
-                $reduce: {
-                  //find highest wpm from time 60 PBs
-                  input: "$personalBests.time.60",
-                  initialValue: 0,
-                  in: {
-                    $cond: [
-                      { $gte: ["$$this.wpm", "$$value"] },
-                      "$$this.wpm",
-                      "$$value",
-                    ],
-                  },
-                },
-              },
-              0.75,
-            ],
-          },
-        ],
-      },
-    },
-    { $inc: { bananas: 1 } },
-  );
+  await mutateUser(uid, (user) => {
+    const pbs = user.personalBests?.time[60];
+    if (
+      pbs !== undefined &&
+      pbs.length > 0 &&
+      wpm >= Math.max(...pbs.map((pb) => pb.wpm)) * 0.75
+    ) {
+      user.bananas = (user.bananas ?? 0) + 1;
+    }
+  });
 }
-
 export async function incrementXp(uid: string, xp: number): Promise<void> {
-  if (isNaN(xp)) xp = 0;
-  await getUsersCollection().updateOne({ uid }, { $inc: { xp: new Long(xp) } });
+  await mutateUser(uid, (user) => {
+    user.xp = (user.xp ?? 0) + (Number.isFinite(xp) ? Math.trunc(xp) : 0);
+  });
 }
-
 export async function incrementTestActivity(
   user: DBUser,
   timestamp: number,
 ): Promise<void> {
-  if (user.testActivity === undefined) {
-    //migration script did not run yet
-    return;
-  }
-
-  const date = new UTCDate(timestamp);
-  const dayOfYear = getDayOfYear(date);
-  const year = date.getFullYear();
-
-  if (user.testActivity[year] === undefined) {
-    await getUsersCollection().updateOne(
-      { uid: user.uid },
-      { $set: { [`testActivity.${date.getFullYear()}`]: [] } },
+  if (user.testActivity === undefined) return;
+  await mutateUser(user.uid, async (current) => {
+    const date = new UTCDate(timestamp),
+      year = date.getFullYear(),
+      index = getDayOfYear(date) - 1;
+    current.testActivity ??= {};
+    const days = (current.testActivity[year] ??= []);
+    while (days.length <= index) days.push(0);
+    days[index] = (days[index] ?? 0) + 1;
+    await stage(
+      statement(
+        "INSERT INTO user_activity(uid,day,count) VALUES(?,?,1) ON CONFLICT(uid,day) DO UPDATE SET count=count+1",
+        user.uid,
+        Math.floor(timestamp / 86400000),
+      ),
     );
-  }
-
-  await getUsersCollection().updateOne(
-    { uid: user.uid },
-    { $inc: { [`testActivity.${date.getFullYear()}.${dayOfYear - 1}`]: 1 } },
-  );
+  });
 }
-
+export type DBCustomTheme = WithObjectId<CustomTheme>;
 export async function addTheme(
   uid: string,
   { name, colors }: Omit<CustomTheme, "_id">,
-): Promise<{ _id: ObjectId; name: string }> {
-  const _id = new ObjectId();
-
-  await updateUser(
-    { uid, "customThemes.19": { $exists: false } },
-    {
-      $push: {
-        customThemes: {
-          _id,
-          name: name,
-          colors: colors,
-        },
-      },
-    },
-    {
-      statusCode: 409,
-      message: "Maximum number of custom themes reached",
-      stack: "add theme",
-    },
-  );
-
-  return {
-    _id,
-    name,
-  };
+): Promise<{ _id: StoredId; name: string }> {
+  const theme = { _id: newId(), name, colors };
+  await mutateUser(uid, (user) => {
+    if ((user.customThemes?.length ?? 0) >= 20) {
+      throw new MonkeyError(409, "Maximum number of custom themes reached");
+    }
+    (user.customThemes ??= []).push(theme);
+  });
+  return { _id: theme._id, name };
 }
-
+function themeById(user: DBUser, id: string): DBCustomTheme {
+  const theme = user.customThemes?.find((item) => item._id.toString() === id);
+  if (!theme) throw new MonkeyError(404, "Custom theme not found");
+  return theme;
+}
 export async function removeTheme(uid: string, id: string): Promise<void> {
-  const themeId = new ObjectId(id);
-  await updateUser(
-    { uid, "customThemes._id": themeId },
-    { $pull: { customThemes: { _id: themeId } } },
-    {
-      statusCode: 404,
-      message: "Custom theme not found",
-      stack: "remove theme",
-    },
-  );
+  await mutateUser(uid, (user) => {
+    themeById(user, id);
+    user.customThemes = user.customThemes?.filter(
+      (item) => item._id.toString() !== id,
+    );
+  });
 }
-
 export async function editTheme(
   uid: string,
   id: string,
   { name, colors }: Omit<CustomTheme, "_id">,
 ): Promise<void> {
-  const themeId = new ObjectId(id);
-
-  await updateUser(
-    { uid, "customThemes._id": themeId },
-    {
-      $set: {
-        "customThemes.$.name": name,
-        "customThemes.$.colors": colors,
-      },
-    },
-    { statusCode: 404, message: "Custom theme not found", stack: "edit theme" },
-  );
+  await mutateUser(uid, (user) => {
+    Object.assign(themeById(user, id), { name, colors });
+  });
 }
-
-export type DBCustomTheme = WithObjectId<CustomTheme>;
-
 export async function getThemes(uid: string): Promise<DBCustomTheme[]> {
-  const user = await getPartialUser(uid, "get themes", ["customThemes"]);
-  return user.customThemes ?? [];
+  return (await getUser(uid, "get themes")).customThemes ?? [];
 }
-
 export async function getPersonalBests(
   uid: string,
   mode: string,
   mode2?: string,
 ): Promise<PersonalBest> {
-  const user = await getPartialUser(uid, "get personal bests", [
-    "personalBests",
-  ]);
-
-  if (mode2 !== undefined) {
-    // oxlint-disable-next-line no-unsafe-member-access
-    return user.personalBests?.[mode]?.[mode2] as PersonalBest;
-  }
-
-  return user.personalBests?.[mode] as PersonalBest;
+  const user = await getUser(uid, "get personal bests");
+  return (mode2 === undefined
+    ? (user.personalBests as Record<string, Record<string, PersonalBest[]>>)[
+        mode
+      ]
+    : (user.personalBests as Record<string, Record<string, PersonalBest[]>>)[
+        mode
+      ]?.[mode2]) as unknown as PersonalBest;
 }
-
 export async function getStats(
   uid: string,
 ): Promise<Pick<DBUser, "startedTests" | "completedTests" | "timeTyping">> {
-  const user = await getPartialUser(uid, "get stats", [
+  return await getPartialUser(uid, "get stats", [
     "startedTests",
     "completedTests",
     "timeTyping",
   ]);
-
-  return user;
 }
-
 export async function getFavoriteQuotes(
   uid: string,
 ): Promise<NonNullable<DBUser["favoriteQuotes"]>> {
-  const user = await getPartialUser(uid, "get favorite quotes", [
-    "favoriteQuotes",
-  ]);
-
-  return user.favoriteQuotes ?? {};
+  return (await getUser(uid, "get favorite quotes")).favoriteQuotes ?? {};
 }
-
 export async function addFavoriteQuote(
   uid: string,
   language: string,
   quoteId: string,
   maxQuotes: number,
 ): Promise<void> {
-  await updateUser(
-    {
-      uid,
-      $expr: {
-        //total amount of quotes need to be lower than maxQuotes
-        $lt: [
-          {
-            $reduce: {
-              input: { $objectToArray: "$favoriteQuotes" },
-              initialValue: 0,
-              in: { $add: ["$$value", { $size: "$$this.v" }] },
-            },
-          },
-          maxQuotes,
-        ],
-      },
-    },
-    {
-      $addToSet: {
-        //ensure quoteId is unique in the array
-        [`favoriteQuotes.${language}`]: quoteId,
-      },
-    },
-    {
-      statusCode: 409,
-      message: "Maximum number of favorite quotes reached",
-      stack: "add favorite quote",
-    },
-  );
+  await mutateUser(uid, (user) => {
+    const favorites = (user.favoriteQuotes ??= {});
+    if (
+      Object.values(favorites).reduce(
+        (sum, quotes) => sum + quotes.length,
+        0,
+      ) >= maxQuotes
+    ) {
+      throw new MonkeyError(409, "Maximum number of favorite quotes reached");
+    }
+    const quotes = ((favorites as Record<string, string[]>)[language] ??= []);
+    if (!quotes.includes(quoteId)) quotes.push(quoteId);
+  });
 }
-
 export async function removeFavoriteQuote(
   uid: string,
   language: string,
   quoteId: string,
 ): Promise<void> {
-  await updateUser(
-    { uid },
-    { $pull: { [`favoriteQuotes.${language}`]: quoteId } },
-    { stack: "remove favorite quote" },
-  );
+  await mutateUser(uid, (user) => {
+    if (
+      user.favoriteQuotes !== undefined &&
+      (user.favoriteQuotes as Record<string, string[]>)[language] !== undefined
+    ) {
+      (user.favoriteQuotes as Record<string, string[]>)[language] = (
+        (user.favoriteQuotes as Record<string, string[]>)[language] ?? []
+      ).filter((id) => id !== quoteId);
+    }
+  });
 }
-
 export async function recordAutoBanEvent(
   uid: string,
   maxCount: number,
   maxHours: number,
 ): Promise<boolean> {
-  const user = await getPartialUser(uid, "record auto ban event", [
-    "banned",
-    "autoBanTimestamps",
-    "discordId",
-  ]);
-
-  let ret = false;
-
-  if (user.banned) return ret;
-
-  const autoBanTimestamps = user.autoBanTimestamps ?? [];
-
-  const now = Date.now();
-
-  //only keep events within the last maxHours
-  const recentAutoBanTimestamps = autoBanTimestamps.filter(
-    (timestamp) => timestamp >= now - maxHours * SECONDS_PER_HOUR * 1000,
-  );
-
-  //push new event
-  recentAutoBanTimestamps.push(now);
-
-  //update user, ban if needed
-  const updateObj: Partial<DBUser> = {
-    autoBanTimestamps: recentAutoBanTimestamps,
-  };
-  let banningUser = false;
-  if (recentAutoBanTimestamps.length > maxCount) {
-    updateObj.banned = true;
-    banningUser = true;
-    ret = true;
-  }
-
-  await getUsersCollection().updateOne({ uid }, { $set: updateObj });
-  void addImportantLog(
-    "user_auto_banned",
-    { autoBanTimestamps, banningUser },
-    uid,
-  );
-
-  if (banningUser) {
-    const discordIdIsValid =
-      user.discordId !== undefined && user.discordId !== "";
-    if (discordIdIsValid) {
-      await GeorgeQueue.userBanned(user.discordId as string, true);
+  return await mutateUser(uid, async (user) => {
+    if (user.banned) return false;
+    const now = Date.now();
+    user.autoBanTimestamps = (user.autoBanTimestamps ?? []).filter(
+      (timestamp) => timestamp >= now - maxHours * 3600000,
+    );
+    user.autoBanTimestamps.push(now);
+    const banned = user.autoBanTimestamps.length > maxCount;
+    if (banned) user.banned = true;
+    await addImportantLog(
+      "user_auto_banned",
+      { autoBanTimestamps: user.autoBanTimestamps, banningUser: banned },
+      uid,
+    );
+    if (banned && user.discordId !== undefined && user.discordId !== "") {
+      await GeorgeQueue.userBanned(user.discordId, true);
     }
-  }
-
-  return ret;
+    return banned;
+  });
 }
-
 export async function updateProfile(
   uid: string,
-  profileDetailUpdates: Partial<UserProfileDetails>,
+  updates: Partial<UserProfileDetails>,
   inventory?: UserInventory,
 ): Promise<void> {
-  let profileUpdates = flattenObjectDeep(
-    Object.fromEntries(
-      Object.entries(profileDetailUpdates).filter(
-        ([_, value]) =>
-          value !== undefined &&
-          !(isPlainObject(value) && Object.keys(value).length === 0),
-      ),
-    ),
-    "profileDetails",
-  );
-
-  const updates = {
-    $set: {
-      ...profileUpdates,
-      inventory,
-    },
-  };
-  if (inventory === undefined) delete updates.$set.inventory;
-
-  await getUsersCollection().updateOne(
-    {
-      uid,
-    },
-    updates,
+  await mutateUser(uid, (user) => {
+    const current = (user.profileDetails ??= {
+      bio: "",
+      keyboard: "",
+      socialProfiles: {},
+    });
+    if (updates.bio !== undefined) current.bio = updates.bio;
+    if (updates.keyboard !== undefined) current.keyboard = updates.keyboard;
+    if (updates.socialProfiles) {
+      current.socialProfiles = {
+        ...current.socialProfiles,
+        ...updates.socialProfiles,
+      };
+    }
+    if (inventory !== undefined) user.inventory = inventory;
+  });
+}
+export async function getInbox(uid: string): Promise<MonkeyMail[]> {
+  await getUser(uid, "get inbox");
+  const rows = await database()
+    .select()
+    .from(inbox)
+    .where(and(eq(inbox.uid, uid), eq(inbox.deleted, false)))
+    .orderBy(desc(inbox.timestamp));
+  return rows.map(
+    (row) =>
+      ({
+        ...row.data,
+        id: row.id,
+        read: row.read,
+        rewards: row.read ? [] : row.data["rewards"],
+      }) as MonkeyMail,
   );
 }
-
-export async function getInbox(
-  uid: string,
-): Promise<NonNullable<DBUser["inbox"]>> {
-  const user = await getPartialUser(uid, "get inbox", ["inbox"]);
-  return user.inbox ?? [];
-}
-
-type AddToInboxBulkEntry = {
-  uid: string;
-  mail: MonkeyMail[];
-};
-
+type AddToInboxBulkEntry = { uid: string; mail: MonkeyMail[] };
 export async function addToInboxBulk(
   entries: AddToInboxBulkEntry[],
-  inboxConfig: Configuration["users"]["inbox"],
+  config: Configuration["users"]["inbox"],
 ): Promise<void> {
-  const { enabled, maxMail } = inboxConfig;
-
-  if (!enabled) {
-    return;
+  for (const batch of chunks(entries, 10)) {
+    await Promise.all(
+      batch.map(
+        async (entry) => await addToInbox(entry.uid, entry.mail, config),
+      ),
+    );
   }
-
-  const bulk = getUsersCollection().initializeUnorderedBulkOp();
-
-  entries.forEach((entry) => {
-    bulk.find({ uid: entry.uid }).updateOne({
-      $push: {
-        inbox: {
-          $each: entry.mail,
-          $position: 0, // Prepends to the inbox
-          $slice: maxMail, // Keeps inbox size to maxInboxSize, maxMail the oldest
-        },
-      },
-    });
-  });
-
-  await bulk.execute();
 }
-
 export async function addToInbox(
   uid: string,
   mail: MonkeyMail[],
-  inboxConfig: Configuration["users"]["inbox"],
+  config: Configuration["users"]["inbox"],
 ): Promise<void> {
-  const { enabled, maxMail } = inboxConfig;
-
-  if (!enabled) {
-    return;
-  }
-
-  await getUsersCollection().updateOne(
-    {
-      uid,
-    },
-    {
-      $push: {
-        inbox: {
-          $each: mail,
-          $position: 0, // Prepends to the inbox
-          $slice: maxMail, // Keeps inbox size to maxMail, discarding the oldest
-        },
-      },
-    },
-  );
+  if (!config.enabled) return;
+  await mutateUser(uid, async () => {
+    for (const item of mail) {
+      await stage(
+        statement(
+          "INSERT INTO inbox(id,uid,timestamp,read,data) VALUES(?,?,?,?,?) ON CONFLICT(id) DO NOTHING",
+          item.id,
+          uid,
+          item.timestamp,
+          Number(item.read),
+          encode(item),
+        ),
+      );
+      await stage(
+        statement(
+          "INSERT INTO reward_grants(id,uid,origin,claimed,data) VALUES(?,?,?,?,?) ON CONFLICT(origin,uid) DO NOTHING",
+          `${uid}:${item.id}`,
+          uid,
+          item.id,
+          Number(item.read),
+          encode({ rewards: item.rewards }),
+        ),
+      );
+    }
+    await stage(
+      statement(
+        "DELETE FROM inbox WHERE uid=? AND id NOT IN (SELECT id FROM inbox WHERE uid=? ORDER BY timestamp DESC,id DESC LIMIT ?)",
+        uid,
+        uid,
+        config.maxMail,
+      ),
+    );
+  });
 }
-
 export async function updateInbox(
   uid: string,
   mailToRead: string[],
   mailToDelete: string[],
 ): Promise<void> {
-  const deleteSet = [...new Set(mailToDelete)];
-
-  //we don't need to read mails that are going to be deleted because
-  //Rewards will be claimed on unread mails on deletion
-  const readSet = [...new Set(mailToRead)].filter(
-    (it) => !deleteSet.includes(it),
-  );
-
-  const update = await getUsersCollection().updateOne({ uid }, [
-    {
-      $addFields: {
-        tmp: {
-          $function: {
-            lang: "js",
-            args: ["$inbox", "$xp", "$inventory", deleteSet, readSet],
-            body: function (
-              inbox: MonkeyMail[],
-              xp: number,
-              inventory: UserInventory,
-              deletedIds: string[],
-              readIds: string[],
-            ): Pick<DBUser, "xp" | "inventory" | "inbox"> {
-              const toBeDeleted = inbox.filter((it) =>
-                deletedIds.includes(it.id),
-              );
-
-              const toBeRead = inbox.filter(
-                (it) => readIds.includes(it.id) && !it.read,
-              );
-
-              //flatMap rewards
-              const rewards: AllRewards[] = [...toBeRead, ...toBeDeleted]
-                .filter((it) => !it.read)
-
-                .reduce((arr: AllRewards[], current) => {
-                  return arr.concat(current.rewards);
-                }, []);
-
-              const xpGain = rewards
-                .filter((it) => it.type === "xp")
-                .map((it) => it.item)
-                .reduce((s, a) => s + a, 0);
-
-              const badgesToClaim = rewards
-                .filter((it) => it.type === "badge")
-                .map((it) => it.item);
-
-              // mongo doesnt support ??= i think
-              // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-              if (inventory === null) {
-                inventory = {
-                  badges: [],
-                };
-              }
-              // mongo doesnt support ??= i think
-              // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-              if (inventory.badges === null) inventory.badges = [];
-
-              const uniqueBadgeIds = new Set();
-              const newBadges: Badge[] = [];
-
-              for (const badge of [...inventory.badges, ...badgesToClaim]) {
-                if (uniqueBadgeIds.has(badge.id)) continue;
-                uniqueBadgeIds.add(badge.id);
-                newBadges.push(badge);
-              }
-              inventory.badges = newBadges;
-
-              //remove deleted mail from inbox, sort by timestamp descending
-              const inboxUpdate = inbox
-                .filter((it) => !deletedIds.includes(it.id))
-                .sort((a, b) => b.timestamp - a.timestamp);
-
-              //mark read mail as read, remove rewards
-              toBeRead.forEach((it) => {
-                it.read = true;
-                it.rewards = [];
-              });
-
-              return {
-                xp: xp + xpGain,
-                inbox: inboxUpdate,
-                inventory: inventory,
-              };
-            }.toString(),
-          },
-        },
-      },
-    },
-    {
-      $set: {
-        xp: "$tmp.xp",
-        inbox: "$tmp.inbox",
-        inventory: "$tmp.inventory",
-      },
-    },
-    { $unset: "tmp" },
-  ]);
-
-  if (update.matchedCount !== 1) {
-    throw new MonkeyError(404, "User not found", "update inbox");
-  }
+  const ids = [...new Set([...mailToRead, ...mailToDelete])];
+  if (!ids.length) return;
+  await mutateUser(uid, async (user) => {
+    const mails = await database()
+      .select()
+      .from(inbox)
+      .where(
+        and(
+          eq(inbox.uid, uid),
+          inArray(inbox.id, ids),
+          eq(inbox.deleted, false),
+        ),
+      );
+    const grants = await database()
+      .select()
+      .from(rewardGrants)
+      .where(
+        and(
+          eq(rewardGrants.uid, uid),
+          inArray(
+            rewardGrants.origin,
+            mails.map((mail) => mail.id),
+          ),
+          eq(rewardGrants.claimed, false),
+        ),
+      );
+    const badges: Badge[] = [...(user.inventory?.badges ?? [])];
+    for (const grant of grants) {
+      const rewards = (grant.data["rewards"] ?? []) as MonkeyMail["rewards"];
+      for (const reward of rewards) {
+        if (reward.type === "xp") {
+          user.xp = (user.xp ?? 0) + reward.item;
+        } else if (
+          reward.type === "badge" &&
+          !badges.some((badge) => badge.id === reward.item.id)
+        ) {
+          badges.push(reward.item);
+        }
+      }
+      await stage(
+        statement(
+          "UPDATE reward_grants SET claimed=1 WHERE id=? AND uid=?",
+          grant.id,
+          uid,
+        ),
+      );
+    }
+    user.inventory = { ...user.inventory, badges };
+    for (const mail of mails) {
+      await stage(
+        statement(
+          "UPDATE inbox SET read=1,deleted=? WHERE id=? AND uid=?",
+          Number(mailToDelete.includes(mail.id)),
+          mail.id,
+          uid,
+        ),
+      );
+    }
+  });
 }
-
 export async function updateStreak(
   uid: string,
   timestamp: number,
 ): Promise<number> {
-  const user = await getPartialUser(uid, "calculate streak", ["streak"]);
-  const streak: UserStreak = {
-    lastResultTimestamp: user.streak?.lastResultTimestamp ?? 0,
-    length: user.streak?.length ?? 0,
-    maxLength: user.streak?.maxLength ?? 0,
-    hourOffset: user.streak?.hourOffset,
-  };
-
-  if (isYesterday(streak.lastResultTimestamp, streak.hourOffset ?? 0)) {
-    streak.length += 1;
-  } else if (!isToday(streak.lastResultTimestamp, streak.hourOffset ?? 0)) {
-    void addImportantLog("streak_lost", streak, uid);
-    streak.length = 1;
-  }
-
-  if (streak.length > streak.maxLength) {
-    streak.maxLength = streak.length;
-  }
-
-  streak.lastResultTimestamp = timestamp;
-
-  if (user.streak?.hourOffset === 0) {
-    // todo this needs to be removed after a while
-    delete streak.hourOffset;
-  }
-
-  await getUsersCollection().updateOne({ uid }, { $set: { streak } });
-
-  return streak.length;
+  return await mutateUser(uid, async (user) => {
+    const streak: UserStreak = {
+      lastResultTimestamp: user.streak?.lastResultTimestamp ?? 0,
+      length: user.streak?.length ?? 0,
+      maxLength: user.streak?.maxLength ?? 0,
+      hourOffset: user.streak?.hourOffset,
+    };
+    if (isYesterday(streak.lastResultTimestamp, streak.hourOffset ?? 0)) {
+      streak.length++;
+    } else if (!isToday(streak.lastResultTimestamp, streak.hourOffset ?? 0)) {
+      await addImportantLog("streak_lost", streak, uid);
+      streak.length = 1;
+    }
+    streak.maxLength = Math.max(streak.length, streak.maxLength);
+    streak.lastResultTimestamp = timestamp;
+    if (streak.hourOffset === 0) delete streak.hourOffset;
+    user.streak = streak;
+    return streak.length;
+  });
 }
-
 export async function setStreakHourOffset(
   uid: string,
   hourOffset: number,
 ): Promise<void> {
-  await getUsersCollection().updateOne(
-    { uid },
-    {
-      $set: {
-        "streak.hourOffset": hourOffset,
-        "streak.lastResultTimestamp": Date.now(),
-      },
-    },
-  );
+  await mutateUser(uid, (user) => {
+    user.streak ??= { length: 0, maxLength: 0, lastResultTimestamp: 0 };
+    user.streak.hourOffset = hourOffset;
+    user.streak.lastResultTimestamp = Date.now();
+  });
 }
-
 export async function setBanned(uid: string, banned: boolean): Promise<void> {
-  if (banned) {
-    await getUsersCollection().updateOne({ uid }, { $set: { banned: true } });
-  } else {
-    await getUsersCollection().updateOne({ uid }, { $unset: { banned: "" } });
-  }
+  await mutateUser(uid, (user) => {
+    if (banned) user.banned = true;
+    else delete user.banned;
+  });
 }
-
 export async function clearStreakHourOffset(uid: string): Promise<void> {
-  await getUsersCollection().updateOne(
-    { uid },
-    {
-      $unset: {
-        "streak.hourOffset": "",
-      },
-    },
-  );
+  await mutateUser(uid, (user) => {
+    if (user.streak) delete user.streak.hourOffset;
+  });
 }
-
 export async function checkIfUserIsPremium(
   uid: string,
-  userInfoOverride?: Pick<DBUser, "premium">,
+  override?: Pick<DBUser, "premium">,
 ): Promise<boolean> {
-  const premiumFeaturesEnabled = (await getCachedConfiguration(true)).users
-    .premium.enabled;
-  if (!premiumFeaturesEnabled) {
-    return false;
-  }
-  const user =
-    userInfoOverride ??
-    (await getPartialUser(uid, "checkIfUserIsPremium", ["premium"]));
-  const expirationDate = user.premium?.expirationTimestamp;
-
-  if (expirationDate === undefined) return false;
-  if (expirationDate === -1) return true; //lifetime
-  return expirationDate > Date.now();
+  if (!(await getCachedConfiguration(true)).users.premium.enabled) return false;
+  const premium = (override ?? (await getUser(uid, "check premium"))).premium;
+  return (
+    premium?.expirationTimestamp === -1 ||
+    (premium?.expirationTimestamp ?? 0) > Date.now()
+  );
 }
-
 export async function logIpAddress(
   uid: string,
   ip: string,
-  userInfoOverride?: Pick<DBUser, "ips">,
+  _override?: Pick<DBUser, "ips">,
 ): Promise<void> {
-  const user =
-    userInfoOverride ?? (await getPartialUser(uid, "logIpAddress", ["ips"]));
-  const currentIps = user.ips ?? [];
-  const ipIndex = currentIps.indexOf(ip);
-  if (ipIndex !== -1) {
-    currentIps.splice(ipIndex, 1);
-  }
-  currentIps.unshift(ip);
-  if (currentIps.length > 10) {
-    currentIps.pop();
-  }
-  await getUsersCollection().updateOne({ uid }, { $set: { ips: currentIps } });
+  await mutateUser(uid, (user) => {
+    user.ips = [
+      ip,
+      ...(user.ips ?? []).filter((existing) => existing !== ip),
+    ].slice(0, 10);
+  });
 }
-
-/**
- * Update user document. Requires the user to exist
- * @param filter user filter
- * @param update update document
- * @param error stack description used in the error or statusCode and message of the error
- * @throws MonkeyError if user does not exist
- */
-async function updateUser(
-  filter: Filter<DBUser>,
-  update: UpdateFilter<DBUser>,
-  error: { stack: string; statusCode?: number; message?: string },
-): Promise<void> {
-  const result = await getUsersCollection().updateOne(filter, update);
-
-  if (result.matchedCount !== 1) {
-    throw new MonkeyError(
-      error.statusCode ?? 404,
-      error.message ?? "User not found",
-      error.stack,
-    );
-  }
-}
-
 export async function getFriends(uid: string): Promise<DBFriend[]> {
-  return await aggregateWithAcceptedConnections(
-    {
+  const edges = await database()
+    .select()
+    .from(connections)
+    .where(
+      and(
+        eq(connections.status, "accepted"),
+        inArray(
+          connections.id,
+          (
+            await statement(
+              "SELECT id FROM connections WHERE initiator_uid=? OR receiver_uid=?",
+              uid,
+              uid,
+            ).all<{ id: string }>()
+          ).results.map((edge) => edge.id),
+        ),
+      ),
+    );
+  const friends: DBFriend[] = [];
+  for (const friendUid of [
+    ...new Set([
       uid,
-      collectionName: "users",
-      includeMetaData: true,
-    },
-    [
-      {
-        $project: {
-          _id: false,
-          uid: true,
-          connectionId: "$connectionMeta._id",
-          lastModified: "$connectionMeta.lastModified",
-          name: true,
-          discordId: true,
-          discordAvatar: true,
-          startedTests: true,
-          completedTests: true,
-          timeTyping: true,
-          xp: true,
-          "streak.length": true,
-          "streak.maxLength": true,
-          personalBests: true,
-          "inventory.badges": true,
-          "premium.expirationTimestamp": true,
-          banned: 1,
-          lbOptOut: 1,
-        },
-      },
-      {
-        $addFields: {
-          top15: {
-            $reduce: {
-              //find highest wpm from time 15 PBs
-              input: "$personalBests.time.15",
-              initialValue: {},
-              in: {
-                $cond: [
-                  { $gte: ["$$this.wpm", "$$value.wpm"] },
-                  "$$this",
-                  "$$value",
-                ],
-              },
-            },
-          },
-          top60: {
-            $reduce: {
-              //find highest wpm from time 60 PBs
-              input: "$personalBests.time.60",
-              initialValue: {},
-              in: {
-                $cond: [
-                  { $gte: ["$$this.wpm", "$$value.wpm"] },
-                  "$$this",
-                  "$$value",
-                ],
-              },
-            },
-          },
-          badgeId: {
-            $ifNull: [
-              {
-                $first: {
-                  $map: {
-                    input: {
-                      $filter: {
-                        input: "$inventory.badges",
-                        as: "badge",
-                        cond: { $eq: ["$$badge.selected", true] },
-                      },
-                    },
-                    as: "selectedBadge",
-                    in: "$$selectedBadge.id",
-                  },
-                },
-              },
-              "$$REMOVE",
-            ],
-          },
-          isPremium: {
-            $cond: {
-              if: {
-                $or: [
-                  { $eq: ["$premium.expirationTimestamp", -1] },
-                  {
-                    $gt: ["$premium.expirationTimestamp", { $toLong: "$$NOW" }],
-                  },
-                ],
-              },
-              // oxlint-disable-next-line no-thenable
-              then: true,
-              else: "$$REMOVE",
-            },
-          },
-        },
-      },
-      {
-        $addFields: {
-          //remove nulls
-          top15: { $ifNull: ["$top15", "$$REMOVE"] },
-          top60: { $ifNull: ["$top60", "$$REMOVE"] },
-          badgeId: { $ifNull: ["$badgeId", "$$REMOVE"] },
-          lastModified: "$lastModified",
-        },
-      },
-      {
-        $project: {
-          personalBests: false,
-          inventory: false,
-          premium: false,
-        },
-      },
-    ],
-  );
-}
-
-function migrateUser<T extends { personalBests: PersonalBests }>(user: T): T {
-  user.personalBests ??= {
-    time: {},
-    words: {},
-    quote: {},
-    zen: {},
-    custom: {},
-  };
-
-  return user;
+      ...edges.map((edge) =>
+        edge.initiatorUid === uid ? edge.receiverUid : edge.initiatorUid,
+      ),
+    ]),
+  ]) {
+    const user = await getUser(friendUid, "get friends");
+    const edge = edges.find(
+      (item) =>
+        item.initiatorUid === friendUid || item.receiverUid === friendUid,
+    );
+    const best = (duration: number): PersonalBest | undefined =>
+      user.personalBests.time[duration]?.reduce<PersonalBest | undefined>(
+        (top, pb) => (!top || pb.wpm >= top.wpm ? pb : top),
+        undefined,
+      );
+    friends.push({
+      uid: user.uid,
+      name: user.name,
+      discordId: user.discordId,
+      discordAvatar: user.discordAvatar,
+      startedTests: user.startedTests,
+      completedTests: user.completedTests,
+      timeTyping: user.timeTyping,
+      xp: user.xp,
+      banned: user.banned,
+      lbOptOut: user.lbOptOut,
+      streak:
+        user.streak === undefined
+          ? undefined
+          : { length: user.streak.length, maxLength: user.streak.maxLength },
+      connectionId: friendUid === uid ? undefined : edge?.id,
+      lastModified: friendUid === uid ? undefined : edge?.lastModified,
+      top15: best(15),
+      top60: best(60),
+      badgeId: user.inventory?.badges?.find((badge) => badge.selected)?.id,
+      isPremium:
+        user.premium?.expirationTimestamp === -1 ||
+        (user.premium?.expirationTimestamp ?? 0) > Date.now(),
+    });
+  }
+  return friends;
 }

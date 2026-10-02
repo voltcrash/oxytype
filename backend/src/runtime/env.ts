@@ -37,6 +37,7 @@ export type WorkerEnv = {
 };
 
 export type Runtime = {
+  configuration?: import("@oxytype/schemas/configuration").Configuration;
   env: WorkerEnv;
   db: ReturnType<typeof drizzle>;
   execution?: Pick<ExecutionContext, "waitUntil">;

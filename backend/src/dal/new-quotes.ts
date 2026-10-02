@@ -1,263 +1,137 @@
-import { simpleGit } from "simple-git";
-import { Collection, ObjectId } from "mongodb";
-import path from "path";
-import { existsSync, writeFileSync } from "fs";
-import { readFile } from "node:fs/promises";
-import * as db from "../init/db";
-import MonkeyError from "../utils/error";
+import { and, eq, asc } from "drizzle-orm";
+import type { ApproveQuote, Quote } from "@oxytype/schemas/quotes";
+import type { Language } from "@oxytype/schemas/languages";
 import { compareTwoStrings } from "string-similarity";
-import { ApproveQuote, Quote } from "@oxytype/schemas/quotes";
-import { WithObjectId } from "../utils/misc";
-import { parseWithSchema as parseJsonWithSchema } from "@oxytype/util/json";
+import { database, statement, encode } from "../db/client";
+import { quoteSubmissions } from "../db/schema";
+import { newId } from "../utils/id";
+import type { WithObjectId } from "../utils/misc";
+import { envValue, runtime } from "../runtime/env";
+import { integration } from "../utils/integration";
+import MonkeyError from "../utils/error";
 import { z } from "zod/v3";
-import { Language } from "@oxytype/schemas/languages";
-
-const JsonQuoteSchema = z.object({
-  text: z.string(),
-  britishText: z.string().optional(),
-  approvedBy: z.string().optional(),
-  source: z.string(),
-  length: z.number(),
-  id: z.number(),
-});
-
 const QuoteDataSchema = z.object({
-  language: z.string(),
-  quotes: z.array(JsonQuoteSchema),
-  groups: z.array(z.tuple([z.number(), z.number()])),
+  quotes: z.array(z.object({ id: z.number(), text: z.string() })),
 });
-
-const quoteRepositoryPath = process.env["OXYTYPE_QUOTES_REPO_PATH"];
-const git =
-  quoteRepositoryPath !== undefined && quoteRepositoryPath !== ""
-    ? simpleGit(quoteRepositoryPath)
-    : undefined;
-
-function requireQuoteRepositoryPath(): string {
-  if (quoteRepositoryPath === undefined || quoteRepositoryPath === "" || !git) {
-    throw new MonkeyError(503, "Oxytype quote repository is not configured.");
-  }
-  return quoteRepositoryPath;
-}
-
-async function verifyQuoteRepositoryRemote(): Promise<
-  ReturnType<typeof simpleGit>
-> {
-  const quoteGit = git;
-  if (!quoteGit) {
-    throw new MonkeyError(503, "Oxytype quote repository is not configured.");
-  }
-  const expectedRemote = process.env["OXYTYPE_QUOTES_REMOTE_URL"];
-  const actualRemote = (
-    await quoteGit.raw(["remote", "get-url", "origin"])
-  ).trim();
-  if (
-    expectedRemote === undefined ||
-    expectedRemote === "" ||
-    actualRemote !== expectedRemote ||
-    /monkeytypegame/i.test(actualRemote)
-  ) {
-    throw new MonkeyError(
-      503,
-      "Oxytype quote repository remote is not allowed.",
-    );
-  }
-  return quoteGit;
-}
-
-type AddQuoteReturn = {
-  languageError?: number;
-  duplicateId?: number;
-  similarityScore?: number;
-};
-
 export type DBNewQuote = WithObjectId<Quote>;
-
-// Export for use in tests
-export const getNewQuoteCollection = (): Collection<DBNewQuote> =>
-  db.collection<DBNewQuote>("new-quotes");
-
+function validateLanguage(language: string): void {
+  if (!/^\w+$/.test(language)) {
+    throw new MonkeyError(400, "Invalid language name", language);
+  }
+}
 export async function add(
   text: string,
   source: string,
   language: Language,
   uid: string,
-): Promise<AddQuoteReturn | undefined> {
-  const repositoryPath = requireQuoteRepositoryPath();
-  const quote = {
-    _id: new ObjectId(),
-    text: text,
-    source: source,
-    language: language.toLowerCase(),
-    submittedBy: uid,
-    timestamp: Date.now(),
-    approved: false,
-  };
-
-  if (!/^\w+$/.test(language)) {
-    throw new MonkeyError(500, `Invalid language name`, language);
+): Promise<
+  | { languageError?: number; duplicateId?: number; similarityScore?: number }
+  | undefined
+> {
+  validateLanguage(language);
+  const base = envValue("QUOTES_ASSET_URL");
+  const assets = runtime().env.ASSETS;
+  if (base === undefined && assets === undefined) {
+    throw new MonkeyError(503, "Quote assets are not configured");
   }
-
-  const count = await getNewQuoteCollection().countDocuments({
+  const url = new URL(
+    `/quotes/${language}.json`,
+    base ?? "https://assets.local",
+  );
+  const response =
+    assets === undefined
+      ? await fetch(url, { signal: AbortSignal.timeout(10000) })
+      : await assets.fetch(url);
+  if (response.status === 404) return { languageError: 1 };
+  if (!response.ok) {
+    throw new MonkeyError(503, "Quote assets could not be loaded");
+  }
+  const quotes = QuoteDataSchema.parse(await response.json());
+  for (const quote of quotes.quotes) {
+    const score = compareTwoStrings(quote.text, text);
+    if (score > 0.9) return { duplicateId: quote.id, similarityScore: score };
+  }
+  const id = newId(),
+    timestamp = Date.now();
+  const result = await statement(
+    "INSERT INTO quote_submissions(id,language,submitted_by,timestamp,approved,data) SELECT ?,?,?,?,0,? WHERE (SELECT count(*) FROM quote_submissions WHERE language=?) < 100",
+    id,
     language,
-  });
-
-  if (count >= 100) {
+    uid,
+    timestamp,
+    encode({
+      _id: id,
+      text,
+      source,
+      language,
+      submittedBy: uid,
+      timestamp,
+      approved: false,
+    }),
+    language,
+  ).run();
+  if (result.meta.changes === 0) {
     throw new MonkeyError(
       409,
       "There are already 100 quotes in the queue for this language.",
     );
   }
-
-  //check for duplicate first
-  const fileDir = path.join(
-    repositoryPath,
-    `frontend/static/quotes/${language}.json`,
-  );
-  let duplicateId = -1;
-  let similarityScore = -1;
-  if (existsSync(fileDir)) {
-    const quoteFile = await readFile(fileDir);
-    const quoteFileJSON = parseJsonWithSchema(
-      quoteFile.toString(),
-      QuoteDataSchema,
-    );
-    quoteFileJSON.quotes.every((old) => {
-      if (compareTwoStrings(old.text, quote.text) > 0.9) {
-        duplicateId = old.id;
-        similarityScore = compareTwoStrings(old.text, quote.text);
-        return false;
-      }
-      return true;
-    });
-  } else {
-    return { languageError: 1 };
-  }
-  if (duplicateId !== -1) {
-    return { duplicateId, similarityScore };
-  }
-  await db.collection("new-quotes").insertOne(quote);
   return undefined;
 }
-
 export async function get(language: Language | "all"): Promise<DBNewQuote[]> {
-  const where: {
-    approved: boolean;
-    language?: Language;
-  } = {
-    approved: false,
-  };
-
-  if (!/^\w+$/.test(language)) {
-    throw new MonkeyError(500, `Invalid language name`, language);
-  }
-
-  if (language !== "all") {
-    where.language = language;
-  }
-  return await getNewQuoteCollection()
-    .find(where)
-    .sort({ timestamp: 1 })
-    .limit(10)
-    .toArray();
+  validateLanguage(language);
+  return (
+    await database()
+      .select()
+      .from(quoteSubmissions)
+      .where(
+        and(
+          eq(quoteSubmissions.approved, false),
+          language === "all"
+            ? undefined
+            : eq(quoteSubmissions.language, language),
+        ),
+      )
+      .orderBy(asc(quoteSubmissions.timestamp))
+      .limit(10)
+  ).map((row) => ({ ...row.data, _id: row.id }) as DBNewQuote);
 }
-
-type ApproveReturn = {
-  quote: ApproveQuote;
-  message: string;
-};
-
 export async function approve(
   quoteId: string,
   editQuote: string | undefined,
   editSource: string | undefined,
   name: string,
-): Promise<ApproveReturn> {
-  const repositoryPath = requireQuoteRepositoryPath();
-  const quoteGit = await verifyQuoteRepositoryRemote();
-  //check mod status
-  const targetQuote = await getNewQuoteCollection().findOne({
-    _id: new ObjectId(quoteId),
-  });
-  if (!targetQuote) {
+): Promise<{ quote: ApproveQuote; message: string }> {
+  const row = await database()
+    .select()
+    .from(quoteSubmissions)
+    .where(eq(quoteSubmissions.id, quoteId))
+    .get();
+  if (!row) {
     throw new MonkeyError(
       404,
       "Quote not found. It might have already been reviewed. Please refresh the list.",
     );
   }
-  const language = targetQuote.language;
-
-  const approvedText = editQuote ?? targetQuote.text;
-  const quote: ApproveQuote = {
-    text: approvedText,
-    source: editSource ?? targetQuote.source,
-    length: approvedText.length,
-    approvedBy: name,
-    id: -1,
-  };
-  let message = "";
-
-  if (!/^\w+$/.test(language)) {
-    throw new MonkeyError(500, `Invalid language name`, language);
-  }
-
-  const fileDir = path.join(
-    repositoryPath,
-    `frontend/static/quotes/${language}.json`,
+  const result = await integration<{ quote: ApproveQuote; message: string }>(
+    "quotes/approve",
+    {
+      quoteId,
+      quote: row.data,
+      editQuote,
+      editSource,
+      approvedBy: name,
+      repository: envValue("QUOTES_REPOSITORY"),
+    },
+    `quote:${quoteId}`,
   );
-  await quoteGit.pull("origin", "master");
-  if (existsSync(fileDir)) {
-    const quoteFile = await readFile(fileDir);
-    const quoteObject = parseJsonWithSchema(
-      quoteFile.toString(),
-      QuoteDataSchema,
-    );
-    quoteObject.quotes.every((old) => {
-      if (compareTwoStrings(old.text, quote.text) > 0.8) {
-        throw new MonkeyError(409, "Duplicate quote");
-      }
-      return true;
-    });
-    let maxid = 0;
-    quoteObject.quotes.map(function (q) {
-      if (q.id > maxid) {
-        maxid = q.id;
-      }
-    });
-    quote.id = maxid + 1;
-
-    if (quote.id === -1) {
-      throw new MonkeyError(500, "Failed to get max id");
-    }
-
-    quoteObject.quotes.push(quote);
-    writeFileSync(fileDir, JSON.stringify(quoteObject, null, 2));
-    message = `Added quote to ${language}.json.`;
-  } else {
-    //file doesnt exist, create it
-    quote.id = 1;
-    writeFileSync(
-      fileDir,
-      JSON.stringify({
-        language: language,
-        groups: [
-          [0, 100],
-          [101, 300],
-          [301, 600],
-          [601, 9999],
-        ],
-        quotes: [quote],
-      }),
-    );
-    message = `Created file ${language}.json and added quote.`;
-  }
-  await quoteGit.add([`frontend/static/quotes/${language}.json`]);
-  await quoteGit.commit(`Added quote to ${language}.json`);
-  await quoteGit.push("origin", "master");
-  await getNewQuoteCollection().deleteOne({ _id: new ObjectId(quoteId) });
-  return { quote, message };
+  await database()
+    .delete(quoteSubmissions)
+    .where(eq(quoteSubmissions.id, quoteId));
+  return result;
 }
-
 export async function refuse(quoteId: string): Promise<void> {
-  await getNewQuoteCollection().deleteOne({ _id: new ObjectId(quoteId) });
+  await database()
+    .delete(quoteSubmissions)
+    .where(eq(quoteSubmissions.id, quoteId));
 }

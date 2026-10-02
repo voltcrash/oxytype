@@ -1,26 +1,12 @@
-import * as db from "./db";
-import { ObjectId } from "mongodb";
-import Logger from "../utils/logger";
-import { identity, isPlainObject, omit } from "../utils/misc";
+import { eq } from "drizzle-orm";
+import { database, encode, statement } from "../db/client";
+import { configuration as configurationTable } from "../db/schema";
+import { runtime } from "../runtime/env";
+import { identity, isPlainObject } from "../utils/misc";
 import { BASE_CONFIGURATION } from "../constants/base-configuration";
-import { Configuration } from "@oxytype/schemas/configuration";
-import { addLog } from "../dal/logs";
-import {
-  PartialConfiguration,
-  PartialConfigurationSchema,
-} from "@oxytype/contracts/configuration";
-import { getErrorMessage } from "../utils/error";
-import { join } from "path";
-import { existsSync, readFileSync } from "fs";
-import { parseWithSchema as parseJsonWithSchema } from "@oxytype/util/json";
-import { z } from "zod/v3";
+import type { Configuration } from "@oxytype/schemas/configuration";
+import type { PartialConfiguration } from "@oxytype/contracts/configuration";
 import { intersect } from "@oxytype/util/arrays";
-
-const CONFIG_UPDATE_INTERVAL = 10 * 60 * 1000; // 10 Minutes
-const SERVER_CONFIG_FILE_PATH = join(
-  __dirname,
-  "../backend-configuration.json",
-);
 
 function mergeConfigurations(
   baseConfiguration: Configuration,
@@ -51,120 +37,41 @@ function mergeConfigurations(
   merge(baseConfiguration, liveConfiguration);
 }
 
-let configuration = BASE_CONFIGURATION;
-let lastFetchTime = 0;
-let serverConfigurationUpdated = false;
-
 export async function getCachedConfiguration(
-  attemptCacheUpdate = false,
+  _attemptCacheUpdate = false,
 ): Promise<Configuration> {
-  if (
-    attemptCacheUpdate &&
-    lastFetchTime < Date.now() - CONFIG_UPDATE_INTERVAL
-  ) {
-    Logger.info("Cached configuration is stale.");
-    return await getLiveConfiguration();
-  }
-
-  return configuration;
+  return runtime().configuration ?? (await getLiveConfiguration());
 }
-
 export async function getLiveConfiguration(): Promise<Configuration> {
-  lastFetchTime = Date.now();
-
-  const configurationCollection = db.collection("configuration");
-
-  try {
-    const liveConfiguration = await configurationCollection.findOne();
-
-    if (liveConfiguration) {
-      const baseConfiguration = structuredClone(BASE_CONFIGURATION);
-
-      const liveConfigurationWithoutId = omit(liveConfiguration, [
-        "_id",
-      ]) as Configuration;
-      mergeConfigurations(baseConfiguration, liveConfigurationWithoutId);
-
-      await pushConfiguration(baseConfiguration);
-      configuration = baseConfiguration;
-    } else {
-      await configurationCollection.insertOne({
-        ...BASE_CONFIGURATION,
-        _id: new ObjectId(),
-      }); // Seed the base configuration.
-    }
-  } catch (error) {
-    const errorMessage = getErrorMessage(error) ?? "Unknown error";
-    void addLog(
-      "fetch_configuration_failure",
-      `Could not fetch configuration: ${errorMessage}`,
-    );
+  const row = await database()
+    .select()
+    .from(configurationTable)
+    .where(eq(configurationTable.id, "main"))
+    .get();
+  const configuration = structuredClone(BASE_CONFIGURATION);
+  if (row) {
+    mergeConfigurations(configuration, row.data);
+  } else {
+    await database()
+      .insert(configurationTable)
+      .values({ id: "main", data: configuration })
+      .onConflictDoNothing();
   }
-
+  runtime().configuration = configuration;
   return configuration;
 }
-
-async function pushConfiguration(
-  configurationToPush: Configuration,
-): Promise<void> {
-  if (serverConfigurationUpdated) {
-    return;
-  }
-
-  try {
-    await db.collection("configuration").replaceOne({}, configurationToPush);
-    serverConfigurationUpdated = true;
-  } catch (error) {
-    const errorMessage = getErrorMessage(error) ?? "Unknown error";
-    void addLog(
-      "push_configuration_failure",
-      `Could not push configuration: ${errorMessage}`,
-    );
-  }
-}
-
 export async function patchConfiguration(
-  configurationUpdates: PartialConfiguration,
+  updates: PartialConfiguration,
 ): Promise<boolean> {
-  try {
-    const currentConfiguration = structuredClone(configuration);
-    mergeConfigurations(currentConfiguration, configurationUpdates);
-
-    await db
-      .collection("configuration")
-      .updateOne({}, { $set: currentConfiguration }, { upsert: true });
-
-    await getLiveConfiguration();
-  } catch (error) {
-    const errorMessage = getErrorMessage(error) ?? "Unknown error";
-    void addLog(
-      "patch_configuration_failure",
-      `Could not patch configuration: ${errorMessage}`,
-    );
-
-    return false;
-  }
-
+  await getCachedConfiguration();
+  await statement(
+    "UPDATE configuration SET data=json_patch(data,?),version=version+1 WHERE id='main'",
+    encode(updates),
+  ).run();
+  await getLiveConfiguration();
   return true;
 }
-
 export async function updateFromConfigurationFile(): Promise<void> {
-  if (existsSync(SERVER_CONFIG_FILE_PATH)) {
-    Logger.info(
-      `Reading server configuration from file ${SERVER_CONFIG_FILE_PATH}`,
-    );
-    const json = readFileSync(SERVER_CONFIG_FILE_PATH, "utf-8");
-    const data = parseJsonWithSchema(
-      json,
-      z.object({
-        configuration: PartialConfigurationSchema,
-      }),
-    );
-
-    await patchConfiguration(data.configuration);
-  }
+  /* Seed and patch D1 explicitly using Wrangler; Workers have no mutable configuration file. */
 }
-
-export const __testing = {
-  mergeConfigurations,
-};
+export const __testing = { mergeConfigurations };

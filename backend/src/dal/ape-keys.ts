@@ -1,108 +1,97 @@
-import * as db from "../init/db";
-import {
-  type Filter,
-  type MatchKeysAndValues,
-  type WithId,
-  ObjectId,
-  Collection,
-} from "mongodb";
+import { and, eq, count } from "drizzle-orm";
+import { database, statement } from "../db/client";
+import { apeKeys } from "../db/schema";
 import MonkeyError from "../utils/error";
-import { ApeKey } from "@oxytype/schemas/ape-keys";
-
+import type { ApeKey } from "@oxytype/schemas/ape-keys";
+import type { StoredId } from "../utils/id";
 export type DBApeKey = ApeKey & {
-  _id: ObjectId;
+  _id: StoredId;
   uid: string;
   hash: string;
   useCount: number;
 };
-
-export const getApeKeysCollection = (): Collection<WithId<DBApeKey>> =>
-  db.collection<DBApeKey>("ape-keys");
-
-function getApeKeyFilter(uid: string, keyId: string): Filter<DBApeKey> {
-  return {
-    _id: new ObjectId(keyId),
-    uid,
-  };
+function unpack(row: typeof apeKeys.$inferSelect): DBApeKey {
+  return { ...row, _id: row.id, lastUsedOn: row.lastUsedOn ?? undefined };
 }
-
 export async function getApeKeys(uid: string): Promise<DBApeKey[]> {
-  return await getApeKeysCollection().find({ uid }).toArray();
+  return (
+    await database().select().from(apeKeys).where(eq(apeKeys.uid, uid))
+  ).map(unpack);
 }
-
 export async function getApeKey(keyId: string): Promise<DBApeKey | null> {
-  return await getApeKeysCollection().findOne({ _id: new ObjectId(keyId) });
+  const row = await database()
+    .select()
+    .from(apeKeys)
+    .where(eq(apeKeys.id, keyId))
+    .get();
+  return row ? unpack(row) : null;
 }
-
 export async function countApeKeysForUser(uid: string): Promise<number> {
-  return getApeKeysCollection().countDocuments({ uid });
-}
-
-export async function addApeKey(apeKey: DBApeKey): Promise<string> {
-  const insertionResult = await getApeKeysCollection().insertOne(apeKey);
-  return insertionResult.insertedId.toHexString();
-}
-
-async function updateApeKey(
-  uid: string,
-  keyId: string,
-  updates: MatchKeysAndValues<DBApeKey>,
-): Promise<void> {
-  const updateResult = await getApeKeysCollection().updateOne(
-    getApeKeyFilter(uid, keyId),
-    {
-      $inc: { useCount: "lastUsedOn" in updates ? 1 : 0 },
-      $set: Object.fromEntries(
-        Object.entries(updates).filter(
-          ([_, value]) => value !== null && value !== undefined,
-        ),
-      ),
-    },
+  return (
+    (
+      await database()
+        .select({ count: count() })
+        .from(apeKeys)
+        .where(eq(apeKeys.uid, uid))
+        .get()
+    )?.count ?? 0
   );
-
-  if (updateResult.modifiedCount === 0) {
-    throw new MonkeyError(404, "ApeKey not found");
-  }
 }
-
+export async function addApeKey(key: DBApeKey): Promise<string> {
+  await database().insert(apeKeys).values({
+    id: key._id.toString(),
+    uid: key.uid,
+    name: key.name,
+    enabled: key.enabled,
+    hash: key.hash,
+    createdOn: key.createdOn,
+    modifiedOn: key.modifiedOn,
+    lastUsedOn: key.lastUsedOn,
+    useCount: key.useCount,
+  });
+  return key._id.toString();
+}
 export async function editApeKey(
   uid: string,
   keyId: string,
   name?: string,
   enabled?: boolean,
 ): Promise<void> {
-  //check if there is a change
   if (name === undefined && enabled === undefined) return;
-  const apeKeyUpdates = {
-    name,
-    enabled,
-    modifiedOn: Date.now(),
-  };
-
-  await updateApeKey(uid, keyId, apeKeyUpdates);
+  const result = await database()
+    .update(apeKeys)
+    .set({ name, enabled, modifiedOn: Date.now() })
+    .where(and(eq(apeKeys.id, keyId), eq(apeKeys.uid, uid)));
+  if (!result.meta.changes) throw new MonkeyError(404, "ApeKey not found");
 }
-
 export async function updateLastUsedOn(
   uid: string,
   keyId: string,
 ): Promise<void> {
-  const apeKeyUpdates = {
-    lastUsedOn: Date.now(),
-  };
-
-  await updateApeKey(uid, keyId, apeKeyUpdates);
+  const result = await statement(
+    "UPDATE ape_keys SET last_used_on=?,use_count=use_count+1 WHERE id=? AND uid=? AND enabled=1",
+    Date.now(),
+    keyId,
+    uid,
+  ).run();
+  if (!result.meta.changes) throw new MonkeyError(404, "ApeKey not found");
 }
-
+export async function upgradeHash(
+  uid: string,
+  keyId: string,
+  hash: string,
+): Promise<void> {
+  await database()
+    .update(apeKeys)
+    .set({ hash })
+    .where(and(eq(apeKeys.id, keyId), eq(apeKeys.uid, uid)));
+}
 export async function deleteApeKey(uid: string, keyId: string): Promise<void> {
-  const deletionResult = await getApeKeysCollection().deleteOne(
-    getApeKeyFilter(uid, keyId),
-  );
-
-  if (deletionResult.deletedCount === 0) {
-    throw new MonkeyError(404, "ApeKey not found");
-  }
+  const result = await database()
+    .delete(apeKeys)
+    .where(and(eq(apeKeys.id, keyId), eq(apeKeys.uid, uid)));
+  if (!result.meta.changes) throw new MonkeyError(404, "ApeKey not found");
 }
-
 export async function deleteAllApeKeys(uid: string): Promise<void> {
-  await getApeKeysCollection().deleteMany({ uid });
+  await database().delete(apeKeys).where(eq(apeKeys.uid, uid));
 }
