@@ -77,6 +77,7 @@
     "@vitest/coverage-v8": "catalog:",
     "concurrently": "10.0.5",
     "drizzle-kit": "0.31.11",
+    "miniflare": "5.20261001.0-alpha",
     "openapi3-ts": "4.6.1",
     "readline-sync": "1.4.10",
     "supertest": "7.3.0",
