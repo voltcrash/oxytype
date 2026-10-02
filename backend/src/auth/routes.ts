@@ -42,6 +42,13 @@ export function addAuthRoutes(app: Hono<ApiEnv>): void {
       return c.json({ status: true });
     }
     if (c.req.path === "/auth/set-password" && c.req.method === "POST") {
+      const session = await AuthUtils.verifySession(headers);
+      if (Date.now() - session.createdAt.getTime() >= 60_000) {
+        return c.json(
+          { message: "Sign in again before setting a password" },
+          403,
+        );
+      }
       const body = await c.req.json<{ newPassword: string }>();
       if (
         !isDevEnvironment() &&
