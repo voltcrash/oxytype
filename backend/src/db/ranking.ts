@@ -13,9 +13,10 @@ export function rankingQuery(
   period: number,
   board?: string,
   userIds?: string[],
+  includeExpired = false,
 ): { query: string; values: (string | number)[] } {
   const score = table === "daily_entries" ? "score" : "xp";
-  const values: (string | number)[] = [period, Date.now()];
+  const values: (string | number)[] = [period, includeExpired ? 0 : Date.now()];
   if (board !== undefined) values.push(board);
   if (userIds !== undefined) values.push(encode(userIds));
   return {
@@ -30,9 +31,16 @@ export async function rankingPage(
   pageSize: number,
   board?: string,
   userIds?: string[],
+  includeExpired = false,
 ): Promise<{ rows: RankingRow[]; count: number; minWpm: number }> {
   if (page < 0 || pageSize < 0) throw new Error("Invalid page or pageSize");
-  const { query, values } = rankingQuery(table, period, board, userIds);
+  const { query, values } = rankingQuery(
+    table,
+    period,
+    board,
+    userIds,
+    includeExpired,
+  );
   const rows = await statement(
     `${query} SELECT * FROM filtered ORDER BY rank LIMIT ? OFFSET ?`,
     ...values,

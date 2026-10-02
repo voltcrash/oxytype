@@ -76,6 +76,7 @@ export class WeeklyXpLeaderboard {
     config: Configuration["leaderboards"]["weeklyXp"],
     premium: boolean,
     userIds?: string[],
+    includeExpired = false,
   ): Promise<{ entries: XpLeaderboardEntry[]; count: number } | null> {
     if (!config.enabled) return null;
     const result = await rankingPage(
@@ -85,6 +86,7 @@ export class WeeklyXpLeaderboard {
       pageSize,
       undefined,
       userIds,
+      includeExpired,
     );
     return {
       entries: result.rows

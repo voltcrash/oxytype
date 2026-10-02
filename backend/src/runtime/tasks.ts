@@ -54,9 +54,10 @@ export async function dispatch(): Promise<void> {
 async function consume(delivery: Delivery): Promise<void> {
   if (delivery.kind === "job") {
     const claim = await statement(
-      "UPDATE scheduled_jobs SET status='processing',attempts=attempts+1,lease_until=? WHERE id=? AND status IN ('pending','queued','processing') AND (status<>'processing' OR lease_until<=?) RETURNING data,attempts",
+      "UPDATE scheduled_jobs SET status='processing',attempts=attempts+1,lease_until=? WHERE id=? AND status IN ('pending','queued','processing') AND due_at<=? AND (status='queued' OR lease_until<=?) RETURNING data,attempts",
       Date.now() + 300000,
       delivery.id,
+      Date.now(),
       Date.now(),
     ).first<{ data: string; attempts: number }>();
     if (claim === null) return;

@@ -1,10 +1,10 @@
+import { envValue } from "../../runtime/env";
 import { Hono } from "hono";
 import { routePath } from "hono/route";
 import { basicAuth } from "hono/basic-auth";
 import { Counter, Histogram, register } from "prom-client";
 import { performance } from "perf_hooks";
 import { serveStatic } from "../../utils/static";
-import { join } from "path";
 import { ApiEnv } from "../http";
 import { isDevEnvironment } from "../../utils/misc";
 
@@ -48,10 +48,10 @@ export function addStatsRoutes(app: Hono<ApiEnv>): void {
   const authenticate = basicAuth({
     realm: "Oxytype API stats",
     verifyUser: (username, password) =>
-      (process.env["STATS_USERNAME"] ?? "") !== "" &&
-      (process.env["STATS_PASSWORD"] ?? "") !== "" &&
-      username === process.env["STATS_USERNAME"] &&
-      password === process.env["STATS_PASSWORD"],
+      (envValue("STATS_USERNAME") ?? "") !== "" &&
+      (envValue("STATS_PASSWORD") ?? "") !== "" &&
+      username === envValue("STATS_USERNAME") &&
+      password === envValue("STATS_PASSWORD"),
   });
   app.use(async (c, next) => {
     if (
@@ -75,7 +75,7 @@ export function addStatsRoutes(app: Hono<ApiEnv>): void {
   app.get("/stats/", (c) => c.redirect("/stats/ui"));
   app.get("/stats/ui", (c) =>
     c.html(
-      `<!doctype html><html lang="en"><meta charset="utf-8"><title>Oxytype API stats</title><h1>Oxytype API stats</h1><p>Refresh to update.</p><pre>${JSON.stringify(summary(), null, 2)}</pre><a href="/stats/swagger-stats">JSON stats</a> <a href="/stats/metrics">Prometheus metrics</a></html>`,
+      `<!doctype html><html lang="en"><meta charset="utf-8"><title>Oxytype API stats</title><h1>Oxytype API stats</h1><p>Current Worker instance. Use Cloudflare Analytics for total traffic.</p><pre>${JSON.stringify(summary(), null, 2)}</pre><a href="/stats/swagger-stats">JSON stats</a> <a href="/stats/metrics">Prometheus metrics</a></html>`,
     ),
   );
   app.get("/stats/swagger-stats", (c) => c.json(summary()));
@@ -86,7 +86,7 @@ export function addStatsRoutes(app: Hono<ApiEnv>): void {
   app.get(
     "/stats/swagger.json",
     serveStatic({
-      path: join(__dirname, "../../../dist/static/api/openapi.json"),
+      path: "/docs/openapi.json",
     }),
   );
 }

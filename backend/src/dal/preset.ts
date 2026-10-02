@@ -44,6 +44,9 @@ export async function editPreset(
       .get();
     if (!row) return;
     const data = { ...row.data };
+    if (preset.settingGroups !== undefined) {
+      data["settingGroups"] = preset.settingGroups;
+    }
     if (preset.name !== undefined) data["name"] = preset.name;
     if (preset.config !== undefined && Object.keys(preset.config).length > 0) {
       data["config"] = preset.config;

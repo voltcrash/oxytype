@@ -1,4 +1,4 @@
-import type { HttpBindings } from "@hono/node-server";
+import type { WorkerEnv } from "../runtime/env";
 import type { Context as HonoContext, MiddlewareHandler } from "hono";
 import type { AppRoute } from "@ts-rest/core";
 import type { Context } from "../middlewares/context";
@@ -20,7 +20,10 @@ export type HttpRequest = {
 };
 
 export type ApiEnv = {
-  Bindings: Partial<HttpBindings>;
+  Bindings: Partial<WorkerEnv> & {
+    incoming?: { socket: { remoteAddress?: string } };
+    outgoing?: { statusMessage: string };
+  };
   Variables: {
     request: HttpRequest;
     body: unknown;

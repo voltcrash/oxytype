@@ -1,3 +1,4 @@
+import { envValue } from "../runtime/env";
 import { isDevEnvironment } from "./misc";
 
 type CaptchaData = {
@@ -7,9 +8,8 @@ type CaptchaData = {
   "error-codes"?: string[];
 };
 
-const recaptchaSecret = process.env["RECAPTCHA_SECRET"] ?? null;
-
 export async function verify(captcha: string): Promise<boolean> {
+  const recaptchaSecret = envValue("RECAPTCHA_SECRET") ?? null;
   if (isDevEnvironment()) {
     return true;
   }
@@ -23,7 +23,8 @@ export async function verify(captcha: string): Promise<boolean> {
     {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `secret=${recaptchaSecret}&response=${captcha}`,
+      body: new URLSearchParams({ secret: recaptchaSecret, response: captcha }),
+      signal: AbortSignal.timeout(10000),
     },
   );
 

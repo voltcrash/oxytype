@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
-import { eq } from "drizzle-orm";
 import { database } from "../db/client";
 import {
   authUsers,
@@ -65,6 +64,15 @@ export function createAuth(
     advanced: {
       database: { generateId: () => randomUUID() },
       cookiePrefix: "oxytype",
+      ...(new URL(baseURL).protocol === "https:" &&
+      new URL(baseURL).hostname !== new URL(frontendUrl).hostname
+        ? {
+            defaultCookieAttributes: {
+              sameSite: "none" as const,
+              secure: true,
+            },
+          }
+        : {}),
       ipAddress: { ipAddressHeaders: ["x-oxytype-auth-ip"] },
     },
     user: {
@@ -143,13 +151,16 @@ export function createAuth(
     databaseHooks: {
       session: {
         create: {
-          before: async (session) => {
-            const authUser = await database()
-              .select()
-              .from(authUsers)
-              .where(eq(authUsers.id, session.userId))
-              .get();
-            if (authUser?.disabled === true) {
+          before: async (session, ctx) => {
+            const authUser = await ctx?.context.internalAdapter.findUserById(
+              session.userId,
+            );
+            if (
+              authUser !== undefined &&
+              authUser !== null &&
+              "disabled" in authUser &&
+              authUser.disabled === true
+            ) {
               throw new APIError("FORBIDDEN", { message: "Account disabled" });
             }
           },

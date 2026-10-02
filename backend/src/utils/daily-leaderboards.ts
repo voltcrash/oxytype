@@ -92,6 +92,7 @@ export class DailyLeaderboard {
     config: Configuration["dailyLeaderboards"],
     premium: boolean,
     userIds?: string[],
+    includeExpired = false,
   ): Promise<{
     entries: LeaderboardEntry[];
     count: number;
@@ -105,6 +106,7 @@ export class DailyLeaderboard {
       pageSize,
       this.board,
       userIds,
+      includeExpired,
     );
     return {
       entries: result.rows

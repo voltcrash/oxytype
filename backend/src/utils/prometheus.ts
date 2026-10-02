@@ -1,4 +1,3 @@
-import "dotenv/config";
 import { Counter, Histogram, Gauge } from "prom-client";
 import { CompletedEvent } from "@oxytype/schemas/results";
 import { HttpRequest } from "../api/http";

@@ -1,3 +1,4 @@
+import { envValue } from "./runtime/env";
 import { getSessionCookie } from "better-auth/cookies";
 import { addAuthRoutes } from "./auth/routes";
 import { getFrontendUrl } from "./utils/misc";
@@ -20,9 +21,9 @@ import { createPathNormalizer } from "./api/path";
 
 export function buildApp(options: { docsRoot?: string } = {}): Hono<ApiEnv> {
   const docsPrefix =
-    process.env["API_PATH_OVERRIDE"] === undefined
+    envValue("API_PATH_OVERRIDE") === undefined
       ? "/docs"
-      : `/${process.env["API_PATH_OVERRIDE"]}/docs`;
+      : `/${envValue("API_PATH_OVERRIDE")}/docs`;
   const getPath = createPathNormalizer(contract, [
     "/",
     "/configure",
@@ -98,4 +99,6 @@ export function buildApp(options: { docsRoot?: string } = {}): Hono<ApiEnv> {
   return app;
 }
 
-export default buildApp();
+const app = new Hono<ApiEnv>();
+app.all("*", async (c) => await buildApp().fetch(c.req.raw, c.env));
+export default app;

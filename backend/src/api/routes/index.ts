@@ -1,8 +1,8 @@
+import { envValue } from "../../runtime/env";
 import { contract } from "@oxytype/contracts/index";
 import psas from "./psas";
 import publicStats from "./public";
 import users from "./users";
-import { join } from "path";
 import quotes from "./quotes";
 import results from "./results";
 import presets from "./presets";
@@ -13,7 +13,7 @@ import webhooks from "./webhooks";
 import dev from "./dev";
 import configs from "./configs";
 import configuration from "./configuration";
-import { version } from "../../version";
+import { getVersion } from "../../version";
 import leaderboards from "./leaderboards";
 import connections from "./connections";
 import { Hono } from "hono";
@@ -30,8 +30,6 @@ import { rateLimitRequest } from "../../middlewares/rate-limit";
 import { verifyPermissions } from "../../middlewares/permission";
 import { verifyRequiredConfiguration } from "../../middlewares/configuration";
 
-const pathOverride = process.env["API_PATH_OVERRIDE"];
-const BASE_ROUTE = pathOverride !== undefined ? `/${pathOverride}` : "";
 const APP_START_TIME = Date.now();
 
 const s = initServer();
@@ -53,19 +51,18 @@ const router = s.router(contract, {
 });
 
 export function addApiRoutes(app: Hono<ApiEnv>, docsRoot?: string): void {
+  const pathOverride = envValue("API_PATH_OVERRIDE");
+  const BASE_ROUTE = pathOverride === undefined ? "" : `/${pathOverride}`;
   if (isDevEnvironment()) {
     app.use(async (c, next) => {
       c.header("Content-Security-Policy", "");
       await next();
     });
-    app.get(
-      "/configure",
-      serveStatic({ path: join(__dirname, "../../../private/index.html") }),
-    );
+    app.get("/configure", serveStatic({ path: "/configure/index.html" }));
     app.get(
       "/configure/*",
       serveStatic({
-        root: join(__dirname, "../../../private"),
+        root: "/configure",
         rewriteRequestPath: (path) => path.replace(/^\/configure/, ""),
       }),
     );
@@ -85,7 +82,7 @@ export function addApiRoutes(app: Hono<ApiEnv>, docsRoot?: string): void {
   app.use(async (c, next) => {
     if (
       !c.req.path.startsWith("/configuration") &&
-      (process.env["MAINTENANCE"] === "true" ||
+      (envValue("MAINTENANCE") === "true" ||
         c.get("request").ctx.configuration.maintenance)
     ) {
       return c.json({ message: "Server is down for maintenance" }, 503);
@@ -97,7 +94,7 @@ export function addApiRoutes(app: Hono<ApiEnv>, docsRoot?: string): void {
     c.json(
       new MonkeyResponse("ok", {
         uptime: Date.now() - APP_START_TIME,
-        version,
+        version: getVersion(),
       }),
     ),
   );

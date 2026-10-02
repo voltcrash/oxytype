@@ -61,7 +61,7 @@ export async function generateApeKey(
     useCount: 0,
   };
 
-  const apeKeyId = await ApeKeysDAL.addApeKey(apeKey);
+  const apeKeyId = await ApeKeysDAL.addApeKey(apeKey, maxKeysPerUser);
 
   return new MonkeyResponse("ApeKey generated", {
     apeKey: base64UrlEncode(`${apeKeyId}.${apiKey}`),

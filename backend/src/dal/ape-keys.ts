@@ -37,18 +37,24 @@ export async function countApeKeysForUser(uid: string): Promise<number> {
     )?.count ?? 0
   );
 }
-export async function addApeKey(key: DBApeKey): Promise<string> {
-  await database().insert(apeKeys).values({
-    id: key._id.toString(),
-    uid: key.uid,
-    name: key.name,
-    enabled: key.enabled,
-    hash: key.hash,
-    createdOn: key.createdOn,
-    modifiedOn: key.modifiedOn,
-    lastUsedOn: key.lastUsedOn,
-    useCount: key.useCount,
-  });
+export async function addApeKey(key: DBApeKey, maxKeys = 100): Promise<string> {
+  const result = await statement(
+    "INSERT INTO ape_keys(id,uid,name,enabled,hash,created_on,modified_on,last_used_on,use_count) SELECT ?,?,?,?,?,?,?,?,? WHERE (SELECT count(*) FROM ape_keys WHERE uid=?) < ?",
+    key._id.toString(),
+    key.uid,
+    key.name,
+    Number(key.enabled),
+    key.hash,
+    key.createdOn,
+    key.modifiedOn,
+    key.lastUsedOn ?? null,
+    key.useCount,
+    key.uid,
+    maxKeys,
+  ).run();
+  if (!result.meta.changes) {
+    throw new MonkeyError(409, "Maximum number of ApeKeys have been generated");
+  }
   return key._id.toString();
 }
 export async function editApeKey(

@@ -10,7 +10,6 @@ import {
 } from "../../utils/misc";
 import objectHash from "object-hash";
 import Logger from "../../utils/logger";
-import "dotenv/config";
 import { MonkeyResponse } from "../../utils/monkey-response";
 import MonkeyError from "../../utils/error";
 import { isTestTooShort } from "../../utils/validation";

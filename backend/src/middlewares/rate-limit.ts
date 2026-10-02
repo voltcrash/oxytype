@@ -14,7 +14,7 @@ import statuses from "../constants/monkey-status-codes";
 import { getMetadata } from "./utility";
 import { ApiContext, ApiMiddleware, HttpRequest } from "../api/http";
 
-export const REQUEST_MULTIPLIER = 1;
+export const REQUEST_MULTIPLIER = 100;
 let limiterSequence = 0;
 type CounterResult = { points: number; expiresAt: number };
 async function consume(

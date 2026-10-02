@@ -43,6 +43,8 @@ async function handleDailyLeaderboardResults(
     20,
     dailyLeaderboardsConfig,
     false,
+    undefined,
+    true,
   );
 
   if (results === null || results.entries.length === 0) {
@@ -143,6 +145,8 @@ async function handleWeeklyXpLeaderboardResults(
     20,
     weeklyXpConfig,
     false,
+    undefined,
+    true,
   );
 
   if (allResults === null || allResults.entries.length === 0) {
