@@ -1,7 +1,6 @@
 export type AuthUser = {
   uid: string;
   email: string;
-  emailVerified: boolean;
   displayName: string;
   providerData: { providerId: string; email: string | null }[];
 };

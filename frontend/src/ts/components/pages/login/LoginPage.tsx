@@ -6,7 +6,6 @@ import { getLoginPageInputsEnabled } from "../../../states/login";
 import { Fa } from "../../common/Fa";
 import { Page } from "../../common/Page";
 import { Login } from "./Login";
-import { Register } from "./Register";
 
 export function LoginPage(): JSXElement {
   const serverConfig = useQuery(() => getServerConfigurationQueryOptions());
@@ -23,8 +22,7 @@ export function LoginPage(): JSXElement {
       <Show
         when={isSignUpDisabled()}
         fallback={
-          <div class="flex h-full flex-col items-center justify-around gap-4 md:flex-row">
-            <Register />
+          <div class="grid h-full place-items-center">
             <Login />
           </div>
         }

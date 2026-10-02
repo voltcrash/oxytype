@@ -9,7 +9,7 @@
     "frontend": {
       "entry": [
         "src/ts/index.ts",
-        "src/ts/{email-handler,not-found,legal-page,standalone-renderer}.tsx",
+        "src/ts/{oauth-callback,not-found,legal-page,standalone-renderer}.tsx",
         "src/ts/types/*.d.ts"
       ],
       "project": "src/ts/**/*.{ts,tsx}",

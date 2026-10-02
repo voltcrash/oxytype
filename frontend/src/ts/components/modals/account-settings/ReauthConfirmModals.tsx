@@ -1,11 +1,7 @@
 import { z } from "zod/v3";
 
 import Ape from "../../../ape";
-import {
-  getPasswordSchema,
-  isUsingPasswordAuthentication,
-  reauthenticate,
-} from "../../../auth";
+import { reauthenticate } from "../../../auth";
 import { resetConfig } from "../../../config/lifecycle";
 import { getSnapshot } from "../../../db";
 import { isAuthenticated } from "../../../states/core";
@@ -171,27 +167,19 @@ function showReauthConfirmModal(options: {
 
   showSimpleModal({
     title: options.title,
-    buttonText: isUsingPasswordAuthentication()
-      ? options.buttonText
-      : `reauthenticate to ${options.buttonText}`,
+    buttonText: `reauthenticate to ${options.buttonText}`,
     schema: z.object({
-      password: getPasswordSchema(),
       confirm: z.literal(true),
     }),
     inputs: {
-      password: {
-        placeholder: "password",
-        type: "password",
-        hidden: !isUsingPasswordAuthentication(),
-      },
       confirm: {
         type: "checkbox",
         label: options.confirmText,
       },
     },
 
-    execFn: async ({ password }) => {
-      const reauth = await reauthenticate({ password });
+    execFn: async () => {
+      const reauth = await reauthenticate();
       if (reauth.status !== "success") {
         return {
           status: reauth.status,

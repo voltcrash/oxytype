@@ -21,7 +21,6 @@ import { Filters } from "./Filters";
 import { MyProfile } from "./MyProfile";
 import { Table } from "./Table";
 import { TestStats } from "./TestStats";
-import { VerifyNotice } from "./VerifyNotice";
 
 export function AccountPage(): JSXElement {
   const [tableRef, tableElement] = useRef<HTMLTableElement>();
@@ -55,7 +54,6 @@ export function AccountPage(): JSXElement {
   return (
     <Page id="account" needsAuthentication>
       <div class="flex flex-col gap-8">
-        <VerifyNotice />
         <MyProfile />
 
         <Advertisement id="ad-account-1" visible="sellout" />

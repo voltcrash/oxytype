@@ -4,7 +4,6 @@ import { JSXElement } from "solid-js";
 import {
   AuthResult,
   getAuthMethodDisplay,
-  signIn,
   signInWithProvider,
 } from "../../../auth";
 import {
@@ -12,30 +11,22 @@ import {
   enableLoginPageInputs,
   getLoginPageInputsEnabled,
 } from "../../../states/login";
-import { showModal } from "../../../states/modals";
-import {
-  showErrorNotification,
-  showNoticeNotification,
-} from "../../../states/notifications";
+import { showErrorNotification } from "../../../states/notifications";
 import { Button } from "../../common/Button";
 import { H3 } from "../../common/Headers";
-import { Separator } from "../../common/Separator";
 import { Checkbox } from "../../ui/form/Checkbox";
-import { InputField } from "../../ui/form/InputField";
-import { SubmitButton } from "../../ui/form/SubmitButton";
-import { allFieldsMandatory } from "../../ui/form/utils";
 
 export function Login(): JSXElement {
   const trySignIn = async (
     auth: () => Promise<AuthResult>,
-    label?: string,
+    label: string,
   ): Promise<void> => {
     disableLoginPageInputs();
     try {
       const data = await auth();
       if (!data.success) {
         showErrorNotification(
-          `Failed to sign in${label !== undefined ? ` with ${label}` : ""}: ${data.message}`,
+          `Failed to sign in with ${label}: ${data.message}`,
         );
       }
     } finally {
@@ -44,117 +35,50 @@ export function Login(): JSXElement {
   };
 
   const form = createForm(() => ({
-    defaultValues: {
-      email: "",
-      password: "",
-      rememberMe: true,
-    },
-    onSubmit: async ({ value }) =>
-      await trySignIn(async () =>
-        signIn(value.email, value.password, value.rememberMe),
-      ),
-    onSubmitInvalid: () => {
-      showNoticeNotification("Please fill in all fields");
-    },
-    validators: {
-      onChange: allFieldsMandatory(),
-    },
+    defaultValues: { rememberMe: true },
   }));
 
   return (
-    <div class="grid w-full grid-cols-1 justify-center gap-2 sm:w-80">
-      <H3
-        text="login"
-        fa={{
-          icon: "fa-sign-in-alt",
-        }}
-        class="p-0"
-      />
-      <div class="grid grid-cols-2 gap-4">
-        <Button
-          fa={{ icon: "fa-google", variant: "brand" }}
-          onClick={() =>
-            void trySignIn(
-              async () =>
-                signInWithProvider("google", {
-                  rememberMe: form.getFieldValue("rememberMe"),
-                }),
-              getAuthMethodDisplay("google"),
-            )
-          }
-          disabled={!getLoginPageInputsEnabled()}
-        />
-        <Button
-          fa={{ icon: "fa-github", variant: "brand" }}
-          onClick={() =>
-            void trySignIn(
-              async () =>
-                signInWithProvider("github", {
-                  rememberMe: form.getFieldValue("rememberMe"),
-                }),
-              getAuthMethodDisplay("github"),
-            )
-          }
-          disabled={!getLoginPageInputsEnabled()}
-        />
-      </div>
-      <form
-        class="grid w-full gap-2"
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          void form.handleSubmit();
-        }}
-      >
-        <Separator text="or" />
-        <form.Field
-          name="email"
-          children={(field) => (
-            <InputField
-              field={field}
-              placeholder="email"
-              autocomplete="current-email"
-              disabled={!getLoginPageInputsEnabled()}
-            />
-          )}
-        />
-        <form.Field
-          name="password"
-          children={(field) => (
-            <InputField
-              field={field}
-              placeholder="password"
-              type="password"
-              autocomplete="current-password"
-              disabled={!getLoginPageInputsEnabled()}
-            />
-          )}
-        />
-        <form.Field
-          name="rememberMe"
-          children={(field) => (
-            <Checkbox
-              field={field}
-              disabled={!getLoginPageInputsEnabled()}
-              label="remember me"
-            />
-          )}
-        />
-
-        <SubmitButton
-          form={form}
-          fa={{ icon: "fa-sign-in-alt" }}
-          text="sign in"
-          disabled={!getLoginPageInputsEnabled()}
-        />
-      </form>
-
+    <div class="grid w-full grid-cols-1 justify-center gap-4 sm:w-80">
+      <H3 text="sign in" fa={{ icon: "fa-sign-in-alt" }} class="p-0" />
+      <p class="text-sub">New here? Sign in to create an account.</p>
       <Button
-        text="forgot password?"
-        variant="text"
-        class="text justify-end text-xs"
-        onClick={() => showModal("ForgotPassword")}
+        text="sign in with Google"
+        fa={{ icon: "fa-google", variant: "brand" }}
+        onClick={() =>
+          void trySignIn(
+            async () =>
+              signInWithProvider("google", {
+                rememberMe: form.getFieldValue("rememberMe"),
+              }),
+            getAuthMethodDisplay("google"),
+          )
+        }
         disabled={!getLoginPageInputsEnabled()}
+      />
+      <Button
+        text="sign in with GitHub"
+        fa={{ icon: "fa-github", variant: "brand" }}
+        onClick={() =>
+          void trySignIn(
+            async () =>
+              signInWithProvider("github", {
+                rememberMe: form.getFieldValue("rememberMe"),
+              }),
+            getAuthMethodDisplay("github"),
+          )
+        }
+        disabled={!getLoginPageInputsEnabled()}
+      />
+      <form.Field
+        name="rememberMe"
+        children={(field) => (
+          <Checkbox
+            field={field}
+            disabled={!getLoginPageInputsEnabled()}
+            label="remember me"
+          />
+        )}
       />
     </div>
   );

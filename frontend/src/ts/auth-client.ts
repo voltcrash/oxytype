@@ -2,7 +2,7 @@ import { createAuthClient } from "better-auth/client";
 import { envConfig } from "virtual:env-config";
 import { createSignal } from "solid-js";
 import { promiseWithResolvers } from "./utils/misc";
-import { setUserId, setUserVerified } from "./states/core";
+import { setUserId } from "./states/core";
 import { googleSignUpEvent } from "./events/google-sign-up";
 import { createEvent } from "./hooks/createEvent";
 
@@ -12,7 +12,7 @@ export const authClient = createAuthClient({
   basePath: new URL(baseURL, window.location.origin).pathname,
   fetchOptions: { credentials: "include" },
 });
-import type { AuthUser, UserCredential, SocialProvider } from "./auth-types";
+import type { AuthUser, SocialProvider } from "./auth-types";
 export type { AuthUser, UserCredential, SocialProvider } from "./auth-types";
 const [getAuthenticatedUser, setAuthenticatedUser] =
   createSignal<AuthUser | null>(null);
@@ -38,7 +38,6 @@ export function checkAuthResult<T>(result: {
 export function setUserState(user: AuthUser | null): void {
   setAuthenticatedUser(user);
   setUserId(user?.uid ?? null);
-  setUserVerified(user?.emailVerified ?? false);
 }
 
 export async function refreshSession(notify = true): Promise<AuthUser | null> {
@@ -50,22 +49,20 @@ export async function refreshSession(notify = true): Promise<AuthUser | null> {
     user = {
       uid: session.user.id,
       email: session.user.email,
-      emailVerified: session.user.emailVerified,
       displayName: session.user.name,
-      providerData: (accounts ?? []).map((account) => ({
-        providerId:
-          account.providerId === "credential" ? "password" : account.providerId,
-        email: session.user.email,
-      })),
+      providerData: (accounts ?? [])
+        .filter((account) => ["google", "github"].includes(account.providerId))
+        .map((account) => ({
+          providerId: account.providerId,
+          email: session.user.email,
+        })),
     };
   }
   setAuthenticatedUser(user);
   if (
     notify &&
     !ignoreAuthCallback &&
-    (previous?.uid !== user?.uid ||
-      previous?.email !== user?.email ||
-      previous?.emailVerified !== user?.emailVerified)
+    (previous?.uid !== user?.uid || previous?.email !== user?.email)
   ) {
     setUserState(user);
     await readyCallback?.(true, user);
@@ -110,51 +107,12 @@ export async function signOut(): Promise<void> {
   ignoreAuthCallback = false;
   await readyCallback?.(true, null);
 }
-export async function signInWithEmailAndPassword(
-  email: string,
-  password: string,
-  rememberMe: boolean,
-): Promise<UserCredential> {
-  checkAuthResult(
-    await authClient.signIn.email({ email, password, rememberMe }),
-  );
-  const user = await refreshSession();
-  if (!user) throw new Error("Sign in did not create a session");
-  return { user };
-}
-export async function createUserWithEmailAndPassword(
-  name: string,
-  email: string,
-  password: string,
-): Promise<UserCredential> {
-  ignoreAuthCallback = true;
-  try {
-    checkAuthResult(await authClient.signUp.email({ name, email, password }));
-    const user = await refreshSession(false);
-    if (!user) throw new Error("Sign up did not create a session");
-    return { user };
-  } catch (error) {
-    ignoreAuthCallback = false;
-    throw error;
-  }
-}
 export function resetIgnoreAuthCallback(): void {
   ignoreAuthCallback = false;
 }
 export async function updateProfile(name: string): Promise<void> {
   checkAuthResult(await authClient.updateUser({ name }));
   await refreshSession(false);
-}
-export async function sendEmailVerification(): Promise<void> {
-  const user = getAuthenticatedUser();
-  if (user && !user.emailVerified) {
-    checkAuthResult(
-      await authClient.sendVerificationEmail({
-        email: user.email,
-        callbackURL: `${window.location.origin}/email-handler?mode=verifyEmail`,
-      }),
-    );
-  }
 }
 export async function deleteUnfinishedUser(): Promise<void> {
   checkAuthResult(
@@ -224,7 +182,6 @@ export function observeAuthSession(): () => void {
     const current = getAuthenticatedUser();
     if (
       (state.data?.user.id ?? null) === (current?.uid ?? null) &&
-      state.data?.user.emailVerified === current?.emailVerified &&
       state.data?.user.email === current?.email
     ) {
       return;
