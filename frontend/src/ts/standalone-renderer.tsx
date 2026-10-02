@@ -12,13 +12,7 @@ export function renderStandalone(path: string): {
     hydrationScript: generateHydrationScript(),
     html: renderToString(() => {
       if (path === "/email-handler.html") {
-        return (
-          <EmailHandler
-            initializeAuth={() => {
-              throw new Error("Auth initializes in the browser");
-            }}
-          />
-        );
+        return <EmailHandler />;
       }
       if (path === "/404.html") return <StandaloneNotFound />;
       return <LegalPage path={path} />;

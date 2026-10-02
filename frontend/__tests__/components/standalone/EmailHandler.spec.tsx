@@ -1,24 +1,12 @@
 import { cleanup, fireEvent, render, waitFor } from "@solidjs/testing-library";
-import {
-  applyActionCode,
-  Auth,
-  checkActionCode,
-  confirmPasswordReset,
-  signInWithEmailAndPassword,
-  verifyPasswordResetCode,
-} from "firebase/auth";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
 
+import { authClient } from "../../../src/ts/auth-client";
 import { EmailHandler } from "../../../src/ts/components/standalone/EmailHandler";
 
-vi.mock("firebase/auth", () => ({
-  applyActionCode: vi.fn(),
-  checkActionCode: vi.fn(),
-  confirmPasswordReset: vi.fn(),
-  signInWithEmailAndPassword: vi.fn(),
-  verifyPasswordResetCode: vi.fn(),
+vi.mock("../../../src/ts/auth-client", () => ({
+  authClient: { resetPassword: vi.fn(), verifyEmail: vi.fn() },
 }));
-const auth = {} as Auth;
 beforeEach(() => {
   vi.resetAllMocks();
   vi.spyOn(console, "error").mockImplementation(() => undefined);
@@ -30,139 +18,97 @@ afterEach(() => {
 });
 function mount(query: string): ReturnType<typeof render> {
   window.history.replaceState(null, "", `/?${query}`);
-  return render(() => <EmailHandler initializeAuth={() => auth} />);
+  return render(() => <EmailHandler authClient={authClient} />);
 }
-
 it.each([
   ["", "Mode parameter not found"],
-  ["mode=verifyEmail", "Action code parameter not found"],
-  ["mode=unknown&oobCode=code", "Invalid mode"],
-  [
-    "mode=verifyEmail&oobCode=%ZZ",
-    "Fatal error: URI malformed. If this issue persists, please report it.",
-  ],
-])("retains parameter errors for %s", (query, message) => {
+  ["mode=resetPassword", "Action code parameter not found"],
+  ["mode=unknown&token=code", "Invalid mode"],
+  ["mode=resetPassword&error=INVALID_TOKEN", "INVALID_TOKEN"],
+])("shows action errors for %s", (query, message) => {
   const { container } = mount(query);
-  expect(container.querySelector(".preloader .text")?.textContent).toBe(
+  expect(container.querySelector(".preloader .text")).toHaveTextContent(
     message,
   );
-  expect(container.querySelector(".icon .fa-times")).not.toBeNull();
+  expect(container.querySelector(".fa-times")).not.toBeNull();
 });
-
-it("shows initialization failures instead of leaving the page blank", () => {
-  window.history.replaceState(null, "", "/?mode=verifyEmail&oobCode=code");
-  const { container } = render(() => (
-    <EmailHandler
-      initializeAuth={() => {
-        throw new Error("Firebase is not configured");
-      }}
-    />
-  ));
+it("shows success after server-side email verification", () => {
+  const { container } = mount("mode=verifyEmail");
   expect(container.querySelector(".preloader .text")).toHaveTextContent(
-    "Fatal error: Firebase is not configured",
+    "Your email address has been verified",
   );
-  expect(container.querySelector(".icon .fa-times")).not.toBeNull();
+  expect(authClient.verifyEmail).not.toHaveBeenCalled();
 });
-
-it("verifies a decoded code and updates title and completion text", async () => {
-  vi.mocked(applyActionCode).mockResolvedValue();
-  const { container } = mount("mode=verifyEmail&oobCode=a%2Bb+code");
+it("verifies a decoded token when opening a direct verification link", async () => {
+  vi.mocked(authClient.verifyEmail).mockResolvedValue({
+    data: { status: true, user: null },
+    error: null,
+  });
+  const { container } = mount("mode=verifyEmail&token=a%2Bb+code");
   await waitFor(() =>
     expect(container.querySelector(".fa-check")).not.toBeNull(),
   );
-  expect(applyActionCode).toHaveBeenCalledWith(auth, "a+b code");
-  expect(document.title).toBe("Verify Email | Oxytype");
-  expect(container.querySelector("#logo span")?.textContent).toBe(
-    "Verify Email",
-  );
-  expect(container.querySelector(".preloader .text")?.textContent).toBe(
-    "Your email address has been verified",
-  );
-  expect(container.querySelector(".subText")?.textContent).toBe(
-    "You can now close this tab",
-  );
+  expect(authClient.verifyEmail).toHaveBeenCalledWith({
+    query: { token: "a+b code" },
+  });
 });
-
-it("retains verification SDK failures", async () => {
-  vi.mocked(applyActionCode).mockRejectedValue(new Error("expired"));
-  const { container } = mount("mode=verifyEmail&oobCode=code");
-  await waitFor(() =>
-    expect(container.querySelector(".fa-times")).not.toBeNull(),
-  );
-  expect(container.querySelector(".preloader .text")?.textContent).toBe(
-    "Fatal error: expired. If this issue persists, please report it.",
-  );
-});
-
-it("retains reset validation order, focus and password-input Enter handling", async () => {
-  vi.mocked(verifyPasswordResetCode).mockResolvedValue("user@example.test");
-  vi.mocked(confirmPasswordReset).mockResolvedValue();
-  const { container } = mount("mode=resetPassword&oobCode=code");
+it("validates and submits password reset tokens without signing in", async () => {
+  vi.mocked(authClient.resetPassword).mockResolvedValue({
+    data: { status: true },
+    error: null,
+  });
+  const { container } = mount("mode=resetPassword&token=code");
   const password = container.querySelector(".pwd") as HTMLInputElement;
   const confirmation = container.querySelector(
     ".pwd-confirm",
   ) as HTMLInputElement;
-  const change = container.querySelector(".button") as HTMLDivElement;
   await waitFor(() => expect(document.activeElement).toBe(password));
-  expect(verifyPasswordResetCode).not.toHaveBeenCalled();
   password.value = "Strong1!";
   confirmation.value = "different";
-  fireEvent.click(change);
+  fireEvent.click(container.querySelector(".button") as HTMLElement);
   await waitFor(() =>
     expect(window.alert).toHaveBeenCalledWith("Passwords do not match"),
   );
-  expect(document.activeElement).toBe(password);
-  expect(container.querySelector(".resetPassword")?.className).not.toContain(
-    "hidden",
-  );
+  expect(authClient.resetPassword).not.toHaveBeenCalled();
   password.value = confirmation.value = "weak";
-  fireEvent.click(change);
+  fireEvent.click(container.querySelector(".button") as HTMLElement);
   await waitFor(() => expect(window.alert).toHaveBeenCalledTimes(2));
-  expect(confirmPasswordReset).not.toHaveBeenCalled();
+  expect(authClient.resetPassword).not.toHaveBeenCalled();
   password.value = confirmation.value = "Strong1!";
-  fireEvent.keyPress(confirmation, { key: "Enter" });
-  expect(verifyPasswordResetCode).toHaveBeenCalledTimes(2);
   fireEvent.keyPress(password, { key: "Enter" });
   await waitFor(() =>
     expect(container.querySelector(".fa-check")).not.toBeNull(),
   );
-  expect(confirmPasswordReset).toHaveBeenCalledWith(auth, "code", "Strong1!");
-  expect(signInWithEmailAndPassword).toHaveBeenCalledWith(
-    auth,
-    "user@example.test",
-    "Strong1!",
-  );
-  expect(container.querySelector(".preloader .text")?.textContent).toBe(
-    "Your password has been changed",
-  );
+  expect(authClient.resetPassword).toHaveBeenCalledWith({
+    token: "code",
+    newPassword: "Strong1!",
+  });
 });
-
-it("retains reset-code failures without showing the form again", async () => {
-  vi.mocked(verifyPasswordResetCode).mockRejectedValue(new Error("expired"));
-  const { container } = mount("mode=resetPassword&oobCode=code");
+it("shows expired or reused reset-token errors", async () => {
+  vi.mocked(authClient.resetPassword).mockResolvedValue({
+    data: null,
+    error: { message: "Invalid token", status: 400, statusText: "Bad Request" },
+  });
+  const { container } = mount("mode=resetPassword&token=expired");
+  (container.querySelector(".pwd") as HTMLInputElement).value = "Strong1!";
+  (container.querySelector(".pwd-confirm") as HTMLInputElement).value =
+    "Strong1!";
   fireEvent.click(container.querySelector(".button") as HTMLElement);
   await waitFor(() =>
-    expect(container.querySelector(".fa-times")).not.toBeNull(),
+    expect(container.querySelector(".preloader .text")).toHaveTextContent(
+      "Invalid token",
+    ),
   );
-  expect(container.querySelector(".resetPassword")?.className).toContain(
-    "hidden",
-  );
-  expect(confirmPasswordReset).not.toHaveBeenCalled();
 });
-
-it("preserves the recovery caller's missing argument and raw SDK error", async () => {
-  vi.mocked(checkActionCode).mockRejectedValue(
-    new Error("invalid recovery code"),
+it("returns OAuth results only to the opener at the current origin", () => {
+  const postMessage = vi.fn();
+  vi.stubGlobal("opener", { postMessage });
+  vi.spyOn(window, "close").mockImplementation(() => undefined);
+  mount("mode=oauthCallback&requestId=nonce&error=access_denied");
+  expect(postMessage).toHaveBeenCalledWith(
+    { type: "oxytype-auth", requestId: "nonce", error: "access_denied" },
+    window.location.origin,
   );
-  const { container } = mount("mode=recoverEmail&oobCode=code");
-  await waitFor(() =>
-    expect(container.querySelector(".fa-times")).not.toBeNull(),
-  );
-  expect(checkActionCode).toHaveBeenCalledWith(auth, undefined);
-  expect(container.querySelector(".preloader .text")?.textContent).toBe(
-    "invalid recovery code",
-  );
-  expect(container.querySelector("#logo span")?.textContent).toBe(
-    "Email Handler",
-  );
+  expect(window.close).toHaveBeenCalledOnce();
+  vi.unstubAllGlobals();
 });
