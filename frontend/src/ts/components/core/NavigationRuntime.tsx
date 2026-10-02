@@ -8,9 +8,9 @@ import {
 } from "@solidjs/router";
 import { batch, createEffect, createSignal, on, onCleanup } from "solid-js";
 
+import { isAuthAvailable } from "../../auth-client";
 import * as PageController from "../../controllers/page-controller";
 import { authEvent } from "../../events/auth";
-import { isAuthAvailable } from "../../firebase";
 import { canNavigate } from "../../navigation/guard";
 import {
   bindNavigation,

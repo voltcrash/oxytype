@@ -27,7 +27,7 @@ import {
 import { Command, CommandlineListKey, CommandsSubgroup } from "./types";
 import { COMMAND_SEPARATOR_HTML, buildCommandForConfigKey } from "./util";
 import { CommandlineConfigMetadataObject } from "./commandline-metadata";
-import { isAuthAvailable, signOut } from "../firebase";
+import { isAuthAvailable, signOut } from "../auth-client";
 import { isAuthenticated } from "../states/core";
 import { ConfigKey } from "@oxytype/schemas/configs";
 import {
