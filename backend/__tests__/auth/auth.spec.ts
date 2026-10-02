@@ -1,21 +1,27 @@
-import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 import { memoryAdapter } from "better-auth/adapters/memory";
 import { createAuth } from "../../src/init/auth";
 import * as AuthInit from "../../src/init/auth";
 import * as AuthUtils from "../../src/utils/auth";
 import { buildApp } from "../../src/app";
-import emailQueue from "../../src/queues/email-queue";
+import { signInWithOAuth } from "../__testData__/oauth";
 
-vi.mock("../../src/queues/email-queue", () => ({
-  default: { sendVerificationEmail: vi.fn(), sendForgotPasswordEmail: vi.fn() },
-}));
-const email = "newuser@example.com";
-const password = "StrongPassword1!";
 let auth: ReturnType<typeof createAuth>;
 let app: ReturnType<typeof buildApp>;
 let store: Record<string, unknown[]>;
 
 beforeEach(() => {
+  for (const provider of ["GOOGLE", "GITHUB"]) {
+    vi.stubEnv(`${provider}_CLIENT_ID`, "test-client");
+    vi.stubEnv(`${provider}_CLIENT_SECRET`, "test-secret");
+  }
   store = {
     authUsers: [],
     authAccounts: [],
@@ -26,8 +32,10 @@ beforeEach(() => {
   auth = createAuth(memoryAdapter(store));
   vi.spyOn(AuthInit, "getAuth").mockReturnValue(auth);
   app = buildApp();
-  vi.mocked(emailQueue.sendForgotPasswordEmail).mockReset();
-  vi.mocked(emailQueue.sendVerificationEmail).mockReset();
+});
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllEnvs();
 });
 
 async function request(
@@ -45,60 +53,95 @@ async function request(
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
 }
-function cookies(response: Response): string {
-  return response.headers
-    .getSetCookie()
-    .map((value) => value.split(";")[0])
-    .join("; ");
-}
-async function signUp(): Promise<string> {
-  const response = await request("/sign-up/email", {
-    name: "NewUser",
-    email,
-    password,
-  });
-  expect(response.status).toBe(200);
-  return cookies(response);
-}
 
-describe("Better Auth HTTP flow", () => {
-  it("creates credentials and HttpOnly sessions without Firebase", async () => {
-    const cookie = await signUp();
-    const session = await request("/get-session", undefined, cookie);
-    expect(session.status).toBe(200);
-    expect(await session.json()).toMatchObject({
-      user: { email, name: "NewUser" },
-    });
-    expect(session.headers.get("cache-control")).toBe("no-store");
-    expect(store["authAccounts"]).toHaveLength(1);
-    const credential = store["authAccounts"]?.[0] as { password: string };
-    expect(credential.password).not.toBe(password);
-    const result = await AuthUtils.verifySession(new Headers({ cookie }));
-    expect(result.email).toBe(email);
-    expect(result.createdAt).toBeInstanceOf(Date);
-  });
-  it("rejects bad passwords and honors session-only login", async () => {
-    await signUp();
-    const wrong = await request("/sign-in/email", {
-      email,
-      password: "WrongPassword1!",
-    });
-    expect(wrong.status).toBe(401);
-    const signedIn = await request("/sign-in/email", {
-      email,
-      password,
+describe("Better Auth social-only HTTP flow", () => {
+  it.each(["google", "github"] as const)(
+    "creates %s accounts and HttpOnly sessions through OAuth callbacks",
+    async (provider) => {
+      const { cookie, response } = await signInWithOAuth(auth, app, {
+        provider,
+      });
+      expect(response.headers.getSetCookie().join(";")).toContain("HttpOnly");
+      const session = await request("/get-session", undefined, cookie);
+      expect(session.status).toBe(200);
+      expect(await session.json()).toMatchObject({
+        user: {
+          email: "newuser@example.com",
+          name: "NewUser",
+          emailVerified: true,
+        },
+      });
+      expect(session.headers.get("cache-control")).toBe("no-store");
+      expect(store["authAccounts"]).toHaveLength(1);
+      expect(store["authAccounts"]?.[0]).toMatchObject({
+        providerId: provider,
+      });
+      expect(store["authAccounts"]?.[0]).not.toHaveProperty("password");
+      const result = await AuthUtils.verifySession(new Headers({ cookie }));
+      expect(result.email).toBe("newuser@example.com");
+      expect(result.createdAt).toBeInstanceOf(Date);
+    },
+  );
+  it("honors session-only OAuth login", async () => {
+    const { response } = await signInWithOAuth(auth, app, {
       rememberMe: false,
     });
-    expect(signedIn.status).toBe(200);
-    const sessionCookie = signedIn.headers
+    const sessionCookie = response.headers
       .getSetCookie()
       .find((value) => value.includes("session_token="));
     expect(sessionCookie).toContain("HttpOnly");
     expect(sessionCookie).not.toContain("Max-Age");
     expect(sessionCookie).not.toContain("Expires");
   });
+  it.each([
+    "/sign-up/email",
+    "/sign-in/email",
+    "/request-password-reset",
+    "/reset-password",
+    "/change-password",
+    "/set-password",
+    "/verify-password",
+    "/send-verification-email",
+    "/change-email",
+  ])("removes the %s endpoint even for authenticated users", async (path) => {
+    const { cookie } = await signInWithOAuth(auth, app);
+    const response = await request(
+      path,
+      {
+        email: "newuser@example.com",
+        name: "NewUser",
+        password: "StrongPassword1!",
+        newPassword: "Replacement1!",
+        token: "legacy-token",
+      },
+      cookie,
+    );
+    expect(response.status).toBe(404);
+    expect(store["authAccounts"]).toHaveLength(1);
+    expect(store["authVerifications"]).toHaveLength(0);
+  });
+  it.each([
+    "/verify-email?token=legacy-token",
+    "/reset-password/legacy-token?callbackURL=http://localhost:3000/oauth-callback",
+  ])("removes legacy email action URLs (%s)", async (path) => {
+    expect((await request(path)).status).toBe(404);
+  });
+  it.each(["discord", "facebook", "apple"])(
+    "rejects unsupported provider %s",
+    async (provider) => {
+      expect(
+        (
+          await request("/sign-in/social", {
+            provider,
+            callbackURL: "http://localhost:3000/oauth-callback",
+          })
+        ).status,
+      ).toBe(404);
+      expect(store["authUsers"]).toHaveLength(0);
+    },
+  );
   it("invalidates revoked sessions immediately", async () => {
-    const cookie = await signUp();
+    const { cookie } = await signInWithOAuth(auth, app);
     const session = await AuthUtils.verifySession(new Headers({ cookie }));
     await AuthUtils.revokeTokensByUid(session.uid);
     await expect(
@@ -106,82 +149,29 @@ describe("Better Auth HTTP flow", () => {
     ).rejects.toThrow("Session expired or revoked");
   });
   it("signs out and rejects a removed cookie session", async () => {
-    const cookie = await signUp();
+    const { cookie } = await signInWithOAuth(auth, app);
     expect((await request("/sign-out", {}, cookie)).status).toBe(200);
     await expect(
       AuthUtils.verifySession(new Headers({ cookie })),
     ).rejects.toThrow("Session expired or revoked");
   });
-  it("rejects foreign origins before registration and preserves the raw JSON body", async () => {
+  it("rejects foreign origins before starting OAuth", async () => {
     const response = await app.request(
-      "http://localhost:5005/auth/sign-up/email",
+      "http://localhost:5005/auth/sign-in/social",
       {
         method: "POST",
         headers: {
           origin: "https://attacker.example",
           "content-type": "application/json",
         },
-        body: JSON.stringify({ name: "NewUser", email, password }),
+        body: JSON.stringify({ provider: "google" }),
       },
     );
     expect(response.status).toBe(403);
-    expect(store["authUsers"]).toHaveLength(0);
-    await signUp();
+    expect(store["authVerifications"]).toHaveLength(0);
   });
-  it("queues verification links and verifies email tokens", async () => {
-    await signUp();
-    await AuthUtils.sendVerificationEmail(email);
-    const call = vi.mocked(emailQueue.sendVerificationEmail).mock.calls[0];
-    expect(call?.[0]).toBe(email);
-    const url = new URL(call?.[2] ?? "");
-    expect(
-      (await request(`/verify-email?token=${url.searchParams.get("token")}`))
-        .status,
-    ).toBe(200);
-    expect(
-      (store["authUsers"]?.[0] as { emailVerified: boolean }).emailVerified,
-    ).toBe(true);
-  });
-  it("resets passwords with single-use tokens and revokes all sessions", async () => {
-    const cookie = await signUp();
-    await AuthUtils.sendForgotPasswordEmail(email);
-    const url = new URL(
-      vi.mocked(emailQueue.sendForgotPasswordEmail).mock.calls[0]?.[2] ?? "",
-    );
-    const token = url.pathname.split("/").at(-1) ?? "";
-    const reset = await request("/reset-password", {
-      token,
-      newPassword: "Replacement1!",
-    });
-    expect(reset.status).toBe(200);
-    await expect(
-      AuthUtils.verifySession(new Headers({ cookie })),
-    ).rejects.toThrow("Session expired or revoked");
-    expect(
-      (
-        await request("/reset-password", {
-          token,
-          newPassword: "AnotherPassword1!",
-        })
-      ).status,
-    ).toBe(400);
-    expect((await request("/sign-in/email", { email, password })).status).toBe(
-      401,
-    );
-    expect(
-      (await request("/sign-in/email", { email, password: "Replacement1!" }))
-        .status,
-    ).toBe(200);
-  });
-  it("does not reveal whether a reset email exists", async () => {
-    const response = await auth.api.requestPasswordReset({
-      body: { email: "missing@example.com" },
-    });
-    expect(response.status).toBe(true);
-    expect(emailQueue.sendForgotPasswordEmail).not.toHaveBeenCalled();
-  });
-  it("deletes authentication, linked credentials, and sessions idempotently", async () => {
-    const cookie = await signUp();
+  it("deletes linked identities and sessions idempotently", async () => {
+    const { cookie } = await signInWithOAuth(auth, app);
     const session = await AuthUtils.verifySession(new Headers({ cookie }));
     await AuthUtils.deleteUser(session.uid);
     await AuthUtils.deleteUser(session.uid);
@@ -189,143 +179,117 @@ describe("Better Auth HTTP flow", () => {
     expect(store["authAccounts"]).toHaveLength(0);
     expect(store["authSessions"]).toHaveLength(0);
   });
-  it("keeps public requests anonymous when only unrelated cookies are present", async () => {
+  it("keeps public requests anonymous with unrelated cookies", async () => {
     const response = await app.request("http://localhost:5005/configuration", {
       headers: { cookie: "theme=dark" },
     });
     expect(response.status).toBe(200);
   });
   it("resolves auth rate-limit addresses through the API proxy policy", async () => {
-    const response = await app.request(
-      "http://localhost:5005/auth/sign-up/email",
-      {
-        method: "POST",
-        headers: {
-          origin: "http://localhost:3000",
-          "content-type": "application/json",
-          "x-forwarded-for": "198.51.100.4, 203.0.113.5",
-          "x-oxytype-auth-ip": "192.0.2.1",
-        },
-        body: JSON.stringify({ name: "NewUser", email, password }),
+    const { cookie } = await signInWithOAuth(auth, app, {
+      headers: {
+        "x-forwarded-for": "198.51.100.4, 203.0.113.5",
+        "x-oxytype-auth-ip": "192.0.2.1",
       },
-    );
-    expect(response.status).toBe(200);
-    const session = await request("/get-session", undefined, cookies(response));
+    });
+    const session = await request("/get-session", undefined, cookie);
     expect(await session.json()).toMatchObject({
       session: { ipAddress: "203.0.113.5" },
     });
   });
   it("blocks cookie-authenticated mutations from foreign origins", async () => {
-    const cookie = await signUp();
-    const response = await app.request("http://localhost:5005/users/email", {
+    const { cookie } = await signInWithOAuth(auth, app);
+    const response = await app.request("http://localhost:5005/users/name", {
       method: "PATCH",
       headers: {
         cookie,
         origin: "https://attacker.example",
         "content-type": "application/json",
       },
-      body: JSON.stringify({
-        newEmail: "attacker@example.com",
-        previousEmail: email,
-      }),
+      body: JSON.stringify({ name: "NewName" }),
     });
     expect(response.status).toBe(403);
   });
   it("prevents unlinking the last authentication method", async () => {
-    const cookie = await signUp();
-    const accounts = await getAuthAccounts(cookie);
+    const { cookie } = await signInWithOAuth(auth, app);
+    const accounts = await auth.api.listUserAccounts({
+      headers: new Headers({ cookie }),
+    });
     expect(
       (await request("/unlink-account", { accountId: accounts[0]?.id }, cookie))
         .status,
     ).toBe(400);
     expect(store["authAccounts"]).toHaveLength(1);
   });
-  it("requires a fresh OAuth session when setting a password", async () => {
+  it("does not count legacy credentials when unlinking the last social account", async () => {
+    const { cookie } = await signInWithOAuth(auth, app);
+    const session = await AuthUtils.verifySession(new Headers({ cookie }));
     const context = await auth.$context;
-    const user = await context.internalAdapter.createUser(
-      {
-        name: "OAuthUser",
-        email: "oauth@example.com",
-        emailVerified: true,
-      },
-      { method: "oauth", oauth: { providerId: "google" } },
-    );
     await context.internalAdapter.createAccount({
-      userId: user.id,
-      providerId: "google",
-      accountId: "google-id",
+      userId: session.uid,
+      providerId: "credential",
+      accountId: session.uid,
+      password: "legacy-hash",
     });
-    const session = await context.internalAdapter.createSession(user.id);
-    if (session === null) throw new Error("Missing test session");
-    const setPassword = async (): Promise<Response> =>
-      app.request("http://localhost:5005/auth/set-password", {
-        method: "POST",
-        headers: {
-          authorization: `Bearer ${session.token}`,
-          origin: "http://localhost:3000",
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({ newPassword: password }),
-      });
-    await context.internalAdapter.updateSession(session.token, {
-      createdAt: new Date(Date.now() - 61_000),
+    const accounts = await auth.api.listUserAccounts({
+      headers: new Headers({ cookie }),
     });
-    expect((await setPassword()).status).toBe(403);
-    expect(store["authAccounts"]).toHaveLength(1);
-    await context.internalAdapter.updateSession(session.token, {
-      createdAt: new Date(),
-    });
-    const response = await setPassword();
-    expect(response.status).toBe(200);
+    const social = accounts.find((account) => account.providerId === "google");
     expect(
-      (await request("/sign-in/email", { email: user.email, password })).status,
-    ).toBe(200);
+      (await request("/unlink-account", { accountId: social?.id }, cookie))
+        .status,
+    ).toBe(400);
+    expect(store["authAccounts"]).toHaveLength(2);
+    expect(
+      (
+        await request("/sign-in/email", {
+          email: session.email,
+          password: "password",
+        })
+      ).status,
+    ).toBe(404);
   });
-  it("preserves OAuth session-only preference in a signed cookie", async () => {
-    vi.stubEnv("GOOGLE_CLIENT_ID", "test-client");
-    vi.stubEnv("GOOGLE_CLIENT_SECRET", "test-secret");
-    try {
-      auth = createAuth(memoryAdapter(store));
-      vi.spyOn(AuthInit, "getAuth").mockReturnValue(auth);
-      const response = await request("/sign-in/social", {
-        provider: "google",
-        callbackURL: "http://localhost:3000/email-handler",
-        disableRedirect: true,
-        additionalData: { rememberMe: false },
-      });
-      expect(response.status).toBe(200);
-      expect(
-        response.headers
-          .getSetCookie()
-          .some(
-            (cookie) =>
-              cookie.includes("dont_remember=") && cookie.includes("HttpOnly"),
-          ),
-      ).toBe(true);
-    } finally {
-      vi.unstubAllEnvs();
-    }
+  it("allows unlinking a provider when another supported provider remains", async () => {
+    await signInWithOAuth(auth, app, { provider: "google" });
+    const { cookie } = await signInWithOAuth(auth, app, { provider: "github" });
+    const accounts = await auth.api.listUserAccounts({
+      headers: new Headers({ cookie }),
+    });
+    expect(accounts).toHaveLength(2);
+    const google = accounts.find((account) => account.providerId === "google");
+    expect(
+      (await request("/unlink-account", { accountId: google?.id }, cookie))
+        .status,
+    ).toBe(200);
+    expect(store["authAccounts"]).toHaveLength(1);
+    expect(store["authAccounts"]?.[0]).toMatchObject({ providerId: "github" });
+  });
+  it.each([
+    ["PATCH", "/users/email"],
+    ["PATCH", "/users/password"],
+    ["POST", "/users/verificationEmail"],
+    ["POST", "/users/forgotPasswordEmail"],
+    ["POST", "/admin/sendForgotPasswordEmail"],
+  ])("removes the application %s %s route", async (method, path) => {
+    const { cookie } = await signInWithOAuth(auth, app);
+    const response = await app.request(`http://localhost:5005${path}`, {
+      method,
+      headers: { cookie, origin: "http://localhost:3000" },
+    });
+    expect(response.status).toBe(404);
   });
   it("requires production secrets and a public auth URL", () => {
     vi.stubEnv("MODE", "prod");
     vi.stubEnv("FRONTEND_URL", "http://localhost:3000");
     vi.stubEnv("BETTER_AUTH_SECRET", undefined);
     vi.stubEnv("BETTER_AUTH_URL", undefined);
-    try {
-      expect(() => createAuth(memoryAdapter(store))).toThrow(
-        "BETTER_AUTH_SECRET",
-      );
-      vi.stubEnv(
-        "BETTER_AUTH_SECRET",
-        "test-secret-with-at-least-thirty-two-characters",
-      );
-      expect(() => createAuth(memoryAdapter(store))).toThrow("BETTER_AUTH_URL");
-    } finally {
-      vi.unstubAllEnvs();
-    }
+    expect(() => createAuth(memoryAdapter(store))).toThrow(
+      "BETTER_AUTH_SECRET",
+    );
+    vi.stubEnv(
+      "BETTER_AUTH_SECRET",
+      "test-secret-with-at-least-thirty-two-characters",
+    );
+    expect(() => createAuth(memoryAdapter(store))).toThrow("BETTER_AUTH_URL");
   });
 });
-
-async function getAuthAccounts(cookie: string): Promise<{ id: string }[]> {
-  return auth.api.listUserAccounts({ headers: new Headers({ cookie }) });
-}

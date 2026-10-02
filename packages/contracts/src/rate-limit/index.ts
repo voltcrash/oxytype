@@ -211,11 +211,6 @@ export const limits = {
     max: 60,
   },
 
-  userUpdateEmail: {
-    window: "hour",
-    max: 60,
-  },
-
   userClearPB: {
     window: "hour",
     max: 60,
@@ -289,16 +284,6 @@ export const limits = {
   userDiscordUnlink: {
     window: "hour",
     max: 15,
-  },
-
-  userRequestVerificationEmail: {
-    window: 15 * 60 * 1000, //15 minutes
-    max: 1,
-  },
-
-  userForgotPasswordEmail: {
-    window: "minute",
-    max: 1,
   },
 
   userRevokeAllTokens: {

@@ -48,11 +48,11 @@ You can use docker to run the frontend and backend. This will take care of OS-sp
 
 ### Better Auth
 
-Email/password authentication uses the backend's MongoDB database. No external auth project or frontend credentials are needed. Copy `backend/example.env` to `backend/.env`, start MongoDB/Redis, and run the backend.
+Oxytype supports only Google and GitHub sign-in through Better Auth. Authentication accounts and sessions use the backend's MongoDB database. Copy `backend/example.env` to `backend/.env`, start MongoDB/Redis, and run the backend.
 
 Local defaults use `http://localhost:3000` for the frontend and `http://localhost:5005/auth` for auth. Production requires `BETTER_AUTH_SECRET` (at least 32 characters), `BETTER_AUTH_URL` (public auth URL), and `FRONTEND_URL` (frontend origin). Generate a secret with `openssl rand -base64 32`.
 
-Optional Google/GitHub sign-in uses backend-only `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, and `GITHUB_CLIENT_SECRET`. Register `BETTER_AUTH_URL/callback/google` and `BETTER_AUTH_URL/callback/github` with the providers. SMTP enables verification and password reset emails.
+Configure at least one provider using backend-only `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` or `GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET`. Register `BETTER_AUTH_URL/callback/google` and `BETTER_AUTH_URL/callback/github` with the respective providers. New users choose a username and complete the captcha after signing in. Email/password sign-in, verification emails, password resets, and SMTP are not supported.
 
 Existing authentication accounts are not imported. Create a new account after switching to Better Auth. Firebase Hosting remains an optional static deployment target for the release CLI; it is unrelated to authentication.
 

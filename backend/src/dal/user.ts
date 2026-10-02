@@ -239,15 +239,6 @@ export async function updateQuoteRatings(
   return true;
 }
 
-export async function updateEmail(
-  uid: string,
-  email: string,
-): Promise<boolean> {
-  await updateUser({ uid }, { $set: { email } }, { stack: "update email" });
-
-  return true;
-}
-
 export async function getUser(uid: string, stack: string): Promise<DBUser> {
   const user = await getUsersCollection().findOne({ uid });
   if (!user) throw new MonkeyError(404, "User not found", stack);

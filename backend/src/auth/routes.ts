@@ -2,9 +2,8 @@ import type { Hono } from "hono";
 import type { ApiEnv } from "../api/http";
 import * as UserDAL from "../dal/user";
 import * as AuthUtils from "../utils/auth";
-import { NewPasswordSchema } from "@oxytype/schemas/users";
 import { getAuth } from "../init/auth";
-import { getFrontendUrl, isDevEnvironment } from "../utils/misc";
+import { getFrontendUrl } from "../utils/misc";
 import { getClientIp } from "../middlewares/rate-limit";
 
 /** Auth owns its request body, cookies, CSRF checks, and rate limits. */
@@ -40,26 +39,6 @@ export function addAuthRoutes(app: Hono<ApiEnv>): void {
       }
       await AuthUtils.deleteUser(session.uid);
       return c.json({ status: true });
-    }
-    if (c.req.path === "/auth/set-password" && c.req.method === "POST") {
-      const session = await AuthUtils.verifySession(headers);
-      if (Date.now() - session.createdAt.getTime() >= 60_000) {
-        return c.json(
-          { message: "Sign in again before setting a password" },
-          403,
-        );
-      }
-      const body = await c.req.json<{ newPassword: string }>();
-      if (
-        !isDevEnvironment() &&
-        !NewPasswordSchema.safeParse(body.newPassword).success
-      ) {
-        return c.json(
-          { message: "Password does not meet the password requirements" },
-          400,
-        );
-      }
-      return auth.api.setPassword({ headers, body, asResponse: true });
     }
     return auth.handler(request);
   });

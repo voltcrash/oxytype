@@ -81,17 +81,6 @@ export type UpdateLeaderboardMemoryRequest = z.infer<
   typeof UpdateLeaderboardMemoryRequestSchema
 >;
 
-export const UpdateEmailRequestSchema = z.object({
-  newEmail: UserEmailSchema,
-  previousEmail: UserEmailSchema,
-});
-export type UpdateEmailRequest = z.infer<typeof UpdateEmailRequestSchema>;
-
-export const UpdatePasswordRequestSchema = z.object({
-  newPassword: z.string().min(6),
-});
-export type UpdatePasswordRequest = z.infer<typeof UpdatePasswordRequestSchema>;
-
 export const GetPersonalBestsQuerySchema = z.object({
   mode: ModeSchema,
   mode2: Mode2Schema.optional(),
@@ -305,14 +294,6 @@ export const ReportUserRequestSchema = z.object({
 });
 export type ReportUserRequest = z.infer<typeof ReportUserRequestSchema>;
 
-export const ForgotPasswordEmailRequestSchema = z.object({
-  captcha: z.string(),
-  email: UserEmailSchema,
-});
-export type ForgotPasswordEmailRequest = z.infer<
-  typeof ForgotPasswordEmailRequestSchema
->;
-
 export const GetTestActivityResponseSchema = responseWithNullableData(
   CountByYearAndDaySchema,
 );
@@ -433,34 +414,6 @@ export const usersContract = c.router(
       },
       metadata: meta({
         rateLimit: "userUpdateLBMemory",
-      }),
-    },
-    updateEmail: {
-      summary: "update email",
-      description: "Updates a user's email",
-      method: "PATCH",
-      path: "/email",
-      body: UpdateEmailRequestSchema.strict(),
-      responses: {
-        200: MonkeyResponseSchema,
-      },
-      metadata: meta({
-        authenticationOptions: { requireFreshToken: true },
-        rateLimit: "userUpdateEmail",
-      }),
-    },
-    updatePassword: {
-      summary: "update password",
-      description: "Updates a user's password",
-      method: "PATCH",
-      path: "/password",
-      body: UpdatePasswordRequestSchema.strict(),
-      responses: {
-        200: MonkeyResponseSchema,
-      },
-      metadata: meta({
-        authenticationOptions: { requireFreshToken: true },
-        rateLimit: "userUpdateEmail",
       }),
     },
     getPersonalBests: {
@@ -856,34 +809,6 @@ export const usersContract = c.router(
           path: "quotes.reporting.enabled",
           invalidMessage: "User reporting is unavailable.",
         },
-      }),
-    },
-    verificationEmail: {
-      summary: "send verification email",
-      description: "Send a verification email",
-      method: "POST",
-      path: "/verificationEmail",
-      body: c.noBody(),
-      responses: {
-        200: MonkeyResponseSchema,
-      },
-      metadata: meta({
-        authenticationOptions: { noCache: true },
-        rateLimit: "userRequestVerificationEmail",
-      }),
-    },
-    forgotPasswordEmail: {
-      summary: "send forgot password email",
-      description: "Send a forgot password email",
-      method: "POST",
-      path: "/forgotPasswordEmail",
-      body: ForgotPasswordEmailRequestSchema.strict(),
-      responses: {
-        200: MonkeyResponseSchema,
-      },
-      metadata: meta({
-        authenticationOptions: { isPublic: true },
-        rateLimit: "userForgotPasswordEmail",
       }),
     },
     revokeAllTokens: {

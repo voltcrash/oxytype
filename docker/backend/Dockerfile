@@ -30,7 +30,6 @@ ARG server_version=UNKNOWN
 # COPY to target
 COPY --from=builder /prod/backend/node_modules /app/backend/node_modules
 COPY --from=builder /prod/backend/dist /app/backend/dist
-COPY --from=builder /prod/backend/email-templates /app/backend/email-templates
 COPY --from=builder /prod/backend/redis-scripts /app/backend/redis-scripts
 COPY --from=builder /prod/backend/private /app/backend/private
 
@@ -44,10 +43,9 @@ COPY ["docker/backend/entry-point.sh", "./"]
 
 RUN echo "${server_version}" > /app/backend/dist/server.version
 
-#run in prod mode, but don't require anti-cheat, email client
+#run in prod mode, but don't require anti-cheat
 ENV MODE=prod
 ENV BYPASS_ANTICHEAT=true
-ENV BYPASS_EMAILCLIENT=true
 
 EXPOSE 5005
 USER node

@@ -8,7 +8,6 @@ export type ModalId =
   | "DevOptions"
   | "DevInboxPicker"
   | "EventLogViewer"
-  | "RegisterCaptcha"
   | "Alerts"
   | "SimpleModal"
   | "CustomText"
@@ -35,7 +34,6 @@ export type ModalId =
   | "LastSignedOutResult"
   | "StreakHourOffset"
   | "GoogleSignup"
-  | "ForgotPassword"
   | "UserReport"
   | "EditResultTags"
   | "PractiseWords";

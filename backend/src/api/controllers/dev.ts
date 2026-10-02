@@ -1,6 +1,5 @@
 import { MonkeyResponse } from "../../utils/monkey-response";
 import * as UserDal from "../../dal/user";
-import { getAuth } from "../../init/auth";
 import Logger from "../../utils/logger";
 import * as DateUtils from "date-fns";
 import { UTCDate } from "@date-fns/utc";
@@ -32,8 +31,9 @@ const CREATE_RESULT_DEFAULT_OPTIONS = {
 export async function createTestData(
   req: MonkeyRequest<undefined, GenerateDataRequest>,
 ): Promise<GenerateDataResponse> {
-  const { username, createUser } = req.body;
-  const user = await getOrCreateUser(username, "password", createUser);
+  const { username } = req.body;
+  const user = await UserDal.findByName(username);
+  if (!user) throw new MonkeyError(404, `User ${username} does not exist.`);
 
   const { uid, email } = user;
 
@@ -73,33 +73,6 @@ export async function addDebugInboxItem(
 
   await UserDal.addToInbox(uid, [mail], inboxConfig);
   return new MonkeyResponse("Debug inbox item added", null);
-}
-
-async function getOrCreateUser(
-  username: string,
-  password: string,
-  createUser = false,
-): Promise<UserDal.DBUser> {
-  const existingUser = await UserDal.findByName(username);
-
-  if (existingUser !== undefined && existingUser !== null) {
-    return existingUser;
-  } else if (!createUser) {
-    throw new MonkeyError(404, `User ${username} does not exist.`);
-  }
-
-  const email = `${username}@example.com`;
-  Logger.success(`create user ${username}`);
-  const { user } = await getAuth().api.signUpEmail({
-    body: { name: username, password, email },
-  });
-  const uid = user.id;
-  await (
-    await getAuth().$context
-  ).internalAdapter.updateUser(uid, { emailVerified: true });
-
-  await UserDal.addUser(username, email, uid);
-  return UserDal.getUser(uid, "getOrCreateUser");
 }
 
 async function createTestResults(

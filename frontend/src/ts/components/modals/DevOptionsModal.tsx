@@ -1,15 +1,12 @@
 import { UserNameSchema } from "@oxytype/schemas/users";
 import { createSignal, For, JSXElement } from "solid-js";
-import { envConfig } from "virtual:env-config";
 import { z } from "zod/v3";
 
 import Ape from "../../ape";
-import { signIn } from "../../auth";
 import { refetchInboxCollection } from "../../collections/inbox";
 import { addXp } from "../../db";
 import { toggleCaretDebug } from "../../elements/caret";
 import { getInputElement } from "../../input/input-element";
-import { hideLoaderBar, showLoaderBar } from "../../states/loader-bar";
 import { hideModal, showModal } from "../../states/modals";
 import {
   showErrorNotification,
@@ -77,39 +74,6 @@ export function DevOptionsModal(): JSXElement {
         el.style.opacity = "1";
         el.style.marginTop = "1.5em";
         el.style.caretColor = "red";
-        hideModal("DevOptions");
-      },
-    },
-    {
-      icon: "fa-sign-in-alt",
-      label: () => "Quick Login",
-      onClick: () => {
-        if (
-          envConfig.quickLoginEmail === undefined ||
-          envConfig.quickLoginPassword === undefined
-        ) {
-          showErrorNotification(
-            "Quick login credentials not set. Add QUICK_LOGIN_EMAIL and QUICK_LOGIN_PASSWORD to your frontend .env file.",
-          );
-          return;
-        }
-        showLoaderBar();
-        void signIn(
-          envConfig.quickLoginEmail,
-          envConfig.quickLoginPassword,
-          true,
-        )
-          .then((result) => {
-            if (!result.success) {
-              showErrorNotification(result.message);
-            }
-          })
-          .catch((error: unknown) => {
-            showErrorNotification("Quick login failed", { error });
-          })
-          .finally(() => {
-            hideLoaderBar();
-          });
         hideModal("DevOptions");
       },
     },
@@ -244,24 +208,16 @@ export function DevOptionsModal(): JSXElement {
 function showGenerateDataModal(): void {
   showSimpleModal({
     title: "Generate data",
-    text: `if create user is checked, user will be created with <name>@example.com and password: password`,
+    text: "Generate test results for an existing account.",
     class: "max-w-2xl",
     schema: z.object({
       username: UserNameSchema,
-      createUser: z.boolean(),
       firstTestTimestamp: z.date().max(new Date()).optional(),
       lastTestTimestamp: z.date().max(new Date()).optional(),
       minTestsPerDay: z.number().safe().int().min(0).max(200),
       maxTestsPerDay: z.number().safe().int().min(0).max(200),
     }),
     inputs: {
-      createUser: {
-        type: "checkbox",
-        label: "create user",
-        initVal: false,
-        description:
-          "if checked, user will be created with {username}@example.com and password: password",
-      },
       username: {
         type: "text",
         label: "username",
@@ -300,7 +256,6 @@ function showGenerateDataModal(): void {
     buttonText: "generate (might take a while)",
     execFn: async ({
       username,
-      createUser,
       firstTestTimestamp,
       lastTestTimestamp,
       minTestsPerDay,
@@ -309,7 +264,6 @@ function showGenerateDataModal(): void {
       const result = await Ape.dev.generateData({
         body: {
           username,
-          createUser,
           firstTestTimestamp: firstTestTimestamp?.getTime(),
           lastTestTimestamp: lastTestTimestamp?.getTime(),
           minTestsPerDay,

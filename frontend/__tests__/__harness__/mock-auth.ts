@@ -12,10 +12,7 @@ vi.mock("../../src/ts/auth-client", () => ({
   requestOAuth: vi.fn(),
   updateProfile: vi.fn(),
   setUserState: vi.fn(),
-  sendEmailVerification: vi.fn(),
   deleteUnfinishedUser: vi.fn(),
-  createUserWithEmailAndPassword: vi.fn(),
   resetIgnoreAuthCallback: vi.fn(),
-  signInWithEmailAndPassword: vi.fn(),
   signInWithPopup: vi.fn(),
 }));

@@ -35,7 +35,6 @@ export const [getIsScreenshotting, setIsScreenshotting] = createSignal(false);
 
 export const [getUserId, setUserId] = createSignal<string | null>(null);
 export const isAuthenticated = (): boolean => getUserId() !== null;
-export const [isUserVerified, setUserVerified] = createSignal(false);
 
 export const [getSelectedProfileName, setSelectedProfileName] = createSignal<
   string | undefined

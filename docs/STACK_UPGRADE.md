@@ -31,8 +31,6 @@ Vite+ 1.0.0 manages runtime selection, installs, updates, builds, tests, linting
 | Howler | 2.2.4 |
 | Sentry | 11.1.0 |
 | Winston | 3.19.0 |
-| Nodemailer | 10.0.13 |
-| MJML | 5.4.1 |
 
 ## Compatibility changes
 
@@ -40,9 +38,8 @@ Vite+ 1.0.0 manages runtime selection, installs, updates, builds, tests, linting
 - TanStack Table 9 uses explicit features and a component-owned table instance. Form selectors, QueryClient calls, disabled DB queries, SlimSelect exports, UTC date types, and Anime callbacks use their current APIs.
 - Chart.js 4 uses scale borders and requires a connected canvas. Cached Solid pages defer chart initialization until their canvas attaches, then disconnect their observer during initialization or cleanup.
 - Sentry 11 data collection explicitly preserves the earlier restrictive defaults, following its [migration guide](https://github.com/getsentry/sentry-javascript/blob/develop/MIGRATION.md#senddefaultpii-is-replaced-by-datacollection).
-- Better Auth runs inside Hono with MongoDB-backed credentials and sessions. BullMQ no longer creates obsolete queue schedulers. UAParser uses its v2 constructor.
+- Better Auth runs inside Hono with MongoDB-backed Google/GitHub accounts and sessions. BullMQ no longer creates obsolete queue schedulers. UAParser uses its v2 constructor.
 - Font Awesome 7 styles, aliases, subsets, and generated icon types come from the package's official metadata. Regenerate types with `vp -C frontend run generate-icon-types`.
-- MJML 5 renders asynchronously; email templates are awaited before Mustache substitution and delivery.
 - Docker builders include every workspace manifest for pnpm 12's frozen-lockfile validation. Backend deployment permits patches belonging only to frontend dependencies to be unused in its production subset.
 
 ## Verification

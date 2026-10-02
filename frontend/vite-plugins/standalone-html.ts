@@ -5,7 +5,7 @@ import path from "node:path";
 
 type Renderer = typeof import("../src/ts/standalone-renderer").renderStandalone;
 const pages = new Set([
-  "/email-handler.html",
+  "/oauth-callback.html",
   "/404.html",
   "/privacy-policy.html",
   "/terms-of-service.html",

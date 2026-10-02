@@ -4,7 +4,6 @@ import { createForm } from "@tanstack/solid-form";
 import Ape from "../../ape";
 import { loadUser, signOut } from "../../auth";
 import {
-  sendEmailVerification,
   updateProfile,
   type UserCredential,
   deleteUnfinishedUser,
@@ -131,7 +130,6 @@ async function apply(options: {
 
     setUserState(signedInUser.user);
     await updateProfile(name);
-    await sendEmailVerification();
     showSuccessNotification("Account created");
     await loadUser(signedInUser.user);
 
@@ -142,7 +140,7 @@ async function apply(options: {
     signedInUser = undefined;
   } catch (e) {
     console.log(e);
-    showErrorNotification("Failed to sign in with Google", { error: e });
+    showErrorNotification("Failed to create account", { error: e });
     if (signedInUser !== undefined) {
       await deleteUnfinishedUser().catch(() => {
         //user might be deleted already by the server

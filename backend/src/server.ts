@@ -13,7 +13,6 @@ import * as RedisClient from "./init/redis";
 import queues from "./queues";
 import workers from "./workers";
 import Logger from "./utils/logger";
-import * as EmailClient from "./init/email-client";
 import { init as initAuth } from "./init/auth";
 import { createIndicies as leaderboardDbSetup } from "./dal/leaderboards";
 import { createIndicies as blocklistDbSetup } from "./dal/blocklist";
@@ -35,9 +34,6 @@ async function bootServer(port: number): Promise<ServerType> {
     await getLiveConfiguration();
     Logger.success("Live configuration fetched");
     await updateFromConfigurationFile();
-
-    Logger.info("Initializing email client...");
-    await EmailClient.init();
 
     Logger.info("Connecting to redis...");
     await RedisClient.connect();

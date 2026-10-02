@@ -365,22 +365,6 @@ export const ReportUserReasonSchema = z.enum([
 ]);
 export type ReportUserReason = z.infer<typeof ReportUserReasonSchema>;
 
-// stricter schema used while password creation
-export const NewPasswordSchema = z
-  .string()
-  .min(8, { message: "must be at least 8 characters" })
-  .max(64, { message: "must be at most 64 characters" })
-  .regex(/[A-Z]/, { message: "must contain at least one capital letter" })
-  .regex(/[\d]/, { message: "must contain at least one number" })
-  .regex(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/, {
-    message: "must contain at least one special character",
-  });
-export type NewPassword = z.infer<typeof NewPasswordSchema>;
-
-// lenient schema for existing passwords
-export const PasswordSchema = z.string().min(1, "Required");
-export type Password = z.infer<typeof PasswordSchema>;
-
 export const FriendSchema = UserSchema.pick({
   uid: true,
   name: true,
