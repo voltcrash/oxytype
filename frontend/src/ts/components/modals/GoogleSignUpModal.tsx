@@ -1,17 +1,18 @@
 import { UserNameSchema } from "@oxytype/schemas/users";
 import { createForm } from "@tanstack/solid-form";
-import {
-  getAdditionalUserInfo,
-  sendEmailVerification,
-  updateProfile,
-  UserCredential,
-} from "firebase/auth";
 
 import Ape from "../../ape";
 import { loadUser, signOut } from "../../auth";
+import {
+  sendEmailVerification,
+  updateProfile,
+  type UserCredential,
+  deleteUnfinishedUser,
+  resetIgnoreAuthCallback,
+  setUserState,
+} from "../../auth-client";
 import { authEvent } from "../../events/auth";
 import { googleSignUpEvent } from "../../events/google-sign-up";
-import { resetIgnoreAuthCallback, setUserState } from "../../firebase";
 import { hideLoaderBar, showLoaderBar } from "../../states/loader-bar";
 import { hideModal, ModalId, showModal } from "../../states/modals";
 import {
@@ -97,12 +98,9 @@ async function afterHide(): Promise<void> {
     showNoticeNotification("Sign up process cancelled", {
       durationMs: 5000,
     });
-    if (getAdditionalUserInfo(signedInUser)?.isNewUser) {
-      await Ape.users.delete();
-      await signedInUser?.user.delete().catch(() => {
-        //user might be deleted already by the server
-      });
-    }
+    await deleteUnfinishedUser().catch((error: unknown) => {
+      showErrorNotification("Failed to cancel sign up", { error });
+    });
     signOut();
     signedInUser = undefined;
   }
@@ -132,8 +130,8 @@ async function apply(options: {
     }
 
     setUserState(signedInUser.user);
-    await updateProfile(signedInUser.user, { displayName: name });
-    await sendEmailVerification(signedInUser.user);
+    await updateProfile(name);
+    await sendEmailVerification();
     showSuccessNotification("Account created");
     await loadUser(signedInUser.user);
 
@@ -145,9 +143,8 @@ async function apply(options: {
   } catch (e) {
     console.log(e);
     showErrorNotification("Failed to sign in with Google", { error: e });
-    if (signedInUser && getAdditionalUserInfo(signedInUser)?.isNewUser) {
-      await Ape.users.delete();
-      await signedInUser?.user.delete().catch(() => {
+    if (signedInUser !== undefined) {
+      await deleteUnfinishedUser().catch(() => {
         //user might be deleted already by the server
       });
     }
