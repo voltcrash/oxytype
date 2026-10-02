@@ -14,7 +14,6 @@
       ],
       "project": "src/ts/**/*.{ts,tsx}",
       "ignore": [
-        "src/ts/constants/firebase-config-example.ts",
         "src/ts/constants/ignored-keys.ts",
         "src/ts/utils/async-modules.ts",
         "src/ts/utils/debug.ts"
@@ -67,6 +66,5 @@
     "prettier",
     "yaml"
   ],
-  "ignore": ["docker/frontend/firebase-config-live.ts"],
   "ignoreBinaries": ["docker", "tsx", "tsup-node"]
 }

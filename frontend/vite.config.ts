@@ -232,8 +232,8 @@ function getBuildOptions({
               test: /node_modules\/@sentry\//,
             },
             {
-              name: "vendor-firebase",
-              test: /node_modules\/@firebase\//,
+              name: "vendor-auth",
+              test: /node_modules\/(?:@better-auth|better-auth|better-call|@better-fetch)\//,
             },
             {
               name: "vendor-tanstack",
@@ -307,16 +307,6 @@ export default defineConfig(({ mode }): UserConfig => {
         //so we only want to watch one file
         ignored: [/.*\/packages\/contracts\/dist\/(?!configs).*/],
       },
-    },
-    resolve: {
-      alias: isDevelopment
-        ? []
-        : [
-            {
-              find: /\/constants\/firebase-config$/,
-              replacement: "/constants/firebase-config-live",
-            },
-          ],
     },
     clearScreen: false,
     root: "src",
