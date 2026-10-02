@@ -37,6 +37,7 @@ export type WorkerEnv = {
 };
 
 export type Runtime = {
+  auth?: ReturnType<typeof import("../init/auth").createAuth>;
   configuration?: import("@oxytype/schemas/configuration").Configuration;
   env: WorkerEnv;
   db: ReturnType<typeof drizzle>;

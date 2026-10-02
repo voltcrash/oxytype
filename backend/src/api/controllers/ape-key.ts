@@ -1,10 +1,10 @@
 import { randomBytes } from "crypto";
-import { hash } from "bcrypt";
+import { hashApeKey } from "../../utils/ape-key-hash";
 import * as ApeKeysDAL from "../../dal/ape-keys";
 import MonkeyError from "../../utils/error";
 import { MonkeyResponse } from "../../utils/monkey-response";
 import { base64UrlEncode, omit } from "../../utils/misc";
-import { ObjectId } from "mongodb";
+import { newId } from "../../utils/id";
 
 import {
   AddApeKeyRequest,
@@ -27,7 +27,7 @@ export async function getApeKeys(
 
   const apeKeys = await ApeKeysDAL.getApeKeys(uid);
   const cleanedKeys: Record<string, ApeKey> = Object.fromEntries(
-    apeKeys.map((item) => [item._id.toHexString(), cleanApeKey(item)]),
+    apeKeys.map((item) => [item._id.toString(), cleanApeKey(item)]),
   );
 
   return new MonkeyResponse("ApeKeys retrieved", cleanedKeys);
@@ -38,8 +38,7 @@ export async function generateApeKey(
 ): Promise<AddApeKeyResponse> {
   const { name, enabled } = req.body;
   const { uid } = req.ctx.decodedToken;
-  const { maxKeysPerUser, apeKeyBytes, apeKeySaltRounds } =
-    req.ctx.configuration.apeKeys;
+  const { maxKeysPerUser, apeKeyBytes } = req.ctx.configuration.apeKeys;
 
   const currentNumberOfApeKeys = await ApeKeysDAL.countApeKeysForUser(uid);
 
@@ -48,10 +47,10 @@ export async function generateApeKey(
   }
 
   const apiKey = randomBytes(apeKeyBytes).toString("base64url");
-  const saltyHash = await hash(apiKey, apeKeySaltRounds);
+  const saltyHash = hashApeKey(apiKey);
 
   const apeKey: ApeKeysDAL.DBApeKey = {
-    _id: new ObjectId(),
+    _id: newId(),
     name,
     enabled,
     uid,

@@ -1,3 +1,4 @@
+import { envValue } from "../runtime/env";
 import { Buffer } from "node:buffer";
 import { MILLISECONDS_IN_DAY } from "@oxytype/util/date-and-time";
 import { roundTo2 } from "@oxytype/util/numbers";
@@ -179,15 +180,15 @@ export function formatSeconds(
 }
 
 export function isDevEnvironment(): boolean {
-  return process.env["MODE"] === "dev";
+  return envValue("MODE") === "dev";
 }
 
 export function getFrontendUrl(): string {
   if (isDevEnvironment()) {
-    return process.env["FRONTEND_URL"] ?? "http://localhost:3000";
+    return envValue("FRONTEND_URL") ?? "http://localhost:3000";
   }
 
-  const frontendUrl = process.env["FRONTEND_URL"];
+  const frontendUrl = envValue("FRONTEND_URL");
   if (frontendUrl === undefined || frontendUrl === "") {
     throw new Error("FRONTEND_URL must be configured for production links");
   }

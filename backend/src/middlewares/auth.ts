@@ -1,6 +1,7 @@
+import { envValue } from "../runtime/env";
 import { getSessionCookie } from "better-auth/cookies";
-import { compare } from "bcrypt";
-import { getApeKey, updateLastUsedOn } from "../dal/ape-keys";
+import { verifyApeKey, hashApeKey } from "../utils/ape-key-hash";
+import { upgradeHash, getApeKey, updateLastUsedOn } from "../dal/ape-keys";
 import MonkeyError from "../utils/error";
 import { verifySession } from "../utils/auth";
 import { base64UrlDecode, isDevEnvironment } from "../utils/misc";
@@ -236,12 +237,15 @@ async function authenticateWithApeKey(
       throw new MonkeyError(code, message);
     }
 
-    const isKeyValid = await compare(apeKey, targetApeKey.hash);
+    const isKeyValid = await verifyApeKey(apeKey, targetApeKey.hash);
     if (!isKeyValid) {
       const { code, message } = statuses.APE_KEY_INVALID;
       throw new MonkeyError(code, message);
     }
 
+    if (!targetApeKey.hash.startsWith("sha256:")) {
+      await upgradeHash(targetApeKey.uid, keyId, hashApeKey(apeKey));
+    }
     await updateLastUsedOn(targetApeKey.uid, keyId);
 
     return {
@@ -281,7 +285,7 @@ export function authenticateGithubWebhook(
   authHeader: string | string[] | undefined,
 ): DecodedToken {
   try {
-    const webhookSecret = process.env["GITHUB_WEBHOOK_SECRET"];
+    const webhookSecret = envValue("GITHUB_WEBHOOK_SECRET");
 
     if (webhookSecret === undefined || webhookSecret === "") {
       throw new MonkeyError(500, "Missing Github Webhook Secret");

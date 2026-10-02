@@ -1,28 +1,42 @@
 import { randomUUID } from "node:crypto";
 import { betterAuth, type BetterAuthOptions } from "better-auth";
-import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import { drizzleAdapter } from "@better-auth/drizzle-adapter";
+import { eq } from "drizzle-orm";
+import { database } from "../db/client";
+import {
+  authUsers,
+  authSessions,
+  authAccounts,
+  authVerifications,
+  authRateLimits,
+} from "../db/schema";
+import { runtime, envValue, type WorkerEnv } from "../runtime/env";
+import { mutateUser } from "../db/mutation";
 import {
   APIError,
   createAuthMiddleware,
   getSessionFromCtx,
 } from "better-auth/api";
 import { bearer } from "better-auth/plugins";
-import { getDb } from "./db";
 import { getFrontendUrl, isDevEnvironment } from "../utils/misc";
 import * as UserDAL from "../dal/user";
 
 export function createAuth(
-  database: BetterAuthOptions["database"],
+  adapter: BetterAuthOptions["database"],
 ): ReturnType<typeof betterAuth> {
   const frontendUrl = getFrontendUrl();
-  const secret = process.env["BETTER_AUTH_SECRET"];
+  const secret = envValue("BETTER_AUTH_SECRET");
   if (!isDevEnvironment() && (secret === undefined || secret.length < 32)) {
     throw new Error("BETTER_AUTH_SECRET must contain at least 32 characters");
   }
   const socialProviders: BetterAuthOptions["socialProviders"] = {};
   for (const provider of ["google", "github"] as const) {
-    const clientId = process.env[`${provider.toUpperCase()}_CLIENT_ID`];
-    const clientSecret = process.env[`${provider.toUpperCase()}_CLIENT_SECRET`];
+    const clientId = envValue(
+      `${provider.toUpperCase()}_CLIENT_ID` as keyof WorkerEnv,
+    );
+    const clientSecret = envValue(
+      `${provider.toUpperCase()}_CLIENT_SECRET` as keyof WorkerEnv,
+    );
     if (
       clientId !== undefined &&
       clientId !== "" &&
@@ -33,7 +47,7 @@ export function createAuth(
     }
   }
   const baseURL =
-    process.env["BETTER_AUTH_URL"] ??
+    envValue("BETTER_AUTH_URL") ??
     (isDevEnvironment() ? "http://localhost:5005/auth" : undefined);
   if (baseURL === undefined) {
     throw new Error("BETTER_AUTH_URL must be configured for production");
@@ -42,7 +56,7 @@ export function createAuth(
     appName: "Oxytype",
     // Better Auth accepts adapter factories through its database option.
     // oxlint-disable-next-line no-unsafe-assignment
-    database,
+    database: adapter,
     baseURL,
     basePath: new URL(baseURL).pathname,
     secret: secret ?? "oxytype-local-development-secret-only",
@@ -130,9 +144,11 @@ export function createAuth(
       session: {
         create: {
           before: async (session) => {
-            const authUser = await getDb()
-              ?.collection<{ _id: string; disabled: boolean }>("authUsers")
-              .findOne({ _id: session.userId });
+            const authUser = await database()
+              .select()
+              .from(authUsers)
+              .where(eq(authUsers.id, session.userId))
+              .get();
             if (authUser?.disabled === true) {
               throw new APIError("FORBIDDEN", { message: "Account disabled" });
             }
@@ -143,10 +159,11 @@ export function createAuth(
         update: {
           after: async (user) => {
             // Provider profile updates keep the application email in sync.
-            await UserDAL.getUsersCollection()?.updateOne(
-              { uid: user.id },
-              { $set: { email: user.email } },
-            );
+            if (await UserDAL.exists(user.id)) {
+              await mutateUser(user.id, (profile) => {
+                profile.email = user.email;
+              });
+            }
           },
         },
       },
@@ -161,32 +178,23 @@ export function createAuth(
   return betterAuth(options);
 }
 
-let auth: ReturnType<typeof createAuth> | undefined;
 export function getAuth(): ReturnType<typeof createAuth> {
-  if (auth === undefined) {
-    const db = getDb();
-    if (db === undefined) throw new Error("Database is not initialized");
-    auth = createAuth(mongodbAdapter(db, { transaction: false }));
-  }
-  return auth;
+  const scope = runtime();
+  scope.auth ??= createAuth(
+    drizzleAdapter(database(), {
+      provider: "sqlite",
+      schema: {
+        authUsers,
+        authSessions,
+        authAccounts,
+        authVerifications,
+        authRateLimits,
+      },
+      transaction: false,
+    }),
+  );
+  return scope.auth;
 }
-
 export async function init(): Promise<void> {
-  const db = getDb();
-  if (!db) throw new Error("Database is not initialized");
   getAuth();
-  await db.collection("authUsers").createIndex({ email: 1 }, { unique: true });
-  await db
-    .collection("authAccounts")
-    .createIndex({ providerId: 1, accountId: 1 }, { unique: true });
-  await db
-    .collection("authSessions")
-    .createIndex({ token: 1 }, { unique: true });
-  await db.collection("authSessions").createIndex({ userId: 1 });
-  await db
-    .collection("authSessions")
-    .createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-  await db
-    .collection("authVerifications")
-    .createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 }

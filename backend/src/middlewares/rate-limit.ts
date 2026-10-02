@@ -1,5 +1,6 @@
 import MonkeyError from "../utils/error";
-import { RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
+import { statement } from "../db/client";
+import { envValue } from "../runtime/env";
 import { Address6 } from "ip-address";
 import { isIP } from "net";
 import { isDevEnvironment } from "../utils/misc";
@@ -13,14 +14,33 @@ import statuses from "../constants/monkey-status-codes";
 import { getMetadata } from "./utility";
 import { ApiContext, ApiMiddleware, HttpRequest } from "../api/http";
 
-export const REQUEST_MULTIPLIER = isDevEnvironment() ? 100 : 1;
+export const REQUEST_MULTIPLIER = 1;
+let limiterSequence = 0;
+type CounterResult = { points: number; expiresAt: number };
+async function consume(
+  key: string,
+  duration: number,
+  points = 1,
+): Promise<CounterResult> {
+  const now = Date.now();
+  const result = await statement(
+    "INSERT INTO rate_counters(key,points,expires_at) VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET points=CASE WHEN expires_at<=? THEN excluded.points ELSE points+excluded.points END,expires_at=CASE WHEN expires_at<=? THEN excluded.expires_at ELSE expires_at END RETURNING points,expires_at AS expiresAt",
+    key,
+    points,
+    now + duration,
+    now,
+    now,
+  ).first<CounterResult>();
+  if (result === null) throw new Error("Rate counter missing");
+  return result;
+}
 
 export function getClientIp(c: ApiContext): string {
   // One trusted proxy: the rightmost forwarded address is the immediate client.
   const forwarded = c.req.header("x-forwarded-for")?.split(",").pop()?.trim();
   const candidates = [
     c.req.header("cf-connecting-ip"),
-    forwarded,
+    envValue("MODE") === "dev" ? forwarded : undefined,
     c.env?.incoming?.socket.remoteAddress,
   ];
   return (
@@ -58,38 +78,30 @@ export function createRateLimiter(
   useUid = true,
   onLimit: (req: HttpRequest) => never = customHandler,
 ): ApiMiddleware {
-  const max = options.max * REQUEST_MULTIPLIER;
-  const limiter = new RateLimiterMemory({
-    points: max,
-    duration: convertWindowToMs(options.window) / 1000,
-  });
+  const id = `limiter:${limiterSequence++}`;
   return async (c, next) => {
-    const req = c.get("request");
-    const key = (useUid && req.ctx.decodedToken.uid) || getKey(req);
-    let result: RateLimiterRes;
-    try {
-      result = await limiter.consume(key);
-    } catch (error) {
-      if (!(error instanceof RateLimiterRes)) throw error;
-      setHeaders(c, max, error);
-      c.header("Retry-After", String(Math.ceil(error.msBeforeNext / 1000)));
+    const req = c.get("request"),
+      max = options.max * (isDevEnvironment() ? 100 : 1);
+    const actor =
+      useUid && req.ctx.decodedToken.uid !== ""
+        ? req.ctx.decodedToken.uid
+        : getKey(req);
+    const result = await consume(
+      `${id}:${actor}`,
+      convertWindowToMs(options.window),
+    );
+    c.header("X-RateLimit-Limit", String(max));
+    c.header("X-RateLimit-Remaining", String(Math.max(0, max - result.points)));
+    c.header("X-RateLimit-Reset", String(Math.ceil(result.expiresAt / 1000)));
+    if (result.points > max) {
+      c.header(
+        "Retry-After",
+        String(Math.max(1, Math.ceil((result.expiresAt - Date.now()) / 1000))),
+      );
       onLimit(req);
     }
-    setHeaders(c, max, result);
     await next();
   };
-}
-
-function setHeaders(c: ApiContext, max: number, result: RateLimiterRes): void {
-  c.header("X-RateLimit-Limit", String(max));
-  c.header(
-    "X-RateLimit-Remaining",
-    String(Math.max(0, result.remainingPoints)),
-  );
-  c.header(
-    "X-RateLimit-Reset",
-    String(Math.ceil((Date.now() + result.msBeforeNext) / 1000)),
-  );
 }
 
 export const requestLimiters = Object.fromEntries(
@@ -138,16 +150,18 @@ export const rootRateLimiter = createRateLimiter(
   },
 );
 
-const badAuthRateLimiter = new RateLimiterMemory({
-  points: 30 * REQUEST_MULTIPLIER,
-  duration: 3600,
-});
-
 export const badAuthRateLimiterHandler: ApiMiddleware = async (c, next) => {
   const req = c.get("request");
   if (req.ctx.configuration.rateLimiting.badAuthentication.enabled) {
-    const result = await badAuthRateLimiter.get(getKey(req));
-    if (result !== null && result.remainingPoints <= 0) {
+    const result = await statement(
+      "SELECT points,expires_at AS expiresAt FROM rate_counters WHERE key=?",
+      `bad-auth:${getKey(req)}`,
+    ).first<CounterResult>();
+    if (
+      result !== null &&
+      result.expiresAt > Date.now() &&
+      result.points >= 30 * (isDevEnvironment() ? 100 : 1)
+    ) {
       throw new MonkeyError(
         429,
         "Too many bad authentication attempts, please try again later.",
@@ -164,8 +178,9 @@ export async function incrementBadAuth(
   const options = req?.ctx.configuration.rateLimiting.badAuthentication;
   if (!options?.enabled || !options.flaggedStatusCodes.includes(status)) return;
   try {
-    await badAuthRateLimiter.penalty(
-      getKey(req as HttpRequest),
+    await consume(
+      `bad-auth:${getKey(req as HttpRequest)}`,
+      3600000,
       options.penalty,
     );
   } catch {}

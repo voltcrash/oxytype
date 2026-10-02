@@ -6,7 +6,7 @@ import * as QuoteRatingsDAL from "../../dal/quote-ratings";
 import MonkeyError from "../../utils/error";
 import { verify } from "../../utils/captcha";
 import { MonkeyResponse } from "../../utils/monkey-response";
-import { ObjectId } from "mongodb";
+import { newId } from "../../utils/id";
 import { addLog } from "../../dal/logs";
 import {
   AddQuoteRatingRequest,
@@ -149,7 +149,7 @@ export async function reportQuote(
   await verifyCaptcha(captcha);
 
   const newReport: ReportDAL.DBReport = {
-    _id: new ObjectId(),
+    _id: newId(),
     id: uuidv4(),
     type: "quote",
     timestamp: new Date().getTime(),

@@ -20,7 +20,7 @@ import { purgeUserFromDailyLeaderboards } from "../../utils/daily-leaderboards";
 import { purgeUserFromXpLeaderboards } from "../../services/weekly-xp-leaderboard";
 import { deleteUserAccount } from "../../services/user-deletion";
 import { v4 as uuidv4 } from "uuid";
-import { ObjectId } from "mongodb";
+import { newId } from "../../utils/id";
 import * as ReportDAL from "../../dal/report";
 import * as AuthUtil from "../../utils/auth";
 import * as Dates from "date-fns";
@@ -104,7 +104,7 @@ export async function createNewUser(
   const { name, captcha } = req.body;
   const { email, uid } = req.ctx.decodedToken;
 
-  const existingUser = await UserDAL.getUsersCollection().findOne({ uid });
+  const existingUser = await UserDAL.exists(uid);
   if (existingUser) throw new MonkeyError(409, "Account already registered");
 
   try {
@@ -514,7 +514,7 @@ export async function addResultFilterPreset(
   );
   return new MonkeyResponse(
     "Result filter preset created",
-    createdId.toHexString(),
+    createdId.toString(),
   );
 }
 
@@ -867,7 +867,7 @@ export async function reportUser(
   await verifyCaptcha(captcha);
 
   const newReport: ReportDAL.DBReport = {
-    _id: new ObjectId(),
+    _id: newId(),
     id: uuidv4(),
     type: "user",
     timestamp: new Date().getTime(),
@@ -943,7 +943,7 @@ async function getAllTimeLbs(uid: string): Promise<AllTimeLbs> {
   );
 
   const english15 =
-    allTime15English === false || allTime15English === null
+    allTime15English === null
       ? undefined
       : {
           rank: allTime15English.rank,
@@ -951,7 +951,7 @@ async function getAllTimeLbs(uid: string): Promise<AllTimeLbs> {
         };
 
   const english60 =
-    allTime60English === false || allTime60English === null
+    allTime60English === null
       ? undefined
       : {
           rank: allTime60English.rank,
