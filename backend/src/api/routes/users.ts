@@ -26,12 +26,6 @@ export default s.router(usersContract, {
   updateLeaderboardMemory: {
     handler: async (r) => callController(UserController.updateLbMemory)(r),
   },
-  updateEmail: {
-    handler: async (r) => callController(UserController.updateEmail)(r),
-  },
-  updatePassword: {
-    handler: async (r) => callController(UserController.updatePassword)(r),
-  },
   getPersonalBests: {
     handler: async (r) => callController(UserController.getPersonalBests)(r),
   },
@@ -115,14 +109,6 @@ export default s.router(usersContract, {
   },
   report: {
     handler: async (r) => callController(UserController.reportUser)(r),
-  },
-  verificationEmail: {
-    handler: async (r) =>
-      callController(UserController.sendVerificationEmail)(r),
-  },
-  forgotPasswordEmail: {
-    handler: async (r) =>
-      callController(UserController.sendForgotPasswordEmail)(r),
   },
   revokeAllTokens: {
     handler: async (r) => callController(UserController.revokeAllTokens)(r),

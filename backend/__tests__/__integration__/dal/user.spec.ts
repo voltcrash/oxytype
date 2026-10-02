@@ -1224,24 +1224,6 @@ describe("UserDal", () => {
       });
     });
   });
-  describe("updateEmail", () => {
-    it("throws for nonexisting user", async () => {
-      await expect(async () =>
-        UserDAL.updateEmail("unknown", "test@example.com"),
-      ).rejects.toThrow("User not found\nStack: update email");
-    });
-    it("should update", async () => {
-      //given
-      const { uid } = await UserTestData.createUser({ email: "init" });
-
-      //when
-      await expect(UserDAL.updateEmail(uid, "next")).resolves.toBe(true);
-
-      //then
-      const read = await UserDAL.getUser(uid, "read");
-      expect(read.email).toEqual("next");
-    });
-  });
   describe("resetPb", () => {
     it("throws for nonexisting user", async () => {
       await expect(async () => UserDAL.resetPb("unknown")).rejects.toThrow(

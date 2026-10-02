@@ -36,7 +36,6 @@ import {
   UserProfileDetails,
 } from "@oxytype/schemas/users";
 import { addImportantLog, addLog } from "../../dal/logs";
-import { sendForgotPasswordEmail as authSendForgotPasswordEmail } from "../../utils/auth";
 import {
   AddCustomThemeRequest,
   AddCustomThemeResponse,
@@ -51,7 +50,6 @@ import {
   DeleteCustomThemeRequest,
   EditCustomThemeRequst,
   EditTagRequest,
-  ForgotPasswordEmailRequest,
   GetCurrentTestActivityResponse,
   GetCustomThemesResponse,
   GetDiscordOauthLinkResponse,
@@ -75,9 +73,7 @@ import {
   ReportUserRequest,
   SetStreakHourOffsetRequest,
   TagIdPathParams,
-  UpdateEmailRequest,
   UpdateLeaderboardMemoryRequest,
-  UpdatePasswordRequest,
   UpdateUserInboxRequest,
   UpdateUserNameRequest,
   UpdateUserProfileRequest,
@@ -137,26 +133,6 @@ export async function createNewUser(
     await authDeleteUserIgnoreError(uid);
     throw e;
   }
-}
-
-export async function sendVerificationEmail(
-  req: MonkeyRequest,
-): Promise<MonkeyResponse> {
-  const { email } = req.ctx.decodedToken;
-  await AuthUtil.sendVerificationEmail(email);
-  return new MonkeyResponse("Email sent", null);
-}
-
-export async function sendForgotPasswordEmail(
-  req: MonkeyRequest<undefined, ForgotPasswordEmailRequest>,
-): Promise<MonkeyResponse> {
-  const { email, captcha } = req.body;
-  await verifyCaptcha(captcha);
-  await authSendForgotPasswordEmail(email);
-  return new MonkeyResponse(
-    "Password reset request received. If the email is valid, you will receive an email shortly.",
-    null,
-  );
 }
 
 export async function deleteUser(req: MonkeyRequest): Promise<MonkeyResponse> {
@@ -295,38 +271,6 @@ export async function checkName(
   return new MonkeyResponse("Check username", {
     available,
   });
-}
-
-export async function updateEmail(
-  req: MonkeyRequest<undefined, UpdateEmailRequest>,
-): Promise<MonkeyResponse> {
-  const { uid } = req.ctx.decodedToken;
-  let { newEmail, previousEmail } = req.body;
-
-  newEmail = newEmail.toLowerCase();
-  previousEmail = previousEmail.toLowerCase();
-
-  await AuthUtil.updateUserEmail(uid, newEmail);
-  await UserDAL.updateEmail(uid, newEmail);
-
-  void addImportantLog(
-    "user_email_updated",
-    `changed email from ${previousEmail} to ${newEmail}`,
-    uid,
-  );
-
-  return new MonkeyResponse("Email updated", null);
-}
-
-export async function updatePassword(
-  req: MonkeyRequest<undefined, UpdatePasswordRequest>,
-): Promise<MonkeyResponse> {
-  const { uid } = req.ctx.decodedToken;
-  const { newPassword } = req.body;
-
-  await AuthUtil.updateUserPassword(uid, newPassword);
-
-  return new MonkeyResponse("Password updated", null);
 }
 
 type RelevantUserInfo = Omit<

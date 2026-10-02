@@ -3,13 +3,11 @@ import { buildMonkeyMail } from "../../utils/monkey-mail";
 import * as UserDAL from "../../dal/user";
 import * as ReportDAL from "../../dal/report";
 import GeorgeQueue from "../../queues/george-queue";
-import { sendForgotPasswordEmail as authSendForgotPasswordEmail } from "../../utils/auth";
 import {
   AcceptReportsRequest,
   ClearStreakHourOffsetRequest,
   DeleteUserRequest,
   RejectReportsRequest,
-  SendForgotPasswordEmailRequest,
   ToggleBanRequest,
   ToggleBanResponse,
 } from "@oxytype/contracts/admin";
@@ -179,12 +177,4 @@ export async function handleReports(
       }
     }
   }
-}
-
-export async function sendForgotPasswordEmail(
-  req: MonkeyRequest<undefined, SendForgotPasswordEmailRequest>,
-): Promise<MonkeyResponse> {
-  const { email } = req.body;
-  await authSendForgotPasswordEmail(email);
-  return new MonkeyResponse("Password reset request email sent.", null);
 }

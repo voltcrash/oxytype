@@ -10,12 +10,6 @@ import { IdSchema } from "@oxytype/schemas/util";
 
 export const GenerateDataRequestSchema = z.object({
   username: z.string(),
-  createUser: z
-    .boolean()
-    .optional()
-    .describe(
-      "If `true` create user with <username>@example.com and password `password`. If false user has to exist.",
-    ),
   firstTestTimestamp: z.number().int().nonnegative().optional(),
   lastTestTimestamp: z.number().int().nonnegative().optional(),
   minTestsPerDay: z.number().int().nonnegative().optional(),

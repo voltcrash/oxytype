@@ -1,13 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
-import { APIError, createAuthMiddleware } from "better-auth/api";
+import {
+  APIError,
+  createAuthMiddleware,
+  getSessionFromCtx,
+} from "better-auth/api";
 import { bearer } from "better-auth/plugins";
-import { NewPasswordSchema } from "@oxytype/schemas/users";
 import { getDb } from "./db";
 import { getFrontendUrl, isDevEnvironment } from "../utils/misc";
-import emailQueue from "../queues/email-queue";
-import { hashPassword, verifyPassword } from "better-auth/crypto";
 import * as UserDAL from "../dal/user";
 
 export function createAuth(
@@ -68,38 +69,41 @@ export function createAuth(
       cookieCache: { enabled: false },
     },
     verification: { modelName: "authVerifications" },
-    emailAndPassword: {
-      enabled: true,
-      minPasswordLength: isDevEnvironment() ? 6 : 8,
-      maxPasswordLength: 64,
-      password: { hash: hashPassword, verify: verifyPassword },
-      revokeSessionsOnPasswordReset: true,
-      sendResetPassword: async ({ user, url }) => {
-        await emailQueue.sendForgotPasswordEmail(user.email, user.name, url);
-      },
-    },
-    emailVerification: {
-      sendVerificationEmail: async ({ user, url }) => {
-        await emailQueue.sendVerificationEmail(user.email, user.name, url);
-      },
-    },
+    disabledPaths: [
+      "/sign-in/email",
+      "/sign-up/email",
+      "/request-password-reset",
+      "/reset-password",
+      "/change-password",
+      "/set-password",
+      "/verify-password",
+      "/send-verification-email",
+      "/verify-email",
+      "/change-email",
+    ],
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
-        if (
-          ["/sign-up/email", "/reset-password", "/change-password"].includes(
-            ctx.path,
-          )
-        ) {
-          const body = ctx.body as
-            | { newPassword?: unknown; password?: unknown }
-            | undefined;
-          const password = body?.newPassword ?? body?.password;
+        // disabledPaths matches exact URLs; also block legacy reset-token URLs.
+        if (ctx.path.startsWith("/reset-password")) {
+          throw new APIError("NOT_FOUND");
+        }
+        if (ctx.path === "/unlink-account") {
+          const session = await getSessionFromCtx(ctx);
+          if (session === null) return;
+          const accounts = await ctx.context.internalAdapter.findAccounts(
+            session.user.id,
+          );
+          const socialAccounts = accounts.filter((account) =>
+            ["google", "github"].includes(account.providerId),
+          );
+          const body = ctx.body as { accountId?: string } | undefined;
+          // Legacy credentials must not count as a usable remaining sign-in method.
           if (
-            !isDevEnvironment() &&
-            !NewPasswordSchema.safeParse(password).success
+            socialAccounts.length === 1 &&
+            socialAccounts[0]?.id === body?.accountId
           ) {
             throw new APIError("BAD_REQUEST", {
-              message: "Password does not meet the password requirements",
+              message: "Cannot unlink the last Google or GitHub account",
             });
           }
         }
@@ -138,7 +142,7 @@ export function createAuth(
       user: {
         update: {
           after: async (user) => {
-            // Verification and provider profile updates keep the application email in sync.
+            // Provider profile updates keep the application email in sync.
             await UserDAL.getUsersCollection()?.updateOne(
               { uid: user.id },
               { $set: { email: user.email } },

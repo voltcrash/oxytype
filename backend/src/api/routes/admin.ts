@@ -26,8 +26,4 @@ export default s.router(adminContract, {
   rejectReports: {
     handler: async (r) => callController(AdminController.rejectReports)(r),
   },
-  sendForgotPasswordEmail: {
-    handler: async (r) =>
-      callController(AdminController.sendForgotPasswordEmail)(r),
-  },
 });
