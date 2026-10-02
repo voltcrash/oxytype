@@ -14,14 +14,13 @@
   - [Upgrading database containers](#upgrading-database-containers)
   - [Security](#security)
   - [Account System](#account-system)
-    - [Setup Firebase](#setup-firebase)
+    - [Setup Better Auth](#setup-better-auth)
     - [Update backend configuration](#update-backend-configuration)
     - [Setup Recaptcha](#setup-recaptcha)
     - [Setup email optional](#setup-email-optional)
   - [Enable daily leaderboards](#enable-daily-leaderboards)
   - [Configuration files](#configuration-files)
     - [env file](#env-file)
-    - [serviceAccountKey.json](#serviceaccountkeyjson)
     - [backend-configuration.json](#backend-configurationjson)
 
 <!-- /TOC -->
@@ -36,6 +35,7 @@
 - download the [docker-compose.yml](https://github.com/voltcrash/oxytype/tree/master/docker/docker-compose.yml) file.
 - create an `.env` file, you can copy the content from the [example.env](https://github.com/voltcrash/oxytype/tree/master/docker/example.env).
 - download the [backend-configuration.json](https://github.com/voltcrash/oxytype/tree/master/docker/backend-configuration.json)
+- generate a secret with `openssl rand -base64 32`; set `BETTER_AUTH_SECRET` in `.env`.
 - run `docker compose up -d`
 - after the command exits successfully you can access [http://localhost](http://localhost)
 
@@ -114,65 +114,18 @@ Sources:
 
 ## Account System
 
-By default, user sign-up and login are disabled. To enable this, you'll need to set up a Firebase project.
-Stop the running docker containers using `docker compose down` before making any changes.
+Authentication runs inside the backend through [Better Auth](https://better-auth.com/docs/installation), using MongoDB for users, credentials, sessions, verification tokens, and auth rate limits. Accounts start fresh; no legacy authentication accounts or sessions are imported.
 
-### Setup Firebase
+### Setup Better Auth
 
-- create a [Firebase](https://firebase.google.com/) account
-- create a [new Firebase project](https://console.firebase.google.com/u/0/).
-  - name "oxytype"
-  - uncheck "enable google analytics"
-- enable authentication
-  - open the [firebase console](https://console.firebase.google.com/) and open your project
-  - go to `Authentication > Sign-in method`
-  - enable `Email/Password` and save
-- whitelist your domain
-  - In the Firebase console, go to `Authentication > Sign-in method`
-  - Scroll to `Authorized domains`
-  - Click `Add domain` and enter the domain where you’ll host the Oxytype frontend (e.g. `localhost`)
-- generate service account
-  - go to your project settings by clicking the `⚙` icon in the sidebar, then `Project settings`
-  - navigate to the `Service accounts` tab
-  - click `Generate new private key` to download the `.json` file.
-  - save it as `serviceAccountKey.json`
-  - update `docker-compose.yml` and uncomment the volume block in the `oxytype-backend` container to mount the Firebase service account:
-    ```yaml
-    #uncomment to enable the account system, check the SELF_HOSTING.md file
-    - type: bind
-      source: ./serviceAccountKey.json
-      target: /app/backend/src/credentials/serviceAccountKey.json
-      read_only: true
-    ```
+1. Generate `BETTER_AUTH_SECRET` with `openssl rand -base64 32` and save it in `.env`. Keep the same secret across restarts and backend replicas.
+2. Set `BASE_URL` to the public frontend origin. Compose sets `FRONTEND_URL` and `BETTER_AUTH_URL=BASE_URL/api/auth` automatically. The proxy strips `/api` before forwarding requests.
+3. Serve the frontend and API on the same site over HTTPS outside localhost. Session cookies use HttpOnly; production HTTPS uses Secure cookies. API requests include cookies, and state-changing cookie requests require the configured frontend origin.
+4. Configure SMTP for verification and password resets using the email settings below.
+5. Optionally configure `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` and `GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET`. Register `BASE_URL/api/auth/callback/google` and `BASE_URL/api/auth/callback/github` as OAuth callback URLs. Configure provider apps for the deployment's origin.
+6. Recreate the containers after changing environment variables.
 
-- update the `.env` file
-  - open the [firebase console](https://console.firebase.google.com/) and open your project
-  - open the project settings by clicking the `⚙` icon on the sidebar and `Project settings`
-  - if your project has no apps yet, create a new Web app (`</>` icon)
-    - nickname `oxytype`
-    - uncheck `set up firebase hosting`
-    - click `Register app`
-  - select your app and select `Config` for `SDK setup and configuration`
-  - it will display something like this:
-    ```
-    const firebaseConfig = {
-    apiKey: "AAAAAAAA",
-    authDomain: "oxytype-00000.firebaseapp.com",
-    projectId: "oxytype-00000",
-    storageBucket: "oxytype-00000.appspot.com",
-    messagingSenderId: "90000000000",
-    appId: "1:90000000000:web:000000000000"
-    };
-    ```
-  - update the `.env` file with the values above:
-    ```
-    FIREBASE_APIKEY=AAAAAAAA
-    FIREBASE_AUTHDOMAIN=oxytype-00000.firebaseapp.com
-    FIREBASE_PROJECTID=oxytype-00000
-    FIREBASE_STORAGEBUCKET=oxytype-00000.appspot.com
-    FIREBASE_MESSAGINGSENDERID=90000000000
-    FIREBASE_APPID=1:90000000000:web:000000000000
-    ```
+MongoDB collections and indexes are created at startup; standalone MongoDB is supported. Sessions last seven days with daily renewal. Sensitive account operations require authentication within the last minute. Password or email changes and password resets revoke existing sessions; sign in again afterward.
 
 ### Update backend configuration
 
@@ -256,10 +209,6 @@ To enable daily leaderboards update the `backend-configuration.json` file and ad
 ### env file
 
 All settings are described in the [example.env](https://github.com/voltcrash/oxytype/tree/master/docker/example.env) file.
-
-### serviceAccountKey.json
-
-Contains your firebase config, only needed if you want to allow users to signup.
 
 ### backend-configuration.json
 
