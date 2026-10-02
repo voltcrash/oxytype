@@ -207,8 +207,8 @@ verification, deployment, and any external blockers throughout implementation.
 
 ## Pending deployment inputs
 
-- Cloudflare account/Worker target and authenticated Wrangler access.
-- Existing data import versus empty staging database; export/source access if
-  import is requested. Implementation includes preserving import tooling either way.
+- Confirmed: new staging Worker with empty D1. Existing deployments remain untouched.
+- Cloudflare account and authenticated Wrangler access still needed.
+- Preserving import tooling remains in scope for a later data migration.
 - OAuth secrets, existing auth secret if preserving sessions, and integration
   bridge credentials/callback URLs. These are runtime inputs, not git contents.

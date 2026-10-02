@@ -49,6 +49,10 @@ build/Release
 # Dependency directories
 node_modules/
 node_modules_bak/
+.wrangler/
+.dev.vars
+.dev.vars.*
+backend/imports/
 
 # Optional npm cache directory
 .npm

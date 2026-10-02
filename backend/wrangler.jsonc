@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "oxytype-api-staging",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-10-02",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": true },
+  "vars": {
+    "MODE": "production",
+    "FRONTEND_URL": "http://localhost:3000",
+    "VERSION": "staging",
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "oxytype-staging",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations",
+    },
+  ],
+}
