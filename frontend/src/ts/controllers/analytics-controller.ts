@@ -1,34 +1,18 @@
-import {
-  Analytics as AnalyticsType,
-  logEvent,
-  setAnalyticsCollectionEnabled,
-} from "firebase/analytics";
-import { getAnalytics } from "../firebase";
-import { createErrorMessage } from "../utils/error";
-
-let analytics: AnalyticsType;
-
+/** Optional host-provided Google Analytics; authentication has no analytics SDK. */
+let enabled = false;
+type AnalyticsWindow = Window & {
+  gtag?: (
+    command: string,
+    name: string,
+    params?: Record<string, string>,
+  ) => void;
+};
 export async function log(
   eventName: string,
   params?: Record<string, string>,
 ): Promise<void> {
-  try {
-    logEvent(analytics, eventName, params);
-  } catch (e) {
-    console.log("Analytics unavailable");
-  }
+  if (enabled) (window as AnalyticsWindow).gtag?.("event", eventName, params);
 }
-
 export function activateAnalytics(): void {
-  if (analytics !== undefined) {
-    console.warn("Analytics already activated");
-    return;
-  }
-  console.log("Activating Analytics");
-  try {
-    analytics = getAnalytics();
-    setAnalyticsCollectionEnabled(analytics, true);
-  } catch (e) {
-    console.error(createErrorMessage(e, "Failed to activate analytics"));
-  }
+  enabled = true;
 }
