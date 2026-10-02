@@ -1,3 +1,5 @@
+import { isUniqueViolation } from "../../db/client";
+import { atomicUser } from "../../db/mutation";
 import * as ResultDAL from "../../dal/result";
 import * as PublicDAL from "../../dal/public";
 import {
@@ -123,7 +125,7 @@ export async function getResults(
     limit,
     offset,
   });
-  void addLog(
+  await addLog(
     "user_results_requested",
     {
       limit,
@@ -181,6 +183,48 @@ export async function updateTags(
 export async function addResult(
   req: MonkeyRequest<undefined, AddResultRequest>,
 ): Promise<AddResultResponse> {
+  const uid = req.ctx.decodedToken.uid;
+  const response = await atomicUser(
+    uid,
+    async () => await addResultAtomic(req),
+  ).catch((error: unknown) => {
+    if (isUniqueViolation(error)) {
+      const status = MonkeyStatusCodes.DUPLICATE_RESULT;
+      throw new MonkeyError(status.code, "Duplicate result");
+    }
+    throw error;
+  });
+  if (response.data.dailyLeaderboardRank !== undefined) {
+    const daily = getDailyLeaderboard(
+      req.body.result.language,
+      req.body.result.mode,
+      req.body.result.mode2,
+      req.ctx.configuration.dailyLeaderboards,
+    );
+    const entry = await daily?.getRank(
+      uid,
+      req.ctx.configuration.dailyLeaderboards,
+    );
+    if (entry) response.data.dailyLeaderboardRank = entry.rank;
+    else delete response.data.dailyLeaderboardRank;
+  }
+  if (response.data.weeklyXpLeaderboardRank !== undefined) {
+    const weekly = WeeklyXpLeaderboard.get(
+      req.ctx.configuration.leaderboards.weeklyXp,
+    );
+    const entry = await weekly?.getRank(
+      uid,
+      req.ctx.configuration.leaderboards.weeklyXp,
+    );
+    if (entry) response.data.weeklyXpLeaderboardRank = entry.rank;
+    else delete response.data.weeklyXpLeaderboardRank;
+  }
+  return response;
+}
+
+async function addResultAtomic(
+  req: MonkeyRequest<undefined, AddResultRequest>,
+): Promise<AddResultResponse> {
   const { uid } = req.ctx.decodedToken;
 
   const user = await UserDAL.getUser(uid, "add result");
@@ -209,7 +253,7 @@ export async function addResult(
     const objectToHash = omit(completedEvent, ["hash"]);
     const serverhash = objectHash(objectToHash);
     if (serverhash !== resulthash) {
-      void addLog(
+      await addLog(
         "incorrect_result_hash",
         {
           serverhash,
@@ -337,7 +381,7 @@ export async function addResult(
     isSafeNumber(lastResultTimestamp) &&
     nowNoMilis < earliestPossible - 1000
   ) {
-    void addLog(
+    await addLog(
       "invalid_result_spacing",
       {
         lastTimestamp: lastResultTimestamp,
@@ -418,7 +462,7 @@ export async function addResult(
   if (req.ctx.configuration.users.lastHashesCheck.enabled) {
     let lastHashes = user.lastReultHashes ?? [];
     if (lastHashes.includes(resulthash)) {
-      void addLog(
+      await addLog(
         "duplicate_result",
         {
           lastHashes,
@@ -459,14 +503,14 @@ export async function addResult(
   }
 
   if (completedEvent.mode === "time" && completedEvent.mode2 === "60") {
-    void UserDAL.incrementBananas(uid, completedEvent.wpm);
+    await UserDAL.incrementBananas(uid, completedEvent.wpm);
     if (
       isPb &&
       user.discordId !== undefined &&
       user.discordId !== "" &&
       user.lbOptOut !== true
     ) {
-      void GeorgeQueue.updateDiscordRole(user.discordId, completedEvent.wpm);
+      await GeorgeQueue.updateDiscordRole(user.discordId, completedEvent.wpm);
     }
   }
 
@@ -475,12 +519,12 @@ export async function addResult(
   const afk = completedEvent.afkDuration ?? 0;
   const totalDurationTypedSeconds =
     completedEvent.testDuration + completedEvent.incompleteTestSeconds - afk;
-  void UserDAL.updateTypingStats(
+  await UserDAL.updateTypingStats(
     uid,
     completedEvent.restartCount,
     totalDurationTypedSeconds,
   );
-  void PublicDAL.updateStats(
+  await PublicDAL.updateStats(
     completedEvent.restartCount,
     totalDurationTypedSeconds,
   );
@@ -577,7 +621,12 @@ export async function addResult(
         },
       ],
     });
-    await UserDAL.addToInbox(uid, [mail], req.ctx.configuration.users.inbox);
+    mail.id = "365streak";
+    await UserDAL.addToInbox(
+      uid,
+      [{ ...mail, id: `365streak${objectHash(uid)}` }],
+      req.ctx.configuration.users.inbox,
+    );
   }
 
   const xpGained = await calculateXp(
@@ -638,6 +687,8 @@ export async function addResult(
   }
 
   const dbresult = buildDbResult(completedEvent, user.name, isPb);
+  (dbresult as typeof dbresult & { submissionHash: string }).submissionHash =
+    resulthash;
   if (keySpacingStats !== undefined) {
     dbresult.keySpacingStats = keySpacingStats;
   }
@@ -651,7 +702,7 @@ export async function addResult(
   await UserDAL.incrementTestActivity(user, completedEvent.timestamp);
 
   if (isPb) {
-    void addLog(
+    await addLog(
       "user_new_pb",
       `${`${completedEvent.mode} ${completedEvent.mode2}`} ${
         completedEvent.wpm
@@ -665,7 +716,7 @@ export async function addResult(
   const data: PostResultResponse = {
     isPb,
     tagPbs,
-    insertedId: addedResult.insertedId.toHexString(),
+    insertedId: addedResult.insertedId.toString(),
     xp: xpGained.xp,
     dailyXpBonus: xpGained.dailyBonus ?? false,
     xpBreakdown: xpGained.breakdown ?? {},

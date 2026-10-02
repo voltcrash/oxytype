@@ -1,9 +1,10 @@
-const hasAnticheatImplemented = process.env["BYPASS_ANTICHEAT"] === "true";
+import { envValue } from "../runtime/env";
 
 import { CompletedEvent, KeyStats } from "@oxytype/schemas/results";
 import Logger from "../utils/logger";
 
 export function implemented(): boolean {
+  const hasAnticheatImplemented = envValue("BYPASS_ANTICHEAT") === "true";
   if (hasAnticheatImplemented) {
     Logger.warning("BYPASS_ANTICHEAT is enabled! Running without anti-cheat.");
   }

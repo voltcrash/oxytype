@@ -55,13 +55,6 @@ export async function getLeaderboard(
     friendsOnlyUid,
   );
 
-  if (leaderboard === false) {
-    throw new MonkeyError(
-      503,
-      "Leaderboard is currently updating. Please try again in a few seconds.",
-    );
-  }
-
   const count = await LeaderboardsDAL.getCount(
     mode,
     mode2,
@@ -91,12 +84,6 @@ export async function getRankFromLeaderboard(
     uid,
     getFriendsOnlyUid(uid, friendsOnly, connectionsConfig) !== undefined,
   );
-  if (data === false) {
-    throw new MonkeyError(
-      503,
-      "Leaderboard is currently updating. Please try again in a few seconds.",
-    );
-  }
 
   if (data === null) {
     return new MonkeyResponse("Rank retrieved", null);

@@ -1,3 +1,4 @@
+import { stage } from "../db/mutation";
 import { and, eq } from "drizzle-orm";
 import type { QuoteRating } from "@oxytype/schemas/quotes";
 import type { Language } from "@oxytype/schemas/languages";
@@ -12,14 +13,16 @@ export async function submit(
   rating: number,
   update: boolean,
 ): Promise<void> {
-  await statement(
-    "INSERT INTO quote_ratings(id,language,quote_id,ratings,total_rating) VALUES(?,?,?,?,?) ON CONFLICT(language,quote_id) DO UPDATE SET ratings=ratings+excluded.ratings,total_rating=total_rating+excluded.total_rating",
-    newId(),
-    language,
-    quoteId,
-    Number(!update),
-    rating,
-  ).run();
+  await stage(
+    statement(
+      "INSERT INTO quote_ratings(id,language,quote_id,ratings,total_rating) VALUES(?,?,?,?,?) ON CONFLICT(language,quote_id) DO UPDATE SET ratings=ratings+excluded.ratings,total_rating=total_rating+excluded.total_rating",
+      newId(),
+      language,
+      quoteId,
+      Number(!update),
+      rating,
+    ),
+  );
 }
 export async function get(
   quoteId: number,

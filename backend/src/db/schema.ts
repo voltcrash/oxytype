@@ -393,14 +393,17 @@ export const userActivity = sqliteTable(
 export const inbox = sqliteTable(
   "inbox",
   {
-    id: id(),
+    id: text("id").notNull(),
     uid: owner(),
     timestamp: integer("timestamp").notNull(),
     read: integer("read", { mode: "boolean" }).notNull().default(false),
     deleted: integer("deleted", { mode: "boolean" }).notNull().default(false),
     data: json(),
   },
-  (t) => [index("inbox_owner_idx").on(t.uid, t.timestamp)],
+  (t) => [
+    primaryKey({ columns: [t.uid, t.id] }),
+    index("inbox_owner_idx").on(t.uid, t.timestamp),
+  ],
 );
 export const rewardGrants = sqliteTable(
   "reward_grants",

@@ -54,7 +54,11 @@ describe("D1 user mutations", () => {
         read: false,
         rewards: [{ type: "xp", item: 50 }],
       };
-      const config = { ...BASE_CONFIGURATION.users.inbox, enabled: true };
+      const config = {
+        ...BASE_CONFIGURATION.users.inbox,
+        enabled: true,
+        maxMail: 100,
+      };
       await UserDAL.addToInbox("rewards", [mail], config);
       await Promise.all([
         UserDAL.updateInbox("rewards", [mail.id], []),

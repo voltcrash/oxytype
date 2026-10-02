@@ -147,9 +147,11 @@ export async function resetUser(uid: string): Promise<void> {
     delete user.discordId;
     delete user.lbOptOut;
     delete user.inbox;
+    await stage(
+      statement("UPDATE reward_grants SET claimed=1 WHERE uid=?", uid),
+    );
     for (const table of [
       "inbox",
-      "reward_grants",
       "user_activity",
       "leaderboard_bests",
       "daily_entries",
@@ -219,6 +221,7 @@ export async function getUser(uid: string, stack: string): Promise<DBUser> {
   const user = await readUser(uid);
   if (!user) throw new MonkeyError(404, "User not found", stack);
   user.personalBests ??= emptyPb();
+  user.inbox = await readInbox(uid);
   return user;
 }
 export async function getPartialUser<K extends keyof DBUser>(
@@ -369,22 +372,21 @@ export async function checkIfPb(
     );
     user.personalBests = pb.personalBests;
     user.lbPersonalBests = pb.lbPersonalBests;
-    for (const [duration, languages] of Object.entries(
-      user.lbPersonalBests?.time ?? {},
-    )) {
-      for (const [language, best] of Object.entries(languages)) {
-        await stage(
-          statement(
-            "INSERT INTO leaderboard_bests(uid,board,wpm,acc,timestamp,data) VALUES(?,?,?,?,?,?) ON CONFLICT(uid,board) DO UPDATE SET wpm=excluded.wpm,acc=excluded.acc,timestamp=excluded.timestamp,data=excluded.data",
-            uid,
-            `${language}_time_${duration}`,
-            best.wpm,
-            best.acc,
-            best.timestamp,
-            encode(best),
-          ),
-        );
-      }
+    const duration = Number(result.mode2),
+      language = result.language ?? "english";
+    const best = user.lbPersonalBests?.time[duration]?.[language];
+    if (result.mode === "time" && best !== undefined) {
+      await stage(
+        statement(
+          "INSERT INTO leaderboard_bests(uid,board,wpm,acc,timestamp,data) VALUES(?,?,?,?,?,?) ON CONFLICT(uid,board) DO UPDATE SET wpm=excluded.wpm,acc=excluded.acc,timestamp=excluded.timestamp,data=excluded.data",
+          uid,
+          `${language}_time_${duration}`,
+          best.wpm,
+          best.acc,
+          best.timestamp,
+          encode(best),
+        ),
+      );
     }
     return pb.isPb;
   });
@@ -644,6 +646,9 @@ export async function updateProfile(
 }
 export async function getInbox(uid: string): Promise<MonkeyMail[]> {
   await getUser(uid, "get inbox");
+  return await readInbox(uid);
+}
+async function readInbox(uid: string): Promise<MonkeyMail[]> {
   const rows = await database()
     .select()
     .from(inbox)
@@ -682,7 +687,7 @@ export async function addToInbox(
     for (const item of mail) {
       await stage(
         statement(
-          "INSERT INTO inbox(id,uid,timestamp,read,data) VALUES(?,?,?,?,?) ON CONFLICT(id) DO NOTHING",
+          "INSERT INTO inbox(id,uid,timestamp,read,data) VALUES(?,?,?,?,?) ON CONFLICT(uid,id) DO NOTHING",
           item.id,
           uid,
           item.timestamp,

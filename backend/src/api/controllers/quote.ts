@@ -1,3 +1,4 @@
+import { atomicUser } from "../../db/mutation";
 import { v4 as uuidv4 } from "uuid";
 import { getPartialUser, updateQuoteRatings } from "../../dal/user";
 import * as ReportDAL from "../../dal/report";
@@ -105,6 +106,14 @@ export async function getRating(
 }
 
 export async function submitRating(
+  req: MonkeyRequest<undefined, AddQuoteRatingRequest>,
+): Promise<MonkeyResponse> {
+  return await atomicUser(
+    req.ctx.decodedToken.uid,
+    async () => await submitRatingAtomic(req),
+  );
+}
+async function submitRatingAtomic(
   req: MonkeyRequest<undefined, AddQuoteRatingRequest>,
 ): Promise<MonkeyResponse> {
   const { uid } = req.ctx.decodedToken;
