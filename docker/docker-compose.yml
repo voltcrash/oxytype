@@ -88,11 +88,6 @@ services:
       - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID:-}
       - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET:-}
       - RECAPTCHA_SECRET=${RECAPTCHA_SECRET:-}
-      - EMAIL_HOST=${EMAIL_HOST:-}
-      - EMAIL_PORT=${EMAIL_PORT:-}
-      - EMAIL_USER=${EMAIL_USER:-}
-      - EMAIL_PASS=${EMAIL_PASS:-}
-      - EMAIL_FROM=${EMAIL_FROM:-}
       - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID:-}
     volumes:
       - type: bind
