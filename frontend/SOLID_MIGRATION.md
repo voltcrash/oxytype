@@ -46,7 +46,6 @@ These may remain imperative but must live inside Solid components (via `ref`/`on
 - `document.documentElement` / `<head>` manipulation (theme vars, fonts, favicon, funbox CSS link).
 - Canvas (Chart.js), screenshot capture (`html2canvas`-style).
 - Third-party ad SDK containers (`controllers/ad-controller.ts`, `pw-ad-controller.ts`, `eg-ad-controller.ts`) — containers rendered by Solid (`Advertisement.tsx`), SDK fills them.
-- Recaptcha.
 - **Word/letter rendering hot path** (`test-ui.ts` `updateWordLetters`, `scrollTape`, caret positioning) — see decision D1.
 - `noscript` + `#nocss` fallback in `html/warnings.html` (must work without JS/CSS).
 
@@ -100,7 +99,7 @@ Legend: `[ ]` todo, `[~]` in progress, `[x]` done. `deps:` = must be done first.
 ### Phase 2 — Commandline (deps: none; parallel with P1)
 
 - [x] **P2.1** Extract commandline state (open, input value, mode, subgroup stack, selected index, warning, checking) to `states/commandline.ts` signals/store. Legacy `commandline.ts` reads/writes store; no render changes. Tests for filtering/matching (`commandline/util.ts` already tested).
-  > Note: matching moved to a pure helper with tests; DOM rendering stayed legacy. Root `pnpm knip` still fails loading Storybook config; scoped exports/types passes, and scoped unused-file/dependency findings match the P0.2 baseline. Build used ignored local Firebase configs and a test Recaptcha key.
+  > Note: matching moved to a pure helper with tests; DOM rendering stayed legacy. Root `pnpm knip` still fails loading Storybook config; scoped exports/types passes, and scoped unused-file/dependency findings match the P0.2 baseline. Build used ignored local Firebase configs and a captcha test key.
 - [x] **P2.2** `components/modals/Commandline.tsx` rendering input, suggestions list (use `<For>`; virtualize only if current code limits count), warning, checking icon, input-validation (port `elements/input-validation.ts` to a hook or reuse `components/ui/form`). Register `Commandline` modal id (exists in `ModalId`). Keep keyboard nav + mouse hover behavior identical; keep `commandline.show()` API as thin wrapper → `showModal("Commandline", …)`.
   > Note: old dialog/SCSS remain until P2.3; controller still mirrors to the hidden dialog during this step. Theme preview swatches retain data-driven colors. Browser checked hotkey, filtering, navigation, hover, input validation, and Escape. Root Knip still fails on Storybook; scoped exports/types passes with only P0.2 baseline findings.
 - [x] **P2.3** Remove `<dialog id="commandLine">`, `commandline.scss` → Tailwind, delete legacy render code. `commandline/lists/*.ts` data stays (not UI). Delete `utils/animated-modal.ts` if no users remain (also `commandline/types.ts` import).

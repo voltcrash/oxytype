@@ -51,7 +51,7 @@ vp install --frozen-lockfile
 pnpm oxlint --type-aware --type-check --format agent
 vp run build-pkg
 vp run build-be
-BACKEND_URL=http://localhost:5005 RECAPTCHA_SITE_KEY=verification vp run build-fe
+BACKEND_URL=http://localhost:5005 TURNSTILE_SITE_KEY=1x00000000000000000000AA vp run build-fe
 vp -C frontend/storybook run build-storybook
 vp test run --maxWorkers=2
 ```

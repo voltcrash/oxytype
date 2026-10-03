@@ -69,12 +69,13 @@ Generate the secret privately (`openssl rand -base64 32`); preserve it across
 redeployments. Set `BETTER_AUTH_URL` in Wrangler vars to the deployed URL plus
 `/api/auth`, rebuild/redeploy. Do not put secrets in git. Optional secrets:
 `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`,
-`GITHUB_CLIENT_SECRET`, `RECAPTCHA_SECRET`,
+`GITHUB_CLIENT_SECRET`, `TURNSTILE_SECRET_KEY`,
 `INTEGRATION_SECRET`, `STATS_USERNAME`, `STATS_PASSWORD`.
 Optional nonsecret vars: `INTEGRATION_URL`, `QUOTES_REPOSITORY`.
 
-Without OAuth credentials no social login is available. Without a real captcha
-secret production signup fails closed. Built-in [anticheat](ANTICHEAT.md) permits
+Without OAuth credentials no social login is available. Without a real Turnstile
+secret production signup fails closed. [Turnstile setup](TURNSTILE.md) covers widget
+hostnames, form actions, test keys and token renewal. Built-in [anticheat](ANTICHEAT.md) permits
 valid production result saves and rejects inconsistent telemetry. No bypass is
 supported. Staging now includes the Discord removal, signup fix and anticheat;
 live API checks passed with a temporary seeded identity. Signup/result saving

@@ -1,8 +1,8 @@
 # Staging browser setup
 
-Worker and migration 0002 are deployed. Live API checks passed using a temporary
-seeded identity, which was removed. Real GitHub login/captcha remain unverified:
-staging currently has only its auth secret, and signup/result saving are disabled.
+Worker and migration 0002 are deployed. GitHub credentials and a managed Turnstile
+widget are configured privately. Real-user GitHub signup and typing must still be
+checked in the browser. See [Turnstile](TURNSTILE.md) for local test keys and policy.
 
 ## 1. GitHub credentials
 
@@ -20,30 +20,32 @@ Save its client ID and generated client secret in `backend/.dev.vars.staging`:
 ```dotenv
 GITHUB_CLIENT_ID=your-staging-client-id
 GITHUB_CLIENT_SECRET=your-staging-client-secret
-RECAPTCHA_SECRET=your-staging-captcha-secret
+TURNSTILE_SECRET_KEY=your-staging-turnstile-secret
 ```
 
 This ignored file is private. Preserve the existing remote `BETTER_AUTH_SECRET`;
 do not copy local development vars or paste secrets into chat.
 
-## 2. Captcha credentials
+## 2. Turnstile credentials
 
-Register a separate staging **reCAPTCHA v2 checkbox** key in the
-[reCAPTCHA console](https://www.google.com/recaptcha/admin/create). Add `localhost`
-to its allowed domains for this frontend. The current backend uses the
-[siteverify secret-key API](https://developers.google.com/recaptcha/docs/verify).
-Use the matching secret in the backend file above; the public site key goes in
+Create a separate **managed** staging widget in the
+[Cloudflare Turnstile dashboard](https://dash.cloudflare.com/?to=/:account/turnstile).
+Allow `localhost` for this staging frontend. Add your HTTPS frontend hostname when
+hosting it elsewhere, and update `FRONTEND_URL` in `backend/wrangler.jsonc` to match.
+The worker checks that hostname and each form's action through
+[Siteverify](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/).
+
+Use its secret in the backend file above. Save the matching public site key in
 `frontend/.env.staging.local`:
 
 ```dotenv
 BACKEND_URL=https://oxytype-api-staging.voltcrash.workers.dev/api
-RECAPTCHA_SITE_KEY=your-staging-captcha-site-key
+TURNSTILE_SITE_KEY=your-staging-turnstile-site-key
 ```
 
-Development mode now honors an explicit site key; ordinary local development
-retains Google's test key when none is supplied. Google's
-[FAQ](https://developers.google.com/recaptcha/docs/faq) explains localhost setup
-and why test keys are unsuitable for production traffic.
+These files already exist in this worktree and contain the staging credentials.
+Development mode honors an explicit site key; ordinary local development uses
+Cloudflare's test widget. Test secrets are rejected by production-mode Workers.
 
 ## 3. Upload and enable staging
 
@@ -72,7 +74,7 @@ Stop the existing frontend terminal with Ctrl+C, then run:
 pnpm --filter @oxytype/frontend dev --mode staging
 ```
 
-Open `http://localhost:3000`. Sign in with GitHub, choose a username, solve captcha,
+Open `http://localhost:3000`. Sign in with GitHub, choose a username, complete Turnstile,
 complete a test, refresh, then sign out/sign in and confirm the result remains.
 Verify the browser requests the staging host. Use an ordinary typing sample;
 the earlier seeded API checks do not establish real-user anticheat compatibility.
