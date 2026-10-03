@@ -17,11 +17,14 @@ export async function signInWithOAuth(
     provider?: "google" | "github";
     email?: string;
     rememberMe?: boolean;
+    frontendUrl?: string;
     headers?: Record<string, string>;
   } = {},
 ): Promise<{ cookie: string; response: Response }> {
   const providerId = options.provider ?? "google";
   const email = options.email ?? "newuser@example.com";
+  const frontendUrl = options.frontendUrl ?? "http://localhost:3000";
+  const callbackURL = `${frontendUrl}/oauth-callback?requestId=nonce`;
   const context = await auth.$context;
   const provider = context.socialProviders.find((it) => it.id === providerId);
   if (!provider) throw new Error(`Missing ${providerId} test provider`);
@@ -35,12 +38,12 @@ export async function signInWithOAuth(
   const start = await app.request("http://localhost:5005/auth/sign-in/social", {
     method: "POST",
     headers: {
-      origin: "http://localhost:3000",
+      origin: frontendUrl,
       "content-type": "application/json",
     },
     body: JSON.stringify({
       provider: providerId,
-      callbackURL: "http://localhost:3000/oauth-callback?requestId=nonce",
+      callbackURL,
       disableRedirect: true,
       additionalData: { rememberMe: options.rememberMe ?? true },
     }),
@@ -54,8 +57,6 @@ export async function signInWithOAuth(
     { headers: { cookie: cookies(start), ...options.headers } },
   );
   expect(response.status).toBe(302);
-  expect(response.headers.get("location")).toBe(
-    "http://localhost:3000/oauth-callback?requestId=nonce",
-  );
+  expect(response.headers.get("location")).toBe(callbackURL);
   return { cookie: cookies(response), response };
 }

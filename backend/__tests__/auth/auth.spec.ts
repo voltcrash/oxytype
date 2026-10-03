@@ -56,6 +56,58 @@ async function request(
 }
 
 describe("Better Auth social-only HTTP flow", () => {
+  it("rejects OAuth callbacks when the browser loses its state cookie", async () => {
+    const callbackURL =
+      "http://localhost:3000/oauth-callback.html?requestId=nonce";
+    const start = await request("/sign-in/social", {
+      provider: "github",
+      callbackURL,
+      errorCallbackURL: callbackURL,
+      disableRedirect: true,
+    });
+    const data = (await start.json()) as { url: string };
+    const state = new URL(data.url).searchParams.get("state");
+    expect(state).toBeTruthy();
+    const response = await request(
+      `/callback/github?code=test-code&state=${state}`,
+    );
+    expect(response.status).toBe(302);
+    const redirect = new URL(response.headers.get("location") ?? "");
+    expect(redirect.searchParams.get("error")).toBe("state_mismatch");
+    expect(redirect.searchParams.get("requestId")).toBe("nonce");
+    expect(store["authUsers"]).toHaveLength(0);
+    expect(store["authSessions"]).toHaveLength(0);
+  });
+  it("completes same-origin HTTPS GitHub OAuth with a secure first-party session", async () => {
+    const frontendUrl = "https://staging.example";
+    vi.stubEnv("MODE", "production");
+    vi.stubEnv("FRONTEND_URL", frontendUrl);
+    vi.stubEnv("BETTER_AUTH_URL", `${frontendUrl}/api/auth`);
+    vi.stubEnv(
+      "BETTER_AUTH_SECRET",
+      "test-secret-with-at-least-thirty-two-characters",
+    );
+    auth = createAuth(memoryAdapter(store));
+    vi.spyOn(AuthInit, "getAuth").mockReturnValue(auth);
+    const { response, cookie } = await signInWithOAuth(auth, app, {
+      provider: "github",
+      frontendUrl,
+    });
+    const sessionCookie = response.headers
+      .getSetCookie()
+      .find((value) => value.includes("session_token="));
+    expect(sessionCookie).toContain("HttpOnly");
+    expect(sessionCookie).toContain("Secure");
+    expect(sessionCookie).toContain("SameSite=Lax");
+    const session = await app.request(
+      "https://staging.example/auth/get-session",
+      { headers: { cookie, origin: frontendUrl } },
+    );
+    expect(session.status).toBe(200);
+    expect(await session.json()).toMatchObject({
+      user: { email: "newuser@example.com" },
+    });
+  });
   it.each(["google", "github"] as const)(
     "creates %s accounts and HttpOnly sessions through OAuth callbacks",
     async (provider) => {
