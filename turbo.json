@@ -59,6 +59,7 @@
       "env": [
         "BACKEND_URL",
         "TURNSTILE_SITE_KEY",
+        "AUTH_PROVIDERS",
         "SENTRY_DSN",
         "SENTRY_AUTH_TOKEN",
         "SENTRY_ORG",
@@ -68,7 +69,12 @@
     },
     "@oxytype/frontend#dev": {
       "dependsOn": ["^build"],
-      "env": ["BACKEND_URL", "TURNSTILE_SITE_KEY", "SERVER_OPEN"],
+      "env": [
+        "BACKEND_URL",
+        "TURNSTILE_SITE_KEY",
+        "AUTH_PROVIDERS",
+        "SERVER_OPEN"
+      ],
       "persistent": true
     },
     "@oxytype/backend#dev": {

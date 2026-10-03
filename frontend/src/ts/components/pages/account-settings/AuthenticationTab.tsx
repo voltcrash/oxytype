@@ -1,4 +1,5 @@
 import { createSignal, Show } from "solid-js";
+import { envConfig } from "virtual:env-config";
 
 import {
   addAuthProvider,
@@ -17,8 +18,22 @@ import { Section } from "./utils";
 export function AuthenticationTab() {
   return (
     <>
-      <ProviderAuthentication authMethod="google" />
-      <ProviderAuthentication authMethod="github" />
+      <Show
+        when={
+          envConfig.authProviders.includes("google") ||
+          isUsingAuthenticationReactive("google")
+        }
+      >
+        <ProviderAuthentication authMethod="google" />
+      </Show>
+      <Show
+        when={
+          envConfig.authProviders.includes("github") ||
+          isUsingAuthenticationReactive("github")
+        }
+      >
+        <ProviderAuthentication authMethod="github" />
+      </Show>
       <RevokeAllTokens />
     </>
   );
