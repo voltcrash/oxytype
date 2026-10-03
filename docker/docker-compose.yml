@@ -6,7 +6,7 @@ services:
       - "${FRONTEND_PORT:-3000}:80"
     environment:
       OXYTYPE_BACKEND_URL: ${OXYTYPE_BACKEND_URL:?Set the Worker API URL including /api}
-      RECAPTCHA_SITE_KEY: ${RECAPTCHA_SITE_KEY:-}
+      TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
     healthcheck:
       test: ["CMD", "nc", "-z", "localhost", "80"]
       interval: 5s
