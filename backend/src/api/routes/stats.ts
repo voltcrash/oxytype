@@ -20,7 +20,7 @@ const duration = new Histogram({
   buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10],
 });
 const stats = {
-  startedAt: Date.now(),
+  startedAt: 0,
   requests: 0,
   errors: 0,
   totalDurationMs: 0,
@@ -28,6 +28,7 @@ const stats = {
 
 /** Replaces the Express-only Swagger Stats middleware. */
 export function addStatsRoutes(app: Hono<ApiEnv>): void {
+  if (stats.startedAt === 0) stats.startedAt = Date.now();
   app.use(async (c, next) => {
     const start = performance.now();
     await next();

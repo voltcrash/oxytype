@@ -30,7 +30,7 @@ import { rateLimitRequest } from "../../middlewares/rate-limit";
 import { verifyPermissions } from "../../middlewares/permission";
 import { verifyRequiredConfiguration } from "../../middlewares/configuration";
 
-const APP_START_TIME = Date.now();
+let appStartTime: number | undefined;
 
 const s = initServer();
 const router = s.router(contract, {
@@ -93,7 +93,7 @@ export function addApiRoutes(app: Hono<ApiEnv>, docsRoot?: string): void {
   app.get("/", (c) =>
     c.json(
       new MonkeyResponse("ok", {
-        uptime: Date.now() - APP_START_TIME,
+        uptime: Date.now() - (appStartTime ??= Date.now()),
         version: getVersion(),
       }),
     ),
