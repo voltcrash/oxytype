@@ -302,3 +302,33 @@ Automatic bans remain disabled by default.
   verification remains pending; [setup steps](STAGING_SETUP.md) and private ignored
   credential templates are prepared. Development frontend now honors an explicit
   captcha site key; four generated-config assertions and workspace typecheck pass.
+
+### Turnstile staging update — 3 October 2026
+
+- All four captcha flows now use Cloudflare Turnstile; provider scripts,
+  validation, environment names, Docker placeholders and CI keys are replaced.
+  Request bodies retain `captcha`; no D1 migration was needed.
+- Siteverify matches the frontend hostname and each form action, rejects all
+  official test secrets in production, and fails closed on bad/spent tokens or
+  unavailable verification. Widgets clear expired tokens, reset after requests
+  and clean up when modals close. Signup retains its session for challenge retries.
+- Provisioned managed widget **Oxytype staging**, allowing `localhost`. Its secret
+  and the supplied GitHub credentials are stored only in ignored private files and
+  deployed secrets; the existing auth secret was preserved.
+- Deployed Worker version `51fe6edc-1824-493d-9bdd-1b00c6678472` with code through
+  `0b6eb5ef5`. Enabled signup, profiles, result saving and payload hash checks;
+  automatic bans remain disabled.
+- 187 targeted tests passed: 17 Siteverify/security, 113 user-controller,
+  44 quote-controller, two D1/auth and 11 Solid widget/form tests. Workspace
+  type-aware Oxlint, commit hooks, Worker dry-run/API docs and frontend production
+  build passed. No active legacy captcha references remain.
+- Real managed challenge passed in the browser. Live Worker rejected a dummy token
+  with HTTP 422, preserved its D1-backed onboarding session (200), accepted the
+  real token for signup (200), and returned the saved profile (200). Synthetic
+  identity/session/profile/audit/rate data were removed; D1 again has zero users,
+  sessions and results, with clean foreign keys.
+- Health/config endpoints returned 200. GitHub sign-in returned 200 and the required
+  `/api/auth/callback/github` URL on the staging host. Actual GitHub consent/code
+  exchange and a human typing save against staging remain to be checked in an
+  ordinary browser. [Staging setup](STAGING_SETUP.md) and [Turnstile policy](TURNSTILE.md)
+  describe configuration and the remaining browser steps.

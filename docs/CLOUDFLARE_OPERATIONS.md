@@ -78,9 +78,9 @@ secret production signup fails closed. [Turnstile setup](TURNSTILE.md) covers wi
 hostnames, form actions, test keys and token renewal. Built-in [anticheat](ANTICHEAT.md) permits
 valid production result saves and rejects inconsistent telemetry. No bypass is
 supported. Staging now includes the Discord removal, signup fix and anticheat;
-live API checks passed with a temporary seeded identity. Signup/result saving
-were restored to disabled after testing. Follow [staging browser setup](STAGING_SETUP.md)
-to supply OAuth/captcha credentials and enable them deliberately. Keep automatic
+live API checks passed with a temporary seeded identity. GitHub and Turnstile credentials are now deployed; signup, profiles and result
+saving are enabled for browser testing. Follow [staging browser setup](STAGING_SETUP.md)
+for the remaining real-user checks. Keep automatic
 bans disabled while reviewing real typing samples. `/stats/*` remains inaccessible
 without stats credentials.
 

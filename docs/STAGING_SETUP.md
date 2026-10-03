@@ -1,8 +1,9 @@
 # Staging browser setup
 
 Worker and migration 0002 are deployed. GitHub credentials and a managed Turnstile
-widget are configured privately. Real-user GitHub signup and typing must still be
-checked in the browser. See [Turnstile](TURNSTILE.md) for local test keys and policy.
+widget are configured privately. Real managed Turnstile validation passed against the deployed Worker.
+Signup, profiles, result saving and payload hash checks are enabled. Real-user
+GitHub signup and typing must still be checked in the browser. See [Turnstile](TURNSTILE.md) for local test keys and policy.
 
 ## 1. GitHub credentials
 
