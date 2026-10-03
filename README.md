@@ -13,7 +13,7 @@ pnpm install
 pnpm dev-fe
 ```
 
-The frontend runs on port 3000. Run `pnpm dev` for the full workspace after applying local D1 migrations and copying `backend/.dev.vars.example` to `.dev.vars`.
+The frontend runs at `http://localhost:3000` without opening a browser. Set `SERVER_OPEN=true` in `frontend/.env` or run `SERVER_OPEN=true pnpm dev-fe` to open your default browser on startup. Run `pnpm dev` for the full workspace after applying local D1 migrations and copying `backend/.dev.vars.example` to `.dev.vars`.
 
 ## Contributing
 

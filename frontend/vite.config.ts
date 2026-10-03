@@ -302,7 +302,7 @@ export default defineConfig(({ mode }): UserConfig => {
     build: getBuildOptions({ enableSourceMaps: useSentry }),
     css: getCssOptions(),
     server: {
-      open: env["SERVER_OPEN"] !== "false",
+      open: env["SERVER_OPEN"] === "true",
       port: 3000,
       host: env["BACKEND_URL"] !== undefined,
       watch: {
