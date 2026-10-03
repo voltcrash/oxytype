@@ -1,5 +1,4 @@
-import { createResource, createSignal, JSXElement, Show } from "solid-js";
-import { z } from "zod/v3";
+import { createResource, JSXElement, Show } from "solid-js";
 
 import { resetConfig } from "../../../config/lifecycle";
 import { getConfig } from "../../../config/store";
@@ -8,18 +7,27 @@ import {
   previewClick,
   previewError,
 } from "../../../controllers/sound-controller";
-import { useLocalStorage } from "../../../hooks/useLocalStorage";
 import { isAuthenticated } from "../../../states/core";
 import { showModal } from "../../../states/modals";
-import { isSettingsSearchActive } from "../../../states/settings-search";
+import {
+  getSearchMatchCounts,
+  getSettingsSearch,
+  isSettingsSearchActive,
+  setSettingsSearch,
+} from "../../../states/settings-search";
+import {
+  getCurrentSettingsSection,
+  SettingsSection,
+  settingsSections,
+  setCurrentSettingsSection,
+} from "../../../states/settings-sections";
 import { showSimpleModal } from "../../../states/simple-modal";
 import { cn } from "../../../utils/cn";
 import fileStorage from "../../../utils/file-storage";
-import { wordsToCamelCase } from "../../../utils/strings";
-import { Anime, AnimeShow } from "../../common/anime";
 import { Button } from "../../common/Button";
-import { Fa } from "../../common/Fa";
+import { H2 } from "../../common/Headers";
 import { Page } from "../../common/Page";
+import { SidebarLayout } from "../../common/SidebarLayout";
 import { CommandlineHotkey } from "../../hotkeys/CommandlineHotkey";
 import { AnimationFpsLimit } from "./custom-setting/AnimationFpsLimit";
 import { AutoSwitchTheme } from "./custom-setting/AutoSwitchTheme";
@@ -43,9 +51,9 @@ import { Presets } from "./custom-setting/Presets";
 import { SoundVolume } from "./custom-setting/SoundVolume";
 import { Tags } from "./custom-setting/Tags";
 import { Theme } from "./custom-setting/Theme";
-import { QuickNav } from "./QuickNav";
 import { SearchableAutoSetting } from "./SearchableAutoSetting";
 import { SearchableSetting } from "./SearchableSetting";
+import { SettingsSectionContext } from "./settings-section-context";
 import { SettingsSearch } from "./SettingsSearch";
 
 export function SettingsPage(): JSXElement {
@@ -56,27 +64,54 @@ export function SettingsPage(): JSXElement {
 
   return (
     <Page id="settings">
-      <div class="grid gap-8">
-        {/* while filtering, only the matching settings stay visible; everything
-            else is hidden with css so nothing unmounts while typing */}
-        <QuickNav class={cn(isSettingsSearchActive() && "hidden")} />
-        <Show when={getConfig.showKeyTips}>
-          <div
-            class={cn(
-              "text-center text-sub",
-              isSettingsSearchActive() && "hidden",
-            )}
-          >
-            tip: You can also change all these settings quickly using the
-            command line
-            <br />( <CommandlineHotkey /> )
+      <SidebarLayout
+        items={settingsSections}
+        // while filtering, results from every section are shown
+        active={
+          isSettingsSearchActive() ? undefined : getCurrentSettingsSection()
+        }
+        onSelect={(section) => {
+          setSettingsSearch("");
+          setCurrentSettingsSection(section);
+        }}
+        header={<SettingsSearch />}
+        counts={isSettingsSearchActive() ? getSearchMatchCounts() : undefined}
+        footer={
+          isAuthenticated() || getConfig.showKeyTips ? (
+            <>
+              <Show when={isAuthenticated()}>
+                <Button
+                  text="account settings"
+                  variant="text"
+                  fa={{ icon: "fa-user-cog" }}
+                  href="/account-settings"
+                  router-link
+                />
+              </Show>
+              <Show when={getConfig.showKeyTips}>
+                {/* padded like the buttons: inset to line up with the item icons,
+                    and space below to match the gap above the tip */}
+                <div class="px-2 pb-2 text-em-xs text-sub">
+                  tip: you can also change all these settings quickly via the
+                  command palette (<CommandlineHotkey />)
+                </div>
+              </Show>
+            </>
+          ) : undefined
+        }
+      >
+        <Show
+          when={
+            isSettingsSearchActive() &&
+            Object.keys(getSearchMatchCounts()).length === 0
+          }
+        >
+          <div class="text-center text-sub">
+            No settings match &quot;{getSettingsSearch().trim()}&quot;.
           </div>
         </Show>
-        <AccountSettingsNotice />
-        <SettingsSearch />
-        {/* while filtering, lay the matching sections out with a uniform gap */}
-        <div class={cn(isSettingsSearchActive() && "grid gap-8")}>
-          <Section title="behavior">
+        <div class="grid gap-16">
+          <Section section="behavior">
             <Show when={isAuthenticated()}>
               <Tags />
               <Presets />
@@ -97,7 +132,7 @@ export function SettingsPage(): JSXElement {
             <CustomLayoutfluid />
             <CustomPolyglot />
           </Section>
-          <Section title="input">
+          <Section section="input">
             <SearchableAutoSetting key="freedomMode" />
             <SearchableAutoSetting key="strictSpace" />
             <SearchableAutoSetting key="oppositeShiftMode" />
@@ -112,7 +147,7 @@ export function SettingsPage(): JSXElement {
             <Layout />
             <SearchableAutoSetting key="codeUnindentOnBackspace" />
           </Section>
-          <Section title="sound">
+          <Section section="sound">
             <SoundVolume />
             <SearchableAutoSetting
               key="playSoundOnClick"
@@ -139,14 +174,14 @@ export function SettingsPage(): JSXElement {
               }}
             />
           </Section>
-          <Section title="caret">
+          <Section section="caret">
             <SearchableAutoSetting key="smoothCaret" />
             <SearchableAutoSetting key="caretStyle" wide />
             <PaceCaret />
             <SearchableAutoSetting key="repeatedPace" />
             <SearchableAutoSetting key="paceCaretStyle" wide />
           </Section>
-          <Section title="appearance">
+          <Section section="appearance">
             <SearchableAutoSetting key="timerStyle" wide />
             <SearchableAutoSetting key="liveSpeedStyle" />
             <SearchableAutoSetting key="liveAccStyle" />
@@ -174,7 +209,7 @@ export function SettingsPage(): JSXElement {
               <KeymapSize />
             </Show>
           </Section>
-          <Section title="theme">
+          <Section section="theme">
             <SearchableAutoSetting key="flipTestColors" />
             <SearchableAutoSetting key="colorfulMode" />
             <CustomBackground />
@@ -185,13 +220,13 @@ export function SettingsPage(): JSXElement {
             <SearchableAutoSetting key="randomTheme" wide />
             <Theme />
           </Section>
-          <Section title="hide elements">
+          <Section section="hideElements">
             <SearchableAutoSetting key="showKeyTips" />
             <SearchableAutoSetting key="showOutOfFocusWarning" />
             <SearchableAutoSetting key="capsLockWarning" />
             <SearchableAutoSetting key="showAverage" />
           </Section>
-          <Section title="danger zone">
+          <Section section="dangerZone">
             <ImportExport />
             <SearchableAutoSetting key="ads" />
             <SearchableSetting
@@ -252,85 +287,39 @@ export function SettingsPage(): JSXElement {
             />
           </Section>
         </div>
-
-        <AccountSettingsNotice />
-      </div>
+      </SidebarLayout>
     </Page>
   );
 }
 
-function AccountSettingsNotice(): JSXElement {
-  const [dismissed, setDismissed] = useLocalStorage({
-    key: "accountSettingsMessageDismissed",
-    schema: z.boolean(),
-    fallback: false,
-  });
-  return (
-    <Show when={!dismissed()}>
-      <div
-        class={cn(
-          "grid grid-cols-[auto_1fr] items-center gap-4 rounded px-4 py-4 ring-4 ring-sub-alt md:grid-cols-[auto_1fr_auto] md:gap-8",
-          isSettingsSearchActive() && "hidden",
-        )}
-      >
-        <Fa icon="fa-user-cog" class="text-4xl text-sub" />
-        <div>
-          Account settings have moved. You can now access them by hovering over
-          the account button in the top right corner, then clicking
-          &quot;Account settings&quot;.
-        </div>
-        <Button
-          text="go to account settings"
-          href="/account-settings"
-          class="col-span-2 p-4 md:col-span-1"
-          router-link
-          onClick={() => {
-            setDismissed(true);
-          }}
-        />
-      </div>
-    </Show>
-  );
-}
-
-function Section(props: { title: string; children: JSXElement }): JSXElement {
-  const [isOpen, setIsOpen] = createSignal(true);
-
+function Section(props: {
+  section: SettingsSection;
+  children: JSXElement;
+}): JSXElement {
+  // oxlint-disable-next-line solid/reactivity -- each section is static
+  const section = props.section;
   return (
     <div
-      id={`group_${wordsToCamelCase(props.title)}`}
+      id={`group_${props.section}`}
       class={cn(
-        // when filtering, drop sections where every setting is hidden
+        "grid gap-8",
+        // only the selected section is shown, unless filtering, where every
+        // section with a matching setting is shown
+        !isSettingsSearchActive() &&
+          getCurrentSettingsSection() !== props.section &&
+          "hidden",
         isSettingsSearchActive() &&
           "not-has-[[data-setting-key]:not(.hidden)]:hidden",
       )}
     >
-      <Button
-        variant="text"
-        class={cn(
-          "mb-8 w-max gap-4 p-0 text-4xl",
-          isSettingsSearchActive() && "hidden",
-        )}
-        onClick={() => setIsOpen((prev) => !prev)}
-      >
-        <Anime
-          animation={{
-            rotate: isOpen() ? 0 : -90,
-            duration: 125,
-          }}
-        >
-          <Fa icon="fa-chevron-down" />
-        </Anime>
-        {props.title}
-      </Button>
-      <AnimeShow
-        when={isOpen() || isSettingsSearchActive()}
-        slide
-        class="grid gap-8"
-      >
+      <H2
+        text={settingsSections[props.section].text}
+        fa={{ icon: settingsSections[props.section].icon }}
+        class="pb-0"
+      />
+      <SettingsSectionContext.Provider value={section}>
         {props.children}
-        <div class={cn("h-16", isSettingsSearchActive() && "hidden")}></div>
-      </AnimeShow>
+      </SettingsSectionContext.Provider>
     </div>
   );
 }

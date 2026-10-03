@@ -1,5 +1,5 @@
 import { CustomTheme, CustomThemeNameSchema } from "@oxytype/schemas/users";
-import { For, JSXElement, Show, untrack } from "solid-js";
+import { For, JSXElement, onCleanup, Show, untrack } from "solid-js";
 import { debounce } from "throttle-debounce";
 import { z } from "zod/v3";
 
@@ -18,8 +18,10 @@ import {
   ThemeWithName,
 } from "../../../../constants/themes";
 import {
+  clearPreview,
   convertCustomColorsToTheme,
   convertThemeToCustomColors,
+  preview,
 } from "../../../../controllers/theme-controller";
 import { createEffectOn } from "../../../../hooks/effects";
 import { isAuthenticated } from "../../../../states/core";
@@ -43,19 +45,25 @@ import { Fa } from "../../../common/Fa";
 import { Separator } from "../../../common/Separator";
 import { SearchableSetting } from "../SearchableSetting";
 
+// darkest background first
 export const sortedThemes: ThemeWithName[] = [...ThemesList].sort((a, b) => {
   const b1 = hexToHSL(a.bg);
   const b2 = hexToHSL(b.bg);
-  return b2.lgt - b1.lgt;
+  return b1.lgt - b2.lgt;
 });
 
 export function Theme(): JSXElement {
   const customThemes = useCustomThemesLiveQuery();
 
+  // hovering a preset previews it; leaving the presets (or the page) restores
+  // the current theme. cleared on the whole list rather than per button so
+  // moving between buttons doesn't flash the current theme in between
+  onCleanup(() => void clearPreview());
+
   const Presets = () => (
-    <div class="grid gap-4">
+    <div class="grid gap-4" onMouseLeave={() => void clearPreview()}>
       <Show when={getConfig.favThemes.length > 0}>
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] gap-2">
+        <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
           <For
             each={sortedThemes.filter((t) =>
               getConfig.favThemes.includes(t.name),
@@ -68,7 +76,7 @@ export function Theme(): JSXElement {
       <Show when={getConfig.favThemes.length > 0}>
         <Separator />
       </Show>
-      <div class="grid grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] gap-2">
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
         <For
           each={sortedThemes.filter(
             (t) => !getConfig.favThemes.includes(t.name),
@@ -83,7 +91,7 @@ export function Theme(): JSXElement {
   const Customs = () => (
     <div class="grid gap-4">
       <Show when={isAuthenticated()}>
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] gap-2">
+        <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
           <For each={customThemes()}>
             {(theme) => <CustomThemeButton theme={theme} />}
           </For>
@@ -437,9 +445,18 @@ function ThemeButton(props: { theme: ThemeWithName }): JSXElement {
   const isActive = () => getConfig.theme === props.theme.name;
   const isFav = () => getConfig.favThemes.includes(props.theme.name);
 
+  const select = (): void => {
+    if (isActive()) return;
+    setConfig("theme", props.theme.name);
+  };
+
+  // not a <button>: many theme css files style button:hover (colors,
+  // animations, gradients) outside of the tailwind layers. while previewing
+  // one of those themes it would restyle these cards, so avoid matching it
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       style={{
         "--bg": props.theme.bg,
         "--main": props.theme.main,
@@ -447,29 +464,45 @@ function ThemeButton(props: { theme: ThemeWithName }): JSXElement {
         "--text": props.theme.text,
       }}
       class={cn(
-        "group/theme grid grid-cols-[1fr_auto_1fr] justify-between p-1 ring-4 ring-transparent",
+        "group/theme relative grid cursor-pointer place-items-center overflow-hidden rounded px-1 py-2 leading-[1.25] ring-4 ring-transparent select-none",
+        "focus-visible:shadow-control-focus focus-visible:outline-none",
         "bg-(--bg) text-(--main)",
         // "hover:bg-(--text) hover:text-(--bg)",
         "hover:ring-(--main)",
         "transition-[opacity,color,background,box-shadow] duration-125",
         isActive() && "ring-4 ring-(--main)",
       )}
-      onClick={() => {
-        if (isActive()) return;
-        setConfig("theme", props.theme.name);
+      onMouseEnter={() => {
+        if (isActive()) {
+          void clearPreview();
+        } else {
+          preview(props.theme.name);
+        }
+      }}
+      onClick={select}
+      onKeyDown={(e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        e.preventDefault();
+        select();
       }}
     >
+      {/* the name spans the whole button on one line; the star and colors
+          overlay its ends and fade it out instead of squeezing it */}
+      <div class="w-full px-2 text-center whitespace-nowrap">
+        {replaceUnderscoresWithSpaces(props.theme.name)}
+      </div>
       <div
         class={cn(
-          "align-center place-self-start opacity-0 transition-[opacity,color,background] duration-125 group-hover/theme:opacity-100",
+          "absolute inset-y-0 left-0 flex items-center pr-6 pl-1",
+          "bg-linear-to-r from-(--bg) from-60% to-transparent",
+          "opacity-0 transition-[opacity,color,background] duration-125 group-hover/theme:opacity-100",
           isFav() && "opacity-100",
         )}
       >
         <div
           class={cn(
             "grid justify-center",
-            "rounded-full bg-(--bg) p-1",
-            // "group-hover/theme:text-(--text)",
+            "rounded-full p-1",
             "transition-[opacity,color,background] duration-125",
             "hover:text-(--text)",
           )}
@@ -496,20 +529,21 @@ function ThemeButton(props: { theme: ThemeWithName }): JSXElement {
           />
         </div>
       </div>
-      <div>{replaceUnderscoresWithSpaces(props.theme.name)}</div>
       <div
         class={cn(
-          "place-self-end self-center opacity-0 transition-opacity duration-125 group-hover/theme:opacity-100",
+          "absolute inset-y-0 right-0 flex items-center pr-1.5 pl-8",
+          "bg-linear-to-l from-(--bg) from-70% to-transparent",
+          "opacity-0 transition-opacity duration-125 group-hover/theme:opacity-100",
           isActive() && "opacity-100",
         )}
       >
-        <div class="grid grid-cols-3 gap-2 rounded-full bg-(--bg) p-1.5">
+        <div class="grid shrink-0 grid-cols-3 gap-2">
           <div class="h-4 w-4 rounded-full bg-(--main)"></div>
           <div class="h-4 w-4 rounded-full bg-(--sub)"></div>
           <div class="h-4 w-4 rounded-full bg-(--text)"></div>
         </div>
       </div>
-    </button>
+    </div>
   );
 }
 

@@ -1,11 +1,13 @@
-import { createMemo, JSXElement } from "solid-js";
+import { createMemo, JSXElement, useContext } from "solid-js";
 
 import {
   registerSearchable,
   settingMatchesSearch,
 } from "../../../states/settings-search";
+import { setCurrentSettingsSection } from "../../../states/settings-sections";
 import { cn } from "../../../utils/cn";
 import { Setting, SettingProps } from "../../common/Setting";
+import { SettingsSectionContext } from "./settings-section-context";
 
 export type SearchableSettingProps = SettingProps & {
   // extra text (e.g. option labels) the search filter also matches against
@@ -35,12 +37,19 @@ export function SearchableSetting(props: SearchableSettingProps): JSXElement {
 
   // scoring is global (a setting shows only if it ties the best match across all
   // settings), so register this haystack for the shared best-match computation.
+  const section = useContext(SettingsSectionContext);
+
   // oxlint-disable-next-line solid/reactivity -- getter stored, called in a tracked memo
-  registerSearchable(haystack);
+  registerSearchable(haystack, section);
 
   return (
     <Setting
       {...props}
+      // deep links can target a setting in a section that isn't selected
+      onHighlight={() => {
+        if (section !== undefined) setCurrentSettingsSection(section);
+        props.onHighlight?.();
+      }}
       class={cn(props.class, !settingMatchesSearch(haystack()) && "hidden")}
     />
   );

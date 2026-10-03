@@ -3,6 +3,7 @@ import { JSXElement, Show } from "solid-js";
 import { Portal } from "solid-js/web";
 
 import { queryClient } from "../queries";
+import { getActivePage } from "../states/core";
 import { isFixingSkillIssue } from "../states/skill-issue";
 import { getFocus } from "../states/test";
 import { cn } from "../utils/cn";
@@ -20,6 +21,7 @@ import { DevTools } from "./dev/DevTools";
 import { Footer } from "./layout/footer/Footer";
 import { Header } from "./layout/header/Header";
 import { Overlays } from "./layout/overlays/Overlays";
+import { PageScroller } from "./layout/PageScroller";
 import { Modals } from "./modals/Modals";
 import { AppPages } from "./pages/AppPages";
 import { BarTimerProgress } from "./pages/test/live-stats/BarTimerProgress";
@@ -60,34 +62,43 @@ export function App(props: AppElements): JSXElement {
           <MonkeyPower />
         </Portal>
         <Header />
-        <main
-          class={cn("full-width content-grid h-full", getFocus() && "focus")}
-        >
+        <PageScroller>
+          <main
+            class={cn("full-width content-grid h-full", getFocus() && "focus")}
+          >
+            <Advertisement
+              id="ad-vertical-left"
+              visible={["on", "sellout"]}
+              staticVisibility
+              vertical
+              focus
+            />
+            <Advertisement
+              id="ad-vertical-right"
+              visible={["on", "sellout"]}
+              staticVisibility
+              vertical
+              focus
+            />
+            <AppPages />
+          </main>
+          <Show
+            when={
+              getActivePage() !== "settings" &&
+              getActivePage() !== "accountSettings"
+            }
+          >
+            <Footer />
+          </Show>
           <Advertisement
-            id="ad-vertical-left"
-            visible={["on", "sellout"]}
+            id="ad-footer"
+            visible="sellout"
             staticVisibility
-            vertical
             focus
+            class="col-[full-width]"
+            smallClass="col-[content]"
           />
-          <Advertisement
-            id="ad-vertical-right"
-            visible={["on", "sellout"]}
-            staticVisibility
-            vertical
-            focus
-          />
-          <AppPages />
-        </main>
-        <Footer />
-        <Advertisement
-          id="ad-footer"
-          visible="sellout"
-          staticVisibility
-          focus
-          class="col-[full-width]"
-          smallClass="col-[content]"
-        />
+        </PageScroller>
       </Show>
     </QueryClientProvider>
   );
