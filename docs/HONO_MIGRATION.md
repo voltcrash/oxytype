@@ -1,5 +1,7 @@
 # Backend migration to Hono
 
+> Historical migration notes. Current backend: [Cloudflare operations](CLOUDFLARE_OPERATIONS.md).
+
 ## Scope
 
 Replace the backend HTTP stack completely. Keep Node 24, shared ts-rest

@@ -1,6 +1,6 @@
 # Oxytype architecture
 
-Snapshot: 1 October 2026. Package versions come from the workspace manifests and lockfile. This describes the codebase, including inherited architecture; Oxytype branding and deployment ownership are being updated in separate PRs.
+Snapshot: 3 October 2026. Package versions come from the workspace manifests and lockfile. This describes the codebase, including inherited architecture; Oxytype branding and deployment ownership are being updated in separate PRs.
 
 ## Repository map
 
@@ -13,10 +13,10 @@ Snapshot: 1 October 2026. Package versions come from the workspace manifests and
 | `packages/util/`, `packages/funbox/`, `packages/challenges/` | Shared helpers and typing features |
 | `packages/oxlint-config/`, `packages/typescript-config/`, `packages/tsup-config/` | Shared tooling configuration |
 | `packages/release/` | Release and deployment CLI |
-| `docker/` | Compose stack and container definitions |
+| `docker/` | Static frontend container and build definition |
 | `.github/workflows/` | CI, labeling, Docker publishing, and repository automation |
 
-The root is a private pnpm workspace. Node 24, pnpm 11, TypeScript 7, and Turborepo 2 coordinate package builds. Internal package names currently carry the inherited scope; a separate PR renames that scope to Oxytype.
+The root is a private pnpm workspace. Node 24, pnpm 12, TypeScript 7, and Turborepo 2 coordinate package builds. Internal package names currently carry the inherited scope; a separate PR renames that scope to Oxytype.
 
 ## Frontend
 
@@ -30,42 +30,46 @@ Useful entry points: `frontend/src/index.html`, `frontend/src/ts/index.ts`, `fro
 
 ## Backend and data
 
-Hono serves the API through `@hono/node-server`. `@ts-rest` contracts and Zod schemas are shared with the frontend, so request and response shapes live in workspace packages. The backend uses MongoDB for durable records, Redis for cache/coordination, and BullMQ for background jobs. Better Auth handles Google/GitHub identity, OAuth, and HttpOnly cookie sessions in dedicated MongoDB collections. Redocly builds API documentation; Hono stats and Prometheus metrics provide operational visibility.
+Hono runs on a Cloudflare Worker. Shared ts-rest contracts and Zod schemas define
+request/response shapes. Drizzle describes D1 tables; Better Auth uses the SQLite
+adapter for Google/GitHub accounts and database-backed sessions. `worker.ts`
+exports fetch, queue and scheduled handlers with invocation-scoped bindings.
 
-`backend/src/api/hono-adapter.ts` registers contract endpoints directly
-with Hono. It uses ts-rest core inference and Zod validation while controllers
-receive a transport-independent `MonkeyRequest`. Native Hono middleware handles
-authentication, configuration/permission gates, in-memory rate limits, error
-responses, security headers, and versioned conditional ETags.
+`api/hono-adapter.ts` preserves transport-independent controllers. D1 owns data,
+exact rate windows, consumed OAuth state, result progression and rankings. User
+JSON writes use optimistic version guards inside atomic batches. An outbox and
+scheduled-job ledger feed Cloudflare Queues; Cron recovers missed deliveries.
+Reward grants and inbox claims deduplicate retries. KV/DOs are unnecessary initially.
 
-The stats dashboard lives at `/stats/ui`, JSON summaries at
-`/stats/swagger-stats`, and Prometheus exposition at `/stats/metrics`. Production
-requires Basic authentication using `STATS_USERNAME` and `STATS_PASSWORD`; stats
-remain available during maintenance. These replace Swagger Stats: its dashboard,
-JSON structure, and generated metric names are no longer used. HTTP metrics are
-`api_http_requests_total` and `api_http_request_duration_seconds`; existing domain
-metrics are exposed from the same prom-client registry. Update external dashboards
-that relied on Swagger Stats names or JSON fields. Missing production credentials
-leave stats inaccessible.
-
-Start with `backend/src/server.ts`, `backend/src/app.ts`, `backend/src/api/`, `backend/src/dal/`, `backend/src/services/`, and `backend/src/queues/`. The `dal` directory handles database access; services and workers handle work outside a single request.
+Docs/config/quote assets use the Worker ASSETS binding. Quote git automation and
+Discord bot effects require an external HTTPS bridge. Structured console logs
+feed Workers observability; `/stats/*` remains credential protected. Prometheus
+and stats counters are isolate-local, not fleet-wide metrics.
 
 ```mermaid
 flowchart LR
-  Browser[Browser app] --> API[Hono API]
-  API --> Mongo[(MongoDB)]
-  API --> Redis[(Redis)]
-  API --> Queue[BullMQ workers]
-  API --> Auth[Better Auth]
-  Auth --> Mongo
+  Browser[Solid browser app] --> Worker[Hono Worker]
+  Worker --> Auth[Better Auth]
+  Auth --> D1[(D1 / Drizzle)]
+  Worker --> D1
+  Cron[Cron] --> Worker
+  Worker --> Queues[Cloudflare Queues]
+  Queues --> Worker
+  Worker --> Bridge[External Discord / quote automation]
 ```
 
 ## Development and delivery
 
-- `pnpm install` installs all workspace dependencies. The root scripts use Turborepo to build packages before dependent apps.
-- `pnpm dev-fe` starts the frontend on port 3000. The backend also needs MongoDB, Redis, environment settings, and account configuration for full functionality.
-- Vite produces the frontend bundle. The backend compiles TypeScript and generates OpenAPI/Redocly docs. Docker serves the frontend through nginx, routes `/api` through Traefik, and runs the backend with MongoDB and Redis.
-- Vitest holds unit and integration tests. Oxlint, Oxfmt, Stylelint, asset checks, and GitHub Actions cover code quality. CI work is being adapted for Oxytype ownership.
+Node 24/pnpm 12 build workspace packages and API docs. Wrangler runs local workerd
+and D1 on port 5005; Solid/Vite runs on port 3000. MongoDB/Redis clients remain only
+in offline export tools. Vitest covers existing controllers and real D1 behavior.
+Backend build performs a Wrangler dry-run; deployment applies migrations then
+uses Wrangler. Docker publishes the static frontend only.
+
+The checked-in deployment targets a new, empty staging database and trusts
+localhost:3000. Production OAuth/captcha/bridge credentials and a real anticheat
+module are separate deployment inputs. See [operations](CLOUDFLARE_OPERATIONS.md)
+for setup, recovery, cutover gates and the preserving importer.
 
 ## Oxytype ownership boundaries
 

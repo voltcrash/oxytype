@@ -13,11 +13,11 @@ pnpm install
 pnpm dev-fe
 ```
 
-The frontend runs on port 3000. Run `pnpm dev` for the full workspace after configuring MongoDB, Redis, and the backend environment.
+The frontend runs on port 3000. Run `pnpm dev` for the full workspace after applying local D1 migrations and copying `backend/.dev.vars.example` to `.dev.vars`.
 
 ## Contributing
 
-See [CONTRIBUTING.md](./docs/CONTRIBUTING.md) and the [code of conduct](./docs/CODE_OF_CONDUCT.md). Open bugs and feature requests in the [Oxytype repository](https://github.com/voltcrash/oxytype/issues). The [self-hosting guide](./docs/SELF_HOSTING.md) covers Docker deployment.
+See [CONTRIBUTING.md](./docs/CONTRIBUTING.md) and the [code of conduct](./docs/CODE_OF_CONDUCT.md). Open bugs and feature requests in the [Oxytype repository](https://github.com/voltcrash/oxytype/issues). The [self-hosting guide](./docs/SELF_HOSTING.md) covers Worker deployment and static frontend hosting.
 
 ## Contact and security
 
