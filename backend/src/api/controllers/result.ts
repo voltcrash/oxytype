@@ -68,22 +68,6 @@ import { getFunbox, checkCompatibility } from "@oxytype/funbox";
 import { tryCatch } from "@oxytype/util/trycatch";
 import { getCachedConfiguration } from "../../init/configuration";
 
-try {
-  if (!anticheatImplemented()) throw new Error("undefined");
-  Logger.success("Anticheat module loaded");
-} catch (e) {
-  if (isDevEnvironment()) {
-    Logger.warning(
-      "No anticheat module found. Continuing in dev mode, results will not be validated.",
-    );
-  } else {
-    Logger.error(
-      "No anticheat module found. To continue in dev mode, add MODE=dev to your .env file in the backend directory",
-    );
-    process.exit(1);
-  }
-}
-
 export async function getResults(
   req: MonkeyRequest<GetResultsQuery>,
 ): Promise<GetResultsResponse> {
@@ -162,20 +146,23 @@ export async function updateTags(
   const { uid } = req.ctx.decodedToken;
   const { tagIds, resultId } = req.body;
 
-  await ResultDAL.updateTags(uid, resultId, tagIds);
-  const result = await ResultDAL.getResult(uid, resultId);
+  return await atomicUser(uid, async () => {
+    await ResultDAL.updateTags(uid, resultId, tagIds);
+    const result = await ResultDAL.getResult(uid, resultId);
 
-  result.difficulty ??= "normal";
-  result.language ??= "english";
-  result.funbox ??= [];
-  result.lazyMode ??= false;
-  result.punctuation ??= false;
-  result.numbers ??= false;
+    result.tags = tagIds;
+    result.difficulty ??= "normal";
+    result.language ??= "english";
+    result.funbox ??= [];
+    result.lazyMode ??= false;
+    result.punctuation ??= false;
+    result.numbers ??= false;
 
-  const user = await UserDAL.getPartialUser(uid, "update tags", ["tags"]);
-  const tagPbs = await UserDAL.checkIfTagPb(uid, user, result);
-  return new MonkeyResponse("Result tags updated", {
-    tagPbs,
+    const user = await UserDAL.getPartialUser(uid, "update tags", ["tags"]);
+    const tagPbs = await UserDAL.checkIfTagPb(uid, user, result);
+    return new MonkeyResponse("Result tags updated", {
+      tagPbs,
+    });
   });
 }
 

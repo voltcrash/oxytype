@@ -140,11 +140,11 @@ export async function scheduled(scheduledTime: number): Promise<void> {
       ),
       statement("DELETE FROM outbox WHERE completed_at<?", now - 90 * 86400000),
       statement(
-        "DELETE FROM daily_entries WHERE expires_at<=? AND NOT EXISTS (SELECT 1 FROM scheduled_jobs WHERE status NOT IN ('done','failed') AND json_extract(data,'$.ctx.yesterdayTimestamp')=daily_entries.period)",
+        "DELETE FROM daily_entries WHERE expires_at<=? AND NOT EXISTS (SELECT 1 FROM scheduled_jobs WHERE status<>'done' AND json_extract(data,'$.ctx.yesterdayTimestamp')=daily_entries.period)",
         now,
       ),
       statement(
-        "DELETE FROM weekly_entries WHERE expires_at<=? AND NOT EXISTS (SELECT 1 FROM scheduled_jobs WHERE status NOT IN ('done','failed') AND json_extract(data,'$.ctx.lastWeekTimestamp')=weekly_entries.period)",
+        "DELETE FROM weekly_entries WHERE expires_at<=? AND NOT EXISTS (SELECT 1 FROM scheduled_jobs WHERE status<>'done' AND json_extract(data,'$.ctx.lastWeekTimestamp')=weekly_entries.period)",
         now,
       ),
     ]);

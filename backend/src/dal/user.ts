@@ -127,6 +127,9 @@ export async function deleteUser(uid: string): Promise<void> {
 }
 export async function resetUser(uid: string): Promise<void> {
   await mutateUser(uid, async (user) => {
+    if (user.banned) {
+      throw new MonkeyError(403, "Banned users cannot reset their account");
+    }
     Object.assign(user, {
       personalBests: emptyPb(),
       lbPersonalBests: { time: {} },
@@ -154,11 +157,22 @@ export async function resetUser(uid: string): Promise<void> {
       "inbox",
       "user_activity",
       "leaderboard_bests",
+      "leaderboard_snapshots",
       "daily_entries",
       "weekly_entries",
+      "results",
+      "configs",
+      "presets",
+      "ape_keys",
     ]) {
       await stage(statement(`DELETE FROM ${table} WHERE uid=?`, uid));
     }
+    await stage(
+      statement(
+        "DELETE FROM outbox WHERE uid=? AND type='reward' AND completed_at IS NULL",
+        uid,
+      ),
+    );
   });
 }
 export async function updateName(

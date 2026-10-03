@@ -57,13 +57,15 @@ export async function updateTags(
   if (tags.some((id) => !allowed.has(id))) {
     throw new MonkeyError(422, "One of the tag id's is not valid");
   }
-  const result = await statement(
-    "UPDATE results SET data=json_set(data,'$.tags',json(?)) WHERE id=? AND uid=?",
-    encode(tags),
-    resultId,
-    uid,
-  ).run();
-  if (!result.meta.changes) throw new MonkeyError(404, "Result not found");
+  await getResult(uid, resultId);
+  await stage(
+    statement(
+      "UPDATE results SET data=json_set(data,'$.tags',json(?)) WHERE id=? AND uid=?",
+      encode(tags),
+      resultId,
+      uid,
+    ),
+  );
   return { acknowledged: true, matchedCount: 1, modifiedCount: 1 };
 }
 export async function getResult(uid: string, id: string): Promise<DBResult> {

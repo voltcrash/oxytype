@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
@@ -54,7 +55,7 @@ export function createAuth(
   const options: BetterAuthOptions = {
     appName: "Oxytype",
     // Better Auth accepts adapter factories through its database option.
-    // oxlint-disable-next-line no-unsafe-assignment
+    // oxlint-disable-next-line typescript/no-unsafe-assignment
     database: adapter,
     baseURL,
     basePath: new URL(baseURL).pathname,
@@ -152,9 +153,16 @@ export function createAuth(
       session: {
         create: {
           before: async (session, ctx) => {
-            const authUser = await ctx?.context.internalAdapter.findUserById(
-              session.userId,
-            );
+            const authUser =
+              ctx === null || ctx === undefined
+                ? await database()
+                    .select()
+                    .from(authUsers)
+                    .where(eq(authUsers.id, session.userId))
+                    .get()
+                : await ctx.context.internalAdapter.findUserById(
+                    session.userId,
+                  );
             if (
               authUser !== undefined &&
               authUser !== null &&

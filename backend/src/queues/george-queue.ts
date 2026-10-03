@@ -76,6 +76,9 @@ class GeorgeQueue extends MonkeyQueue<GeorgeTask> {
       return {
         name: taskName,
         data: taskData,
+        opts: {
+          jobId: `alltime:${leaderboardId}:${record.uid}:${record.timestamp}:${record.rank}`,
+        },
       };
     });
 

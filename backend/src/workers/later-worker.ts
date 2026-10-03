@@ -106,10 +106,19 @@ async function handleDailyLeaderboardResults(
     );
   }
   if ((ctx.offset ?? 0) > 0) return;
-  const topResults = results.entries.slice(
-    0,
-    dailyLeaderboardsConfig.topResultsToAnnounce,
-  );
+  const announcementResults =
+    topResultsToAnnounce > 20
+      ? await dailyLeaderboard.getResults(
+          0,
+          topResultsToAnnounce,
+          dailyLeaderboardsConfig,
+          false,
+          undefined,
+          true,
+        )
+      : results;
+  const topResults =
+    announcementResults?.entries.slice(0, topResultsToAnnounce) ?? [];
 
   const leaderboardId = `${mode} ${mode2} ${language}`;
   await GeorgeQueue.announceDailyLeaderboardTopResults(

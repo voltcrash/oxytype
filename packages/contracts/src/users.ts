@@ -14,6 +14,7 @@ import {
   CustomThemeSchema,
   FavoriteQuotesSchema,
   MonkeyMailSchema,
+  MailIdSchema,
   ResultFiltersSchema,
   StreakHourOffsetSchema,
   TagNameSchema,
@@ -272,8 +273,8 @@ export const GetUserInboxResponseSchema = responseWithData(
 export type GetUserInboxResponse = z.infer<typeof GetUserInboxResponseSchema>;
 
 export const UpdateUserInboxRequestSchema = z.object({
-  mailIdsToDelete: z.array(z.string().uuid()).min(1).optional(),
-  mailIdsToMarkRead: z.array(z.string().uuid()).min(1).optional(),
+  mailIdsToDelete: z.array(MailIdSchema).min(1).optional(),
+  mailIdsToMarkRead: z.array(MailIdSchema).min(1).optional(),
 });
 export type UpdateUserInboxRequest = z.infer<
   typeof UpdateUserInboxRequestSchema

@@ -1,3 +1,4 @@
+import { atomicUser } from "../../db/mutation";
 import * as UserDAL from "../../dal/user";
 import MonkeyError from "../../utils/error";
 import { MonkeyResponse } from "../../utils/monkey-response";
@@ -10,10 +11,6 @@ import {
   sanitizeString,
 } from "../../utils/misc";
 import GeorgeQueue from "../../queues/george-queue";
-import { deleteAllApeKeys } from "../../dal/ape-keys";
-import { deleteAllPresets } from "../../dal/preset";
-import { deleteAll as deleteAllResults } from "../../dal/result";
-import { deleteConfig } from "../../dal/config";
 import { verify } from "../../utils/captcha";
 import * as LeaderboardsDAL from "../../dal/leaderboards";
 import { purgeUserFromDailyLeaderboards } from "../../utils/daily-leaderboards";
@@ -152,36 +149,22 @@ export async function deleteUser(req: MonkeyRequest): Promise<MonkeyResponse> {
 export async function resetUser(req: MonkeyRequest): Promise<MonkeyResponse> {
   const { uid } = req.ctx.decodedToken;
 
-  const userInfo = await UserDAL.getPartialUser(uid, "reset user", [
-    "banned",
-    "discordId",
-    "email",
-    "name",
-  ]);
-  if (userInfo.banned) {
-    throw new MonkeyError(403, "Banned users cannot reset their account");
-  }
-
-  const promises = [
-    UserDAL.resetUser(uid),
-    deleteAllApeKeys(uid),
-    deleteAllPresets(uid),
-    deleteAllResults(uid),
-    deleteConfig(uid),
-    purgeUserFromDailyLeaderboards(
-      uid,
-      req.ctx.configuration.dailyLeaderboards,
-    ),
-    purgeUserFromXpLeaderboards(
-      uid,
-      req.ctx.configuration.leaderboards.weeklyXp,
-    ),
-  ];
-
-  if (userInfo.discordId !== undefined && userInfo.discordId !== "") {
-    promises.push(GeorgeQueue.unlinkDiscord(userInfo.discordId, uid));
-  }
-  await Promise.all(promises);
+  const userInfo = await atomicUser(uid, async () => {
+    const user = await UserDAL.getPartialUser(uid, "reset user", [
+      "banned",
+      "discordId",
+      "email",
+      "name",
+    ]);
+    if (user.banned) {
+      throw new MonkeyError(403, "Banned users cannot reset their account");
+    }
+    await UserDAL.resetUser(uid);
+    if (user.discordId !== undefined && user.discordId !== "") {
+      await GeorgeQueue.unlinkDiscord(user.discordId, uid);
+    }
+    return user;
+  });
   void addImportantLog("user_reset", `${userInfo.email} ${userInfo.name}`, uid);
 
   return new MonkeyResponse("User reset", null);

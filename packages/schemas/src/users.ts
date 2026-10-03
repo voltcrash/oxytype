@@ -347,8 +347,9 @@ export type BadgeReward = z.infer<typeof BadgeRewardSchema>;
 export const AllRewardsSchema = XpRewardSchema.or(BadgeRewardSchema);
 export type AllRewards = z.infer<typeof AllRewardsSchema>;
 
+export const MailIdSchema = IdSchema.max(128).or(z.string().uuid());
 export const MonkeyMailSchema = z.object({
-  id: IdSchema,
+  id: MailIdSchema,
   subject: z.string(),
   body: z.string(),
   timestamp: z.number().int().nonnegative(),
