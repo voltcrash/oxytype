@@ -1,3 +1,4 @@
+import { CaptchaTokenSchema } from "./captcha";
 import { initContract } from "@ts-rest/core";
 import { z } from "zod/v3";
 import {
@@ -49,7 +50,7 @@ export const CreateUserRequestSchema = z.object({
   email: UserEmailSchema.optional(),
   name: UserNameSchema,
   uid: z.string().optional(), //defined by the authentication service, no validation should be applied
-  captcha: z.string(), //defined by google recaptcha, no validation should be applied
+  captcha: CaptchaTokenSchema,
 });
 export type CreateUserRequest = z.infer<typeof CreateUserRequestSchema>;
 
@@ -270,7 +271,7 @@ export const ReportUserRequestSchema = z.object({
   uid: z.string(),
   reason: ReportUserReasonSchema,
   comment: ReportUserCommentSchema,
-  captcha: z.string(), //we don't generate the captcha so there should be no validation
+  captcha: CaptchaTokenSchema,
 });
 export type ReportUserRequest = z.infer<typeof ReportUserRequestSchema>;
 
