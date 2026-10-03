@@ -46,15 +46,19 @@ export function QuoteSubmitModal(): JSXElement {
     },
     onSubmit: async ({ value }) => {
       showLoaderBar();
-      const response = await Ape.quotes.add({
-        body: {
-          text: value.text,
-          source: value.source,
-          language: value.language as Language,
-          captcha: value.captcha,
-        },
-      });
-      hideLoaderBar();
+      const response = await Ape.quotes
+        .add({
+          body: {
+            text: value.text,
+            source: value.source,
+            language: value.language as Language,
+            captcha: value.captcha,
+          },
+        })
+        .finally(() => {
+          form.setFieldValue("captcha", "");
+          hideLoaderBar();
+        });
 
       if (response.status !== 200) {
         showErrorNotification("Failed to submit quote", { response });
@@ -168,7 +172,7 @@ export function QuoteSubmitModal(): JSXElement {
         />
         <form.Field
           name="captcha"
-          children={(field) => <Captcha field={field} />}
+          children={(field) => <Captcha field={field} action="quote-submit" />}
         />
         <SubmitButton form={form} text="submit" />
       </form>

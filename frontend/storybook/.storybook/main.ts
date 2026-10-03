@@ -17,7 +17,7 @@ function stubVirtualEnvConfig(): Plugin {
           isDevelopment: true,
           backendUrl: "http://localhost:5005",
           clientVersion: "storybook",
-          recaptchaSiteKey: "",
+          turnstileSiteKey: "",
           quickLoginEmail: undefined,
           quickLoginPassword: undefined,
         })};`;

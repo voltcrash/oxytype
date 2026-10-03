@@ -2,7 +2,7 @@ export type EnvConfig = {
   backendUrl: string;
   isDevelopment: boolean;
   clientVersion: string;
-  recaptchaSiteKey: string;
+  turnstileSiteKey: string;
   sentryDsn?: string;
 };
 

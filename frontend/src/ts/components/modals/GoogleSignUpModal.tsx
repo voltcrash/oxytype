@@ -35,7 +35,13 @@ export function GoogleSignupModal() {
       username: "",
       captcha: "",
     },
-    onSubmit: async ({ value }) => apply(value),
+    onSubmit: async ({ value }) => {
+      try {
+        await apply(value);
+      } finally {
+        form.setFieldValue("captcha", "");
+      }
+    },
     onSubmitInvalid: () => {
       showNoticeNotification("Please fill in all fields");
     },
@@ -80,6 +86,7 @@ export function GoogleSignupModal() {
           children={(field) => (
             <Captcha
               field={field}
+              action="signup"
               class="flex w-full flex-row justify-center"
             />
           )}

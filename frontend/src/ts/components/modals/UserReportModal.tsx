@@ -28,8 +28,12 @@ export function UserReportModal() {
       captcha: "",
     },
     onSubmit: async ({ value }) => {
-      await apply(value);
-      form.reset();
+      try {
+        await apply(value);
+        form.reset();
+      } finally {
+        form.setFieldValue("captcha", "");
+      }
     },
     onSubmitInvalid: () => {
       showNoticeNotification("Please fill in all fields");
@@ -110,7 +114,7 @@ export function UserReportModal() {
         />
         <form.Field
           name="captcha"
-          children={(field) => <Captcha field={field} />}
+          children={(field) => <Captcha field={field} action="user-report" />}
         />
         <SubmitButton form={form} text="report" class="w-full" />
       </form>

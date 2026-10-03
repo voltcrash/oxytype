@@ -29,9 +29,9 @@ export function envConfig(options: {
             "http://localhost:5005",
           ),
           clientVersion: options.clientVersion,
-          recaptchaSiteKey: fallback(
-            options.env["RECAPTCHA_SITE_KEY"],
-            "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI",
+          turnstileSiteKey: fallback(
+            options.env["TURNSTILE_SITE_KEY"],
+            "1x00000000000000000000AA",
           ),
           sentryDsn:
             options.env["SENTRY_DSN"] === ""
@@ -42,7 +42,7 @@ export function envConfig(options: {
         const prodConfig: EnvConfig = {
           isDevelopment: false,
           backendUrl: fallback(options.env["BACKEND_URL"], "/api"),
-          recaptchaSiteKey: options.env["RECAPTCHA_SITE_KEY"] ?? "",
+          turnstileSiteKey: options.env["TURNSTILE_SITE_KEY"] ?? "",
           clientVersion: options.clientVersion,
           sentryDsn:
             options.env["SENTRY_DSN"] === ""
