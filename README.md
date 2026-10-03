@@ -21,4 +21,6 @@ See [CONTRIBUTING.md](./docs/CONTRIBUTING.md) and the [code of conduct](./docs/C
 
 ## Contact and security
 
-Use [GitHub issues](https://github.com/voltcrash/oxytype/issues) for general questions and [the security policy](./docs/SECURITY.md) for private vulnerability reports. The planned public site is `oxytype.voltcrash.com`; the planned support address is `contact@voltcrash.com`. These endpoints are not active yet.
+Public site: [oxytype.voltcrash.com](https://oxytype.voltcrash.com). See [production setup](./docs/PRODUCTION_SETUP.md) for deployment and updates.
+
+Use [GitHub issues](https://github.com/voltcrash/oxytype/issues) for general questions and [the security policy](./docs/SECURITY.md) for private vulnerability reports. The planned support address `contact@voltcrash.com` is not active yet.

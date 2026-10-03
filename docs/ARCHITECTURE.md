@@ -66,14 +66,22 @@ in offline export tools. Vitest covers existing controllers and real D1 behavior
 Backend build performs a Wrangler dry-run; deployment applies migrations then
 uses Wrangler. Docker publishes the static frontend only.
 
-The checked-in deployment targets a new, empty staging database and trusts
-localhost:3000. Production OAuth/captcha/bridge credentials are separate deployment
-inputs. Built-in [anticheat](ANTICHEAT.md) checks scores and telemetry in all modes;
+The default Wrangler config and release CLI target staging; hosted staging has
+real-user signup/results. A separate production config serves frontend and API
+on `oxytype.voltcrash.com` with isolated D1, queues, GitHub OAuth and Turnstile
+credentials. Production starts fresh; no legacy/staging data is imported.
+See [production setup](PRODUCTION_SETUP.md) for explicit build/deploy commands.
+Built-in [anticheat](ANTICHEAT.md) checks scores and telemetry in all modes;
 review its client-trust limits before cutover. See [operations](CLOUDFLARE_OPERATIONS.md)
 for setup, recovery, cutover gates and the preserving importer.
 
 ## Oxytype ownership boundaries
 
-The fork must use its own auth secret and OAuth applications, API endpoint, error reporting destination, container registry, and release credentials before those integrations are enabled. The planned site `oxytype.voltcrash.com` and mailbox `contact@voltcrash.com` are not active. Until they are, public contact and security reporting use the Oxytype repository and its security policy. The original GPL license and contributor attribution remain in place.
+The fork uses its own production auth secret, GitHub OAuth app, Turnstile widget
+and API endpoint at [oxytype.voltcrash.com](https://oxytype.voltcrash.com). Other
+optional integrations need deployment-owned credentials before enabling them.
+The planned mailbox `contact@voltcrash.com` is not active; public contact and
+security reporting use the Oxytype repository and its security policy. The
+original GPL license and contributor attribution remain in place.
 
 See [development setup](./CONTRIBUTING_ADVANCED.md), [self-hosting](./SELF_HOSTING.md), and [security reporting](./SECURITY.md) for operational details.
