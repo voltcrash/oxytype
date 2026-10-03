@@ -7,6 +7,7 @@ import { withRuntime } from "../../src/runtime/env";
 import { getAuth } from "../../src/init/auth";
 import { patchConfiguration } from "../../src/init/configuration";
 import * as Users from "../../src/dal/user";
+import * as Public from "../../src/dal/public";
 import { mutateUser } from "../../src/db/mutation";
 import Worker from "../../src/worker";
 import { completedEvent } from "../__testData__/completed-event";
@@ -245,6 +246,46 @@ describe("production anticheat with D1", () => {
           .bind(user.uid)
           .first("count"),
       ).toBe(2);
+    } finally {
+      await withRuntime(
+        test.env,
+        async () =>
+          await patchConfiguration({ users: { autoBan: { enabled: false } } }),
+      );
+    }
+  });
+  it("serializes concurrent strikes, expires old strikes, and leaves public stats unchanged", async () => {
+    const user = await account();
+    const before = await withRuntime(test.env, async () => {
+      await patchConfiguration({
+        users: { autoBan: { enabled: true, maxCount: 1, maxHours: 1 } },
+      });
+      await mutateUser(user.uid, (profile) => {
+        profile.autoBanTimestamps = [Date.now() - 2 * 3600_000];
+      });
+      return await Public.getTypingStats();
+    });
+    try {
+      const responses = await Promise.all([
+        submit(user, fixedResult()),
+        submit(user, fixedResult()),
+      ]);
+      expect(responses.map((response) => response.status)).toEqual([465, 465]);
+      await withRuntime(test.env, async () => {
+        const profile = await Users.getUser(user.uid, "test");
+        expect(profile.autoBanTimestamps).toHaveLength(2);
+        expect(profile.banned).toBe(true);
+        expect(profile.inbox).toHaveLength(1);
+        expect(await Public.getTypingStats()).toEqual(before);
+      });
+      expect(
+        await test.env.DB.prepare(
+          "SELECT count(*) AS count FROM audit_logs WHERE uid=? AND event='anticheat_rejected'",
+        )
+          .bind(user.uid)
+          .first("count"),
+      ).toBe(2);
+      await assertNoProgress(user.uid);
     } finally {
       await withRuntime(
         test.env,
