@@ -15,6 +15,7 @@ export type WorkerEnv = {
   CACHE?: KVNamespace;
   MODE?: string;
   FRONTEND_URL?: string;
+  SERVE_FRONTEND?: string;
   BETTER_AUTH_URL?: string;
   BETTER_AUTH_SECRET?: string;
   GOOGLE_CLIENT_ID?: string;

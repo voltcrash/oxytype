@@ -6,6 +6,7 @@ import type {
 } from "@cloudflare/workers-types";
 import { withRuntime, type WorkerEnv } from "./runtime/env";
 import { buildApp } from "./app";
+import { serveFrontend } from "./runtime/frontend";
 export default {
   async queue(
     batch: MessageBatch,
@@ -30,11 +31,15 @@ export default {
     env: WorkerEnv,
     ctx: ExecutionContext,
   ): Promise<Response> {
+    const url = new URL(request.url);
+    const isApi = url.pathname === "/api" || url.pathname.startsWith("/api/");
+    if (env.SERVE_FRONTEND === "true" && !isApi) {
+      return await serveFrontend(request, env.ASSETS);
+    }
     return await withRuntime(
       env,
       async () => {
-        const url = new URL(request.url);
-        if (url.pathname === "/api" || url.pathname.startsWith("/api/")) {
+        if (isApi) {
           url.pathname = url.pathname.slice(4) || "/";
         }
         return await buildApp().fetch(new Request(url, request), env);
