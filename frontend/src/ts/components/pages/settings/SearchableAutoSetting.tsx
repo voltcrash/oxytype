@@ -90,6 +90,9 @@ export function SearchableAutoSetting<T extends ConfigKey>(props: {
         <div
           class={cn(
             "grid grid-cols-[repeat(auto-fit,minmax(4.5rem,1fr))] gap-2",
+            // 4 options don't fit in one row of the input column, so use a 2x2
+            // grid instead of leaving a single option on its own row
+            options.length === 4 && "grid-cols-2",
             props.wide && "grid-cols-[repeat(auto-fit,minmax(13.5rem,1fr))]",
           )}
         >
