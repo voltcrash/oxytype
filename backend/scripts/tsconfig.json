@@ -1,7 +1,9 @@
 {
   "extends": "@oxytype/typescript-config/base.json",
   "compilerOptions": {
-    "target": "ES6"
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"]
   },
-  "include": ["./**/*"]
+  "include": ["./**/*", "../src/runtime/cloudflare.d.ts"]
 }

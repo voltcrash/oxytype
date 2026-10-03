@@ -73,7 +73,7 @@
     },
     "@oxytype/backend#dev": {
       "dependsOn": ["^build"],
-      "env": ["DB_URI", "REDIS_URI", "PORT"],
+      "env": ["CLOUDFLARE_ACCOUNT_ID"],
       "persistent": true
     }
   }

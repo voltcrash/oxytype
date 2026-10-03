@@ -52,6 +52,7 @@ node_modules_bak/
 .wrangler/
 .dev.vars
 .dev.vars.*
+!.dev.vars.example
 backend/imports/
 
 # Optional npm cache directory
