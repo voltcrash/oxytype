@@ -53,6 +53,7 @@ node_modules_bak/
 .dev.vars
 .dev.vars.*
 !.dev.vars.example
+!.dev.vars.production.example
 backend/imports/
 
 # Optional npm cache directory
@@ -73,6 +74,7 @@ backend/imports/
 # dotenv environment variables file
 .env
 .env*
+!frontend/.env.production.example
 
 #vs code
 .vscode/*
