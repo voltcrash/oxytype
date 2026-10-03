@@ -454,7 +454,7 @@ function ThemeButton(props: { theme: ThemeWithName }): JSXElement {
         "--text": props.theme.text,
       }}
       class={cn(
-        "group/theme relative grid place-items-center overflow-hidden p-1 ring-4 ring-transparent",
+        "group/theme relative grid place-items-center overflow-hidden px-1 py-2 ring-4 ring-transparent",
         "bg-(--bg) text-(--main)",
         // "hover:bg-(--text) hover:text-(--bg)",
         "hover:ring-(--main)",
