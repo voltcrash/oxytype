@@ -143,8 +143,8 @@ need measurement and likely Paid for production.
 
 Keep quote git automation external until a tested bridge
 exists. Built-in [anticheat](ANTICHEAT.md) validates scores/timing in production;
-it cannot prove client telemetry authentic. The deployed staging Worker predates
-this implementation and needs redeployment. Social OAuth and
+it cannot prove client telemetry authentic. Staging includes this implementation;
+live authenticated API checks passed with a temporary seeded identity. Social OAuth and
 captcha need deployment-owned credentials. Browser third-party cookie blocking
 can affect localhost → staging login; use a same-site proxy for full testing.
 

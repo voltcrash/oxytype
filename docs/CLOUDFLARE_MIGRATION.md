@@ -277,6 +277,28 @@ First saves use server account time; database read failures fail closed. Rejecti
 audits and configured strikes persist atomically without result/progression writes.
 
 Validation: 95 targeted backend/D1/browser-compatibility checks, workspace
-type-aware Oxlint and Worker build/dry-run passed. These follow-ups have not been
-deployed. Redeploy staging, configure its OAuth/captcha and repeat production-mode
-browser checks before cutover. Automatic bans remain disabled by default.
+type-aware Oxlint and Worker build/dry-run passed. Staging deployment is recorded
+below. OAuth/captcha and production-mode browser checks remain before cutover.
+Automatic bans remain disabled by default.
+
+### Staging update — 3 October 2026, 09:35 UTC
+
+- Updated Worker version: `3e08d571-58e1-4c29-8656-d2bd6190d497`, backend commit
+  `96cf43287`; production mode, unchanged staging URL/account/D1/auth secret.
+- Paused queue delivery and deployed temporary maintenance (HTTP 503, no Cron
+  writes). Exported D1 privately with file mode 0600, SHA-256
+  `0fa8d3f146283c80628ce558c1d81dbca325832bd40e2ccaffcce72cbd50723a`.
+- Applied migration 0002, deployed the Worker and resumed queue delivery. All
+  migrations applied; Discord table/index/column absent; foreign keys clean.
+- 25 live HTTP checks passed: health/config/CORS/docs/ETag and auth guards;
+  seeded session survives onboarding 404; valid result saves and persists;
+  forged score, key timeline, short sentinels, fixed bot, missing high-speed data
+  and too-early second save reject with expected statuses. Rejections grant no
+  progress; successful save grants one result and 30 seconds typing time.
+- Removed temporary identity/session/result/audit/rate-counter data and fixture
+  public counters. D1 again contains zero users/auth users/sessions/results;
+  signup, result saving and hash configuration restored to their initial values.
+- Only the original auth secret exists remotely. Real GitHub/captcha browser
+  verification remains pending; [setup steps](STAGING_SETUP.md) and private ignored
+  credential templates are prepared. Development frontend now honors an explicit
+  captcha site key; four generated-config assertions and workspace typecheck pass.

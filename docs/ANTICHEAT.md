@@ -72,10 +72,13 @@ strikes and absence of progression on rejection. Browser-reducer fixtures cover
 normal typing, coarsened clocks, IME, pre-start keys, bailouts and zen. This is
 synthetic compatibility evidence; review real user samples before tightening rules.
 
-The previously deployed staging Worker predates this implementation. Follow
-[operations](CLOUDFLARE_OPERATIONS.md) to migrate/redeploy, configure OAuth/captcha
-and repeat signup, save, refresh and sign-out/sign-in checks with production mode.
-Monitor `anticheat_rejected` audits by reason and important-audit growth.
+Staging includes this implementation. Live API checks with a temporary seeded
+identity verified valid saves/persistence, inconsistent-data and fixed-timing
+rejections, server spacing and revoked sessions; test data was removed. Real-user
+OAuth/captcha and browser typing remain pending. Follow
+[staging setup](STAGING_SETUP.md) to configure credentials and repeat signup,
+save, refresh and sign-out/sign-in checks. Monitor `anticheat_rejected` audits by
+reason and important-audit growth.
 
 ```sh
 cd backend

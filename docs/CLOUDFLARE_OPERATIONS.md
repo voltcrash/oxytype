@@ -76,8 +76,10 @@ Optional nonsecret vars: `INTEGRATION_URL`, `QUOTES_REPOSITORY`.
 Without OAuth credentials no social login is available. Without a real captcha
 secret production signup fails closed. Built-in [anticheat](ANTICHEAT.md) permits
 valid production result saves and rejects inconsistent telemetry. No bypass is
-supported. The deployed staging version predates the Discord removal, signup fix
-and anticheat follow-ups; migrate/redeploy before remote testing. Keep automatic
+supported. Staging now includes the Discord removal, signup fix and anticheat;
+live API checks passed with a temporary seeded identity. Signup/result saving
+were restored to disabled after testing. Follow [staging browser setup](STAGING_SETUP.md)
+to supply OAuth/captcha credentials and enable them deliberately. Keep automatic
 bans disabled while reviewing real typing samples. `/stats/*` remains inaccessible
 without stats credentials.
 
@@ -98,6 +100,11 @@ The account-linking endpoints, avatar integration, rich presence and Discord
 announcements are removed. Disable the old GitHub release webhook and bot
 consumer; remove obsolete `DISCORD_CLIENT_ID` and `GITHUB_WEBHOOK_SECRET` bindings.
 The quote approval bridge remains optional.
+
+Migration 0002 and the updated Worker are deployed on staging. A private D1 backup
+was captured under maintenance; queue delivery was paused and resumed. A Worker
+rollback to code requiring the old Discord schema also needs a matching D1 restore
+under maintenance; do not point that code at the migrated database.
 
 ## External bridge
 
