@@ -244,3 +244,8 @@ verification, deployment, and any external blockers throughout implementation.
   result save under forced CAS retry verified; progression commits once.
 - PR: https://github.com/voltcrash/oxytype/pull/24. Production cutover remains a
   separate operation after the documented data/integration/anticheat gates.
+
+Final deployed Worker version: `a70e71d5-4646-4b80-8ae1-bcc8db813ef6`.
+Verified capped gzip/deflate → 413, small gzip → authentication guard, malformed
+compression → 400, and request-initialized uptime. Final backend unit rerun:
+591/591 passed. All implementation commits are pushed; PR marked ready for review.
