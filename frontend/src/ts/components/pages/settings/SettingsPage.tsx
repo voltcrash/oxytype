@@ -76,23 +76,27 @@ export function SettingsPage(): JSXElement {
         header={<SettingsSearch />}
         counts={isSettingsSearchActive() ? getSearchMatchCounts() : undefined}
         footer={
-          isAuthenticated() ? (
-            <Button
-              text="account settings"
-              variant="text"
-              fa={{ icon: "fa-user-cog" }}
-              href="/account-settings"
-              router-link
-            />
+          isAuthenticated() || getConfig.showKeyTips ? (
+            <>
+              <Show when={isAuthenticated()}>
+                <Button
+                  text="account settings"
+                  variant="text"
+                  fa={{ icon: "fa-user-cog" }}
+                  href="/account-settings"
+                  router-link
+                />
+              </Show>
+              <Show when={getConfig.showKeyTips}>
+                <div class="text-em-xs text-sub">
+                  tip: you can also change all these settings quickly using the
+                  command line ( <CommandlineHotkey /> )
+                </div>
+              </Show>
+            </>
           ) : undefined
         }
       >
-        <Show when={getConfig.showKeyTips}>
-          <div class={cn("text-sub", isSettingsSearchActive() && "hidden")}>
-            tip: You can also change all these settings quickly using the
-            command line ( <CommandlineHotkey /> )
-          </div>
-        </Show>
         <div class="grid gap-16">
           <Section section="behavior">
             <Show when={isAuthenticated()}>
