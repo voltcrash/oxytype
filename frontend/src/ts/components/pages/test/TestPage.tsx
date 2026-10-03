@@ -21,7 +21,6 @@ import { LiveStatsTextBottom } from "./live-stats/LiveStatsTextBottom";
 import { LiveStatsTextTop } from "./live-stats/LiveStatsTextTop";
 import { TestModesNotice } from "./modes-notice/TestModesNotice";
 import { OutOfFocusWarning } from "./OutOfFocusWarning";
-import { Premid } from "./Premid";
 import { RestartTestButton } from "./RestartTestButton";
 import { Result } from "./result/Result";
 import { TestConfig } from "./TestConfig";
@@ -128,7 +127,6 @@ export function TestPage(
         <Keymap />
         <RestartTestButton />
         <LiveStatsTextBottom />
-        <Premid />
       </div>
       <TestPageLifecycle input={refs.wordsInput} />
       <TestLoading />

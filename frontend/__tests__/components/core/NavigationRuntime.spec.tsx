@@ -109,7 +109,7 @@ describe("Solid Router page integration", () => {
   afterEach(cleanup);
 
   it("waits for auth startup and passes loading options to the existing lifecycle", async () => {
-    mount("/verify?mode=time#configuration");
+    mount("/?mode=time#configuration");
     expect(state.change).not.toHaveBeenCalled();
     state.transition = true;
     await ready();
@@ -117,7 +117,7 @@ describe("Solid Router page integration", () => {
       force: true,
       loadingOptions: expect.objectContaining({ style: "bar" }),
     });
-    expect(window.location.href).toContain("/verify?mode=time#configuration");
+    expect(window.location.href).toContain("/?mode=time#configuration");
   });
 
   it.each([
@@ -127,6 +127,7 @@ describe("Solid Router page integration", () => {
     ["/leaderboards?type=daily", "leaderboards"],
     ["/profile", "profileSearch"],
     ["/unknown/path", "404"],
+    ["/verify", "404"],
     ["/profile/name/extra", "404"],
   ])("matches %s to %s", async (path, page) => {
     mount(path);

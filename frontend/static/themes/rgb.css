@@ -102,8 +102,8 @@ header[data-focused] {
   }
 }
 
-header [data-nav-item="account"]:hover [data-ui-element="navAvatar"] svg path {
-  animation: rgb-fill 5s linear infinite;
+header [data-nav-item="account"]:hover [data-ui-element="navAvatar"] i {
+  animation: rgb 5s linear infinite;
 }
 
 #words {

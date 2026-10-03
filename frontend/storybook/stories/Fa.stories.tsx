@@ -28,7 +28,7 @@ export const CustomSize = meta.story({
 });
 
 export const Brand = meta.story({
-  render: () => <Fa icon="fa-discord" variant="brand" size={2} />,
+  render: () => <Fa icon="fa-github" variant="brand" size={2} />,
 });
 
 export const AllVariants = meta.story({
@@ -58,14 +58,14 @@ export const AllVariants = meta.story({
       </div>
       <Fa icon="fa-cog" variant="solid" />
       <Fa icon="fa-circle" variant="regular" />
-      <Fa icon="fa-discord" variant="brand" />
+      <Fa icon="fa-github" variant="brand" />
 
       <div style={{ "font-size": "10px", color: "var(--sub-color)" }}>
         Fixed Width
       </div>
       <Fa icon="fa-cog" variant="solid" fixedWidth />
       <Fa icon="fa-circle" variant="regular" fixedWidth />
-      <Fa icon="fa-discord" variant="brand" fixedWidth />
+      <Fa icon="fa-github" variant="brand" fixedWidth />
 
       <div style={{ "font-size": "10px", color: "var(--sub-color)" }}>
         Spinning

@@ -34,8 +34,8 @@ header[data-focused] nav::after {
   background: #9f8ad4;
 }
 
-[data-nav-item="account"]:hover [data-ui-element="navAvatar"] svg {
-  fill: var(--bg-color);
+[data-nav-item="account"]:hover [data-ui-element="navAvatar"] i {
+  color: var(--bg-color);
 }
 
 [data-nav-item="alerts"],

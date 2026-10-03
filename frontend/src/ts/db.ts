@@ -110,8 +110,6 @@ export async function initSnapshot(): Promise<Snapshot | false> {
     snap.banned = userData.banned;
     snap.lbOptOut = userData.lbOptOut;
     snap.verified = userData.verified;
-    snap.discordId = userData.discordId;
-    snap.discordAvatar = userData.discordAvatar;
     snap.needsToChangeName = userData.needsToChangeName;
     snap.typingStats = {
       timeTyping: userData.timeTyping ?? 0,

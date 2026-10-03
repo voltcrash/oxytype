@@ -30,7 +30,7 @@ import { AutoShrink } from "../../common/AutoShrink";
 import { Balloon, BalloonProps } from "../../common/Balloon";
 import { Bar } from "../../common/Bar";
 import { Button } from "../../common/Button";
-import { DiscordAvatar } from "../../common/DiscordAvatar";
+import { UserAvatar } from "../../common/UserAvatar";
 import { UserBadge } from "../../common/UserBadge";
 import { UserFlags } from "../../common/UserFlags";
 import { EditProfile } from "../../modals/EditProfileModal";
@@ -264,12 +264,7 @@ function AvatarAndName(props: {
         props.variant === "hasSocials" && "sm:col-span-2 md:col-span-1",
       )}
     >
-      <DiscordAvatar
-        class="h-auto w-full place-self-center"
-        size={256}
-        discordAvatar={props.profile.discordAvatar}
-        discordId={props.profile.discordId}
-      />
+      <UserAvatar class="h-auto w-full place-self-center text-center text-[5rem]" />
 
       <div class="flex h-min flex-col gap-1 text-xs [&>div]:w-fit">
         <AutoShrink upperLimitRem={2} class="flex text-text">

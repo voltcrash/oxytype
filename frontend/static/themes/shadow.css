@@ -28,7 +28,7 @@ a:not(.button):not([data-ui-variant="button"]):hover {
   animation: shadow-repeat 3s linear infinite forwards;
 }
 
-[data-nav-item="account"]:hover svg {
+[data-nav-item="account"]:hover [data-ui-element="navAvatar"] i {
   color: currentColor;
   animation: shadow-repeat 3s linear infinite forwards;
 }
