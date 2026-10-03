@@ -36,6 +36,11 @@ describe("Worker HTTP with D1", () => {
       if (session === null) throw new Error("Missing session");
       token = session.token;
       await Users.addUser("Http", user.email, uid);
+      await test.env.DB.prepare(
+        "UPDATE users SET added_at=0,data=json_set(data,'$.addedAt',0) WHERE uid=?",
+      )
+        .bind(uid)
+        .run();
       await patchConfiguration({
         users: { inbox: { enabled: true, maxMail: 100 } },
       });

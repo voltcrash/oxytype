@@ -335,9 +335,16 @@ async function addResultAtomic(
   //   );
   //   return res.status(400).json({ message: "Time traveler detected" });
 
-  const { data: lastResultTimestamp } = await tryCatch(
+  const { data: lastResultTimestamp, error: lastResultError } = await tryCatch(
     ResultDAL.getLastResultTimestamp(uid),
   );
+  // An unavailable database must not be interpreted as an empty result history.
+  if (
+    lastResultError &&
+    !(lastResultError instanceof MonkeyError && lastResultError.status === 404)
+  ) {
+    throw lastResultError;
+  }
 
   // Abandoned-test time (incompleteTestSeconds/incompleteTests) is client
   // supplied. When a previous result exists it is bounded to real elapsed time
@@ -355,17 +362,20 @@ async function addResultAtomic(
   //check if now is earlier than last result plus duration (-1 second as a buffer)
   const testDurationMilis = completedEvent.testDuration * 1000;
   const incompleteTestsMilis = completedEvent.incompleteTestSeconds * 1000;
+  // New-account first saves are bounded by a server timestamp too. Legacy
+  // imports without a creation time retain the epoch fallback; client result
+  // timestamps never establish the window.
+  const previousTimestamp =
+    lastResultTimestamp ?? (isSafeNumber(user.addedAt) ? user.addedAt : 0);
   const earliestPossible =
-    (lastResultTimestamp ?? 0) + testDurationMilis + incompleteTestsMilis;
+    previousTimestamp + testDurationMilis + incompleteTestsMilis;
   const nowNoMilis = Math.floor(Date.now() / 1000) * 1000;
-  if (
-    isSafeNumber(lastResultTimestamp) &&
-    nowNoMilis < earliestPossible - 1000
-  ) {
+  if (nowNoMilis < earliestPossible - 1000) {
     await addLog(
       "invalid_result_spacing",
       {
         lastTimestamp: lastResultTimestamp,
+        accountCreatedAt: user.addedAt,
         earliestPossible,
         now: nowNoMilis,
         testDuration: testDurationMilis,

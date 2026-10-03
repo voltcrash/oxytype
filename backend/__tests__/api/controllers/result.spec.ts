@@ -18,6 +18,7 @@ import { enableRateLimitExpects } from "../../__testData__/rate-limit";
 import { DBResult } from "../../../src/utils/result";
 import { omit } from "../../../src/utils/misc";
 import { CompletedEvent } from "@oxytype/schemas/results";
+import MonkeyError from "../../../src/utils/error";
 
 const { mockApp, uid } = setup();
 const configuration = Configuration.getCachedConfiguration();
@@ -683,6 +684,27 @@ describe("result controller test", () => {
 
       //THEN
       expect(body.message).toEqual("Results are not being saved at this time.");
+    });
+    it("fails closed when result history cannot be read", async () => {
+      resultGetLastTimestampMock.mockRejectedValue(new Error("D1 unavailable"));
+      await mockApp
+        .post("/results")
+        .set("Authorization", `Bearer ${uid}`)
+        .send({ result: buildCompletedEvent() })
+        .expect(500);
+      expect(resultAddMock).not.toHaveBeenCalled();
+      expect(userIncrementXpMock).not.toHaveBeenCalled();
+    });
+    it("treats only a missing history as the first result and clears abandoned-test credit", async () => {
+      resultGetLastTimestampMock.mockRejectedValue(
+        new MonkeyError(404, "No last result found"),
+      );
+      await mockApp
+        .post("/results")
+        .set("Authorization", `Bearer ${uid}`)
+        .send({ result: buildCompletedEvent() })
+        .expect(200);
+      expect(userUpdateTypingStatsMock).toHaveBeenCalledWith(uid, 4, 10.1);
     });
     it("should fail without mandatory properties", async () => {
       //GIVEN

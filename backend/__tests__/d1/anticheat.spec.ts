@@ -35,7 +35,9 @@ describe("production anticheat with D1", () => {
   });
   afterAll(async () => await test?.dispose());
 
-  async function account(): Promise<{ uid: string; token: string }> {
+  async function account(
+    ageSeconds = 300,
+  ): Promise<{ uid: string; token: string }> {
     return await withRuntime(test.env, async () => {
       const auth = await getAuth().$context;
       const user = await auth.internalAdapter.createUser(
@@ -47,6 +49,12 @@ describe("production anticheat with D1", () => {
         { method: "oauth", oauth: { providerId: "github" } },
       );
       await Users.addUser(user.name, user.email, user.id);
+      const createdAt = Date.now() - ageSeconds * 1000;
+      await test.env.DB.prepare(
+        "UPDATE users SET added_at=?,data=json_set(data,'$.addedAt',?) WHERE uid=?",
+      )
+        .bind(createdAt, createdAt, user.id)
+        .run();
       const session = await auth.internalAdapter.createSession(user.id, false);
       if (session === null) throw new Error("Missing session");
       return { uid: user.id, token: session.token };
@@ -139,6 +147,18 @@ describe("production anticheat with D1", () => {
           .first("count"),
       ).toBe(1);
     });
+  });
+  it("bounds first-result duration to server account age, ignoring the client timestamp", async () => {
+    const user = await account(0);
+    expect((await submit(user, { timestamp: 1 })).status).toBe(462);
+    await assertNoProgress(user.uid);
+    expect(
+      await test.env.DB.prepare(
+        "SELECT count(*) AS count FROM audit_logs WHERE uid=? AND event='invalid_result_spacing'",
+      )
+        .bind(user.uid)
+        .first("count"),
+    ).toBe(1);
   });
   it.each(["/api/results", "/results"])(
     "rejects forged scores at %s without saving progression, even with the old bypass binding",
