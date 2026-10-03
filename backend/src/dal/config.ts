@@ -1,60 +1,67 @@
-import { Collection, ObjectId, UpdateResult } from "mongodb";
-import * as db from "../init/db";
-import { Config, PartialConfig } from "@oxytype/schemas/configs";
+import { eq } from "drizzle-orm";
+import { configs } from "../db/schema";
+import { database, statement } from "../db/client";
+import { newId, type StoredId } from "../utils/id";
+import type { Config, PartialConfig } from "@oxytype/schemas/configs";
 
-const configLegacyProperties: Record<string, ""> = {
-  "config.swapEscAndTab": "",
-  "config.quickTab": "",
-  "config.chartStyle": "",
-  "config.chartAverage10": "",
-  "config.chartAverage100": "",
-  "config.alwaysShowCPM": "",
-  "config.resultFilters": "",
-  "config.chartAccuracy": "",
-  "config.liveSpeed": "",
-  "config.extraTestColor": "",
-  "config.savedLayout": "",
-  "config.showTimerBar": "",
-  "config.showDiscordDot": "",
-  "config.maxConfidence": "",
-  "config.capsLockBackspace": "",
-  "config.showAvg": "",
-  "config.enableAds": "",
+type UpdateResult = {
+  acknowledged: boolean;
+  matchedCount: number;
+  modifiedCount: number;
+  upsertedCount: number;
 };
-
-export type DBConfig = {
-  _id: ObjectId;
-  uid: string;
-  config: PartialConfig;
-};
-
-const getConfigCollection = (): Collection<DBConfig> =>
-  db.collection<DBConfig>("configs");
-
+export type DBConfig = { _id: StoredId; uid: string; config: PartialConfig };
+const legacy = [
+  "swapEscAndTab",
+  "quickTab",
+  "chartStyle",
+  "chartAverage10",
+  "chartAverage100",
+  "alwaysShowCPM",
+  "resultFilters",
+  "chartAccuracy",
+  "liveSpeed",
+  "extraTestColor",
+  "savedLayout",
+  "showTimerBar",
+  "showDiscordDot",
+  "maxConfidence",
+  "capsLockBackspace",
+  "showAvg",
+  "enableAds",
+];
 export async function saveConfig(
   uid: string,
   config: Partial<Config>,
 ): Promise<UpdateResult> {
-  const configChanges = Object.fromEntries(
-    Object.entries(config).map(([key, value]) => [`config.${key}`, value]),
+  const patch = JSON.stringify(
+    Object.fromEntries(
+      Object.entries(config).filter(([key]) => !legacy.includes(key)),
+    ),
   );
-
-  return await getConfigCollection().updateOne(
-    { uid },
-    { $set: configChanges, $unset: configLegacyProperties },
-    { upsert: true },
-  );
+  const paths = legacy.map((key) => `$.${key}`);
+  await statement(
+    `INSERT INTO configs(uid,id,data) VALUES(?,?,?) ON CONFLICT(uid) DO UPDATE SET data=json_remove(json_patch(configs.data,excluded.data),${paths.map(() => "?").join(",")})`,
+    uid,
+    newId(),
+    patch,
+    ...paths,
+  ).run();
+  return {
+    acknowledged: true,
+    matchedCount: 1,
+    modifiedCount: 1,
+    upsertedCount: 0,
+  };
 }
-
 export async function getConfig(uid: string): Promise<DBConfig | null> {
-  const config = await getConfigCollection().findOne({ uid });
-  return config;
+  const row = await database()
+    .select()
+    .from(configs)
+    .where(eq(configs.uid, uid))
+    .get();
+  return row ? { _id: row.id, uid, config: row.data } : null;
 }
-
 export async function deleteConfig(uid: string): Promise<void> {
-  await getConfigCollection().deleteOne({ uid });
+  await database().delete(configs).where(eq(configs.uid, uid));
 }
-
-export const __testing = {
-  getConfigCollection,
-};

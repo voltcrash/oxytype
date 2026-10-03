@@ -1,14 +1,12 @@
-import { Collection, WithId } from "mongodb";
-import * as db from "../init/db";
-
-export const getCollection = (): Collection<WithId<{ uid: string }>> =>
-  db.collection("admin-uids");
-
+import { eq } from "drizzle-orm";
+import { database } from "../db/client";
+import { adminUids } from "../db/schema";
 export async function isAdmin(uid: string): Promise<boolean> {
-  const doc = await getCollection().findOne({ uid });
-  if (doc) {
-    return true;
-  } else {
-    return false;
-  }
+  return (
+    (await database()
+      .select()
+      .from(adminUids)
+      .where(eq(adminUids.uid, uid))
+      .get()) !== undefined
+  );
 }

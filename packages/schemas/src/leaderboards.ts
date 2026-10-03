@@ -15,8 +15,6 @@ export const LeaderboardEntrySchema = z.object({
   consistency: z.number().nonnegative().optional(),
   uid: z.string(),
   name: z.string(),
-  discordId: z.string().optional(),
-  discordAvatar: z.string().optional(),
   rank: z.number().nonnegative().int(),
   friendsRank: FriendsRankSchema,
   badgeId: z.number().int().optional(),
@@ -38,12 +36,6 @@ export const RedisXpLeaderboardEntrySchema = z.object({
   lastActivityTimestamp: z.number().int().nonnegative(),
   timeTypedSeconds: z.number().nonnegative(),
   // optionals
-  // discordId: z.string().optional(),
-  discordId: z //todo remove once weekly leaderboards reset twice and remove null values
-    .string()
-    .optional()
-    .or(z.null().transform((_val) => undefined)),
-  discordAvatar: z.string().optional(),
   badgeId: z.number().int().optional(),
   isPremium: z.boolean().optional(),
 });

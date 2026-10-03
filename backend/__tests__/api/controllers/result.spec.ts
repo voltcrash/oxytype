@@ -18,6 +18,7 @@ import { enableRateLimitExpects } from "../../__testData__/rate-limit";
 import { DBResult } from "../../../src/utils/result";
 import { omit } from "../../../src/utils/misc";
 import { CompletedEvent } from "@oxytype/schemas/results";
+import MonkeyError from "../../../src/utils/error";
 
 const { mockApp, uid } = setup();
 const configuration = Configuration.getCachedConfiguration();
@@ -62,8 +63,8 @@ describe("result controller test", () => {
 
       expect(body.message).toEqual("Results retrieved");
       expect(body.data).toEqual([
-        { ...resultOne, _id: resultOne._id.toHexString() },
-        { ...resultTwo, _id: resultTwo._id.toHexString() },
+        { ...resultOne, _id: resultOne._id.toString() },
+        { ...resultTwo, _id: resultTwo._id.toString() },
       ]);
     });
     it("should get results with ape key", async () => {
@@ -324,7 +325,7 @@ describe("result controller test", () => {
 
       //THEN
       expect(body.message).toEqual("Result retrieved");
-      expect(body.data).toEqual({ ...result, _id: result._id.toHexString() });
+      expect(body.data).toEqual({ ...result, _id: result._id.toString() });
     });
     it("should get last result with ape key", async () => {
       //GIVEN
@@ -380,7 +381,7 @@ describe("result controller test", () => {
 
       //THEN
       expect(body.message).toEqual("Result retrieved");
-      expect(body.data).toEqual({ ...result, _id: result._id.toHexString() });
+      expect(body.data).toEqual({ ...result, _id: result._id.toString() });
     });
     it("should get last result with ape key", async () => {
       //GIVEN
@@ -431,11 +432,8 @@ describe("result controller test", () => {
     it("should update tags", async () => {
       //GIVEN
       const result = givenDbResult(uid);
-      const resultIdString = result._id.toHexString();
-      const tagIds = [
-        new ObjectId().toHexString(),
-        new ObjectId().toHexString(),
-      ];
+      const resultIdString = result._id.toString();
+      const tagIds = [new ObjectId().toString(), new ObjectId().toString()];
       const partialUser = { tags: [] };
       getResultMock.mockResolvedValue(result);
       updateTagsMock.mockResolvedValue({} as any);
@@ -474,11 +472,8 @@ describe("result controller test", () => {
         "numbers",
       ]);
 
-      const resultIdString = result._id.toHexString();
-      const tagIds = [
-        new ObjectId().toHexString(),
-        new ObjectId().toHexString(),
-      ];
+      const resultIdString = result._id.toString();
+      const tagIds = [new ObjectId().toString(), new ObjectId().toString()];
       const partialUser = { tags: [] };
       getResultMock.mockResolvedValue(partialResult);
       updateTagsMock.mockResolvedValue({} as any);
@@ -505,6 +500,7 @@ describe("result controller test", () => {
       ]);
       expect(checkIfTagPbMock).toHaveBeenCalledWith(uid, partialUser, {
         ...result,
+        tags: tagIds,
         difficulty: "normal",
         language: "english",
         funbox: [],
@@ -557,6 +553,9 @@ describe("result controller test", () => {
     const userUpdateStreakMock = vi.spyOn(UserDal, "updateStreak");
     const userCheckIfTagPbMock = vi.spyOn(UserDal, "checkIfTagPb");
     const userCheckIfPbMock = vi.spyOn(UserDal, "checkIfPb");
+    vi.spyOn(UserDal, "incrementTestActivity").mockResolvedValue();
+    vi.spyOn(UserDal, "incrementBananas").mockResolvedValue();
+    vi.spyOn(UserDal, "updateLastHashes").mockResolvedValue();
     const userIncrementXpMock = vi.spyOn(UserDal, "incrementXp");
     const userUpdateTypingStatsMock = vi.spyOn(UserDal, "updateTypingStats");
     const resultAddMock = vi.spyOn(ResultDal, "addResult");
@@ -590,6 +589,7 @@ describe("result controller test", () => {
       //a prior result exists so incomplete-test time is credited (not zeroed)
       resultGetLastTimestampMock.mockResolvedValue(0);
       userIncrementXpMock.mockResolvedValue();
+      userUpdateTypingStatsMock.mockResolvedValue();
     });
 
     it("should add result", async () => {
@@ -622,7 +622,7 @@ describe("result controller test", () => {
           daily: 0,
         },
         streak: 0,
-        insertedId: insertedId.toHexString(),
+        insertedId: insertedId.toString(),
       });
 
       expect(resultAddMock).toHaveBeenCalledWith(
@@ -636,13 +636,13 @@ describe("result controller test", () => {
             burst: [50, 55, 56],
             wpm: [1, 2, 3],
           },
-          consistency: 23.5,
-          incompleteTestSeconds: 2,
+          consistency: 95.11,
+          incompleteTestSeconds: 10,
           isPb: true,
-          keyConsistency: 12,
+          keyConsistency: 8.9,
           keyDurationStats: {
-            average: 2.67,
-            sd: 2.05,
+            average: 3.75,
+            sd: 2.59,
           },
           keySpacingStats: {
             average: 2,
@@ -651,24 +651,24 @@ describe("result controller test", () => {
           mode: "time",
           mode2: "15",
           name: "bob",
-          rawWpm: 99,
+          rawWpm: 99.34,
           restartCount: 4,
           tags: ["tagOneId", "tagTwoId"],
           testDuration: 15.1,
           uid: uid,
-          wpm: 80,
+          wpm: 79.47,
         }),
       );
 
       expect(publicUpdateStatsMock).toHaveBeenCalledWith(
         4,
-        15.1 + 2 - 5, //duration + incompleteTestSeconds-afk
+        15.1 + 10 - 5, //duration + incompleteTestSeconds-afk
       );
       expect(userIncrementXpMock).toHaveBeenCalledWith(uid, 0);
       expect(userUpdateTypingStatsMock).toHaveBeenCalledWith(
         uid,
         4,
-        15.1 + 2 - 5, //duration + incompleteTestSeconds-afk
+        15.1 + 10 - 5, //duration + incompleteTestSeconds-afk
       );
     });
     it("should fail if result saving is disabled", async () => {
@@ -684,6 +684,27 @@ describe("result controller test", () => {
 
       //THEN
       expect(body.message).toEqual("Results are not being saved at this time.");
+    });
+    it("fails closed when result history cannot be read", async () => {
+      resultGetLastTimestampMock.mockRejectedValue(new Error("D1 unavailable"));
+      await mockApp
+        .post("/results")
+        .set("Authorization", `Bearer ${uid}`)
+        .send({ result: buildCompletedEvent() })
+        .expect(500);
+      expect(resultAddMock).not.toHaveBeenCalled();
+      expect(userIncrementXpMock).not.toHaveBeenCalled();
+    });
+    it("treats only a missing history as the first result and clears abandoned-test credit", async () => {
+      resultGetLastTimestampMock.mockRejectedValue(
+        new MonkeyError(404, "No last result found"),
+      );
+      await mockApp
+        .post("/results")
+        .set("Authorization", `Bearer ${uid}`)
+        .send({ result: buildCompletedEvent() })
+        .expect(200);
+      expect(userUpdateTypingStatsMock).toHaveBeenCalledWith(uid, 4, 10.1);
     });
     it("should fail without mandatory properties", async () => {
       //GIVEN
@@ -773,14 +794,14 @@ function buildCompletedEvent(result?: Partial<CompletedEvent>): CompletedEvent {
     blindMode: false,
     charStats: [100, 2, 3, 5],
     chartData: { wpm: [1, 2, 3], burst: [50, 55, 56], err: [0, 2, 0] },
-    consistency: 23.5,
+    consistency: 95.11,
     difficulty: "normal",
     funbox: [],
     hash: "hash",
-    incompleteTestSeconds: 2,
-    incompleteTests: [{ acc: 75, seconds: 10 }],
-    keyConsistency: 12,
-    keyDuration: [0, 3, 5],
+    incompleteTestSeconds: 10,
+    incompleteTests: [2, 2, 2, 4].map((seconds) => ({ acc: 75, seconds })),
+    keyConsistency: 8.9,
+    keyDuration: [0, 3, 5, 7],
     keySpacing: [0, 2, 4],
     language: "english",
     lazyMode: false,
@@ -788,19 +809,19 @@ function buildCompletedEvent(result?: Partial<CompletedEvent>): CompletedEvent {
     mode2: "15",
     numbers: false,
     punctuation: false,
-    rawWpm: 99,
+    rawWpm: 99.34,
     restartCount: 4,
     tags: ["tagOneId", "tagTwoId"],
     testDuration: 15.1,
     timestamp: 1000,
     uid,
-    wpmConsistency: 55,
-    wpm: 80,
+    wpmConsistency: 59.2,
+    wpm: 79.47,
     stopOnLetter: false,
     //new required
-    charTotal: 5,
+    charTotal: 125,
     keyOverlap: 7,
-    lastKeyToEnd: 9,
+    lastKeyToEnd: 15083,
     startToFirstKey: 11,
     ...result,
   };

@@ -64,10 +64,10 @@ describe("QuotesController", () => {
       //THEN
       expect(body.message).toEqual("Quote submissions retrieved");
       expect(body.data).toEqual([
-        { ...quoteOne, _id: quoteOne._id.toHexString() },
+        { ...quoteOne, _id: quoteOne._id.toString() },
         {
           ...quoteTwo,
-          _id: quoteTwo._id.toHexString(),
+          _id: quoteTwo._id.toString(),
         },
       ]);
 
@@ -195,7 +195,10 @@ describe("QuotesController", () => {
         uid,
       );
 
-      expect(verifyCaptchaMock).toHaveBeenCalledWith(newQuote.captcha);
+      expect(verifyCaptchaMock).toHaveBeenCalledWith(
+        newQuote.captcha,
+        "quote-submit",
+      );
     });
     it("should fail without authentication", async () => {
       await mockApp.post("/quotes").expect(401);
@@ -281,7 +284,7 @@ describe("QuotesController", () => {
 
     it("should approve", async () => {
       //GiVEN
-      const quoteId = new ObjectId().toHexString();
+      const quoteId = new ObjectId().toString();
       const quote: ApproveQuote = {
         id: 100,
         text: "text",
@@ -320,7 +323,7 @@ describe("QuotesController", () => {
     });
     it("should approve with optional parameters as null", async () => {
       //GiVEN
-      const quoteId = new ObjectId().toHexString();
+      const quoteId = new ObjectId().toString();
       approveQuoteMock.mockResolvedValue({
         message: "ok",
         quote: {} as any,
@@ -348,7 +351,7 @@ describe("QuotesController", () => {
     });
     it("should approve without optional parameters", async () => {
       //GiVEN
-      const quoteId = new ObjectId().toHexString();
+      const quoteId = new ObjectId().toString();
       approveQuoteMock.mockResolvedValue({
         message: "ok",
         quote: {} as any,
@@ -392,7 +395,7 @@ describe("QuotesController", () => {
       const { body } = await mockApp
         .post("/quotes/approve")
         .set("Authorization", `Bearer ${uid}`)
-        .send({ quoteId: new ObjectId().toHexString(), extra: "value" })
+        .send({ quoteId: new ObjectId().toString(), extra: "value" })
         .expect(422);
 
       //THEN
@@ -409,7 +412,7 @@ describe("QuotesController", () => {
       const { body } = await mockApp
         .post("/quotes/approve")
         .set("Authorization", `Bearer ${uid}`)
-        .send({ quoteId: new ObjectId().toHexString() })
+        .send({ quoteId: new ObjectId().toString() })
         .expect(403);
 
       //THEN
@@ -418,7 +421,7 @@ describe("QuotesController", () => {
     it("should fail without authentication", async () => {
       await mockApp
         .post("/quotes/approve")
-        .send({ quoteId: new ObjectId().toHexString() })
+        .send({ quoteId: new ObjectId().toString() })
         .expect(401);
     });
   });
@@ -432,7 +435,7 @@ describe("QuotesController", () => {
 
     it("should refuse quote", async () => {
       //GIVEN
-      const quoteId = new ObjectId().toHexString();
+      const quoteId = new ObjectId().toString();
 
       //WHEN
       const { body } = await mockApp
@@ -464,7 +467,7 @@ describe("QuotesController", () => {
     });
     it("should fail with unknown properties", async () => {
       //GIVEN
-      const quoteId = new ObjectId().toHexString();
+      const quoteId = new ObjectId().toString();
 
       //WHEN
       const { body } = await mockApp
@@ -482,7 +485,7 @@ describe("QuotesController", () => {
     it("should fail if user is no quote mod", async () => {
       //GIVEN
       getPartialUserMock.mockClear().mockResolvedValue({} as any);
-      const quoteId = new ObjectId().toHexString();
+      const quoteId = new ObjectId().toString();
 
       //WHEN
       const { body } = await mockApp
@@ -497,7 +500,7 @@ describe("QuotesController", () => {
     it("should fail without authentication", async () => {
       await mockApp
         .post("/quotes/reject")
-        .send({ quoteId: new ObjectId().toHexString() })
+        .send({ quoteId: new ObjectId().toString() })
         .expect(401);
     });
   });
@@ -530,7 +533,7 @@ describe("QuotesController", () => {
       //THEN
       expect(body).toEqual({
         message: "Rating retrieved",
-        data: { ...quoteRating, _id: quoteRating._id.toHexString() },
+        data: { ...quoteRating, _id: quoteRating._id.toString() },
       });
 
       expect(getRatingMock).toHaveBeenCalledWith(42, "english");
@@ -783,7 +786,7 @@ describe("QuotesController", () => {
         data: null,
       });
 
-      expect(verifyCaptchaMock).toHaveBeenCalledWith("captcha");
+      expect(verifyCaptchaMock).toHaveBeenCalledWith("captcha", "quote-report");
 
       expect(createReportMock).toHaveBeenCalledWith(
         expect.objectContaining({

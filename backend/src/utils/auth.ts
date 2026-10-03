@@ -20,6 +20,9 @@ export async function verifySession(
       "Session expired or revoked - please login again",
     );
   }
+  if ("disabled" in result.user && result.user.disabled === true) {
+    throw new MonkeyError(403, "Account disabled");
+  }
   return {
     uid: result.user.id,
     email: result.user.email,

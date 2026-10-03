@@ -1,3 +1,5 @@
+import { isUniqueViolation } from "../../db/client";
+import { atomicUser } from "../../db/mutation";
 import * as ResultDAL from "../../dal/result";
 import * as PublicDAL from "../../dal/public";
 import {
@@ -8,21 +10,19 @@ import {
 } from "../../utils/misc";
 import objectHash from "object-hash";
 import Logger from "../../utils/logger";
-import "dotenv/config";
 import { MonkeyResponse } from "../../utils/monkey-response";
 import MonkeyError from "../../utils/error";
 import { isTestTooShort } from "../../utils/validation";
 import {
-  implemented as anticheatImplemented,
-  validateResult,
-  validateKeys,
+  getResultFailure,
+  getKeyDataFailure,
+  getBotFailure,
 } from "../../anticheat/index";
 import MonkeyStatusCodes from "../../constants/monkey-status-codes";
 import {
   incrementResult,
   incrementDailyLeaderboard,
 } from "../../utils/prometheus";
-import GeorgeQueue from "../../queues/george-queue";
 import {
   getDailyLeaderboard,
   purgeUserFromDailyLeaderboards,
@@ -30,7 +30,6 @@ import {
 import * as UserDAL from "../../dal/user";
 import { buildMonkeyMail } from "../../utils/monkey-mail";
 import * as WeeklyXpLeaderboard from "../../services/weekly-xp-leaderboard";
-import { UAParser } from "ua-parser-js";
 import { canFunboxGetPb } from "../../utils/pb";
 import { buildDbResult } from "../../utils/result";
 import { Configuration } from "@oxytype/schemas/configuration";
@@ -66,22 +65,6 @@ import { MonkeyRequest } from "../types";
 import { getFunbox, checkCompatibility } from "@oxytype/funbox";
 import { tryCatch } from "@oxytype/util/trycatch";
 import { getCachedConfiguration } from "../../init/configuration";
-
-try {
-  if (!anticheatImplemented()) throw new Error("undefined");
-  Logger.success("Anticheat module loaded");
-} catch (e) {
-  if (isDevEnvironment()) {
-    Logger.warning(
-      "No anticheat module found. Continuing in dev mode, results will not be validated.",
-    );
-  } else {
-    Logger.error(
-      "No anticheat module found. To continue in dev mode, add MODE=dev to your .env file in the backend directory",
-    );
-    process.exit(1);
-  }
-}
 
 export async function getResults(
   req: MonkeyRequest<GetResultsQuery>,
@@ -123,7 +106,7 @@ export async function getResults(
     limit,
     offset,
   });
-  void addLog(
+  await addLog(
     "user_results_requested",
     {
       limit,
@@ -161,26 +144,74 @@ export async function updateTags(
   const { uid } = req.ctx.decodedToken;
   const { tagIds, resultId } = req.body;
 
-  await ResultDAL.updateTags(uid, resultId, tagIds);
-  const result = await ResultDAL.getResult(uid, resultId);
+  return await atomicUser(uid, async () => {
+    await ResultDAL.updateTags(uid, resultId, tagIds);
+    const result = await ResultDAL.getResult(uid, resultId);
 
-  result.difficulty ??= "normal";
-  result.language ??= "english";
-  result.funbox ??= [];
-  result.lazyMode ??= false;
-  result.punctuation ??= false;
-  result.numbers ??= false;
+    result.tags = tagIds;
+    result.difficulty ??= "normal";
+    result.language ??= "english";
+    result.funbox ??= [];
+    result.lazyMode ??= false;
+    result.punctuation ??= false;
+    result.numbers ??= false;
 
-  const user = await UserDAL.getPartialUser(uid, "update tags", ["tags"]);
-  const tagPbs = await UserDAL.checkIfTagPb(uid, user, result);
-  return new MonkeyResponse("Result tags updated", {
-    tagPbs,
+    const user = await UserDAL.getPartialUser(uid, "update tags", ["tags"]);
+    const tagPbs = await UserDAL.checkIfTagPb(uid, user, result);
+    return new MonkeyResponse("Result tags updated", {
+      tagPbs,
+    });
   });
 }
 
 export async function addResult(
   req: MonkeyRequest<undefined, AddResultRequest>,
 ): Promise<AddResultResponse> {
+  const uid = req.ctx.decodedToken.uid;
+  const response = await atomicUser(
+    uid,
+    async () => await addResultAtomic(req),
+  ).catch((error: unknown) => {
+    if (isUniqueViolation(error)) {
+      const status = MonkeyStatusCodes.DUPLICATE_RESULT;
+      throw new MonkeyError(status.code, "Duplicate result");
+    }
+    throw error;
+  });
+  // Rejections before progression may commit their audit/strike writes. Throw
+  // only after that batch succeeds; thrown errors inside atomicUser roll back.
+  if (response instanceof MonkeyError) throw response;
+  if (response.data.dailyLeaderboardRank !== undefined) {
+    const daily = getDailyLeaderboard(
+      req.body.result.language,
+      req.body.result.mode,
+      req.body.result.mode2,
+      req.ctx.configuration.dailyLeaderboards,
+    );
+    const entry = await daily?.getRank(
+      uid,
+      req.ctx.configuration.dailyLeaderboards,
+    );
+    if (entry) response.data.dailyLeaderboardRank = entry.rank;
+    else delete response.data.dailyLeaderboardRank;
+  }
+  if (response.data.weeklyXpLeaderboardRank !== undefined) {
+    const weekly = WeeklyXpLeaderboard.get(
+      req.ctx.configuration.leaderboards.weeklyXp,
+    );
+    const entry = await weekly?.getRank(
+      uid,
+      req.ctx.configuration.leaderboards.weeklyXp,
+    );
+    if (entry) response.data.weeklyXpLeaderboardRank = entry.rank;
+    else delete response.data.weeklyXpLeaderboardRank;
+  }
+  return response;
+}
+
+async function addResultAtomic(
+  req: MonkeyRequest<undefined, AddResultRequest>,
+): Promise<AddResultResponse | MonkeyError> {
   const { uid } = req.ctx.decodedToken;
 
   const user = await UserDAL.getUser(uid, "add result");
@@ -192,7 +223,8 @@ export async function addResult(
     );
   }
 
-  const completedEvent = req.body.result;
+  // Each optimistic retry starts from the original client payload/hash.
+  const completedEvent = structuredClone(req.body.result);
   completedEvent.uid = uid;
 
   if (isTestTooShort(completedEvent)) {
@@ -209,7 +241,7 @@ export async function addResult(
     const objectToHash = omit(completedEvent, ["hash"]);
     const serverhash = objectHash(objectToHash);
     if (serverhash !== resulthash) {
-      void addLog(
+      await addLog(
         "incorrect_result_hash",
         {
           serverhash,
@@ -219,7 +251,7 @@ export async function addResult(
         uid,
       );
       const status = MonkeyStatusCodes.RESULT_HASH_INVALID;
-      throw new MonkeyError(status.code, "Incorrect result hash");
+      return new MonkeyError(status.code, "Incorrect result hash");
     }
   } else {
     Logger.warning("Object hash check is disabled, skipping hash check");
@@ -274,28 +306,21 @@ export async function addResult(
     await addImportantLog("highwpm_user_result", completedEvent, uid);
   }
 
-  if (anticheatImplemented()) {
-    if (
-      !validateResult(
-        completedEvent,
-        ((req.raw.headers["x-client-version"] as string) ||
-          req.raw.headers["client-version"]) as string,
-        JSON.stringify(new UAParser(req.raw.headers["user-agent"]).getResult()),
-        user.lbOptOut === true,
-      )
-    ) {
-      const status = MonkeyStatusCodes.RESULT_DATA_INVALID;
-      throw new MonkeyError(status.code, "Result data doesn't make sense");
-    } else if (isDevEnvironment()) {
-      Logger.success("Result data validated");
-    }
-  } else {
-    if (!isDevEnvironment()) {
-      throw new Error("No anticheat module found");
-    }
-    Logger.warning(
-      "No anticheat module found. Continuing in dev mode, results will not be validated.",
+  const resultFailure =
+    getResultFailure(completedEvent) ?? getKeyDataFailure(completedEvent);
+  if (resultFailure !== undefined) {
+    await addImportantLog(
+      "anticheat_rejected",
+      {
+        reason: resultFailure,
+        submissionHash: resulthash,
+        mode: completedEvent.mode,
+        mode2: completedEvent.mode2,
+      },
+      uid,
     );
+    const status = MonkeyStatusCodes.RESULT_DATA_INVALID;
+    return new MonkeyError(status.code, "Result data doesn't make sense");
   }
 
   //dont use - result timestamp is unreliable, can be changed by system time and stuff
@@ -310,9 +335,16 @@ export async function addResult(
   //   );
   //   return res.status(400).json({ message: "Time traveler detected" });
 
-  const { data: lastResultTimestamp } = await tryCatch(
+  const { data: lastResultTimestamp, error: lastResultError } = await tryCatch(
     ResultDAL.getLastResultTimestamp(uid),
   );
+  // An unavailable database must not be interpreted as an empty result history.
+  if (
+    lastResultError &&
+    !(lastResultError instanceof MonkeyError && lastResultError.status === 404)
+  ) {
+    throw lastResultError;
+  }
 
   // Abandoned-test time (incompleteTestSeconds/incompleteTests) is client
   // supplied. When a previous result exists it is bounded to real elapsed time
@@ -330,17 +362,20 @@ export async function addResult(
   //check if now is earlier than last result plus duration (-1 second as a buffer)
   const testDurationMilis = completedEvent.testDuration * 1000;
   const incompleteTestsMilis = completedEvent.incompleteTestSeconds * 1000;
+  // New-account first saves are bounded by a server timestamp too. Legacy
+  // imports without a creation time retain the epoch fallback; client result
+  // timestamps never establish the window.
+  const previousTimestamp =
+    lastResultTimestamp ?? (isSafeNumber(user.addedAt) ? user.addedAt : 0);
   const earliestPossible =
-    (lastResultTimestamp ?? 0) + testDurationMilis + incompleteTestsMilis;
+    previousTimestamp + testDurationMilis + incompleteTestsMilis;
   const nowNoMilis = Math.floor(Date.now() / 1000) * 1000;
-  if (
-    isSafeNumber(lastResultTimestamp) &&
-    nowNoMilis < earliestPossible - 1000
-  ) {
-    void addLog(
+  if (nowNoMilis < earliestPossible - 1000) {
+    await addLog(
       "invalid_result_spacing",
       {
         lastTimestamp: lastResultTimestamp,
+        accountCreatedAt: user.addedAt,
         earliestPossible,
         now: nowNoMilis,
         testDuration: testDurationMilis,
@@ -349,7 +384,7 @@ export async function addResult(
       uid,
     );
     const status = MonkeyStatusCodes.RESULT_SPACING_INVALID;
-    throw new MonkeyError(status.code, "Invalid result spacing");
+    return new MonkeyError(status.code, "Invalid result spacing");
   }
 
   //check keyspacing and duration here for bots
@@ -361,64 +396,66 @@ export async function addResult(
     user.lbOptOut !== true
   ) {
     if (!keySpacingStats || !keyDurationStats) {
+      await addImportantLog(
+        "anticheat_rejected",
+        {
+          reason: "missing-key-data",
+          submissionHash: resulthash,
+        },
+        uid,
+      );
       const status = MonkeyStatusCodes.MISSING_KEY_DATA;
-      throw new MonkeyError(status.code, "Missing key data");
+      return new MonkeyError(status.code, "Missing key data");
     }
     if (completedEvent.keyOverlap === undefined) {
       throw new MonkeyError(400, "Old key data format");
     }
-    if (anticheatImplemented()) {
-      if (
-        !validateKeys(completedEvent, keySpacingStats, keyDurationStats, uid)
-      ) {
-        //autoban
-        const autoBanConfig = req.ctx.configuration.users.autoBan;
-        if (autoBanConfig.enabled) {
-          const didUserGetBanned = await UserDAL.recordAutoBanEvent(
-            uid,
-            autoBanConfig.maxCount,
-            autoBanConfig.maxHours,
-          );
-          if (didUserGetBanned) {
-            const mail = buildMonkeyMail({
-              subject: "Banned",
-              body: "Your account has been automatically banned for triggering the anticheat system. If you believe this is a mistake, please contact support.",
-            });
-            await Promise.all([
-              UserDAL.addToInbox(
-                uid,
-                [mail],
-                req.ctx.configuration.users.inbox,
-              ),
-              purgeUserFromDailyLeaderboards(
-                uid,
-                req.ctx.configuration.dailyLeaderboards,
-              ),
-              WeeklyXpLeaderboard.purgeUserFromXpLeaderboards(
-                uid,
-                req.ctx.configuration.leaderboards.weeklyXp,
-              ),
-            ]);
-            user.banned = true;
-          }
-        }
-        const status = MonkeyStatusCodes.BOT_DETECTED;
-        throw new MonkeyError(status.code, "Possible bot detected");
-      }
-    } else {
-      if (!isDevEnvironment()) {
-        throw new Error("No anticheat module found");
-      }
-      Logger.warning(
-        "No anticheat module found. Continuing in dev mode, results will not be validated.",
+    const botFailure = getBotFailure(completedEvent);
+    if (botFailure !== undefined) {
+      await addImportantLog(
+        "anticheat_rejected",
+        {
+          reason: botFailure,
+          submissionHash: resulthash,
+        },
+        uid,
       );
+      //autoban
+      const autoBanConfig = req.ctx.configuration.users.autoBan;
+      if (autoBanConfig.enabled) {
+        const didUserGetBanned = await UserDAL.recordAutoBanEvent(
+          uid,
+          autoBanConfig.maxCount,
+          autoBanConfig.maxHours,
+        );
+        if (didUserGetBanned) {
+          const mail = buildMonkeyMail({
+            subject: "Banned",
+            body: "Your account has been automatically banned for triggering the anticheat system. If you believe this is a mistake, please contact support.",
+          });
+          await Promise.all([
+            UserDAL.addToInbox(uid, [mail], req.ctx.configuration.users.inbox),
+            purgeUserFromDailyLeaderboards(
+              uid,
+              req.ctx.configuration.dailyLeaderboards,
+            ),
+            WeeklyXpLeaderboard.purgeUserFromXpLeaderboards(
+              uid,
+              req.ctx.configuration.leaderboards.weeklyXp,
+            ),
+          ]);
+          user.banned = true;
+        }
+      }
+      const status = MonkeyStatusCodes.BOT_DETECTED;
+      return new MonkeyError(status.code, "Possible bot detected");
     }
   }
 
   if (req.ctx.configuration.users.lastHashesCheck.enabled) {
     let lastHashes = user.lastReultHashes ?? [];
     if (lastHashes.includes(resulthash)) {
-      void addLog(
+      await addLog(
         "duplicate_result",
         {
           lastHashes,
@@ -428,7 +465,7 @@ export async function addResult(
         uid,
       );
       const status = MonkeyStatusCodes.DUPLICATE_RESULT;
-      throw new MonkeyError(status.code, "Duplicate result");
+      return new MonkeyError(status.code, "Duplicate result");
     } else {
       lastHashes.unshift(resulthash);
       const maxHashes = req.ctx.configuration.users.lastHashesCheck.maxHashes;
@@ -459,15 +496,7 @@ export async function addResult(
   }
 
   if (completedEvent.mode === "time" && completedEvent.mode2 === "60") {
-    void UserDAL.incrementBananas(uid, completedEvent.wpm);
-    if (
-      isPb &&
-      user.discordId !== undefined &&
-      user.discordId !== "" &&
-      user.lbOptOut !== true
-    ) {
-      void GeorgeQueue.updateDiscordRole(user.discordId, completedEvent.wpm);
-    }
+    await UserDAL.incrementBananas(uid, completedEvent.wpm);
   }
 
   delete completedEvent.challenge;
@@ -475,12 +504,12 @@ export async function addResult(
   const afk = completedEvent.afkDuration ?? 0;
   const totalDurationTypedSeconds =
     completedEvent.testDuration + completedEvent.incompleteTestSeconds - afk;
-  void UserDAL.updateTypingStats(
+  await UserDAL.updateTypingStats(
     uid,
     completedEvent.restartCount,
     totalDurationTypedSeconds,
   );
-  void PublicDAL.updateStats(
+  await PublicDAL.updateStats(
     completedEvent.restartCount,
     totalDurationTypedSeconds,
   );
@@ -531,8 +560,6 @@ export async function addResult(
         consistency: completedEvent.consistency,
         timestamp: completedEvent.timestamp,
         uid,
-        discordAvatar: user.discordAvatar,
-        discordId: user.discordId,
         badgeId: selectedBadgeId,
         isPremium,
       },
@@ -577,7 +604,12 @@ export async function addResult(
         },
       ],
     });
-    await UserDAL.addToInbox(uid, [mail], req.ctx.configuration.users.inbox);
+    mail.id = "365streak";
+    await UserDAL.addToInbox(
+      uid,
+      [{ ...mail, id: `365streak${objectHash(uid)}` }],
+      req.ctx.configuration.users.inbox,
+    );
   }
 
   const xpGained = await calculateXp(
@@ -625,8 +657,6 @@ export async function addResult(
         entry: {
           uid,
           name: user.name,
-          discordAvatar: user.discordAvatar,
-          discordId: user.discordId,
           badgeId: selectedBadgeId,
           lastActivityTimestamp: Date.now(),
           isPremium,
@@ -638,6 +668,8 @@ export async function addResult(
   }
 
   const dbresult = buildDbResult(completedEvent, user.name, isPb);
+  (dbresult as typeof dbresult & { submissionHash: string }).submissionHash =
+    resulthash;
   if (keySpacingStats !== undefined) {
     dbresult.keySpacingStats = keySpacingStats;
   }
@@ -651,7 +683,7 @@ export async function addResult(
   await UserDAL.incrementTestActivity(user, completedEvent.timestamp);
 
   if (isPb) {
-    void addLog(
+    await addLog(
       "user_new_pb",
       `${`${completedEvent.mode} ${completedEvent.mode2}`} ${
         completedEvent.wpm
@@ -665,7 +697,7 @@ export async function addResult(
   const data: PostResultResponse = {
     isPb,
     tagPbs,
-    insertedId: addedResult.insertedId.toHexString(),
+    insertedId: addedResult.insertedId.toString(),
     xp: xpGained.xp,
     dailyXpBonus: xpGained.dailyBonus ?? false,
     xpBreakdown: xpGained.breakdown ?? {},

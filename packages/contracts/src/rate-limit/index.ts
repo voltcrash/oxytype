@@ -276,16 +276,6 @@ export const limits = {
     max: 30,
   },
 
-  userDiscordLink: {
-    window: "hour",
-    max: 15,
-  },
-
-  userDiscordUnlink: {
-    window: "hour",
-    max: 15,
-  },
-
   userRevokeAllTokens: {
     window: "hour",
     max: 10,
@@ -340,11 +330,6 @@ export const limits = {
   apeKeysGenerate: {
     window: "hour",
     max: 15,
-  },
-
-  webhookLimit: {
-    window: "second",
-    max: 1,
   },
 
   connectionGet: {

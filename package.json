@@ -36,7 +36,7 @@
     "start": "turbo run start",
     "start-be": "turbo run start --filter @oxytype/backend",
     "start-fe": "turbo run start --filter @oxytype/frontend",
-    "docker": "cd backend && npm run docker",
+    "docker": "docker compose --env-file docker/.env -f docker/docker-compose.yml up -d",
     "audit-fe": "cd frontend && npm run audit",
     "preview-fe": "oxytype-release --preview-fe",
     "release": "oxytype-release",

@@ -13,12 +13,14 @@ pnpm install
 pnpm dev-fe
 ```
 
-The frontend runs on port 3000. Run `pnpm dev` for the full workspace after configuring MongoDB, Redis, and the backend environment.
+The frontend runs on port 3000. Run `pnpm dev` for the full workspace after applying local D1 migrations and copying `backend/.dev.vars.example` to `.dev.vars`.
 
 ## Contributing
 
-See [CONTRIBUTING.md](./docs/CONTRIBUTING.md) and the [code of conduct](./docs/CODE_OF_CONDUCT.md). Open bugs and feature requests in the [Oxytype repository](https://github.com/voltcrash/oxytype/issues). The [self-hosting guide](./docs/SELF_HOSTING.md) covers Docker deployment.
+See [CONTRIBUTING.md](./docs/CONTRIBUTING.md) and the [code of conduct](./docs/CODE_OF_CONDUCT.md). Open bugs and feature requests in the [Oxytype repository](https://github.com/voltcrash/oxytype/issues). The [self-hosting guide](./docs/SELF_HOSTING.md) covers Worker deployment and static frontend hosting.
 
 ## Contact and security
 
-Use [GitHub issues](https://github.com/voltcrash/oxytype/issues) for general questions and [the security policy](./docs/SECURITY.md) for private vulnerability reports. The planned public site is `oxytype.voltcrash.com`; the planned support address is `contact@voltcrash.com`. These endpoints are not active yet.
+Public site: [oxytype.voltcrash.com](https://oxytype.voltcrash.com). See [production setup](./docs/PRODUCTION_SETUP.md) for deployment and updates.
+
+Use [GitHub issues](https://github.com/voltcrash/oxytype/issues) for general questions and [the security policy](./docs/SECURITY.md) for private vulnerability reports. The planned support address `contact@voltcrash.com` is not active yet.

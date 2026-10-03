@@ -55,16 +55,20 @@ export function QuoteReportModal(): JSXElement {
       }
 
       showLoaderBar();
-      const response = await Ape.quotes.report({
-        body: {
-          quoteId: id,
-          quoteLanguage,
-          reason: value.reason,
-          comment: value.comment,
-          captcha: value.captcha,
-        },
-      });
-      hideLoaderBar();
+      const response = await Ape.quotes
+        .report({
+          body: {
+            quoteId: id,
+            quoteLanguage,
+            reason: value.reason,
+            comment: value.comment,
+            captcha: value.captcha,
+          },
+        })
+        .finally(() => {
+          form.setFieldValue("captcha", "");
+          hideLoaderBar();
+        });
 
       if (response.status !== 200) {
         showErrorNotification("Failed to report quote", { response });
@@ -178,7 +182,7 @@ export function QuoteReportModal(): JSXElement {
         />
         <form.Field
           name="captcha"
-          children={(field) => <Captcha field={field} />}
+          children={(field) => <Captcha field={field} action="quote-report" />}
         />
         <SubmitButton form={form} text="report" />
       </form>

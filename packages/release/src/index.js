@@ -341,13 +341,6 @@ const main = async () => {
   }
   if (!isDryRun && !noDeploy) {
     if (!isBackend || isFrontend) getFirebaseProjectId();
-    if (!isFrontend || isBackend) {
-      for (const key of ["BE_HOST", "BE_USER", "BE_SCRIPT_PATH"]) {
-        if (!process.env[key]) {
-          throw new Error(`Set ${key} before deploying backend`);
-        }
-      }
-    }
   }
 
   installDependencies();

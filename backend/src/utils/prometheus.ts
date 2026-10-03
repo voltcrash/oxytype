@@ -1,4 +1,3 @@
-import "dotenv/config";
 import { Counter, Histogram, Gauge } from "prom-client";
 import { CompletedEvent } from "@oxytype/schemas/results";
 import { HttpRequest } from "../api/http";
@@ -75,7 +74,7 @@ const leaderboardUpdate = new Gauge({
 });
 
 export function incrementAuth(
-  type: "Bearer" | "Session" | "ApeKey" | "None" | "GithubWebhook",
+  type: "Bearer" | "Session" | "ApeKey" | "None",
 ): void {
   auth.inc({ type });
 }

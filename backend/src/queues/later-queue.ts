@@ -1,4 +1,3 @@
-import { LRUCache } from "lru-cache";
 import Logger from "../utils/logger";
 import { MonkeyQueue } from "./monkey-queue";
 import { ValidModeRule } from "@oxytype/schemas/configuration";
@@ -21,10 +20,12 @@ export type LaterTask<T extends LaterTaskType> = {
 export type LaterTaskContexts = {
   "daily-leaderboard-results": {
     yesterdayTimestamp: number;
+    offset?: number;
     modeRule: ValidModeRule;
   };
   "weekly-xp-leaderboard-results": {
     lastWeekTimestamp: number;
+    offset?: number;
   };
 };
 
@@ -32,10 +33,6 @@ const ONE_MINUTE_IN_MILLISECONDS = 1000 * 60;
 const ONE_DAY_IN_MILLISECONDS = 1000 * 60 * 60 * 24;
 
 class LaterQueue extends MonkeyQueue<LaterTask<LaterTaskType>> {
-  private scheduledJobCache = new LRUCache<string, boolean>({
-    max: 100,
-  });
-
   private async scheduleTask(
     taskName: string,
     task: LaterTask<LaterTaskType>,
@@ -49,8 +46,6 @@ class LaterQueue extends MonkeyQueue<LaterTask<LaterTaskType>> {
       attempts: 23,
     });
 
-    this.scheduledJobCache.set(jobId, true);
-
     Logger.info(
       `Scheduled ${task.taskName} for ${new Date(Date.now() + delay)}`,
     );
@@ -62,10 +57,6 @@ class LaterQueue extends MonkeyQueue<LaterTask<LaterTaskType>> {
   ): Promise<void> {
     const currentWeekTimestamp = getCurrentWeekTimestamp();
     const jobId = `${taskName}:${currentWeekTimestamp}:${taskId}`;
-
-    if (this.scheduledJobCache.has(jobId)) {
-      return;
-    }
 
     const task: LaterTask<LaterTaskType> = {
       taskName,
@@ -90,10 +81,6 @@ class LaterQueue extends MonkeyQueue<LaterTask<LaterTaskType>> {
   ): Promise<void> {
     const currentDayTimestamp = getCurrentDayTimestamp();
     const jobId = `${taskName}:${currentDayTimestamp}:${taskId}`;
-
-    if (this.scheduledJobCache.has(jobId)) {
-      return;
-    }
 
     const task: LaterTask<LaterTaskType> = {
       taskName,

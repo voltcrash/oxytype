@@ -71,15 +71,6 @@ export default s.router(usersContract, {
   editCustomTheme: {
     handler: async (r) => callController(UserController.editCustomTheme)(r),
   },
-  getDiscordOAuth: {
-    handler: async (r) => callController(UserController.getOauthLink)(r),
-  },
-  linkDiscord: {
-    handler: async (r) => callController(UserController.linkDiscord)(r),
-  },
-  unlinkDiscord: {
-    handler: async (r) => callController(UserController.unlinkDiscord)(r),
-  },
   getStats: {
     handler: async (r) => callController(UserController.getStats)(r),
   },

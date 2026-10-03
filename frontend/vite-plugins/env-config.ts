@@ -14,6 +14,15 @@ export function envConfig(options: {
   clientVersion: string;
   env: Record<string, string>;
 }): Plugin {
+  const authProviders: EnvConfig["authProviders"] = (
+    options.env["AUTH_PROVIDERS"] ?? "google,github"
+  )
+    .split(",")
+    .map((value) => {
+      const provider = value.trim();
+      if (provider === "google" || provider === "github") return provider;
+      throw new Error("AUTH_PROVIDERS must list google and/or github");
+    });
   return {
     name: "virtual-env-config",
     resolveId(id) {
@@ -24,12 +33,16 @@ export function envConfig(options: {
       if (id === resolvedVirtualModuleId) {
         const devConfig: EnvConfig = {
           isDevelopment: true,
+          authProviders,
           backendUrl: fallback(
             options.env["BACKEND_URL"],
             "http://localhost:5005",
           ),
           clientVersion: options.clientVersion,
-          recaptchaSiteKey: "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI",
+          turnstileSiteKey: fallback(
+            options.env["TURNSTILE_SITE_KEY"],
+            "1x00000000000000000000AA",
+          ),
           sentryDsn:
             options.env["SENTRY_DSN"] === ""
               ? undefined
@@ -38,8 +51,9 @@ export function envConfig(options: {
 
         const prodConfig: EnvConfig = {
           isDevelopment: false,
+          authProviders,
           backendUrl: fallback(options.env["BACKEND_URL"], "/api"),
-          recaptchaSiteKey: options.env["RECAPTCHA_SITE_KEY"] ?? "",
+          turnstileSiteKey: options.env["TURNSTILE_SITE_KEY"] ?? "",
           clientVersion: options.clientVersion,
           sentryDsn:
             options.env["SENTRY_DSN"] === ""

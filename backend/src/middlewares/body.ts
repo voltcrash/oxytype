@@ -47,7 +47,11 @@ export const parseRequestBody: ApiMiddleware = async (c, next) => {
       try {
         bytes = decompress(bytes, { maxOutputLength: MAX_BODY_SIZE });
       } catch (error) {
-        if ((error as NodeJS.ErrnoException).code === "ERR_BUFFER_TOO_LARGE") {
+        // Workerd reports its capped zlib output as RangeError without a code.
+        if (
+          (error as NodeJS.ErrnoException).code === "ERR_BUFFER_TOO_LARGE" ||
+          error instanceof RangeError
+        ) {
           throw new MonkeyError(413, "Request body too large");
         }
         throw new SyntaxError("Invalid compressed request body");

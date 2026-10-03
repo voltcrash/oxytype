@@ -13,9 +13,9 @@ export type ConnectionType = z.infer<typeof ConnectionTypeSchema>;
 
 export const ConnectionSchema = z.object({
   _id: IdSchema,
-  initiatorUid: IdSchema,
+  initiatorUid: z.string().min(1).max(128),
   initiatorName: z.string(),
-  receiverUid: IdSchema,
+  receiverUid: z.string().min(1).max(128),
   receiverName: z.string(),
   lastModified: z.number().int().nonnegative(),
   status: ConnectionStatusSchema,

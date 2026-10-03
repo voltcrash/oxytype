@@ -10,7 +10,7 @@ import * as UserDal from "../../../src/dal/user";
 
 const mockApp = request(getRequestListener(app.fetch));
 const configuration = Configuration.getCachedConfiguration();
-const uid = new ObjectId().toHexString();
+const uid = new ObjectId().toString();
 const mockAuth = mockBearerAuthentication(uid);
 
 describe("ConnectionsController", () => {
@@ -33,9 +33,9 @@ describe("ConnectionsController", () => {
       const friend: ConnectionsDal.DBConnection = {
         _id: new ObjectId(),
         lastModified: 42,
-        initiatorUid: new ObjectId().toHexString(),
+        initiatorUid: new ObjectId().toString(),
         initiatorName: "Bob",
-        receiverUid: new ObjectId().toHexString(),
+        receiverUid: new ObjectId().toString(),
         receiverName: "Kevin",
         status: "pending",
         key: "key",
@@ -51,7 +51,7 @@ describe("ConnectionsController", () => {
 
       //THEN
       expect(body.data).toEqual([
-        { ...friend, _id: friend._id.toHexString(), key: undefined },
+        { ...friend, _id: friend._id.toString(), key: undefined },
       ]);
       expect(getConnectionsMock).toHaveBeenCalledWith({
         initiatorUid: uid,
@@ -185,7 +185,7 @@ describe("ConnectionsController", () => {
     it("should create", async () => {
       //GIVEN
       const me = { uid, name: "Bob" };
-      const myFriend = { uid: new ObjectId().toHexString(), name: "Kevin" };
+      const myFriend = { uid: new ObjectId().toString(), name: "Kevin" };
       getUserByNameMock.mockResolvedValue(myFriend as any);
       getPartialUserMock.mockResolvedValue(me as any);
 
@@ -210,7 +210,7 @@ describe("ConnectionsController", () => {
 
       //THEN
       expect(body.data).toEqual({
-        _id: result._id.toHexString(),
+        _id: result._id.toString(),
         lastModified: 42,
         initiatorUid: me.uid,
         initiatorName: me.name,

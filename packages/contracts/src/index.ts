@@ -11,7 +11,6 @@ import { configurationContract } from "./configuration";
 import { devContract } from "./dev";
 import { usersContract } from "./users";
 import { quotesContract } from "./quotes";
-import { webhooksContract } from "./webhooks";
 import { connectionsContract } from "./connections";
 
 const c = initContract();
@@ -29,7 +28,6 @@ export const contract = c.router({
   dev: devContract,
   users: usersContract,
   quotes: quotesContract,
-  webhooks: webhooksContract,
   connections: connectionsContract,
 });
 
@@ -37,5 +35,5 @@ export const contract = c.router({
  * Whenever there is a breaking change with old frontend clients increase this number.
  * This will inform the frontend to refresh.
  */
-export const COMPATIBILITY_CHECK = 6;
+export const COMPATIBILITY_CHECK = 7;
 export const COMPATIBILITY_CHECK_HEADER = "X-Compatibility-Check";

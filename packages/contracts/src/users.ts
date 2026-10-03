@@ -1,3 +1,4 @@
+import { CaptchaTokenSchema } from "./captcha";
 import { initContract } from "@ts-rest/core";
 import { z } from "zod/v3";
 import {
@@ -14,6 +15,7 @@ import {
   CustomThemeSchema,
   FavoriteQuotesSchema,
   MonkeyMailSchema,
+  MailIdSchema,
   ResultFiltersSchema,
   StreakHourOffsetSchema,
   TagNameSchema,
@@ -48,7 +50,7 @@ export const CreateUserRequestSchema = z.object({
   email: UserEmailSchema.optional(),
   name: UserNameSchema,
   uid: z.string().optional(), //defined by the authentication service, no validation should be applied
-  captcha: z.string(), //defined by google recaptcha, no validation should be applied
+  captcha: CaptchaTokenSchema,
 });
 export type CreateUserRequest = z.infer<typeof CreateUserRequestSchema>;
 
@@ -166,27 +168,6 @@ export const EditCustomThemeRequstSchema = z.object({
 });
 export type EditCustomThemeRequst = z.infer<typeof EditCustomThemeRequstSchema>;
 
-export const GetDiscordOauthLinkResponseSchema = responseWithData(
-  z.object({
-    url: z.string().url(),
-  }),
-);
-export type GetDiscordOauthLinkResponse = z.infer<
-  typeof GetDiscordOauthLinkResponseSchema
->;
-
-export const LinkDiscordRequestSchema = z.object({
-  tokenType: z.string(),
-  accessToken: z.string(),
-  state: z.string().length(20),
-});
-export type LinkDiscordRequest = z.infer<typeof LinkDiscordRequestSchema>;
-
-export const LinkDiscordResponseSchema = responseWithData(
-  UserSchema.pick({ discordId: true, discordAvatar: true }),
-);
-export type LinkDiscordResponse = z.infer<typeof LinkDiscordResponseSchema>;
-
 export const GetStatsResponseSchema = responseWithData(
   UserSchema.pick({
     completedTests: true,
@@ -272,8 +253,8 @@ export const GetUserInboxResponseSchema = responseWithData(
 export type GetUserInboxResponse = z.infer<typeof GetUserInboxResponseSchema>;
 
 export const UpdateUserInboxRequestSchema = z.object({
-  mailIdsToDelete: z.array(z.string().uuid()).min(1).optional(),
-  mailIdsToMarkRead: z.array(z.string().uuid()).min(1).optional(),
+  mailIdsToDelete: z.array(MailIdSchema).min(1).optional(),
+  mailIdsToMarkRead: z.array(MailIdSchema).min(1).optional(),
 });
 export type UpdateUserInboxRequest = z.infer<
   typeof UpdateUserInboxRequestSchema
@@ -290,7 +271,7 @@ export const ReportUserRequestSchema = z.object({
   uid: z.string(),
   reason: ReportUserReasonSchema,
   comment: ReportUserCommentSchema,
-  captcha: z.string(), //we don't generate the captcha so there should be no validation
+  captcha: CaptchaTokenSchema,
 });
 export type ReportUserRequest = z.infer<typeof ReportUserRequestSchema>;
 
@@ -611,52 +592,6 @@ export const usersContract = c.router(
       },
       metadata: meta({
         rateLimit: "userCustomThemeEdit",
-      }),
-    },
-    getDiscordOAuth: {
-      summary: "discord oauth",
-      description: "Start OAuth authentication with discord",
-      method: "GET",
-      path: "/discord/oauth",
-      responses: {
-        200: GetDiscordOauthLinkResponseSchema,
-      },
-      metadata: meta({
-        rateLimit: "userDiscordLink",
-        requireConfiguration: {
-          path: "users.discordIntegration.enabled",
-          invalidMessage: "Discord integration is not available at this time",
-        },
-      }),
-    },
-    linkDiscord: {
-      summary: "link with discord",
-      description: "Links a user's account with a discord account",
-      method: "POST",
-      path: "/discord/link",
-      body: LinkDiscordRequestSchema.strict(),
-      responses: {
-        200: LinkDiscordResponseSchema,
-      },
-      metadata: meta({
-        rateLimit: "userDiscordLink",
-        requireConfiguration: {
-          path: "users.discordIntegration.enabled",
-          invalidMessage: "Discord integration is not available at this time",
-        },
-      }),
-    },
-    unlinkDiscord: {
-      summary: "unlink discord",
-      description: "Unlinks a user's account with a discord account",
-      method: "POST",
-      path: "/discord/unlink",
-      body: c.noBody(),
-      responses: {
-        200: MonkeyResponseSchema,
-      },
-      metadata: meta({
-        rateLimit: "userDiscordUnlink",
       }),
     },
     getStats: {

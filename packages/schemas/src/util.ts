@@ -31,6 +31,9 @@ export const nameWithSeparators = (): ZodString =>
       "Separators cannot be at the start or end, or appear multiple times in a row",
     );
 
+// Authentication IDs include UUIDs and legacy provider IDs.
+export const UidSchema = z.string().min(1).max(128);
+
 export const IdSchema = token();
 export type Id = z.infer<typeof IdSchema>;
 

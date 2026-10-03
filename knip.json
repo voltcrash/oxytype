@@ -1,8 +1,8 @@
 {
   "workspaces": {
     "backend": {
-      "entry": "src/server.ts",
-      "project": "src/**/*.ts",
+      "entry": ["src/worker.ts", "scripts/*.ts"],
+      "project": ["src/**/*.ts", "scripts/**/*.ts"],
       "ignoreDependencies": ["@oxytype/oxlint-config"],
       "ignoreBinaries": ["dist"]
     },

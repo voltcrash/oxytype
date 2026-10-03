@@ -265,8 +265,6 @@ export const UserSchema = z.object({
     .describe("time typing in seconds"),
   streak: UserStreakSchema.optional(),
   xp: z.number().int().nonnegative().optional(),
-  discordId: z.string().optional(),
-  discordAvatar: z.string().optional(),
   tags: z.array(UserTagSchema).optional(),
   profileDetails: UserProfileDetailsSchema.optional(),
   customThemes: z.array(CustomThemeSchema).optional(),
@@ -304,8 +302,6 @@ export const UserProfileSchema = UserSchema.pick({
   name: true,
   banned: true,
   addedAt: true,
-  discordId: true,
-  discordAvatar: true,
   xp: true,
   lbOptOut: true,
   isPremium: true,
@@ -347,8 +343,9 @@ export type BadgeReward = z.infer<typeof BadgeRewardSchema>;
 export const AllRewardsSchema = XpRewardSchema.or(BadgeRewardSchema);
 export type AllRewards = z.infer<typeof AllRewardsSchema>;
 
+export const MailIdSchema = IdSchema.max(128).or(z.string().uuid());
 export const MonkeyMailSchema = z.object({
-  id: IdSchema,
+  id: MailIdSchema,
   subject: z.string(),
   body: z.string(),
   timestamp: z.number().int().nonnegative(),
@@ -368,8 +365,6 @@ export type ReportUserReason = z.infer<typeof ReportUserReasonSchema>;
 export const FriendSchema = UserSchema.pick({
   uid: true,
   name: true,
-  discordId: true,
-  discordAvatar: true,
   startedTests: true,
   completedTests: true,
   timeTyping: true,

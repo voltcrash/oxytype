@@ -1,55 +1,60 @@
-import type { Redis } from "ioredis";
-import {
-  type BulkJobOptions,
-  type JobsOptions,
-  Queue,
-  type QueueOptions,
-} from "bullmq";
-
+import { encode, statement } from "../db/client";
+import { stage } from "../db/mutation";
+import { newId } from "../utils/id";
+type JobOptions = {
+  jobId?: string;
+  delay?: number;
+  backoff?: unknown;
+  attempts?: number;
+};
+/** Durable delivery outbox. Cron publishes committed rows to Cloudflare Queues. */
 export class MonkeyQueue<T> {
-  private jobQueue: Queue | undefined;
   public readonly queueName: string;
-  private queueOpts: Omit<QueueOptions, "connection">;
-
-  constructor(queueName: string, queueOpts: Omit<QueueOptions, "connection">) {
+  constructor(
+    queueName: string,
+    _options?: { defaultJobOptions?: Record<string, unknown> },
+  ) {
     this.queueName = queueName;
-    this.queueOpts = queueOpts;
   }
-
-  init(redisConnection?: Redis): void {
-    if (this.jobQueue !== undefined || !redisConnection) {
-      return;
+  init(_connection?: unknown): void {
+    /* Bindings are invocation scoped. */
+  }
+  async add(taskName: string, task: T, options?: JobOptions): Promise<void> {
+    const id = options?.jobId ?? newId();
+    if (options?.delay !== undefined) {
+      await stage(
+        statement(
+          "INSERT INTO scheduled_jobs(id,type,due_at,data) VALUES(?,?,?,?) ON CONFLICT(id) DO NOTHING",
+          id,
+          taskName,
+          Date.now() + Math.max(0, options.delay),
+          encode(task),
+        ),
+      );
+    } else {
+      await stage(
+        statement(
+          "INSERT INTO outbox(id,type,created_at,data) VALUES(?,?,?,?) ON CONFLICT(id) DO NOTHING",
+          id,
+          this.queueName,
+          Date.now(),
+          encode(task),
+        ),
+      );
     }
-
-    this.jobQueue = new Queue(this.queueName, {
-      ...this.queueOpts,
-      connection: redisConnection,
-    });
   }
-
-  async add(taskName: string, task: T, jobOpts?: JobsOptions): Promise<void> {
-    if (this.jobQueue === undefined) {
-      return;
-    }
-
-    await this.jobQueue.add(taskName, task, jobOpts);
-  }
-
   async getJobCounts(): Promise<Record<string, number>> {
-    if (this.jobQueue === undefined) {
-      return {};
-    }
-
-    return await this.jobQueue.getJobCounts();
+    return {
+      pending:
+        (await statement(
+          "SELECT count(*) AS count FROM outbox WHERE type=? AND completed_at IS NULL",
+          this.queueName,
+        ).first<number>("count")) ?? 0,
+    };
   }
-
   async addBulk(
-    tasks: { name: string; data: T; opts?: BulkJobOptions }[],
+    tasks: { name: string; data: T; opts?: JobOptions }[],
   ): Promise<void> {
-    if (this.jobQueue === undefined) {
-      return;
-    }
-
-    await this.jobQueue.addBulk(tasks);
+    for (const task of tasks) await this.add(task.name, task.data, task.opts);
   }
 }

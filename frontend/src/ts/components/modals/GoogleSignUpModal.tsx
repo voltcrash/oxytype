@@ -35,7 +35,13 @@ export function GoogleSignupModal() {
       username: "",
       captcha: "",
     },
-    onSubmit: async ({ value }) => apply(value),
+    onSubmit: async ({ value }) => {
+      try {
+        await apply(value);
+      } finally {
+        form.setFieldValue("captcha", "");
+      }
+    },
     onSubmitInvalid: () => {
       showNoticeNotification("Please fill in all fields");
     },
@@ -80,6 +86,7 @@ export function GoogleSignupModal() {
           children={(field) => (
             <Captcha
               field={field}
+              action="signup"
               class="flex w-full flex-row justify-center"
             />
           )}
@@ -121,9 +128,17 @@ async function apply(options: {
   }
 
   showLoaderBar();
+  let closeModal = true;
   try {
     if (name.length === 0) throw new Error("Name cannot be empty");
     const response = await Ape.users.create({ body: { name, captcha } });
+    if (response.status === 422) {
+      closeModal = false;
+      showErrorNotification("Verification failed. Please try again.", {
+        response,
+      });
+      return;
+    }
     if (response.status !== 200) {
       throw new Error(`Failed to create user: ${response.body.message}`);
     }
@@ -150,7 +165,7 @@ async function apply(options: {
     signedInUser = undefined;
   } finally {
     hideLoaderBar();
-    hideModal(modalId);
+    if (closeModal) hideModal(modalId);
   }
 }
 

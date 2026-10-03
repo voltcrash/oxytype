@@ -1,126 +1,64 @@
-import { Collection } from "mongodb";
-import * as db from "../init/db";
-import { createHash } from "crypto";
-import { User } from "@oxytype/schemas/users";
-import { WithObjectId } from "../utils/misc";
-
-type BlocklistEntryProperties = Pick<User, "name" | "email" | "discordId">;
-
-type BlocklistEntry = {
-  _id: string;
-  usernameHash?: string;
-  emailHash?: string;
-  discordIdHash?: string;
-  timestamp: number;
-};
-
-type DBBlocklistEntry = WithObjectId<BlocklistEntry>;
-
-// Export for use in tests
-export const getCollection = (): Collection<DBBlocklistEntry> =>
-  db.collection("blocklist");
-
-export async function add(user: BlocklistEntryProperties): Promise<void> {
-  const timestamp = Date.now();
-  const inserts: Promise<unknown>[] = [];
-
-  const usernameHash = hash(user.name);
-  const emailHash = hash(user.email);
-  inserts.push(
-    getCollection().replaceOne(
-      { usernameHash },
-      {
-        usernameHash,
-        timestamp,
-      },
-      { upsert: true },
-    ),
-    getCollection().replaceOne(
-      { emailHash },
-      {
-        emailHash,
-        timestamp,
-      },
-      { upsert: true },
-    ),
-  );
-
-  if (user.discordId !== undefined && user.discordId !== "") {
-    const discordIdHash = hash(user.discordId);
-    inserts.push(
-      getCollection().replaceOne(
-        { discordIdHash },
-        {
-          discordIdHash,
-          timestamp,
-        },
-        { upsert: true },
-      ),
-    );
-  }
-  await Promise.all(inserts);
-}
-
-export async function remove(
-  user: Partial<BlocklistEntryProperties>,
-): Promise<void> {
-  const filter = getFilter(user);
-  if (filter.length === 0) return;
-  await getCollection().deleteMany({ $or: filter });
-}
-
-export async function contains(
-  user: Partial<BlocklistEntryProperties>,
-): Promise<boolean> {
-  const filter = getFilter(user);
-  if (filter.length === 0) return false;
-
-  return (
-    (await getCollection().countDocuments({
-      $or: filter,
-    })) !== 0
-  );
+import { createHash } from "node:crypto";
+import { and, eq, or } from "drizzle-orm";
+import type { User } from "@oxytype/schemas/users";
+import { binding, database, statement } from "../db/client";
+import { blocklist } from "../db/schema";
+type Properties = Pick<User, "name" | "email">;
+function entries(user: Partial<Properties>): { kind: string; hash: string }[] {
+  return Object.entries(user)
+    .filter(([, value]) => value !== undefined)
+    .map(([kind, value]) => ({ kind, hash: hash(value) }));
 }
 export function hash(value: string): string {
   return createHash("sha256").update(value.toLocaleLowerCase()).digest("hex");
 }
-
-function getFilter(
-  user: Partial<BlocklistEntryProperties>,
-): Partial<DBBlocklistEntry>[] {
-  const filter: Partial<DBBlocklistEntry>[] = [];
-  if (user.email !== undefined) {
-    filter.push({ emailHash: hash(user.email) });
-  }
-  if (user.name !== undefined) {
-    filter.push({ usernameHash: hash(user.name) });
-  }
-  if (user.discordId !== undefined) {
-    filter.push({ discordIdHash: hash(user.discordId) });
-  }
-  return filter;
+export async function add(user: Properties): Promise<void> {
+  await binding().batch(
+    entries(user).map((entry) =>
+      statement(
+        "INSERT INTO blocklist(kind,hash,timestamp) VALUES(?,?,?) ON CONFLICT(kind,hash) DO UPDATE SET timestamp=excluded.timestamp",
+        entry.kind,
+        entry.hash,
+        Date.now(),
+      ),
+    ),
+  );
 }
-
+export async function remove(user: Partial<Properties>): Promise<void> {
+  const filter = entries(user);
+  if (!filter.length) return;
+  await database()
+    .delete(blocklist)
+    .where(
+      or(
+        ...filter.map((entry) =>
+          and(eq(blocklist.kind, entry.kind), eq(blocklist.hash, entry.hash)),
+        ),
+      ),
+    );
+}
+export async function contains(user: Partial<Properties>): Promise<boolean> {
+  const filter = entries(user);
+  if (!filter.length) return false;
+  return (
+    (
+      await database()
+        .select()
+        .from(blocklist)
+        .where(
+          or(
+            ...filter.map((entry) =>
+              and(
+                eq(blocklist.kind, entry.kind),
+                eq(blocklist.hash, entry.hash),
+              ),
+            ),
+          ),
+        )
+        .limit(1)
+    ).length > 0
+  );
+}
 export async function createIndicies(): Promise<void> {
-  await getCollection().createIndex(
-    { usernameHash: 1 },
-    {
-      unique: true,
-      partialFilterExpression: { usernameHash: { $exists: true } },
-    },
-  );
-  await getCollection().createIndex(
-    { emailHash: 1 },
-    {
-      unique: true,
-      partialFilterExpression: { emailHash: { $exists: true } },
-    },
-  );
-  await getCollection().createIndex(
-    { discordIdHash: 1 },
-    {
-      unique: true,
-      partialFilterExpression: { discordIdHash: { $exists: true } },
-    },
-  );
+  /* Applied by D1 migrations. */
 }

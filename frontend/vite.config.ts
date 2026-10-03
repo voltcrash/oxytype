@@ -277,8 +277,11 @@ export default defineConfig(({ mode }): UserConfig => {
   const isDevelopment = mode !== "production";
 
   if (!isDevelopment) {
-    if (env["RECAPTCHA_SITE_KEY"] === undefined) {
-      throw new Error(`${mode}: RECAPTCHA_SITE_KEY is not defined`);
+    if (
+      env["TURNSTILE_SITE_KEY"] === undefined ||
+      env["TURNSTILE_SITE_KEY"] === ""
+    ) {
+      throw new Error(`${mode}: TURNSTILE_SITE_KEY is not defined`);
     }
     if (
       useSentry &&

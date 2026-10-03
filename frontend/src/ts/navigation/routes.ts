@@ -9,7 +9,7 @@ export type AppRouteInfo = {
 
 // Keep frontend/firebase.json rewrites in sync when adding routes.
 export const appRoutes = [
-  { path: ["/", "/verify"], info: { page: "test" } },
+  { path: "/", info: { page: "test" } },
   { path: "/leaderboards", info: { page: "leaderboards" } },
   { path: "/about", info: { page: "about" } },
   { path: "/settings", info: { page: "settings" } },

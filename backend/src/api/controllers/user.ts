@@ -1,7 +1,8 @@
+import type { CaptchaAction } from "@oxytype/contracts/captcha";
+import { atomicUser } from "../../db/mutation";
 import * as UserDAL from "../../dal/user";
 import MonkeyError from "../../utils/error";
 import { MonkeyResponse } from "../../utils/monkey-response";
-import * as DiscordUtils from "../../utils/discord";
 import {
   buildAgentLog,
   omit,
@@ -9,18 +10,13 @@ import {
   replaceObjectIds,
   sanitizeString,
 } from "../../utils/misc";
-import GeorgeQueue from "../../queues/george-queue";
-import { deleteAllApeKeys } from "../../dal/ape-keys";
-import { deleteAllPresets } from "../../dal/preset";
-import { deleteAll as deleteAllResults } from "../../dal/result";
-import { deleteConfig } from "../../dal/config";
 import { verify } from "../../utils/captcha";
 import * as LeaderboardsDAL from "../../dal/leaderboards";
 import { purgeUserFromDailyLeaderboards } from "../../utils/daily-leaderboards";
 import { purgeUserFromXpLeaderboards } from "../../services/weekly-xp-leaderboard";
 import { deleteUserAccount } from "../../services/user-deletion";
 import { v4 as uuidv4 } from "uuid";
-import { ObjectId } from "mongodb";
+import { newId } from "../../utils/id";
 import * as ReportDAL from "../../dal/report";
 import * as AuthUtil from "../../utils/auth";
 import * as Dates from "date-fns";
@@ -52,7 +48,6 @@ import {
   EditTagRequest,
   GetCurrentTestActivityResponse,
   GetCustomThemesResponse,
-  GetDiscordOauthLinkResponse,
   GetFavoriteQuotesResponse,
   GetFriendsResponse,
   GetPersonalBestsQuery,
@@ -66,8 +61,6 @@ import {
   GetTestActivityResponse,
   GetUserInboxResponse,
   GetUserResponse,
-  LinkDiscordRequest,
-  LinkDiscordResponse,
   RemoveFavoriteQuoteRequest,
   RemoveResultFilterPresetPathParams,
   ReportUserRequest,
@@ -85,8 +78,11 @@ import { tryCatch } from "@oxytype/util/trycatch";
 import * as ConnectionsDal from "../../dal/connections";
 import { PersonalBest } from "@oxytype/schemas/shared";
 
-async function verifyCaptcha(captcha: string): Promise<void> {
-  const { data: verified, error } = await tryCatch(verify(captcha));
+async function verifyCaptcha(
+  captcha: string,
+  action: CaptchaAction,
+): Promise<void> {
+  const { data: verified, error } = await tryCatch(verify(captcha, action));
   if (error) {
     throw new MonkeyError(
       422,
@@ -104,12 +100,13 @@ export async function createNewUser(
   const { name, captcha } = req.body;
   const { email, uid } = req.ctx.decodedToken;
 
-  const existingUser = await UserDAL.getUsersCollection().findOne({ uid });
+  const existingUser = await UserDAL.exists(uid);
   if (existingUser) throw new MonkeyError(409, "Account already registered");
 
-  try {
-    await verifyCaptcha(captcha);
+  // Expired challenges and verification outages can be retried in this session.
+  await verifyCaptcha(captcha, "signup");
 
+  try {
     if (email.endsWith("@tidal.lol") || email.endsWith("@selfbot.cc")) {
       throw new MonkeyError(400, "Invalid domain");
     }
@@ -152,36 +149,18 @@ export async function deleteUser(req: MonkeyRequest): Promise<MonkeyResponse> {
 export async function resetUser(req: MonkeyRequest): Promise<MonkeyResponse> {
   const { uid } = req.ctx.decodedToken;
 
-  const userInfo = await UserDAL.getPartialUser(uid, "reset user", [
-    "banned",
-    "discordId",
-    "email",
-    "name",
-  ]);
-  if (userInfo.banned) {
-    throw new MonkeyError(403, "Banned users cannot reset their account");
-  }
-
-  const promises = [
-    UserDAL.resetUser(uid),
-    deleteAllApeKeys(uid),
-    deleteAllPresets(uid),
-    deleteAllResults(uid),
-    deleteConfig(uid),
-    purgeUserFromDailyLeaderboards(
-      uid,
-      req.ctx.configuration.dailyLeaderboards,
-    ),
-    purgeUserFromXpLeaderboards(
-      uid,
-      req.ctx.configuration.leaderboards.weeklyXp,
-    ),
-  ];
-
-  if (userInfo.discordId !== undefined && userInfo.discordId !== "") {
-    promises.push(GeorgeQueue.unlinkDiscord(userInfo.discordId, uid));
-  }
-  await Promise.all(promises);
+  const userInfo = await atomicUser(uid, async () => {
+    const user = await UserDAL.getPartialUser(uid, "reset user", [
+      "banned",
+      "email",
+      "name",
+    ]);
+    if (user.banned) {
+      throw new MonkeyError(403, "Banned users cannot reset their account");
+    }
+    await UserDAL.resetUser(uid);
+    return user;
+  });
   void addImportantLog("user_reset", `${userInfo.email} ${userInfo.name}`, uid);
 
   return new MonkeyResponse("User reset", null);
@@ -307,40 +286,9 @@ function getRelevantUserInfo(user: UserDAL.DBUser): RelevantUserInfo {
 export async function getUser(req: MonkeyRequest): Promise<GetUserResponse> {
   const { uid } = req.ctx.decodedToken;
 
-  const { data: userInfo, error } = await tryCatch(
-    UserDAL.getUser(uid, "get user"),
-  );
-
-  if (error) {
-    if (error instanceof MonkeyError && error.status === 404) {
-      //if the user is in the auth system but not in the db, its possible that the user was created by bypassing captcha
-      //since there is no data in the database anyway, we can just delete the user from the auth system
-      //and ask them to sign up again
-      try {
-        await AuthUtil.deleteUser(uid);
-        throw new MonkeyError(
-          404,
-          "User not found in the database, but found in the auth system. We have deleted the ghost user from the auth system. Please sign up again.",
-          "get user",
-          uid,
-        );
-      } catch (e) {
-        // oxlint-disable-next-line no-unsafe-member-access
-        if (e.code === "auth/user-not-found") {
-          throw new MonkeyError(
-            404,
-            "User not found in the database or the auth system. Please sign up again.",
-            "get user",
-            uid,
-          );
-        } else {
-          throw e;
-        }
-      }
-    } else {
-      throw error;
-    }
-  }
+  // Social sign-in creates the authentication account before username/captcha
+  // onboarding creates its application profile. Preserve the session on 404.
+  const userInfo = await UserDAL.getUser(uid, "get user");
 
   userInfo.personalBests ??= {
     time: {},
@@ -399,107 +347,6 @@ export async function getUser(req: MonkeyRequest): Promise<GetUserResponse> {
   });
 }
 
-export async function getOauthLink(
-  req: MonkeyRequest,
-): Promise<GetDiscordOauthLinkResponse> {
-  const { uid } = req.ctx.decodedToken;
-
-  //build the url
-  const url = await DiscordUtils.getOauthLink(uid);
-
-  //return
-  return new MonkeyResponse("Discord oauth link generated", {
-    url: url,
-  });
-}
-
-export async function linkDiscord(
-  req: MonkeyRequest<undefined, LinkDiscordRequest>,
-): Promise<LinkDiscordResponse> {
-  const { uid } = req.ctx.decodedToken;
-  const { tokenType, accessToken, state } = req.body;
-
-  if (!(await DiscordUtils.iStateValidForUser(state, uid))) {
-    throw new MonkeyError(403, "Invalid user token");
-  }
-
-  const userInfo = await UserDAL.getPartialUser(uid, "link discord", [
-    "banned",
-    "discordId",
-    "lbOptOut",
-  ]);
-  if (userInfo.banned) {
-    throw new MonkeyError(403, "Banned accounts cannot link with Discord");
-  }
-
-  const { id: discordId, avatar: discordAvatar } =
-    await DiscordUtils.getDiscordUser(tokenType, accessToken);
-
-  if (userInfo.discordId !== undefined && userInfo.discordId !== "") {
-    await UserDAL.linkDiscord(uid, userInfo.discordId, discordAvatar);
-    return new MonkeyResponse("Discord avatar updated", {
-      discordId,
-      discordAvatar,
-    });
-  }
-
-  if (!discordId) {
-    throw new MonkeyError(
-      500,
-      "Could not get Discord account info",
-      "discord id is undefined",
-    );
-  }
-
-  const discordIdAvailable = await UserDAL.isDiscordIdAvailable(discordId);
-  if (!discordIdAvailable) {
-    throw new MonkeyError(
-      409,
-      "This Discord account is linked to a different account",
-    );
-  }
-
-  if (await BlocklistDal.contains({ discordId })) {
-    throw new MonkeyError(409, "The Discord account is blocked");
-  }
-
-  await UserDAL.linkDiscord(uid, discordId, discordAvatar);
-
-  await GeorgeQueue.linkDiscord(discordId, uid, userInfo.lbOptOut ?? false);
-  void addImportantLog("user_discord_link", `linked to ${discordId}`, uid);
-
-  return new MonkeyResponse("Discord account linked", {
-    discordId,
-    discordAvatar,
-  });
-}
-
-export async function unlinkDiscord(
-  req: MonkeyRequest,
-): Promise<MonkeyResponse> {
-  const { uid } = req.ctx.decodedToken;
-
-  const userInfo = await UserDAL.getPartialUser(uid, "unlink discord", [
-    "banned",
-    "discordId",
-  ]);
-
-  if (userInfo.banned) {
-    throw new MonkeyError(403, "Banned accounts cannot unlink Discord");
-  }
-
-  const discordId = userInfo.discordId;
-  if (discordId === undefined || discordId === "") {
-    throw new MonkeyError(404, "User does not have a linked Discord account");
-  }
-
-  await GeorgeQueue.unlinkDiscord(discordId, uid);
-  await UserDAL.unlinkDiscord(uid);
-  void addImportantLog("user_discord_unlinked", discordId, uid);
-
-  return new MonkeyResponse("Discord account unlinked", null);
-}
-
 export async function addResultFilterPreset(
   req: MonkeyRequest<undefined, AddResultFilterPresetRequest>,
 ): Promise<AddResultFilterPresetResponse> {
@@ -514,7 +361,7 @@ export async function addResultFilterPreset(
   );
   return new MonkeyResponse(
     "Result filter preset created",
-    createdId.toHexString(),
+    createdId.toString(),
   );
 }
 
@@ -700,8 +547,6 @@ export async function getProfile(
     startedTests,
     timeTyping,
     addedAt,
-    discordId,
-    discordAvatar,
     xp,
     streak,
     lbOptOut,
@@ -749,8 +594,6 @@ export async function getProfile(
     addedAt,
     typingStats,
     personalBests: relevantPersonalBests,
-    discordId,
-    discordAvatar,
     xp,
     streak: streak?.length ?? 0,
     maxStreak: streak?.maxLength ?? 0,
@@ -864,10 +707,10 @@ export async function reportUser(
 
   const { uid: uidToReport, reason, comment, captcha } = req.body;
 
-  await verifyCaptcha(captcha);
+  await verifyCaptcha(captcha, "user-report");
 
   const newReport: ReportDAL.DBReport = {
-    _id: new ObjectId(),
+    _id: newId(),
     id: uuidv4(),
     type: "user",
     timestamp: new Date().getTime(),
@@ -943,7 +786,7 @@ async function getAllTimeLbs(uid: string): Promise<AllTimeLbs> {
   );
 
   const english15 =
-    allTime15English === false || allTime15English === null
+    allTime15English === null
       ? undefined
       : {
           rank: allTime15English.rank,
@@ -951,7 +794,7 @@ async function getAllTimeLbs(uid: string): Promise<AllTimeLbs> {
         };
 
   const english60 =
-    allTime60English === false || allTime60English === null
+    allTime60English === null
       ? undefined
       : {
           rank: allTime60English.rank,

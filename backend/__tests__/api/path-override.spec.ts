@@ -1,3 +1,4 @@
+import { wrapUnitApp } from "../setup-tests";
 import { beforeAll, afterAll, describe, expect, it, vi } from "vite-plus/test";
 import { mkdtemp, writeFile, rm } from "fs/promises";
 import { tmpdir } from "os";
@@ -15,7 +16,7 @@ beforeAll(async () => {
     "<!doctype html><title>API</title>",
   );
   const { buildApp } = await import("../../src/app.js");
-  app = buildApp({ docsRoot });
+  app = wrapUnitApp(buildApp({ docsRoot }));
 });
 afterAll(async () => {
   vi.unstubAllEnvs();

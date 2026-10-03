@@ -22,17 +22,11 @@
   }
 }
 
-.button.discord::after,
 #caret,
 .pageSettings .section .buttons button.active,
 .pageSettings .section.languages .buttons .language.active,
 .pageAccount .group.filterButtons .buttons button.active {
   animation: trance-bg 5s linear infinite;
-}
-
-header[data-focused] .button.discord::after,
-header .button.discord.dotHidden::after {
-  animation-name: none !important;
 }
 
 #result .stats .group .bottom,
@@ -42,7 +36,7 @@ a:not(.button):not([data-ui-variant="button"]):hover {
   animation: trance 5s linear infinite;
 }
 
-[data-nav-item="account"]:hover svg {
+[data-nav-item="account"]:hover [data-ui-element="navAvatar"] i {
   color: transparent;
   animation: trance 5s linear infinite;
 }

@@ -1,3 +1,4 @@
+import { envValue } from "../runtime/env";
 import type { Hono } from "hono";
 import type { ApiEnv } from "../api/http";
 import * as UserDAL from "../dal/user";
@@ -12,7 +13,7 @@ export function addAuthRoutes(app: Hono<ApiEnv>): void {
     const auth = getAuth();
     // Existing infrastructure strips /api before requests reach Hono.
     const publicUrl = new URL(
-      process.env["BETTER_AUTH_URL"] ?? "http://localhost:5005/auth",
+      envValue("BETTER_AUTH_URL") ?? "http://localhost:5005/auth",
     );
     publicUrl.pathname = `${publicUrl.pathname.replace(/\/$/, "")}${c.req.path.slice("/auth".length)}`;
     publicUrl.search = new URL(c.req.url).search;
@@ -28,10 +29,8 @@ export function addAuthRoutes(app: Hono<ApiEnv>): void {
     const headers = request.headers;
     if (c.req.path === "/auth/cancel-sign-up" && c.req.method === "POST") {
       const session = await AuthUtils.verifySession(headers);
-      const existing = await UserDAL.getUsersCollection().findOne({
-        uid: session.uid,
-      });
-      if (existing !== null) {
+      const existing = await UserDAL.exists(session.uid);
+      if (existing) {
         return c.json(
           { message: "Account registration is already complete" },
           409,

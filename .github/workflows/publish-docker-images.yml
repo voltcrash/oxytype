@@ -14,7 +14,6 @@ jobs:
     name: Publish to GitHub Container Registry
     runs-on: ubuntu-latest
     env:
-      BE_REPO: ghcr.io/${{ github.repository }}-backend
       FE_REPO: ghcr.io/${{ github.repository }}-frontend
       PLATFORMS: linux/amd64,linux/arm64
     steps:
@@ -27,27 +26,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Backend image metadata
-        id: backend-meta
-        uses: docker/metadata-action@v6.2.0
-        with:
-          images: ${{ env.BE_REPO }}
-          tags: |
-            type=raw,value=latest
-            type=semver,pattern={{version}}
-
-      - name: Build and publish backend
-        uses: docker/build-push-action@v7.4.0
-        with:
-          context: .
-          platforms: ${{ env.PLATFORMS }}
-          file: ./docker/backend/Dockerfile
-          push: true
-          tags: ${{ steps.backend-meta.outputs.tags }}
-          labels: ${{ steps.backend-meta.outputs.labels }}
-          build-args: |
-            server_version=${{ github.event.release.tag_name }}
 
       - name: Frontend image metadata
         id: frontend-meta

@@ -61,9 +61,6 @@ export const ConfigurationSchema = z.object({
     profiles: z.object({
       enabled: z.boolean(),
     }),
-    discordIntegration: z.object({
-      enabled: z.boolean(),
-    }),
     xp: z.object({
       enabled: z.boolean(),
       funboxBonus: z.number(),
@@ -107,7 +104,6 @@ export const ConfigurationSchema = z.object({
     maxResults: z.number().int().nonnegative(),
     validModeRules: z.array(ValidModeRuleSchema),
     scheduleRewardsModeRules: z.array(ValidModeRuleSchema),
-    topResultsToAnnounce: z.number().int().positive(), // This should never be 0. Setting to zero will announce all results.
     xpRewardBrackets: z.array(RewardBracketSchema),
   }),
   leaderboards: z.object({

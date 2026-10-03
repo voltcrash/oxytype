@@ -34,7 +34,7 @@ export function OAuthRuntime(): null {
         return;
       }
       const requestId = crypto.randomUUID();
-      const callbackURL = `${window.location.origin}/oauth-callback?requestId=${requestId}`;
+      const callbackURL = `${window.location.origin}/oauth-callback.html?requestId=${requestId}`;
       let done = false;
       const finish = (error?: Error): void => {
         if (done) return;

@@ -1,93 +1,75 @@
+import { and, desc, eq } from "drizzle-orm";
+import type { EditPresetRequest, Preset } from "@oxytype/schemas/presets";
+import { database, encode, statement } from "../db/client";
+import { presets } from "../db/schema";
+import { atomicUser, stage } from "../db/mutation";
+import { newId } from "../utils/id";
+import type { WithObjectId } from "../utils/misc";
 import MonkeyError from "../utils/error";
-import * as db from "../init/db";
-import { ObjectId, type Filter, Collection, type WithId } from "mongodb";
-import { EditPresetRequest, Preset } from "@oxytype/schemas/presets";
-import { WithObjectId, omit } from "../utils/misc";
-
-const MAX_PRESETS = 10;
-
-type DBConfigPreset = WithObjectId<
-  Preset & {
-    uid: string;
-  }
->;
-
-function getPresetKeyFilter(
-  uid: string,
-  keyId: string,
-): Filter<DBConfigPreset> {
-  return {
-    _id: new ObjectId(keyId),
-    uid,
-  };
-}
-
-type PresetCreationResult = {
-  presetId: string;
-};
-
-export const getPresetsCollection = (): Collection<WithId<DBConfigPreset>> =>
-  db.collection<DBConfigPreset>("presets");
-
+type DBConfigPreset = WithObjectId<Preset & { uid: string }>;
 export async function getPresets(uid: string): Promise<DBConfigPreset[]> {
-  const presets = await getPresetsCollection()
-    .find({ uid })
-    .sort({ timestamp: -1 })
-    .toArray();
-  return presets;
+  return (
+    await database()
+      .select()
+      .from(presets)
+      .where(eq(presets.uid, uid))
+      .orderBy(desc(presets.timestamp))
+  ).map((row) => ({ ...row.data, _id: row.id, uid }) as DBConfigPreset);
 }
-
 export async function addPreset(
   uid: string,
   preset: Omit<Preset, "_id">,
-): Promise<PresetCreationResult> {
-  const presets = await getPresetsCollection().countDocuments({ uid });
-
-  if (presets >= MAX_PRESETS) {
-    throw new MonkeyError(409, "Too many presets");
-  }
-
-  const result = await getPresetsCollection().insertOne({
-    ...preset,
-    _id: new ObjectId(),
+): Promise<{ presetId: string }> {
+  const id = newId();
+  const result = await statement(
+    "INSERT INTO presets(id,uid,timestamp,data) SELECT ?,?,?,? WHERE (SELECT count(*) FROM presets WHERE uid=?) < 10",
+    id,
     uid,
-  });
-  return {
-    presetId: result.insertedId.toHexString(),
-  };
+    Date.now(),
+    encode(preset),
+    uid,
+  ).run();
+  if (!result.meta.changes) throw new MonkeyError(409, "Too many presets");
+  return { presetId: id };
 }
-
 export async function editPreset(
   uid: string,
   preset: EditPresetRequest,
 ): Promise<void> {
-  const update: Partial<Omit<Preset, "_id">> = omit(preset, ["_id"]);
-  if (
-    preset.config === undefined ||
-    preset.config === null ||
-    Object.keys(preset.config).length === 0
-  ) {
-    delete update.config;
-  }
-
-  await getPresetsCollection().updateOne(getPresetKeyFilter(uid, preset._id), {
-    $set: update,
+  await atomicUser(uid, async () => {
+    const row = await database()
+      .select()
+      .from(presets)
+      .where(and(eq(presets.id, preset._id), eq(presets.uid, uid)))
+      .get();
+    if (!row) return;
+    const data = { ...row.data };
+    if (preset.settingGroups !== undefined) {
+      data["settingGroups"] = preset.settingGroups;
+    }
+    if (preset.name !== undefined) data["name"] = preset.name;
+    if (preset.config !== undefined && Object.keys(preset.config).length > 0) {
+      data["config"] = preset.config;
+    }
+    await stage(
+      statement(
+        "UPDATE presets SET data=? WHERE id=? AND uid=?",
+        encode(data),
+        preset._id,
+        uid,
+      ),
+    );
   });
 }
-
 export async function removePreset(
   uid: string,
   presetId: string,
 ): Promise<void> {
-  const deleteResult = await getPresetsCollection().deleteOne(
-    getPresetKeyFilter(uid, presetId),
-  );
-
-  if (deleteResult.deletedCount === 0) {
-    throw new MonkeyError(404, "Preset not found");
-  }
+  const result = await database()
+    .delete(presets)
+    .where(and(eq(presets.id, presetId), eq(presets.uid, uid)));
+  if (!result.meta.changes) throw new MonkeyError(404, "Preset not found");
 }
-
 export async function deleteAllPresets(uid: string): Promise<void> {
-  await getPresetsCollection().deleteMany({ uid });
+  await database().delete(presets).where(eq(presets.uid, uid));
 }

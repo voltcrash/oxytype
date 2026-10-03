@@ -1,74 +1,54 @@
-import { Configuration } from "@oxytype/schemas/configuration";
-import { tryCatch } from "@oxytype/util/trycatch";
-import { deleteAllApeKeys } from "../dal/ape-keys";
-import * as BlocklistDal from "../dal/blocklist";
-import { deleteConfig } from "../dal/config";
-import * as ConnectionsDal from "../dal/connections";
-import { deleteUserLogs } from "../dal/logs";
-import { deleteAllPresets } from "../dal/preset";
-import { deleteAll as deleteAllResults } from "../dal/result";
-import * as UserDAL from "../dal/user";
-import GeorgeQueue from "../queues/george-queue";
-import * as AuthUtil from "../utils/auth";
-import { purgeUserFromDailyLeaderboards } from "../utils/daily-leaderboards";
-import MonkeyError from "../utils/error";
-import { purgeUserFromXpLeaderboards } from "./weekly-xp-leaderboard";
-
-type DeletedUserInfo = Pick<
-  UserDAL.DBUser,
-  "banned" | "name" | "email" | "discordId"
->;
-
-/**
- * Delete all data of the given user, including their authentication.
- * Missing user data is ignored so partially deleted users can be cleaned up.
- * @returns the user info of the deleted user, if it still existed.
- */
+import type { Configuration } from "@oxytype/schemas/configuration";
+import { binding, statement } from "../db/client";
+import { hash } from "../dal/blocklist";
+import { readUser, atomicUser, stage } from "../db/mutation";
+import type { DBUser } from "../dal/user";
+type DeletedUserInfo = Pick<DBUser, "banned" | "name" | "email">;
+/** Delete application/auth owners together; foreign keys cascade dependent rows. */
 export async function deleteUserAccount(
   uid: string,
-  configuration: Configuration,
+  _configuration: Configuration,
 ): Promise<DeletedUserInfo | undefined> {
-  const { data: userInfo, error } = await tryCatch(
-    UserDAL.getPartialUser(uid, "delete user", [
-      "banned",
-      "name",
-      "email",
-      "discordId",
-    ]),
-  );
-
-  if (error) {
-    if (error instanceof MonkeyError && error.status === 404) {
-      //userinfo was already deleted. We ignore this and still try to remove the  other data
-    } else {
-      throw error;
+  if ((await readUser(uid)) === undefined) {
+    await binding().batch([
+      statement("DELETE FROM auth_users WHERE id=?", uid),
+    ]);
+    return undefined;
+  }
+  return await atomicUser(uid, async () => {
+    const user = await readUser(uid);
+    const statements = [
+      statement("DELETE FROM audit_logs WHERE uid=?", uid),
+      statement("DELETE FROM quote_submissions WHERE submitted_by=?", uid),
+      statement("DELETE FROM reports WHERE uid=?", uid),
+      statement("DELETE FROM outbox WHERE uid=?", uid),
+      statement("DELETE FROM users WHERE uid=?", uid),
+      statement("DELETE FROM auth_users WHERE id=?", uid),
+    ];
+    if (user?.banned === true) {
+      for (const [kind, value] of Object.entries({
+        name: user.name,
+        email: user.email,
+      })) {
+        if (value !== undefined && value !== "") {
+          statements.push(
+            statement(
+              "INSERT INTO blocklist(kind,hash,timestamp) VALUES(?,?,?) ON CONFLICT(kind,hash) DO UPDATE SET timestamp=excluded.timestamp",
+              kind,
+              hash(value),
+              Date.now(),
+            ),
+          );
+        }
+      }
     }
-  }
-
-  if (userInfo?.banned === true) {
-    await BlocklistDal.add(userInfo);
-  }
-
-  //cleanup database
-  const tasks = [
-    UserDAL.deleteUser(uid),
-    deleteUserLogs(uid),
-    deleteAllApeKeys(uid),
-    deleteAllPresets(uid),
-    deleteConfig(uid),
-    deleteAllResults(uid),
-    purgeUserFromDailyLeaderboards(uid, configuration.dailyLeaderboards),
-    purgeUserFromXpLeaderboards(uid, configuration.leaderboards.weeklyXp),
-    ConnectionsDal.deleteByUid(uid),
-  ];
-
-  if (userInfo?.discordId !== undefined) {
-    tasks.push(GeorgeQueue.unlinkDiscord(userInfo.discordId, uid));
-  }
-
-  await Promise.all(tasks);
-
-  await AuthUtil.deleteUser(uid);
-
-  return userInfo ?? undefined;
+    for (const query of statements) await stage(query);
+    return user === undefined
+      ? undefined
+      : {
+          banned: user.banned,
+          name: user.name,
+          email: user.email,
+        };
+  });
 }

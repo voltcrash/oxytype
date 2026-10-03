@@ -1,4 +1,3 @@
-import * as db from "../init/db";
 import { v4 as uuidv4 } from "uuid";
 import Logger from "../utils/logger";
 import MonkeyError, { getErrorMessage } from "../utils/error";
@@ -14,18 +13,6 @@ import {
 import { isDevEnvironment } from "../utils/misc";
 import { version } from "../version";
 import { addLog } from "../dal/logs";
-
-type DBError = {
-  _id: string; //we are using uuid here, not objectIds
-  timestamp: number;
-  status: number;
-  uid: string;
-  message: string;
-  stack?: string;
-  endpoint: string;
-  method: string;
-  url: string;
-};
 
 type ErrorData = {
   errorId?: string;
@@ -79,17 +66,19 @@ async function errorHandlingMiddleware(
           `${status} ${errorId} ${error.message} ${error.stack}`,
           uid,
         );
-        await db.collection<DBError>("errors").insertOne({
-          _id: errorId,
-          timestamp: Date.now(),
-          status: status,
-          uid,
-          message: error.message,
-          stack: error.stack,
-          endpoint: req?.originalUrl ?? c.req.path,
-          method: c.req.method,
-          url: c.req.url,
-        });
+        console.error(
+          JSON.stringify({
+            errorId,
+            timestamp: Date.now(),
+            status,
+            uid,
+            message: error.message,
+            stack: error.stack,
+            endpoint: req?.originalUrl ?? c.req.path,
+            method: c.req.method,
+            url: c.req.url,
+          }),
+        );
       } catch (e) {
         Logger.error("Logging to db failed.");
         Logger.error(getErrorMessage(e) ?? "Unknown error");

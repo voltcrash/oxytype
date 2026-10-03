@@ -1,11 +1,11 @@
 import { MonkeyMail } from "@oxytype/schemas/users";
-import { v4 } from "uuid";
+import { newId } from "./id";
 
 type MonkeyMailOptions = Partial<Omit<MonkeyMail, "id" | "read">>;
 
 export function buildMonkeyMail(options: MonkeyMailOptions): MonkeyMail {
   return {
-    id: v4(),
+    id: newId(),
     subject: options.subject ?? "",
     body: options.body ?? "",
     timestamp: options.timestamp ?? Date.now(),

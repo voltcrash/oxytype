@@ -101,6 +101,20 @@ it("links an account through the provider endpoint", async () => {
   expect(authClient.linkSocial).toHaveBeenCalledOnce();
   expect(authClient.signIn.social).not.toHaveBeenCalled();
 });
+it.each([false, true])(
+  "uses the built callback HTML for sign-in and linking (%s)",
+  async (link) => {
+    start(link);
+    const provider = link ? authClient.linkSocial : authClient.signIn.social;
+    await waitFor(() => expect(provider).toHaveBeenCalledOnce());
+    const options = vi.mocked(provider).mock.calls[0]?.[0];
+    const callback = new URL(options?.callbackURL ?? "");
+    expect(callback.origin).toBe(window.location.origin);
+    expect(callback.pathname).toBe("/oauth-callback.html");
+    expect(callback.searchParams.get("requestId")).toMatch(/^[0-9a-f-]{36}$/);
+    expect(options?.errorCallbackURL).toBe(callback.href);
+  },
+);
 it("accepts only matching callback source, origin, and request ID", async () => {
   const request = start();
   await waitFor(() => expect(authClient.signIn.social).toHaveBeenCalledOnce());

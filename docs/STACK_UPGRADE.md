@@ -1,5 +1,7 @@
 # October 2026 stack upgrade
 
+> Historical migration notes. Current backend: [Cloudflare operations](CLOUDFLARE_OPERATIONS.md).
+
 Versions checked against stable npm releases on 1 October 2026. Node is pinned to the latest LTS, 24.21.0; Node typings stay on the matching 24 series (24.19.0).
 
 Vite+ 1.0.0 manages runtime selection, installs, updates, builds, tests, linting, and formatting. The workspace uses pnpm 12.8.1, Turborepo 2.11.6, and a shared Vite+/Vitest catalog. All direct dependencies were checked; dependencies already at their latest stable release remain at that release.
@@ -49,7 +51,7 @@ vp install --frozen-lockfile
 pnpm oxlint --type-aware --type-check --format agent
 vp run build-pkg
 vp run build-be
-BACKEND_URL=http://localhost:5005 RECAPTCHA_SITE_KEY=verification vp run build-fe
+BACKEND_URL=http://localhost:5005 TURNSTILE_SITE_KEY=1x00000000000000000000AA vp run build-fe
 vp -C frontend/storybook run build-storybook
 vp test run --maxWorkers=2
 ```

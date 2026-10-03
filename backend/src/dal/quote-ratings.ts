@@ -1,54 +1,50 @@
-import { QuoteRating } from "@oxytype/schemas/quotes";
-import * as db from "../init/db";
-import { Collection } from "mongodb";
-import { WithObjectId } from "../utils/misc";
-import { Language } from "@oxytype/schemas/languages";
-
+import { stage } from "../db/mutation";
+import { and, eq } from "drizzle-orm";
+import type { QuoteRating } from "@oxytype/schemas/quotes";
+import type { Language } from "@oxytype/schemas/languages";
+import type { WithObjectId } from "../utils/misc";
+import { database, statement } from "../db/client";
+import { quoteRatings } from "../db/schema";
+import { newId } from "../utils/id";
 type DBQuoteRating = WithObjectId<QuoteRating>;
-
-// Export for use in tests
-export const getQuoteRatingCollection = (): Collection<DBQuoteRating> =>
-  db.collection<DBQuoteRating>("quote-rating");
-
 export async function submit(
   quoteId: number,
   language: Language,
   rating: number,
   update: boolean,
 ): Promise<void> {
-  if (update) {
-    await getQuoteRatingCollection().updateOne(
-      { quoteId, language },
-      { $inc: { totalRating: rating } },
-      { upsert: true },
-    );
-  } else {
-    await getQuoteRatingCollection().updateOne(
-      { quoteId, language },
-      { $inc: { ratings: 1, totalRating: rating } },
-      { upsert: true },
-    );
-  }
-
-  const quoteRating = await get(quoteId, language);
-  if (quoteRating === null) {
-    throw new Error("Quote rating is null after adding rating?");
-  }
-  const average = parseFloat(
-    (
-      Math.round((quoteRating.totalRating / quoteRating.ratings) * 10) / 10
-    ).toFixed(1),
-  );
-
-  await getQuoteRatingCollection().updateOne(
-    { quoteId, language },
-    { $set: { average } },
+  await stage(
+    statement(
+      "INSERT INTO quote_ratings(id,language,quote_id,ratings,total_rating) VALUES(?,?,?,?,?) ON CONFLICT(language,quote_id) DO UPDATE SET ratings=ratings+excluded.ratings,total_rating=total_rating+excluded.total_rating",
+      newId(),
+      language,
+      quoteId,
+      Number(!update),
+      rating,
+    ),
   );
 }
-
 export async function get(
   quoteId: number,
   language: Language,
 ): Promise<DBQuoteRating | null> {
-  return await getQuoteRatingCollection().findOne({ quoteId, language });
+  const row = await database()
+    .select()
+    .from(quoteRatings)
+    .where(
+      and(
+        eq(quoteRatings.quoteId, quoteId),
+        eq(quoteRatings.language, language),
+      ),
+    )
+    .get();
+  return row
+    ? ({
+        ...row,
+        _id: row.id,
+        average: row.ratings
+          ? Math.round((row.totalRating / row.ratings) * 10) / 10
+          : 0,
+      } as DBQuoteRating)
+    : null;
 }

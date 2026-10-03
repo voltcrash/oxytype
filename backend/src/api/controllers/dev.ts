@@ -1,10 +1,12 @@
+import { mutateUser } from "../../db/mutation";
+import { statement } from "../../db/client";
 import { MonkeyResponse } from "../../utils/monkey-response";
 import * as UserDal from "../../dal/user";
 import Logger from "../../utils/logger";
 import * as DateUtils from "date-fns";
 import { UTCDate } from "@date-fns/utc";
 import * as ResultDal from "../../dal/result";
-import { ObjectId } from "mongodb";
+import { newId } from "../../utils/id";
 import * as LeaderboardDal from "../../dal/leaderboards";
 import MonkeyError from "../../utils/error";
 
@@ -104,7 +106,7 @@ async function createTestResults(
       createResult(user, day.timestamp),
     );
     if (results.length > 0) {
-      await ResultDal.getResultCollection().insertMany(results);
+      for (const result of results) await ResultDal.addResult(user.uid, result);
     }
   }
 }
@@ -130,7 +132,7 @@ function createResult(
 
   timestamp = DateUtils.addSeconds(timestamp, testDuration);
   return {
-    _id: new ObjectId(),
+    _id: newId(),
     uid: user.uid,
     wpm: random(80, 120),
     rawWpm: random(80, 120),
@@ -163,36 +165,21 @@ function createResult(
 
 async function updateUser(uid: string): Promise<void> {
   //update timetyping and completedTests
-  const stats = await ResultDal.getResultCollection()
-    .aggregate([
-      {
-        $match: {
-          uid,
-        },
-      },
-      {
-        $group: {
-          _id: {
-            language: "$language",
-            mode: "$mode",
-            mode2: "$mode2",
-          },
-          timeTyping: {
-            $sum: "$testDuration",
-          },
-          completedTests: {
-            $count: {},
-          },
-        },
-      },
-    ])
-    .toArray();
+  const stats = (
+    await statement(
+      "SELECT language,mode,mode2,sum(json_extract(data,'$.testDuration')) AS timeTyping,count(*) AS completedTests FROM results WHERE uid=? GROUP BY language,mode,mode2",
+      uid,
+    ).all<{
+      language: Language;
+      mode: Mode;
+      mode2: DBResult["mode2"];
+      timeTyping: number;
+      completedTests: number;
+    }>()
+  ).results;
 
-  const timeTyping = stats.reduce((a, c) => (a + c["timeTyping"]) as number, 0);
-  const completedTests = stats.reduce(
-    (a, c) => (a + c["completedTests"]) as number,
-    0,
-  );
+  const timeTyping = stats.reduce((a, c) => a + c.timeTyping, 0);
+  const completedTests = stats.reduce((a, c) => a + c.completedTests, 0);
 
   //update PBs
   const lbPersonalBests: LbPersonalBests = {
@@ -209,25 +196,16 @@ async function updateUser(uid: string): Promise<void> {
     zen: {},
     quote: {},
   };
-  const modes = stats.map(
-    (it) =>
-      it["_id"] as {
-        language: Language;
-        mode: "time" | "custom" | "words" | "quote" | "zen";
-        mode2: `${number}` | "custom" | "zen";
-      },
-  );
-
-  for (const mode of modes) {
-    const best = (await ResultDal.getResultCollection().findOne(
-      {
-        uid,
-        language: mode.language,
-        mode: mode.mode,
-        mode2: mode.mode2,
-      },
-      { sort: { wpm: -1, timestamp: 1 } },
-    )) as DBResult;
+  for (const mode of stats) {
+    const raw = await statement(
+      "SELECT data FROM results WHERE uid=? AND language=? AND mode=? AND mode2=? ORDER BY wpm DESC,timestamp ASC LIMIT 1",
+      uid,
+      mode.language,
+      mode.mode,
+      mode.mode2,
+    ).first<string>("data");
+    if (raw === null) continue;
+    const best = JSON.parse(raw) as DBResult;
 
     personalBests[mode.mode] ??= {};
     if (personalBests[mode.mode][mode.mode2] === undefined) {
@@ -263,18 +241,15 @@ async function updateUser(uid: string): Promise<void> {
   }
 
   //update the user
-  await UserDal.getUsersCollection().updateOne(
-    { uid },
-    {
-      $set: {
-        timeTyping: timeTyping,
-        completedTests: completedTests,
-        startedTests: Math.round(completedTests * 1.25),
-        personalBests: personalBests,
-        lbPersonalBests: lbPersonalBests,
-      },
-    },
-  );
+  await mutateUser(uid, (user) => {
+    Object.assign(user, {
+      timeTyping,
+      completedTests,
+      startedTests: Math.round(completedTests * 1.25),
+      personalBests,
+      lbPersonalBests,
+    });
+  });
 }
 
 async function updateLeaderboard(): Promise<void> {
@@ -292,116 +267,24 @@ function createArray<T>(size: number, builder: () => T): T[] {
 }
 
 async function updateTestActivity(uid: string): Promise<void> {
-  await ResultDal.getResultCollection()
-    .aggregate(
-      [
-        {
-          $match: {
-            uid,
-          },
-        },
-        {
-          $project: {
-            _id: 0,
-            timestamp: -1,
-            uid: 1,
-          },
-        },
-        {
-          $addFields: {
-            date: {
-              $toDate: "$timestamp",
-            },
-          },
-        },
-        {
-          $replaceWith: {
-            uid: "$uid",
-            year: {
-              $year: "$date",
-            },
-            day: {
-              $dayOfYear: "$date",
-            },
-          },
-        },
-        {
-          $group: {
-            _id: {
-              uid: "$uid",
-              year: "$year",
-              day: "$day",
-            },
-            count: {
-              $sum: 1,
-            },
-          },
-        },
-        {
-          $group: {
-            _id: {
-              uid: "$_id.uid",
-              year: "$_id.year",
-            },
-            days: {
-              $addToSet: {
-                day: "$_id.day",
-                tests: "$count",
-              },
-            },
-          },
-        },
-        {
-          $replaceWith: {
-            uid: "$_id.uid",
-            days: {
-              $function: {
-                lang: "js",
-                args: ["$days", "$_id.year"],
-                body: `function (days, year) {
-                                var max = Math.max(
-                                    ...days.map((it) => it.day)
-                                )-1;
-                                var arr = new Array(max).fill(null);
-                                for (day of days) {
-                                    arr[day.day-1] = day.tests;
-                                }
-                                let result = {};
-                                result[year] = arr;
-                                return result;
-                            }`,
-              },
-            },
-          },
-        },
-        {
-          $group: {
-            _id: "$uid",
-            testActivity: {
-              $mergeObjects: "$days",
-            },
-          },
-        },
-        {
-          $addFields: {
-            uid: "$_id",
-          },
-        },
-        {
-          $project: {
-            _id: 0,
-          },
-        },
-        {
-          $merge: {
-            into: "users",
-            on: "uid",
-            whenMatched: "merge",
-            whenNotMatched: "discard",
-          },
-        },
-      ],
-      { allowDiskUse: true },
-    )
-    .toArray();
+  await statement("DELETE FROM user_activity WHERE uid=?", uid).run();
+  await statement(
+    "INSERT INTO user_activity(uid,day,count) SELECT uid,CAST(timestamp/86400000 AS INT),count(*) FROM results WHERE uid=? GROUP BY uid,2",
+    uid,
+  ).run();
+  const rows = await statement(
+    "SELECT day,count FROM user_activity WHERE uid=? ORDER BY day",
+    uid,
+  ).all<{ day: number; count: number }>();
+  await mutateUser(uid, (user) => {
+    user.testActivity = {};
+    for (const row of rows.results) {
+      const date = new UTCDate(row.day * 86400000),
+        year = date.getFullYear(),
+        index = DateUtils.getDayOfYear(date) - 1;
+      const days = (user.testActivity[year] ??= []);
+      while (days.length <= index) days.push(0);
+      days[index] = row.count;
+    }
+  });
 }

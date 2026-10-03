@@ -1,3 +1,6 @@
+import { tryCatch } from "@oxytype/util/trycatch";
+import type { CaptchaAction } from "@oxytype/contracts/captcha";
+import { atomicUser } from "../../db/mutation";
 import { v4 as uuidv4 } from "uuid";
 import { getPartialUser, updateQuoteRatings } from "../../dal/user";
 import * as ReportDAL from "../../dal/report";
@@ -6,7 +9,7 @@ import * as QuoteRatingsDAL from "../../dal/quote-ratings";
 import MonkeyError from "../../utils/error";
 import { verify } from "../../utils/captcha";
 import { MonkeyResponse } from "../../utils/monkey-response";
-import { ObjectId } from "mongodb";
+import { newId } from "../../utils/id";
 import { addLog } from "../../dal/logs";
 import {
   AddQuoteRatingRequest,
@@ -24,8 +27,18 @@ import { replaceObjectId, replaceObjectIds } from "../../utils/misc";
 import { MonkeyRequest } from "../types";
 import { Language } from "@oxytype/schemas/languages";
 
-async function verifyCaptcha(captcha: string): Promise<void> {
-  if (!(await verify(captcha))) {
+async function verifyCaptcha(
+  captcha: string,
+  action: CaptchaAction,
+): Promise<void> {
+  const { data: verified, error } = await tryCatch(verify(captcha, action));
+  if (error) {
+    throw new MonkeyError(
+      422,
+      "Captcha verification unavailable, please try again",
+    );
+  }
+  if (!verified) {
     throw new MonkeyError(422, "Captcha check failed");
   }
 }
@@ -61,7 +74,7 @@ export async function addQuote(
   const { uid } = req.ctx.decodedToken;
   const { text, source, language, captcha } = req.body;
 
-  await verifyCaptcha(captcha);
+  await verifyCaptcha(captcha, "quote-submit");
 
   await NewQuotesDAL.add(text, source, language, uid);
   return new MonkeyResponse("Quote submission added", null);
@@ -107,6 +120,14 @@ export async function getRating(
 export async function submitRating(
   req: MonkeyRequest<undefined, AddQuoteRatingRequest>,
 ): Promise<MonkeyResponse> {
+  return await atomicUser(
+    req.ctx.decodedToken.uid,
+    async () => await submitRatingAtomic(req),
+  );
+}
+async function submitRatingAtomic(
+  req: MonkeyRequest<undefined, AddQuoteRatingRequest>,
+): Promise<MonkeyResponse> {
   const { uid } = req.ctx.decodedToken;
   const { quoteId, rating, language } = req.body;
 
@@ -146,10 +167,10 @@ export async function reportQuote(
 
   const { quoteId, quoteLanguage, reason, comment, captcha } = req.body;
 
-  await verifyCaptcha(captcha);
+  await verifyCaptcha(captcha, "quote-report");
 
   const newReport: ReportDAL.DBReport = {
-    _id: new ObjectId(),
+    _id: newId(),
     id: uuidv4(),
     type: "quote",
     timestamp: new Date().getTime(),

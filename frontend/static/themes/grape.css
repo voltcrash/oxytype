@@ -54,7 +54,7 @@ a:not(.button):not([data-ui-variant="button"]):hover {
   animation: grape 5s linear infinite;
 }
 
-[data-nav-item="account"]:hover svg {
+[data-nav-item="account"]:hover [data-ui-element="navAvatar"] i {
   color: transparent;
   animation: grape 5s linear infinite;
 }
