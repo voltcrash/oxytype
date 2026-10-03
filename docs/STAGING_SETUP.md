@@ -4,8 +4,9 @@ Worker and migration 0002 are deployed. GitHub credentials and a managed Turnsti
 widget are configured privately. Real managed Turnstile validation passed against the deployed Worker.
 The frontend and API now share `https://oxytype-api-staging.voltcrash.workers.dev`.
 This avoids cross-site OAuth state/session cookies between localhost and Workers.
-Signup, profiles, result saving and payload hash checks are enabled. Real-user
-GitHub signup and typing must still be checked in the browser. See [Turnstile](TURNSTILE.md) for local test keys and policy.
+Signup, profiles, result saving and payload hash checks are enabled. The owner
+confirmed real-user GitHub signup and a saved human typing result on hosted staging.
+These steps remain the repeatable browser check. See [Turnstile](TURNSTILE.md) for local test keys and policy.
 
 ## 1. GitHub credentials
 
@@ -59,7 +60,7 @@ Once all placeholders are replaced, run from the repo root:
 set -a
 . frontend/.env.staging.local
 set +a
-BACKEND_URL=/api pnpm build-fe
+BACKEND_URL=/api AUTH_PROVIDERS=google,github pnpm build-fe
 pnpm build-be
 pnpm --filter @oxytype/backend deploy:staging-site --secrets-file .dev.vars.staging
 pnpm --filter @oxytype/backend exec wrangler secret list

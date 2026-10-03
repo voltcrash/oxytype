@@ -387,3 +387,15 @@ typing verification remain pending.
   and issued a nonempty token. This probe did not submit signup or write D1.
   Real-user onboarding and a human result save still need the ordinary-browser
   retry after refreshing the deployed page.
+
+### Hosted staging user verification — 3 October 2026
+
+The owner completed GitHub onboarding and saved a human typing result on hosted
+staging after the Turnstile loading fix. Screenshots show the new account's
+10-word personal best, result graph and typing totals. Local refresh and
+sign-out/sign-in persistence had already been confirmed separately. Staging's
+real-user data is retained; it is not an empty fixture database anymore.
+
+The owner chose a fresh production database on `oxytype.voltcrash.com`. Production
+does not import MongoDB, Redis or staging accounts/history; the preserving import
+workflow remains available for other deployments.
