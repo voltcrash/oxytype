@@ -28,7 +28,6 @@ export type WorkerEnv = {
   QUOTES_ASSET_URL?: string;
   API_PATH_OVERRIDE?: string;
   MAINTENANCE?: string;
-  BYPASS_ANTICHEAT?: string;
   VERSION?: string;
   STATS_USERNAME?: string;
   STATS_PASSWORD?: string;

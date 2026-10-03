@@ -635,13 +635,13 @@ describe("result controller test", () => {
             burst: [50, 55, 56],
             wpm: [1, 2, 3],
           },
-          consistency: 23.5,
-          incompleteTestSeconds: 2,
+          consistency: 95.11,
+          incompleteTestSeconds: 10,
           isPb: true,
-          keyConsistency: 12,
+          keyConsistency: 8.9,
           keyDurationStats: {
-            average: 2.67,
-            sd: 2.05,
+            average: 3.75,
+            sd: 2.59,
           },
           keySpacingStats: {
             average: 2,
@@ -650,24 +650,24 @@ describe("result controller test", () => {
           mode: "time",
           mode2: "15",
           name: "bob",
-          rawWpm: 99,
+          rawWpm: 99.34,
           restartCount: 4,
           tags: ["tagOneId", "tagTwoId"],
           testDuration: 15.1,
           uid: uid,
-          wpm: 80,
+          wpm: 79.47,
         }),
       );
 
       expect(publicUpdateStatsMock).toHaveBeenCalledWith(
         4,
-        15.1 + 2 - 5, //duration + incompleteTestSeconds-afk
+        15.1 + 10 - 5, //duration + incompleteTestSeconds-afk
       );
       expect(userIncrementXpMock).toHaveBeenCalledWith(uid, 0);
       expect(userUpdateTypingStatsMock).toHaveBeenCalledWith(
         uid,
         4,
-        15.1 + 2 - 5, //duration + incompleteTestSeconds-afk
+        15.1 + 10 - 5, //duration + incompleteTestSeconds-afk
       );
     });
     it("should fail if result saving is disabled", async () => {
@@ -772,14 +772,14 @@ function buildCompletedEvent(result?: Partial<CompletedEvent>): CompletedEvent {
     blindMode: false,
     charStats: [100, 2, 3, 5],
     chartData: { wpm: [1, 2, 3], burst: [50, 55, 56], err: [0, 2, 0] },
-    consistency: 23.5,
+    consistency: 95.11,
     difficulty: "normal",
     funbox: [],
     hash: "hash",
-    incompleteTestSeconds: 2,
-    incompleteTests: [{ acc: 75, seconds: 10 }],
-    keyConsistency: 12,
-    keyDuration: [0, 3, 5],
+    incompleteTestSeconds: 10,
+    incompleteTests: [2, 2, 2, 4].map((seconds) => ({ acc: 75, seconds })),
+    keyConsistency: 8.9,
+    keyDuration: [0, 3, 5, 7],
     keySpacing: [0, 2, 4],
     language: "english",
     lazyMode: false,
@@ -787,19 +787,19 @@ function buildCompletedEvent(result?: Partial<CompletedEvent>): CompletedEvent {
     mode2: "15",
     numbers: false,
     punctuation: false,
-    rawWpm: 99,
+    rawWpm: 99.34,
     restartCount: 4,
     tags: ["tagOneId", "tagTwoId"],
     testDuration: 15.1,
     timestamp: 1000,
     uid,
-    wpmConsistency: 55,
-    wpm: 80,
+    wpmConsistency: 59.2,
+    wpm: 79.47,
     stopOnLetter: false,
     //new required
-    charTotal: 5,
+    charTotal: 125,
     keyOverlap: 7,
-    lastKeyToEnd: 9,
+    lastKeyToEnd: 15083,
     startToFirstKey: 11,
     ...result,
   };

@@ -14,9 +14,9 @@ import { MonkeyResponse } from "../../utils/monkey-response";
 import MonkeyError from "../../utils/error";
 import { isTestTooShort } from "../../utils/validation";
 import {
-  implemented as anticheatImplemented,
-  validateResult,
-  validateKeys,
+  getResultFailure,
+  getKeyDataFailure,
+  getBotFailure,
 } from "../../anticheat/index";
 import MonkeyStatusCodes from "../../constants/monkey-status-codes";
 import {
@@ -30,7 +30,6 @@ import {
 import * as UserDAL from "../../dal/user";
 import { buildMonkeyMail } from "../../utils/monkey-mail";
 import * as WeeklyXpLeaderboard from "../../services/weekly-xp-leaderboard";
-import { UAParser } from "ua-parser-js";
 import { canFunboxGetPb } from "../../utils/pb";
 import { buildDbResult } from "../../utils/result";
 import { Configuration } from "@oxytype/schemas/configuration";
@@ -304,28 +303,12 @@ async function addResultAtomic(
     await addImportantLog("highwpm_user_result", completedEvent, uid);
   }
 
-  if (anticheatImplemented()) {
-    if (
-      !validateResult(
-        completedEvent,
-        ((req.raw.headers["x-client-version"] as string) ||
-          req.raw.headers["client-version"]) as string,
-        JSON.stringify(new UAParser(req.raw.headers["user-agent"]).getResult()),
-        user.lbOptOut === true,
-      )
-    ) {
-      const status = MonkeyStatusCodes.RESULT_DATA_INVALID;
-      throw new MonkeyError(status.code, "Result data doesn't make sense");
-    } else if (isDevEnvironment()) {
-      Logger.success("Result data validated");
-    }
-  } else {
-    if (!isDevEnvironment()) {
-      throw new Error("No anticheat module found");
-    }
-    Logger.warning(
-      "No anticheat module found. Continuing in dev mode, results will not be validated.",
-    );
+  const resultFailure =
+    getResultFailure(completedEvent) ?? getKeyDataFailure(completedEvent);
+  if (resultFailure !== undefined) {
+    Logger.warning(`Anticheat rejected result: ${resultFailure}`);
+    const status = MonkeyStatusCodes.RESULT_DATA_INVALID;
+    throw new MonkeyError(status.code, "Result data doesn't make sense");
   }
 
   //dont use - result timestamp is unreliable, can be changed by system time and stuff
@@ -397,51 +380,36 @@ async function addResultAtomic(
     if (completedEvent.keyOverlap === undefined) {
       throw new MonkeyError(400, "Old key data format");
     }
-    if (anticheatImplemented()) {
-      if (
-        !validateKeys(completedEvent, keySpacingStats, keyDurationStats, uid)
-      ) {
-        //autoban
-        const autoBanConfig = req.ctx.configuration.users.autoBan;
-        if (autoBanConfig.enabled) {
-          const didUserGetBanned = await UserDAL.recordAutoBanEvent(
-            uid,
-            autoBanConfig.maxCount,
-            autoBanConfig.maxHours,
-          );
-          if (didUserGetBanned) {
-            const mail = buildMonkeyMail({
-              subject: "Banned",
-              body: "Your account has been automatically banned for triggering the anticheat system. If you believe this is a mistake, please contact support.",
-            });
-            await Promise.all([
-              UserDAL.addToInbox(
-                uid,
-                [mail],
-                req.ctx.configuration.users.inbox,
-              ),
-              purgeUserFromDailyLeaderboards(
-                uid,
-                req.ctx.configuration.dailyLeaderboards,
-              ),
-              WeeklyXpLeaderboard.purgeUserFromXpLeaderboards(
-                uid,
-                req.ctx.configuration.leaderboards.weeklyXp,
-              ),
-            ]);
-            user.banned = true;
-          }
+    if (getBotFailure(completedEvent) !== undefined) {
+      //autoban
+      const autoBanConfig = req.ctx.configuration.users.autoBan;
+      if (autoBanConfig.enabled) {
+        const didUserGetBanned = await UserDAL.recordAutoBanEvent(
+          uid,
+          autoBanConfig.maxCount,
+          autoBanConfig.maxHours,
+        );
+        if (didUserGetBanned) {
+          const mail = buildMonkeyMail({
+            subject: "Banned",
+            body: "Your account has been automatically banned for triggering the anticheat system. If you believe this is a mistake, please contact support.",
+          });
+          await Promise.all([
+            UserDAL.addToInbox(uid, [mail], req.ctx.configuration.users.inbox),
+            purgeUserFromDailyLeaderboards(
+              uid,
+              req.ctx.configuration.dailyLeaderboards,
+            ),
+            WeeklyXpLeaderboard.purgeUserFromXpLeaderboards(
+              uid,
+              req.ctx.configuration.leaderboards.weeklyXp,
+            ),
+          ]);
+          user.banned = true;
         }
-        const status = MonkeyStatusCodes.BOT_DETECTED;
-        throw new MonkeyError(status.code, "Possible bot detected");
       }
-    } else {
-      if (!isDevEnvironment()) {
-        throw new Error("No anticheat module found");
-      }
-      Logger.warning(
-        "No anticheat module found. Continuing in dev mode, results will not be validated.",
-      );
+      const status = MonkeyStatusCodes.BOT_DETECTED;
+      throw new MonkeyError(status.code, "Possible bot detected");
     }
   }
 
