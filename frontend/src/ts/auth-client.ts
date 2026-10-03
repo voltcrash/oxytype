@@ -6,10 +6,13 @@ import { setUserId } from "./states/core";
 import { googleSignUpEvent } from "./events/google-sign-up";
 import { createEvent } from "./hooks/createEvent";
 
-const baseURL = `${envConfig.backendUrl.replace(/\/$/, "")}/auth`;
+const authURL = new URL(
+  `${envConfig.backendUrl.replace(/\/$/, "")}/auth`,
+  window.location.origin,
+);
 export const authClient = createAuthClient({
-  baseURL,
-  basePath: new URL(baseURL, window.location.origin).pathname,
+  baseURL: authURL.href,
+  basePath: authURL.pathname,
   fetchOptions: { credentials: "include" },
 });
 import type { AuthUser, SocialProvider } from "./auth-types";
