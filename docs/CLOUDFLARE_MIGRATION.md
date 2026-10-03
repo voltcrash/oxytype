@@ -224,8 +224,9 @@ verification, deployment, and any external blockers throughout implementation.
   checksums, canonical BSON, ordered SQL, row counts and foreign keys in local D1.
 - Assessment: [CLOUDFLARE_ASSESSMENT.md](CLOUDFLARE_ASSESSMENT.md).
   Runbook: [CLOUDFLARE_OPERATIONS.md](CLOUDFLARE_OPERATIONS.md).
-- Production-mode result saves remain blocked by the absent anticheat module;
-  OAuth/captcha/bridge credentials are not supplied. No bypass enabled.
+- At this initial deployment, production result saves were blocked by the absent
+  anticheat module. The follow-up below implements baseline validation.
+  OAuth/captcha/bridge credentials remain deployment inputs. No bypass enabled.
 
 ## Staging deployment record — 3 October 2026
 
@@ -243,9 +244,9 @@ verification, deployment, and any external blockers throughout implementation.
 - Frontend: 1,340 tests passed. UUID result/admin compatibility and a full hashed
   result save under forced CAS retry verified; progression commits once.
 - PR: https://github.com/voltcrash/oxytype/pull/24. Production cutover remains a
-  separate operation after the documented data/integration/anticheat gates.
+  separate operation after data/integration checks and anticheat rollout review.
 
-Final deployed Worker version: `a70e71d5-4646-4b80-8ae1-bcc8db813ef6`.
+Initial deployed Worker version: `a70e71d5-4646-4b80-8ae1-bcc8db813ef6`.
 Verified capped gzip/deflate → 413, small gzip → authentication guard, malformed
 compression → 400, and request-initialized uptime. Final backend unit rerun:
 591/591 passed. All implementation commits are pushed; PR marked ready for review.
@@ -265,3 +266,17 @@ Oxlint, formatting, changed-theme Stylelint, shared-package builds, API docs,
 Worker dry-run and frontend production build with the repository's captcha test
 key passed. This follow-up is committed separately for frontend, backend/data
 and documentation. Deploy after the migration procedure in the runbook.
+
+### Signup and anticheat follow-ups
+
+Fresh social sessions survive the missing-profile response until username setup.
+Local signup, result save, refresh and sign-out/sign-in persistence were verified
+in the browser. Built-in [anticheat](ANTICHEAT.md) now validates scores, duration,
+chart/key telemetry and a narrow fixed-timing bot signature in all runtime modes.
+First saves use server account time; database read failures fail closed. Rejection
+audits and configured strikes persist atomically without result/progression writes.
+
+Validation: 95 targeted backend/D1/browser-compatibility checks, workspace
+type-aware Oxlint and Worker build/dry-run passed. These follow-ups have not been
+deployed. Redeploy staging, configure its OAuth/captcha and repeat production-mode
+browser checks before cutover. Automatic bans remain disabled by default.

@@ -18,7 +18,7 @@ pnpm dev-fe
 
 Frontend: `http://localhost:3000`; API: `http://localhost:5005` (also `/api`).
 Wrangler persists local D1 in `backend/.wrangler`; local and remote migrations
-are separate commands. `MODE=dev` permits the existing local anticheat behavior;
+are separate commands. Result/telemetry validation runs in development and production;
 never copy the development secret/test captcha key into a production deployment.
 Use `.dev.vars` for Worker settings, not Node `.env`.
 
@@ -74,10 +74,12 @@ redeployments. Set `BETTER_AUTH_URL` in Wrangler vars to the deployed URL plus
 Optional nonsecret vars: `INTEGRATION_URL`, `QUOTES_REPOSITORY`.
 
 Without OAuth credentials no social login is available. Without a real captcha
-secret production signup fails closed. **The anticheat implementation is absent:
-production-mode result submissions remain blocked, including staging.** This PR
-does not set `BYPASS_ANTICHEAT`. A deployment-owned implementation is a production
-cutover prerequisite. `/stats/*` remains inaccessible without stats credentials.
+secret production signup fails closed. Built-in [anticheat](ANTICHEAT.md) permits
+valid production result saves and rejects inconsistent telemetry. No bypass is
+supported. The deployed staging version predates the Discord removal, signup fix
+and anticheat follow-ups; migrate/redeploy before remote testing. Keep automatic
+bans disabled while reviewing real typing samples. `/stats/*` remains inaccessible
+without stats credentials.
 
 Cross-site staging cookies use Secure/SameSite=None and explicit localhost
 origin checks. Some browsers block third-party cookies; a same-site frontend/API

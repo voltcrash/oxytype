@@ -6,7 +6,8 @@ secrets, OAuth callbacks, integration setup and cutover/rollback.
 
 `backend/wrangler.jsonc` currently targets **staging**. Create a separate reviewed
 config and resources for your deployment; preserve the auth secret across updates.
-Configure a real anticheat module before enabling production result saves.
+Review the built-in [anticheat policy](ANTICHEAT.md) before enabling production
+result saves; keep automatic bans disabled during initial monitoring.
 
 Host `frontend/dist` using static hosting or the [frontend Docker image](../docker/BUILD.md).
 Set its API URL to the Worker URL plus `/api`; trust the frontend origin in the

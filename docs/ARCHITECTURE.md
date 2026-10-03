@@ -67,8 +67,9 @@ Backend build performs a Wrangler dry-run; deployment applies migrations then
 uses Wrangler. Docker publishes the static frontend only.
 
 The checked-in deployment targets a new, empty staging database and trusts
-localhost:3000. Production OAuth/captcha/bridge credentials and a real anticheat
-module are separate deployment inputs. See [operations](CLOUDFLARE_OPERATIONS.md)
+localhost:3000. Production OAuth/captcha/bridge credentials are separate deployment
+inputs. Built-in [anticheat](ANTICHEAT.md) checks scores and telemetry in all modes;
+review its client-trust limits before cutover. See [operations](CLOUDFLARE_OPERATIONS.md)
 for setup, recovery, cutover gates and the preserving importer.
 
 ## Oxytype ownership boundaries
