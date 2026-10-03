@@ -45,10 +45,11 @@ import { Fa } from "../../../common/Fa";
 import { Separator } from "../../../common/Separator";
 import { SearchableSetting } from "../SearchableSetting";
 
+// darkest background first
 export const sortedThemes: ThemeWithName[] = [...ThemesList].sort((a, b) => {
   const b1 = hexToHSL(a.bg);
   const b2 = hexToHSL(b.bg);
-  return b2.lgt - b1.lgt;
+  return b1.lgt - b2.lgt;
 });
 
 export function Theme(): JSXElement {
