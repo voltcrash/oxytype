@@ -61,16 +61,16 @@ export function SidebarLayout<T extends string>(props: {
       class="content-grid flex flex-col gap-8 md:flex-row"
       style={{ "--header-bottom": `${getHeaderBottom()}px` }}
     >
-      {/* sticks centered in the screen while scrolling, but never under the
-          fixed header */}
+      {/* reserve the sidebar's space while its navigation stays outside the
+          content's scrolling and overscroll movement on desktop */}
       <div
-        class="w-full shrink-0 md:sticky md:top-[max(calc(var(--header-bottom)+1rem),calc(50vh-var(--sidebar-height)/2))] md:w-60 md:self-start"
+        class="w-full shrink-0 md:h-(--sidebar-height) md:w-60 md:self-start"
         style={{ "--sidebar-height": `${navHeight()}px` }}
       >
         {/* items are laid out in two columns on mobile to keep the sidebar short */}
         <nav
           ref={navRef}
-          class="grid grid-cols-2 gap-2 rounded-double bg-sub-alt p-4 md:flex md:max-h-[calc(100vh-var(--header-bottom)-2rem)] md:flex-col md:items-start md:gap-4 md:overflow-y-auto"
+          class="grid grid-cols-2 gap-2 rounded-double bg-sub-alt p-4 md:fixed md:top-[max(calc(var(--header-bottom)+1rem),calc(50vh-var(--sidebar-height)/2))] md:z-20 md:flex md:max-h-[calc(100vh-var(--header-bottom)-2rem)] md:w-60 md:flex-col md:items-start md:gap-4 md:overflow-y-auto md:overscroll-y-none"
         >
           <Show when={props.header !== undefined}>
             <div class="col-span-full w-full">{props.header}</div>
