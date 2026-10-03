@@ -3,6 +3,8 @@
 See [assessment](CLOUDFLARE_ASSESSMENT.md) and [implementation plan](CLOUDFLARE_MIGRATION.md).
 Backend runtime: one Worker, D1, Queues and Cron. Node is used for builds/offline
 import tooling only. Local workerd needs no MongoDB/Redis or Cloudflare login.
+The [production setup](PRODUCTION_SETUP.md) uses a fresh, separate database and
+`backend/wrangler.production.json`; the preserving importer below is optional.
 
 ## Local development
 
@@ -49,11 +51,12 @@ Worker: [oxytype-api-staging](https://oxytype-api-staging.voltcrash.workers.dev)
 Auth URL: `https://oxytype-api-staging.voltcrash.workers.dev/api/auth`. D1: `oxytype-staging`,
 `17b0ae8b-92bf-4d7e-a29e-0ac4cc6f2b59`, APAC placement hint.
 Queues: `oxytype-staging-tasks` and `oxytype-staging-dlq`.
-Trusted frontend origin: `http://localhost:3000`. No production route is configured.
+The default API-only config trusts `http://localhost:3000`; hosted staging uses
+the Worker origin. Production routes are isolated in `wrangler.production.json`.
 
 Wrangler uses `backend/wrangler.jsonc`; changing its default deploy target changes
-the release CLI too. Create a separate reviewed config/resources before any
-production deployment. Current backend release script migrates/deploys staging;
+the release CLI too. Production has a separate reviewed config/resources; use
+its explicit commands. Current backend release script migrates/deploys staging;
 it no longer SSHs into a Node server. Frontend delivery is separate.
 
 ```sh
@@ -80,7 +83,8 @@ valid production result saves and rejects inconsistent telemetry. No bypass is
 supported. Staging now includes the Discord removal, signup fix and anticheat;
 live API checks passed with a temporary seeded identity. GitHub and Turnstile credentials are now deployed; signup, profiles and result
 saving are enabled for browser testing. Follow [staging browser setup](STAGING_SETUP.md)
-for the remaining real-user checks. Keep automatic
+for browser verification steps. Real-user GitHub signup and a human result save
+have now been confirmed on hosted staging. Keep automatic
 bans disabled while reviewing real typing samples. `/stats/*` remains inaccessible
 without stats credentials.
 
