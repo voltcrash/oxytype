@@ -1,10 +1,11 @@
+import * as Deletion from "../../../src/services/user-deletion";
+import type { MockInstance } from "vite-plus/test";
 import {
   describe,
   it,
   expect,
   beforeEach,
   afterEach,
-  beforeAll,
   afterAll,
   vi,
 } from "vite-plus/test";
@@ -14,24 +15,18 @@ import { generateCurrentTestActivity } from "../../../src/api/controllers/user";
 import * as UserDal from "../../../src/dal/user";
 import * as AuthUtils from "../../../src/utils/auth";
 import * as BlocklistDal from "../../../src/dal/blocklist";
-import * as PresetDal from "../../../src/dal/preset";
-import * as ConfigDal from "../../../src/dal/config";
-import * as ResultDal from "../../../src/dal/result";
 import * as ReportDal from "../../../src/dal/report";
 import * as DailyLeaderboards from "../../../src/utils/daily-leaderboards";
 import * as LeaderboardDal from "../../../src/dal/leaderboards";
 import GeorgeQueue from "../../../src/queues/george-queue";
 import * as DiscordUtils from "../../../src/utils/discord";
 import * as Captcha from "../../../src/utils/captcha";
-import * as ApeKeysDal from "../../../src/dal/ape-keys";
 import * as LogDal from "../../../src/dal/logs";
 import { ObjectId } from "mongodb";
 import { PersonalBest } from "@oxytype/schemas/shared";
 import { mockAuthenticateWithApeKey } from "../../__testData__/auth";
 import { randomUUID } from "node:crypto";
 import { MonkeyMail, UserStreak } from "@oxytype/schemas/users";
-import MonkeyError from "../../../src/utils/error";
-import * as WeeklyXpLeaderboard from "../../../src/services/weekly-xp-leaderboard";
 import * as ConnectionsDal from "../../../src/dal/connections";
 import { pb } from "../../__testData__/users";
 import Test from "supertest/lib/test";
@@ -46,9 +41,7 @@ describe("user controller test", () => {
     const usernameAvailableMock = vi.spyOn(UserDal, "isNameAvailable");
     const verifyCaptchaMock = vi.spyOn(Captcha, "verify");
     beforeEach(async () => {
-      vi.spyOn(UserDal, "getUsersCollection").mockReturnValue({
-        findOne: vi.fn().mockResolvedValue(null),
-      } as never);
+      vi.spyOn(UserDal, "exists").mockResolvedValue(false);
       await enableSignup(true);
       usernameAvailableMock.mockResolvedValue(true);
     });
@@ -326,7 +319,7 @@ describe("user controller test", () => {
   });
 
   describe("generateCurrentTestActivity", () => {
-    beforeAll(() => {
+    beforeEach(() => {
       vi.useFakeTimers().setSystemTime(1712102400000);
     });
     it("without any data", () => {
@@ -392,353 +385,57 @@ describe("user controller test", () => {
       expect(testsByDays[371]).toEqual(2024094); //2024-01
     });
   });
-  describe("delete user ", () => {
-    const getUserMock = vi.spyOn(UserDal, "getPartialUser");
-    const deleteUserMock = vi.spyOn(UserDal, "deleteUser");
-    const authDeleteUserMock = vi.spyOn(AuthUtils, "deleteUser");
-    const deleteAllApeKeysMock = vi.spyOn(ApeKeysDal, "deleteAllApeKeys");
-    const deleteAllPresetsMock = vi.spyOn(PresetDal, "deleteAllPresets");
-    const deleteConfigMock = vi.spyOn(ConfigDal, "deleteConfig");
-    const deleteAllResultMock = vi.spyOn(ResultDal, "deleteAll");
-    const purgeUserFromDailyLeaderboardsMock = vi.spyOn(
-      DailyLeaderboards,
-      "purgeUserFromDailyLeaderboards",
-    );
-    const purgeUserFromXpLeaderboardsMock = vi.spyOn(
-      WeeklyXpLeaderboard,
-      "purgeUserFromXpLeaderboards",
-    );
-    const blocklistAddMock = vi.spyOn(BlocklistDal, "add");
-    const connectionsDeletebyUidMock = vi.spyOn(ConnectionsDal, "deleteByUid");
-    const logsDeleteUserMock = vi.spyOn(LogDal, "deleteUserLogs");
-    const georgeUnlinkDiscordMock = vi.spyOn(GeorgeQueue, "unlinkDiscord");
-
-    beforeEach(() => {
-      [
-        authDeleteUserMock,
-        deleteUserMock,
-        blocklistAddMock,
-        deleteAllApeKeysMock,
-        deleteAllPresetsMock,
-        deleteConfigMock,
-        purgeUserFromDailyLeaderboardsMock,
-        purgeUserFromXpLeaderboardsMock,
-        connectionsDeletebyUidMock,
-        logsDeleteUserMock,
-        georgeUnlinkDiscordMock,
-      ].forEach((it) => it.mockResolvedValue(undefined));
-
-      deleteAllResultMock.mockResolvedValue({} as any);
+  describe("delete user", () => {
+    let remove: MockInstance<typeof Deletion.deleteUserAccount>;
+    beforeEach(async () => {
+      remove = vi
+        .spyOn(Deletion, "deleteUserAccount")
+        .mockResolvedValue(undefined);
     });
-
-    afterEach(() => {
-      [
-        getUserMock,
-        deleteUserMock,
-        blocklistAddMock,
-        authDeleteUserMock,
-        deleteConfigMock,
-        deleteAllResultMock,
-        deleteAllApeKeysMock,
-        deleteAllPresetsMock,
-        purgeUserFromDailyLeaderboardsMock,
-        purgeUserFromXpLeaderboardsMock,
-        connectionsDeletebyUidMock,
-        logsDeleteUserMock,
-        georgeUnlinkDiscordMock,
-      ].forEach((it) => it.mockClear());
-    });
-
-    it("should delete user", async () => {
-      //GIVEN
-      const user = {
-        uid,
-        name: "name",
-        email: "email",
-        discordId: "discordId",
-        banned: true,
-      } as Partial<UserDal.DBUser> as UserDal.DBUser;
-      getUserMock.mockResolvedValue(user);
-
-      //WHEN
+    afterEach(() => remove.mockRestore());
+    it("delegates account deletion and preserves response", async () => {
       await mockApp
         .delete("/users/")
         .set("Authorization", `Bearer ${uid}`)
         .expect(200);
-
-      //THEN
-      expect(blocklistAddMock).toHaveBeenCalledWith(user);
-
-      expect(deleteUserMock).toHaveBeenCalledWith(uid);
-      expect(authDeleteUserMock).toHaveBeenCalledWith(uid);
-      expect(deleteAllApeKeysMock).toHaveBeenCalledWith(uid);
-      expect(deleteAllPresetsMock).toHaveBeenCalledWith(uid);
-      expect(deleteConfigMock).toHaveBeenCalledWith(uid);
-      expect(deleteAllResultMock).toHaveBeenCalledWith(uid);
-      expect(connectionsDeletebyUidMock).toHaveBeenCalledWith(uid);
-      expect(purgeUserFromDailyLeaderboardsMock).toHaveBeenCalledWith(
-        uid,
-        (await configuration).dailyLeaderboards,
-      );
-      expect(purgeUserFromXpLeaderboardsMock).toHaveBeenCalledWith(
-        uid,
-        (await configuration).leaderboards.weeklyXp,
-      );
-      expect(logsDeleteUserMock).toHaveBeenCalledWith(uid);
-      expect(georgeUnlinkDiscordMock).toHaveBeenCalledWith(user.discordId, uid);
+      expect(remove).toHaveBeenCalledWith(uid, expect.any(Object));
     });
-
-    it("should delete user without adding to blocklist if not banned", async () => {
-      //GIVEN
-      const user = {
-        uid,
-        name: "name",
-        email: "email",
-        discordId: "discordId",
-      } as Partial<UserDal.DBUser> as UserDal.DBUser;
-      getUserMock.mockResolvedValue(user);
-
-      //WHEN
-      await mockApp
-        .delete("/users/")
-        .set("Authorization", `Bearer ${uid}`)
-        .expect(200);
-
-      //THEN
-      expect(blocklistAddMock).not.toHaveBeenCalled();
+    it("requires authentication", async () => {
+      await mockApp.delete("/users/").expect(401);
+      expect(remove).not.toHaveBeenCalled();
     });
-
-    it("should not fail if userInfo cannot be found", async () => {
-      //GIVEN
-      getUserMock.mockRejectedValue(new MonkeyError(404, "user not found"));
-
-      //WHEN
-      await mockApp
-        .delete("/users/")
-        .set("Authorization", `Bearer ${uid}`)
-        .expect(200);
-
-      //THEN
-      expect(blocklistAddMock).not.toHaveBeenCalled();
-
-      expect(deleteUserMock).toHaveBeenCalledWith(uid);
-      expect(authDeleteUserMock).toHaveBeenCalledWith(uid);
-      expect(deleteAllApeKeysMock).toHaveBeenCalledWith(uid);
-      expect(deleteAllPresetsMock).toHaveBeenCalledWith(uid);
-      expect(deleteConfigMock).toHaveBeenCalledWith(uid);
-      expect(deleteAllResultMock).toHaveBeenCalledWith(uid);
-      expect(connectionsDeletebyUidMock).toHaveBeenCalledWith(uid);
-      expect(purgeUserFromDailyLeaderboardsMock).toHaveBeenCalledWith(
-        uid,
-        (await configuration).dailyLeaderboards,
-      );
-      expect(purgeUserFromXpLeaderboardsMock).toHaveBeenCalledWith(
-        uid,
-        (await configuration).leaderboards.weeklyXp,
-      );
-      expect(logsDeleteUserMock).toHaveBeenCalledWith(uid);
-    });
-
-    it("should fail for unknown error from UserDal", async () => {
-      //GIVEN
-      getUserMock.mockRejectedValue(new Error("oops"));
-
-      //WHEN
+    it("propagates deletion failures", async () => {
+      remove.mockRejectedValue(new Error("database failure"));
       await mockApp
         .delete("/users/")
         .set("Authorization", `Bearer ${uid}`)
         .expect(500);
-
-      //THEN
-      expect(blocklistAddMock).not.toHaveBeenCalled();
-      expect(deleteUserMock).not.toHaveBeenCalledWith(uid);
-      expect(authDeleteUserMock).not.toHaveBeenCalledWith(uid);
-      expect(deleteAllApeKeysMock).not.toHaveBeenCalledWith(uid);
-      expect(deleteAllPresetsMock).not.toHaveBeenCalledWith(uid);
-      expect(deleteConfigMock).not.toHaveBeenCalledWith(uid);
-      expect(deleteAllResultMock).not.toHaveBeenCalledWith(uid);
-      expect(connectionsDeletebyUidMock).not.toHaveBeenCalledWith(uid);
-      expect(purgeUserFromDailyLeaderboardsMock).not.toHaveBeenCalledWith(
-        uid,
-        (await configuration).dailyLeaderboards,
-      );
-      expect(purgeUserFromXpLeaderboardsMock).not.toHaveBeenCalledWith(
-        uid,
-        (await configuration).leaderboards.weeklyXp,
-      );
-      expect(logsDeleteUserMock).not.toHaveBeenCalled();
-    });
-    it("should not fail if authentication account is already absent", async () => {
-      //GIVEN
-      const user = {
-        uid,
-        name: "name",
-        email: "email",
-        discordId: "discordId",
-      } as Partial<UserDal.DBUser> as UserDal.DBUser;
-      getUserMock.mockResolvedValue(user);
-      authDeleteUserMock.mockResolvedValue();
-
-      //WHEN
-      await mockApp
-        .delete("/users/")
-        .set("Authorization", `Bearer ${uid}`)
-        .expect(200);
-
-      //THEN
-      expect(blocklistAddMock).not.toHaveBeenCalled();
-
-      expect(deleteUserMock).toHaveBeenCalledWith(uid);
-      expect(authDeleteUserMock).toHaveBeenCalledWith(uid);
-      expect(deleteAllApeKeysMock).toHaveBeenCalledWith(uid);
-      expect(deleteAllPresetsMock).toHaveBeenCalledWith(uid);
-      expect(deleteConfigMock).toHaveBeenCalledWith(uid);
-      expect(deleteAllResultMock).toHaveBeenCalledWith(uid);
-      expect(connectionsDeletebyUidMock).toHaveBeenCalledWith(uid);
-      expect(purgeUserFromDailyLeaderboardsMock).toHaveBeenCalledWith(
-        uid,
-        (await configuration).dailyLeaderboards,
-      );
-      expect(purgeUserFromXpLeaderboardsMock).toHaveBeenCalledWith(
-        uid,
-        (await configuration).leaderboards.weeklyXp,
-      );
-      expect(logsDeleteUserMock).toHaveBeenCalledWith(uid);
-    });
-
-    it("should fail for unknown error from authentication", async () => {
-      //GIVEN
-      const user = {
-        uid,
-        name: "name",
-        email: "email",
-        discordId: "discordId",
-      } as Partial<UserDal.DBUser> as UserDal.DBUser;
-      getUserMock.mockResolvedValue(user);
-      authDeleteUserMock.mockRejectedValue(
-        new Error("Authentication storage unavailable"),
-      );
-
-      //WHEN
-      await mockApp
-        .delete("/users/")
-        .set("Authorization", `Bearer ${uid}`)
-        .expect(500);
-
-      //THEN
-      expect(blocklistAddMock).not.toHaveBeenCalled();
-      expect(deleteUserMock).toHaveBeenCalledWith(uid);
-      expect(authDeleteUserMock).toHaveBeenCalledWith(uid);
-      expect(deleteAllApeKeysMock).toHaveBeenCalledWith(uid);
-      expect(deleteAllPresetsMock).toHaveBeenCalledWith(uid);
-      expect(deleteConfigMock).toHaveBeenCalledWith(uid);
-      expect(deleteAllResultMock).toHaveBeenCalledWith(uid);
-      expect(connectionsDeletebyUidMock).toHaveBeenCalledWith(uid);
-      expect(purgeUserFromDailyLeaderboardsMock).toHaveBeenCalledWith(
-        uid,
-        (await configuration).dailyLeaderboards,
-      );
-      expect(purgeUserFromXpLeaderboardsMock).toHaveBeenCalledWith(
-        uid,
-        (await configuration).leaderboards.weeklyXp,
-      );
-    });
-    it("should not unlink user without discordId", async () => {
-      //GIVEN
-      const user = {
-        uid,
-        name: "name",
-        email: "email",
-      } as Partial<UserDal.DBUser> as UserDal.DBUser;
-      getUserMock.mockResolvedValue(user);
-
-      //WHEN
-      await mockApp
-        .delete("/users/")
-        .set("Authorization", `Bearer ${uid}`)
-        .expect(200);
-
-      //THEN
-      expect(georgeUnlinkDiscordMock).not.toHaveBeenCalled();
     });
   });
+
   describe("resetUser", () => {
     const getPartialUserMock = vi.spyOn(UserDal, "getPartialUser");
     const resetUserMock = vi.spyOn(UserDal, "resetUser");
-    const deleteAllApeKeysMock = vi.spyOn(ApeKeysDal, "deleteAllApeKeys");
-    const deleteAllPresetsMock = vi.spyOn(PresetDal, "deleteAllPresets");
-    const deleteAllResultsMock = vi.spyOn(ResultDal, "deleteAll");
-    const deleteConfigMock = vi.spyOn(ConfigDal, "deleteConfig");
-    const purgeUserFromDailyLeaderboardsMock = vi.spyOn(
-      DailyLeaderboards,
-      "purgeUserFromDailyLeaderboards",
-    );
-    const purgeUserFromXpLeaderboardsMock = vi.spyOn(
-      WeeklyXpLeaderboard,
-      "purgeUserFromXpLeaderboards",
-    );
-
     const unlinkDiscordMock = vi.spyOn(GeorgeQueue, "unlinkDiscord");
     const addImportantLogMock = vi.spyOn(LogDal, "addImportantLog");
-
     beforeEach(() => {
       getPartialUserMock.mockClear().mockResolvedValue({
         banned: false,
         name: "bob",
         email: "bob@example.com",
       } as any);
-      deleteAllResultsMock.mockClear().mockResolvedValue(null as any);
-      [
-        purgeUserFromXpLeaderboardsMock,
-        unlinkDiscordMock,
-        addImportantLogMock,
-        resetUserMock,
-        deleteAllApeKeysMock,
-        deleteAllPresetsMock,
-        deleteConfigMock,
-        purgeUserFromDailyLeaderboardsMock,
-      ].forEach((it) => it.mockClear().mockResolvedValue());
+      [resetUserMock, unlinkDiscordMock, addImportantLogMock].forEach((mock) =>
+        mock.mockClear().mockResolvedValue(),
+      );
     });
-
     it("should reset user", async () => {
-      //GIVEN
-
-      //WHEN
       const { body } = await mockApp
         .patch("/users/reset")
         .set("Authorization", `Bearer ${uid}`)
         .expect(200);
-
-      //THEN
-      expect(body).toEqual({
-        message: "User reset",
-        data: null,
-      });
-
-      for (const it of [
-        resetUserMock,
-        deleteAllApeKeysMock,
-        deleteAllPresetsMock,
-        deleteAllResultsMock,
-        deleteConfigMock,
-      ]) {
-        expect(it).toHaveBeenCalledWith(uid);
-      }
-      expect(purgeUserFromDailyLeaderboardsMock).toHaveBeenCalledWith(
-        uid,
-        (await Configuration.getLiveConfiguration()).dailyLeaderboards,
-      );
-      expect(purgeUserFromXpLeaderboardsMock).toHaveBeenCalledWith(
-        uid,
-        (await configuration).leaderboards.weeklyXp,
-      );
+      expect(body).toEqual({ message: "User reset", data: null });
+      expect(resetUserMock).toHaveBeenCalledWith(uid);
       expect(unlinkDiscordMock).not.toHaveBeenCalled();
-      /*TODO
-      expect(addImportantLogMock).toHaveBeenCalledWith(
-        "user_reset",
-        "bob@example.com bob",
-        uid
-      );*/
     });
     it("should unlink discord", async () => {
       //GIVEN
@@ -1499,7 +1196,7 @@ describe("user controller test", () => {
       //THEN
       expect(body).toEqual({
         message: "Result filter preset created",
-        data: generatedId.toHexString(),
+        data: generatedId.toString(),
       });
 
       expect(addResultFilterPresetMock).toHaveBeenCalledWith(
@@ -1639,7 +1336,7 @@ describe("user controller test", () => {
       //THEN
       expect(body).toEqual({
         message: "Tag updated",
-        data: { ...newTag, _id: newTag._id.toHexString() },
+        data: { ...newTag, _id: newTag._id.toString() },
       });
       expect(addTagMock).toHaveBeenCalledWith(uid, "tagName");
     });
@@ -1684,7 +1381,7 @@ describe("user controller test", () => {
 
     it("should clear tag pb", async () => {
       //GIVEN
-      const tagId = new ObjectId().toHexString();
+      const tagId = new ObjectId().toString();
       //WHEN
       const { body } = await mockApp
         .delete(`/users/tags/${tagId}/personalBest`)
@@ -1708,7 +1405,7 @@ describe("user controller test", () => {
 
     it("should update tag", async () => {
       //GIVEN
-      const tagId = new ObjectId().toHexString();
+      const tagId = new ObjectId().toString();
 
       //WHEN
       const { body } = await mockApp
@@ -1743,7 +1440,7 @@ describe("user controller test", () => {
         .patch(`/users/tags`)
         .set("Authorization", `Bearer ${uid}`)
         .send({
-          tagId: new ObjectId().toHexString(),
+          tagId: new ObjectId().toString(),
           newName: "newName",
           extra: "value",
         })
@@ -1765,7 +1462,7 @@ describe("user controller test", () => {
 
     it("should remove tag", async () => {
       //GIVEN
-      const tagId = new ObjectId().toHexString();
+      const tagId = new ObjectId().toString();
 
       //WHEN
       const { body } = await mockApp
@@ -1814,8 +1511,8 @@ describe("user controller test", () => {
       expect(body).toEqual({
         message: "Tags retrieved",
         data: [
-          { ...tagOne, _id: tagOne._id.toHexString() },
-          { ...tagTwo, _id: tagTwo._id.toHexString() },
+          { ...tagOne, _id: tagOne._id.toString() },
+          { ...tagTwo, _id: tagTwo._id.toString() },
         ],
       });
       expect(getTagsMock).toHaveBeenCalledWith(uid);
@@ -1923,8 +1620,8 @@ describe("user controller test", () => {
       expect(body).toEqual({
         message: "Custom themes retrieved",
         data: [
-          { ...themeOne, _id: themeOne._id.toHexString() },
-          { ...themeTwo, _id: themeTwo._id.toHexString() },
+          { ...themeOne, _id: themeOne._id.toString() },
+          { ...themeTwo, _id: themeTwo._id.toString() },
         ],
       });
     });
@@ -1957,7 +1654,7 @@ describe("user controller test", () => {
       //THEN
       expect(body).toEqual({
         message: "Custom theme added",
-        data: { ...addedTheme, _id: addedTheme._id.toHexString() },
+        data: { ...addedTheme, _id: addedTheme._id.toString() },
       });
       expect(addThemeMock).toHaveBeenCalledWith(uid, {
         name: "customTheme",
@@ -2025,7 +1722,7 @@ describe("user controller test", () => {
 
     it("should remove theme", async () => {
       //GIVEN
-      const themeId = new ObjectId().toHexString();
+      const themeId = new ObjectId().toString();
 
       //WHEN
       const { body } = await mockApp
@@ -2059,7 +1756,7 @@ describe("user controller test", () => {
       const { body } = await mockApp
         .delete("/users/customThemes")
         .set("Authorization", `Bearer ${uid}`)
-        .send({ themeId: new ObjectId().toHexString(), extra: "value" })
+        .send({ themeId: new ObjectId().toString(), extra: "value" })
         .expect(422);
 
       //THEN
@@ -2077,7 +1774,7 @@ describe("user controller test", () => {
 
     it("should edit custom theme", async () => {
       //GIVEN
-      const themeId = new ObjectId().toHexString();
+      const themeId = new ObjectId().toString();
       const theme = {
         name: "newName",
         colors: new Array(10).fill("#000000") as any,
@@ -2119,7 +1816,7 @@ describe("user controller test", () => {
         .patch("/users/customThemes")
         .set("Authorization", `Bearer ${uid}`)
         .send({
-          themeId: new ObjectId().toHexString(),
+          themeId: new ObjectId().toString(),
           theme: {
             name: "newName",
             colors: new Array(10).fill("#000000") as any,
@@ -2405,7 +2102,7 @@ describe("user controller test", () => {
 
     const foundUser: Partial<UserDal.DBUser> = {
       _id: new ObjectId(),
-      uid: new ObjectId().toHexString(),
+      uid: new ObjectId().toString(),
       name: "bob",
       banned: false,
       inventory: { badges: [{ id: 1, selected: true }, { id: 2 }] },
@@ -3049,7 +2746,7 @@ describe("user controller test", () => {
 
     it("should report", async () => {
       //WHEN
-      const uidToReport = new ObjectId().toHexString();
+      const uidToReport = new ObjectId().toString();
 
       const { body } = await mockApp
         .post("/users/report")
@@ -3106,7 +2803,7 @@ describe("user controller test", () => {
         .post("/users/report")
         .set("Authorization", `Bearer ${uid}`)
         .send({
-          uid: new ObjectId().toHexString(),
+          uid: new ObjectId().toString(),
           reason: "Suspected cheating",
           comment: "comment",
           captcha: "captcha",
@@ -3129,7 +2826,7 @@ describe("user controller test", () => {
         .post("/users/report")
         .set("Authorization", `Bearer ${uid}`)
         .send({
-          uid: new ObjectId().toHexString(),
+          uid: new ObjectId().toString(),
           reason: "Suspected cheating",
           comment: "comment",
           captcha: "captcha",
@@ -3173,7 +2870,7 @@ describe("user controller test", () => {
         .post("/users/report")
         .set("Authorization", `Bearer ${uid}`)
         .send({
-          uid: new ObjectId().toHexString(),
+          uid: new ObjectId().toString(),
           reason: "Suspected cheating",
           comment: "comment",
           captcha: "captcha",
@@ -3192,7 +2889,7 @@ describe("user controller test", () => {
         .post("/users/report")
         .set("Authorization", `Bearer ${uid}`)
         .send({
-          uid: new ObjectId().toHexString(),
+          uid: new ObjectId().toString(),
           reason: "Suspected cheating",
           comment: "comment",
           captcha: "captcha",

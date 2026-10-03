@@ -1,0 +1,91 @@
+import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
+import { createTestRuntime } from "./helpers";
+import { withRuntime } from "../../src/runtime/env";
+import { getAuth } from "../../src/init/auth";
+import * as Users from "../../src/dal/user";
+import { patchConfiguration } from "../../src/init/configuration";
+import { BASE_CONFIGURATION } from "../../src/constants/base-configuration";
+import { buildMonkeyMail } from "../../src/utils/monkey-mail";
+import Worker from "../../src/worker";
+import { GetUserInboxResponseSchema } from "@oxytype/contracts/users";
+import type { ExecutionContext } from "@cloudflare/workers-types";
+
+describe("Worker HTTP with D1", () => {
+  let test: Awaited<ReturnType<typeof createTestRuntime>>;
+  let token: string;
+  let uid: string;
+  const mail = buildMonkeyMail({
+    subject: "Reward",
+    rewards: [{ type: "xp", item: 25 }],
+  });
+  const context = { waitUntil: () => undefined } as unknown as ExecutionContext;
+  beforeAll(async () => {
+    test = await createTestRuntime();
+    test.env.BETTER_AUTH_URL = "http://localhost:5005/api/auth";
+    await withRuntime(test.env, async () => {
+      const auth = await getAuth().$context;
+      const user = await auth.internalAdapter.createUser(
+        { name: "Http", email: "http@example.com", emailVerified: true },
+        { method: "oauth", oauth: { providerId: "google" } },
+      );
+      uid = user.id;
+      const session = await auth.internalAdapter.createSession(uid, false);
+      if (session === null) throw new Error("Missing session");
+      token = session.token;
+      await Users.addUser("Http", user.email, uid);
+      await patchConfiguration({
+        users: { inbox: { enabled: true, maxMail: 100 } },
+      });
+      await Users.addToInbox(uid, [mail], {
+        ...BASE_CONFIGURATION.users.inbox,
+        enabled: true,
+        maxMail: 100,
+      });
+    });
+  });
+  afterAll(async () => await test.dispose());
+  async function request(
+    path: string,
+    method = "GET",
+    body?: unknown,
+  ): Promise<Response> {
+    return await Worker.fetch(
+      new Request(`http://localhost:5005/api${path}`, {
+        method,
+        headers: {
+          authorization: `Bearer ${token}`,
+          origin: "http://localhost:3000",
+          "content-type": "application/json",
+        },
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+      }),
+      test.env,
+      context,
+    );
+  }
+  it("routes /api, enforces ownership and serves schema-valid inbox mail", async () => {
+    expect((await request("/")).status).toBe(200);
+    const response = await request("/users/inbox");
+    expect(response.status).toBe(200);
+    expect(
+      GetUserInboxResponseSchema.parse(await response.json()).data.inbox[0]?.id,
+    ).toBe(mail.id);
+    expect(
+      (await request("/users/inbox", "PATCH", { mailIdsToMarkRead: [mail.id] }))
+        .status,
+    ).toBe(200);
+    expect(
+      (await request("/users/inbox", "PATCH", { mailIdsToMarkRead: [mail.id] }))
+        .status,
+    ).toBe(200);
+    await withRuntime(test.env, async () =>
+      expect((await Users.getUser(uid, "test")).xp).toBe(25),
+    );
+  });
+  it("rejects revoked D1 sessions on subsequent requests", async () => {
+    await withRuntime(test.env, async () => {
+      await (await getAuth().$context).internalAdapter.deleteSession(token);
+    });
+    expect((await request("/users/inbox")).status).toBe(401);
+  });
+});

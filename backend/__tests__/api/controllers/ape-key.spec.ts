@@ -52,14 +52,14 @@ describe("ApeKeyController", () => {
 
       //THEN
       expect(body).toHaveProperty("message", "ApeKeys retrieved");
-      expect(body.data).toHaveProperty(keyOne._id.toHexString(), {
+      expect(body.data).toHaveProperty(keyOne._id.toString(), {
         name: keyOne.name,
         enabled: keyOne.enabled,
         createdOn: keyOne.createdOn,
         modifiedOn: keyOne.modifiedOn,
         lastUsedOn: keyOne.lastUsedOn,
       });
-      expect(body.data).toHaveProperty(keyTwo._id.toHexString(), {
+      expect(body.data).toHaveProperty(keyTwo._id.toString(), {
         name: keyTwo.name,
         enabled: keyTwo.enabled,
         createdOn: keyTwo.createdOn,
@@ -129,7 +129,9 @@ describe("ApeKeyController", () => {
           name: "test",
           uid: uid,
           useCount: 0,
+          hash: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
         }),
+        1,
       );
     });
     it("should fail without mandatory properties", async () => {
@@ -197,7 +199,7 @@ describe("ApeKeyController", () => {
 
   describe("edit ape key", () => {
     const editApeKeyMock = vi.spyOn(ApeKeyDal, "editApeKey");
-    const apeKeyId = new ObjectId().toHexString();
+    const apeKeyId = new ObjectId().toString();
 
     afterEach(() => {
       editApeKeyMock.mockClear();
@@ -282,7 +284,7 @@ describe("ApeKeyController", () => {
   });
   describe("delete ape key", () => {
     const deleteApeKeyMock = vi.spyOn(ApeKeyDal, "deleteApeKey");
-    const apeKeyId = new ObjectId().toHexString();
+    const apeKeyId = new ObjectId().toString();
 
     afterEach(() => {
       deleteApeKeyMock.mockClear();

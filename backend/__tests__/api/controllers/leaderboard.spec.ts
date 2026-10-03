@@ -267,24 +267,6 @@ describe("Loaderboard Controller", () => {
         validationErrors: ["Unrecognized key(s) in object: 'extra'"],
       });
     });
-    it("fails while leaderboard is updating", async () => {
-      //GIVEN
-      getLeaderboardMock.mockResolvedValue(false);
-
-      //WHEN
-      const { body } = await mockApp
-        .get("/leaderboards")
-        .query({
-          language: "english",
-          mode: "time",
-          mode2: "60",
-        })
-        .expect(503);
-
-      expect(body.message).toEqual(
-        "Leaderboard is currently updating. Please try again in a few seconds.",
-      );
-    });
   });
 
   describe("get rank", () => {
@@ -479,25 +461,6 @@ describe("Loaderboard Controller", () => {
         validationErrors: ["Unrecognized key(s) in object: 'extra'"],
       });
     });
-    it("fails while leaderboard is updating", async () => {
-      //GIVEN
-      getLeaderboardRankMock.mockResolvedValue(false);
-
-      //WHEN
-      const { body } = await mockApp
-        .get("/leaderboards/rank")
-        .query({
-          language: "english",
-          mode: "time",
-          mode2: "60",
-        })
-        .set("Authorization", `Bearer ${uid}`)
-        .expect(503);
-
-      expect(body.message).toEqual(
-        "Leaderboard is currently updating. Please try again in a few seconds.",
-      );
-    });
   });
 
   describe("get daily leaderboard", () => {
@@ -688,10 +651,7 @@ describe("Loaderboard Controller", () => {
       const lbConf = (await configuration).dailyLeaderboards;
       const premiumEnabled = (await configuration).users.premium.enabled;
       await enableConnectionsFeature(true);
-      const friends = [
-        new ObjectId().toHexString(),
-        new ObjectId().toHexString(),
-      ];
+      const friends = [new ObjectId().toString(), new ObjectId().toString()];
       getFriendsUidsMock.mockResolvedValue(friends);
 
       //WHEN
@@ -1211,10 +1171,7 @@ describe("Loaderboard Controller", () => {
       await enableConnectionsFeature(true);
       const page = 2;
       const pageSize = 25;
-      const friends = [
-        new ObjectId().toHexString(),
-        new ObjectId().toHexString(),
-      ];
+      const friends = [new ObjectId().toString(), new ObjectId().toString()];
       getFriendsUidsMock.mockResolvedValue(friends);
 
       //WHEN

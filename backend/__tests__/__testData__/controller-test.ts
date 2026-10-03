@@ -12,7 +12,7 @@ export function setup(): {
   mockAuth: BearerAuthenticationMock;
 } {
   const mockApp = request(getRequestListener(app.fetch));
-  const uid = new ObjectId().toHexString();
+  const uid = new ObjectId().toString();
   const mockAuth = mockBearerAuthentication(uid);
 
   beforeEach(() => {

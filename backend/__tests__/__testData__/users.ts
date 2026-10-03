@@ -1,4 +1,4 @@
-import * as DB from "../../src/init/db";
+import { mutateUser } from "../../src/db/mutation";
 import * as UserDAL from "../../src/dal/user";
 import { ObjectId } from "mongodb";
 import { PersonalBest } from "@oxytype/schemas/shared";
@@ -6,22 +6,25 @@ import { PersonalBest } from "@oxytype/schemas/shared";
 export async function createUser(
   user?: Partial<UserDAL.DBUser>,
 ): Promise<UserDAL.DBUser> {
-  const uid = new ObjectId().toHexString();
+  const uid = new ObjectId().toString();
   await UserDAL.addUser(`user${uid}`, `${uid}@example.com`, uid);
-  await DB.collection("users").updateOne({ uid }, { $set: { ...user } });
+  await mutateUser(uid, (profile) => {
+    Object.assign(profile, user);
+  });
   return await UserDAL.getUser(uid, "test");
 }
 
 export async function createUserWithoutMigration(
   user?: Partial<UserDAL.DBUser>,
 ): Promise<UserDAL.DBUser> {
-  const uid = new ObjectId().toHexString();
+  const uid = new ObjectId().toString();
   await UserDAL.addUser(`user${uid}`, `${uid}@example.com`, uid);
-  await DB.collection("users").updateOne({ uid }, { $set: { ...user } });
-  await DB.collection("users").updateOne(
-    { uid },
-    { $unset: { testActivity: "" } },
-  );
+  await mutateUser(uid, (profile) => {
+    Object.assign(profile, user);
+  });
+  await mutateUser(uid, (profile) => {
+    delete profile.testActivity;
+  });
 
   return await UserDAL.getUser(uid, "test");
 }

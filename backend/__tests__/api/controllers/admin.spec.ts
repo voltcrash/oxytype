@@ -92,7 +92,7 @@ describe("AdminController", () => {
 
     it("should ban user with discordId", async () => {
       //GIVEN
-      const victimUid = new ObjectId().toHexString();
+      const victimUid = new ObjectId().toString();
       getUserMock.mockResolvedValue({
         banned: false,
         discordId: "discordId",
@@ -128,7 +128,7 @@ describe("AdminController", () => {
     });
     it("should unban user without discordId", async () => {
       //GIVEN
-      const victimUid = new ObjectId().toHexString();
+      const victimUid = new ObjectId().toString();
       getUserMock.mockResolvedValue({
         banned: true,
       } as any);
@@ -177,7 +177,7 @@ describe("AdminController", () => {
       //WHEN
       const { body } = await mockApp
         .post("/admin/toggleBan")
-        .send({ uid: new ObjectId().toHexString(), extra: "value" })
+        .send({ uid: new ObjectId().toString(), extra: "value" })
         .set("Authorization", `Bearer ${uid}`)
         .expect(422);
 
@@ -191,7 +191,7 @@ describe("AdminController", () => {
       await expectFailForNonAdmin(
         mockApp
           .post("/admin/toggleBan")
-          .send({ uid: new ObjectId().toHexString() })
+          .send({ uid: new ObjectId().toString() })
           .set("Authorization", `Bearer ${uid}`),
       );
     });
@@ -200,13 +200,13 @@ describe("AdminController", () => {
       await expectFailForDisabledEndpoint(
         mockApp
           .post("/admin/toggleBan")
-          .send({ uid: new ObjectId().toHexString() })
+          .send({ uid: new ObjectId().toString() })
           .set("Authorization", `Bearer ${uid}`),
       );
     });
     it("should be rate limited", async () => {
       //GIVEN
-      const victimUid = new ObjectId().toHexString();
+      const victimUid = new ObjectId().toString();
       getUserMock.mockResolvedValue({
         banned: false,
         discordId: "discordId",
@@ -232,7 +232,7 @@ describe("AdminController", () => {
 
     it("should clear streak hour offset for user", async () => {
       //GIVEN
-      const victimUid = new ObjectId().toHexString();
+      const victimUid = new ObjectId().toString();
 
       //WHEN
       const { body } = await mockApp
@@ -270,7 +270,7 @@ describe("AdminController", () => {
       //WHEN
       const { body } = await mockApp
         .post("/admin/clearStreakHourOffset")
-        .send({ uid: new ObjectId().toHexString(), extra: "value" })
+        .send({ uid: new ObjectId().toString(), extra: "value" })
         .set("Authorization", `Bearer ${uid}`)
         .expect(422);
 
@@ -284,7 +284,7 @@ describe("AdminController", () => {
       await expectFailForNonAdmin(
         mockApp
           .post("/admin/clearStreakHourOffset")
-          .send({ uid: new ObjectId().toHexString() })
+          .send({ uid: new ObjectId().toString() })
           .set("Authorization", `Bearer ${uid}`),
       );
     });
@@ -293,13 +293,13 @@ describe("AdminController", () => {
       await expectFailForDisabledEndpoint(
         mockApp
           .post("/admin/clearStreakHourOffset")
-          .send({ uid: new ObjectId().toHexString() })
+          .send({ uid: new ObjectId().toString() })
           .set("Authorization", `Bearer ${uid}`),
       );
     });
     it("should be rate limited", async () => {
       //GIVEN
-      const victimUid = new ObjectId().toHexString();
+      const victimUid = new ObjectId().toString();
 
       //WHEN
       await expect(
@@ -553,7 +553,7 @@ describe("AdminController", () => {
 
     it("should delete user", async () => {
       //GIVEN
-      const victimUid = new ObjectId().toHexString();
+      const victimUid = new ObjectId().toString();
       deleteUserAccountMock.mockResolvedValue({
         banned: false,
         name: "victim",
@@ -601,7 +601,7 @@ describe("AdminController", () => {
       //WHEN
       const { body } = await mockApp
         .post("/admin/deleteUser")
-        .send({ uid: new ObjectId().toHexString(), extra: "value" })
+        .send({ uid: new ObjectId().toString(), extra: "value" })
         .set("Authorization", `Bearer ${uid}`)
         .expect(422);
 
@@ -615,7 +615,7 @@ describe("AdminController", () => {
       await expectFailForNonAdmin(
         mockApp
           .post("/admin/deleteUser")
-          .send({ uid: new ObjectId().toHexString() })
+          .send({ uid: new ObjectId().toString() })
           .set("Authorization", `Bearer ${uid}`),
       );
     });
@@ -623,7 +623,7 @@ describe("AdminController", () => {
       await expectFailForDisabledEndpoint(
         mockApp
           .post("/admin/deleteUser")
-          .send({ uid: new ObjectId().toHexString() })
+          .send({ uid: new ObjectId().toString() })
           .set("Authorization", `Bearer ${uid}`),
       );
     });
@@ -631,7 +631,7 @@ describe("AdminController", () => {
       await expect(
         mockApp
           .post("/admin/deleteUser")
-          .send({ uid: new ObjectId().toHexString() })
+          .send({ uid: new ObjectId().toString() })
           .set("Authorization", `Bearer ${uid}`),
       ).toBeRateLimited({ max: 1, windowMs: 5000 });
     });

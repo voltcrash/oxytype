@@ -1,6 +1,8 @@
+import { jobHandler } from "../../src/workers/later-worker";
+import { DailyLeaderboard } from "../../src/utils/daily-leaderboards";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vite-plus/test";
-import { createTestRuntime } from "./helpers";
-import { withRuntime } from "../../src/runtime/env";
+import { createTestRuntime, seedUser } from "./helpers";
+import { runtime, withRuntime } from "../../src/runtime/env";
 import { __testing, dispatch } from "../../src/runtime/tasks";
 import * as UserDAL from "../../src/dal/user";
 import { BASE_CONFIGURATION } from "../../src/constants/base-configuration";
@@ -108,5 +110,78 @@ describe("durable queue delivery", () => {
     } finally {
       fetch.mockRestore();
     }
+  });
+  it("recovers expired daily periods across pages without duplicate rewards or truncated announcements", async () => {
+    const period = Date.now() - 10 * 86400000;
+    await withRuntime(test.env, async () => {
+      const configuration = structuredClone(BASE_CONFIGURATION);
+      configuration.dailyLeaderboards.enabled = true;
+      configuration.dailyLeaderboards.topResultsToAnnounce = 21;
+      configuration.dailyLeaderboards.xpRewardBrackets = [
+        { minRank: 1, maxRank: 21, maxReward: 100, minReward: 10 },
+      ];
+      configuration.users.inbox.enabled = true;
+      runtime().configuration = configuration;
+      const modeRule = {
+        language: "english",
+        mode: "time",
+        mode2: "15",
+      } as const;
+      for (let i = 0; i < 21; i++) {
+        const uid = `payout${i}`;
+        await seedUser(test.env, uid);
+        await statement(
+          "INSERT INTO daily_entries(board,period,uid,score,expires_at,data) VALUES('english:time:15',?,?,?,?,?)",
+          period,
+          uid,
+          100 - i,
+          period + 86400000,
+          JSON.stringify({
+            uid,
+            name: uid,
+            wpm: 100 - i,
+            raw: 100,
+            acc: 100,
+            consistency: 100,
+            timestamp: period,
+          }),
+        ).run();
+      }
+      expect(
+        (
+          await new DailyLeaderboard(modeRule, period).getResults(
+            0,
+            30,
+            configuration.dailyLeaderboards,
+            false,
+          )
+        )?.entries,
+      ).toHaveLength(0);
+      const task = {
+        taskName: "daily-leaderboard-results",
+        ctx: { yesterdayTimestamp: period, modeRule },
+      } as const;
+      await jobHandler(task);
+      await jobHandler(task);
+      await jobHandler({ ...task, ctx: { ...task.ctx, offset: 20 } });
+      expect(
+        await statement(
+          "SELECT count(*) AS count FROM outbox WHERE type='reward' AND uid LIKE 'payout%' ",
+        ).first("count"),
+      ).toBe(21);
+      const announcement = await statement(
+        "SELECT data FROM outbox WHERE id=?",
+        `daily-announcement:${period}:english:time:15`,
+      ).first<string>("data");
+      expect(
+        (JSON.parse(announcement ?? "{}") as { args: unknown[][] }).args[2],
+      ).toHaveLength(21);
+      expect(
+        await statement(
+          "SELECT count(*) AS count FROM scheduled_jobs WHERE id=?",
+          `daily:${period}:english:time:15:20`,
+        ).first("count"),
+      ).toBe(1);
+    });
   });
 });

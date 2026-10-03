@@ -62,8 +62,8 @@ describe("result controller test", () => {
 
       expect(body.message).toEqual("Results retrieved");
       expect(body.data).toEqual([
-        { ...resultOne, _id: resultOne._id.toHexString() },
-        { ...resultTwo, _id: resultTwo._id.toHexString() },
+        { ...resultOne, _id: resultOne._id.toString() },
+        { ...resultTwo, _id: resultTwo._id.toString() },
       ]);
     });
     it("should get results with ape key", async () => {
@@ -324,7 +324,7 @@ describe("result controller test", () => {
 
       //THEN
       expect(body.message).toEqual("Result retrieved");
-      expect(body.data).toEqual({ ...result, _id: result._id.toHexString() });
+      expect(body.data).toEqual({ ...result, _id: result._id.toString() });
     });
     it("should get last result with ape key", async () => {
       //GIVEN
@@ -380,7 +380,7 @@ describe("result controller test", () => {
 
       //THEN
       expect(body.message).toEqual("Result retrieved");
-      expect(body.data).toEqual({ ...result, _id: result._id.toHexString() });
+      expect(body.data).toEqual({ ...result, _id: result._id.toString() });
     });
     it("should get last result with ape key", async () => {
       //GIVEN
@@ -431,11 +431,8 @@ describe("result controller test", () => {
     it("should update tags", async () => {
       //GIVEN
       const result = givenDbResult(uid);
-      const resultIdString = result._id.toHexString();
-      const tagIds = [
-        new ObjectId().toHexString(),
-        new ObjectId().toHexString(),
-      ];
+      const resultIdString = result._id.toString();
+      const tagIds = [new ObjectId().toString(), new ObjectId().toString()];
       const partialUser = { tags: [] };
       getResultMock.mockResolvedValue(result);
       updateTagsMock.mockResolvedValue({} as any);
@@ -474,11 +471,8 @@ describe("result controller test", () => {
         "numbers",
       ]);
 
-      const resultIdString = result._id.toHexString();
-      const tagIds = [
-        new ObjectId().toHexString(),
-        new ObjectId().toHexString(),
-      ];
+      const resultIdString = result._id.toString();
+      const tagIds = [new ObjectId().toString(), new ObjectId().toString()];
       const partialUser = { tags: [] };
       getResultMock.mockResolvedValue(partialResult);
       updateTagsMock.mockResolvedValue({} as any);
@@ -505,6 +499,7 @@ describe("result controller test", () => {
       ]);
       expect(checkIfTagPbMock).toHaveBeenCalledWith(uid, partialUser, {
         ...result,
+        tags: tagIds,
         difficulty: "normal",
         language: "english",
         funbox: [],
@@ -557,6 +552,9 @@ describe("result controller test", () => {
     const userUpdateStreakMock = vi.spyOn(UserDal, "updateStreak");
     const userCheckIfTagPbMock = vi.spyOn(UserDal, "checkIfTagPb");
     const userCheckIfPbMock = vi.spyOn(UserDal, "checkIfPb");
+    vi.spyOn(UserDal, "incrementTestActivity").mockResolvedValue();
+    vi.spyOn(UserDal, "incrementBananas").mockResolvedValue();
+    vi.spyOn(UserDal, "updateLastHashes").mockResolvedValue();
     const userIncrementXpMock = vi.spyOn(UserDal, "incrementXp");
     const userUpdateTypingStatsMock = vi.spyOn(UserDal, "updateTypingStats");
     const resultAddMock = vi.spyOn(ResultDal, "addResult");
@@ -590,6 +588,7 @@ describe("result controller test", () => {
       //a prior result exists so incomplete-test time is credited (not zeroed)
       resultGetLastTimestampMock.mockResolvedValue(0);
       userIncrementXpMock.mockResolvedValue();
+      userUpdateTypingStatsMock.mockResolvedValue();
     });
 
     it("should add result", async () => {
@@ -622,7 +621,7 @@ describe("result controller test", () => {
           daily: 0,
         },
         streak: 0,
-        insertedId: insertedId.toHexString(),
+        insertedId: insertedId.toString(),
       });
 
       expect(resultAddMock).toHaveBeenCalledWith(

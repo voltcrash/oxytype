@@ -1,3 +1,4 @@
+import { wrapUnitApp } from "../setup-tests";
 import {
   afterEach,
   beforeEach,
@@ -31,7 +32,7 @@ beforeEach(() => {
   };
   auth = createAuth(memoryAdapter(store));
   vi.spyOn(AuthInit, "getAuth").mockReturnValue(auth);
-  app = buildApp();
+  app = wrapUnitApp(buildApp());
 });
 afterEach(() => {
   vi.restoreAllMocks();

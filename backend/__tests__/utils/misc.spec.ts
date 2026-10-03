@@ -326,7 +326,7 @@ describe("Misc Utils", () => {
         number: 1,
       };
       expect(Misc.replaceObjectId(fromDatabase)).toStrictEqual({
-        _id: fromDatabase._id.toHexString(),
+        _id: fromDatabase._id.toString(),
         test: "test",
         number: 1,
       });
@@ -352,12 +352,12 @@ describe("Misc Utils", () => {
         Misc.replaceObjectIds([fromDatabase, fromDatabase2]),
       ).toStrictEqual([
         {
-          _id: fromDatabase._id.toHexString(),
+          _id: fromDatabase._id.toString(),
           test: "test",
           number: 1,
         },
         {
-          _id: fromDatabase2._id.toHexString(),
+          _id: fromDatabase2._id.toString(),
           test: "bob",
           number: 2,
         },

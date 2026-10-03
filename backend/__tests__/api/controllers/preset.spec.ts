@@ -46,12 +46,12 @@ describe("PresetController", () => {
         message: "Presets retrieved",
         data: [
           {
-            _id: presetOne._id.toHexString(),
+            _id: presetOne._id.toString(),
             name: "test1",
             config: { language: "english" },
           },
           {
-            _id: presetTwo._id.toHexString(),
+            _id: presetTwo._id.toString(),
             name: "test2",
             settingGroups: ["hideElements"],
             config: {

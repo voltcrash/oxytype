@@ -14,7 +14,7 @@ import { invokeMiddleware } from "../__testData__/middleware";
 import { getCachedConfiguration } from "../../src/init/configuration";
 import * as ApeKeys from "../../src/dal/ape-keys";
 import { ObjectId } from "mongodb";
-import { hashSync } from "bcrypt";
+import { hashApeKey } from "../../src/utils/ape-key-hash";
 import MonkeyError from "../../src/utils/error";
 import * as Misc from "../../src/utils/misc";
 import crypto from "crypto";
@@ -41,7 +41,7 @@ const mockApeKey = {
   _id: new ObjectId(),
   uid: "123",
   name: "test",
-  hash: hashSync("key", 5),
+  hash: hashApeKey("key"),
   createdOn: Date.now(),
   modifiedOn: Date.now(),
   lastUsedOn: Date.now(),
