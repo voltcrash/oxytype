@@ -26,6 +26,8 @@ export type SettingProps = {
   fullWidthInputs?: JSXElement;
   breakpoints?: "none" | "normal" | "narrow";
   class?: string;
+  // called when a deep link targets this setting, before it is scrolled to
+  onHighlight?: () => void;
 } & ParentProps &
   (
     | {
@@ -59,6 +61,7 @@ export function Setting(props: SettingProps): JSXElement {
     let timer: ReturnType<typeof setTimeout> | undefined;
     onCleanup(
       registerSettingHighlight(key, () => {
+        props.onHighlight?.();
         timer = setTimeout(() => {
           element()?.scrollIntoView({ block: "center", behavior: "auto" });
           setHighlightedSetting(key);

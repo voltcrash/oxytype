@@ -38,3 +38,21 @@ it("scrolls and highlights after 250ms, clears the previous setting, and cancels
   vi.advanceTimersByTime(250);
   expect(scroll).toHaveBeenCalledOnce();
 });
+it("calls onHighlight before scrolling", () => {
+  vi.useFakeTimers();
+  const onHighlight = vi.fn();
+  const { container } = render(() => (
+    <Setting
+      key="test"
+      title="test"
+      description="test"
+      fa={{ icon: "fa-cog" }}
+      onHighlight={onHighlight}
+    />
+  ));
+  const element = container.querySelector('[data-setting-key="test"]');
+  Object.defineProperty(element, "scrollIntoView", { value: vi.fn() });
+  highlightSetting("test");
+  expect(onHighlight).toHaveBeenCalledOnce();
+  expect(element).not.toHaveClass("settings-highlight");
+});

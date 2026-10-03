@@ -51,6 +51,7 @@ import { Tags } from "./custom-setting/Tags";
 import { Theme } from "./custom-setting/Theme";
 import { SearchableAutoSetting } from "./SearchableAutoSetting";
 import { SearchableSetting } from "./SearchableSetting";
+import { SettingsSectionContext } from "./settings-section-context";
 import { SettingsSearch } from "./SettingsSearch";
 
 export function SettingsPage(): JSXElement {
@@ -294,6 +295,8 @@ function Section(props: {
   section: SettingsSection;
   children: JSXElement;
 }): JSXElement {
+  // oxlint-disable-next-line solid/reactivity -- each section is static
+  const section = props.section;
   return (
     <div
       id={`group_${props.section}`}
@@ -313,7 +316,9 @@ function Section(props: {
         fa={{ icon: settingsSections[props.section].icon }}
         class={cn("pb-0", isSettingsSearchActive() && "hidden")}
       />
-      {props.children}
+      <SettingsSectionContext.Provider value={section}>
+        {props.children}
+      </SettingsSectionContext.Provider>
     </div>
   );
 }
