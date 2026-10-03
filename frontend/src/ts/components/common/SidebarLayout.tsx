@@ -1,5 +1,6 @@
 import { For, JSXElement, Show } from "solid-js";
 
+import { useRef } from "../../hooks/useRef";
 import { FaSolidIcon } from "../../types/font-awesome";
 import { cn } from "../../utils/cn";
 import { Button } from "./Button";
@@ -22,10 +23,22 @@ export function SidebarLayout<T extends string>(props: {
   counts?: Partial<Record<T, number>>;
   children: JSXElement;
 }): JSXElement {
+  const [contentRef, content] = useRef<HTMLDivElement>();
+
+  const select = (key: T): void => {
+    props.onSelect(key);
+    // the sidebar stays in view while scrolling (or sits above the content on
+    // mobile), so bring the top of the new content into view
+    const top = content()?.getBoundingClientRect().top;
+    if (top !== undefined && (top < 0 || top > window.innerHeight / 2)) {
+      content()?.scrollIntoView({ block: "start" });
+    }
+  };
+
   return (
     <div class="content-grid flex flex-col gap-8 md:flex-row">
-      <div class="w-full shrink-0 md:w-60">
-        <nav class="flex flex-col gap-4 rounded-double bg-sub-alt p-4 md:items-start">
+      <div class="w-full shrink-0 md:sticky md:top-8 md:w-60 md:self-start">
+        <nav class="flex flex-col gap-4 rounded-double bg-sub-alt p-4 md:max-h-[calc(100vh-4rem)] md:items-start md:overflow-y-auto">
           {props.header}
           <For each={Object.entries(props.items) as [T, SidebarItem][]}>
             {([key, item]) => (
@@ -42,7 +55,7 @@ export function SidebarLayout<T extends string>(props: {
                     (props.counts[key] ?? 0) === 0 &&
                     "opacity-50",
                 )}
-                onClick={() => props.onSelect(key)}
+                onClick={() => select(key)}
               >
                 <Show when={props.counts !== undefined}>
                   <span class="rounded bg-bg px-[0.5em] text-em-xs text-sub">
@@ -58,7 +71,12 @@ export function SidebarLayout<T extends string>(props: {
           </Show>
         </nav>
       </div>
-      <div class="flex w-full flex-1 flex-col gap-8">{props.children}</div>
+      <div
+        ref={contentRef}
+        class="flex w-full flex-1 scroll-mt-8 flex-col gap-8"
+      >
+        {props.children}
+      </div>
     </div>
   );
 }
