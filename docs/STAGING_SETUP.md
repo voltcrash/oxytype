@@ -2,6 +2,8 @@
 
 Worker and migration 0002 are deployed. GitHub credentials and a managed Turnstile
 widget are configured privately. Real managed Turnstile validation passed against the deployed Worker.
+The frontend and API now share `https://oxytype-api-staging.voltcrash.workers.dev`.
+This avoids cross-site OAuth state/session cookies between localhost and Workers.
 Signup, profiles, result saving and payload hash checks are enabled. Real-user
 GitHub signup and typing must still be checked in the browser. See [Turnstile](TURNSTILE.md) for local test keys and policy.
 
@@ -13,7 +15,7 @@ Create an **Oxytype Staging** OAuth app in
 
 | Field | Value |
 | --- | --- |
-| Homepage URL | `http://localhost:3000` |
+| Homepage URL | `https://oxytype-api-staging.voltcrash.workers.dev` |
 | Callback URL | `https://oxytype-api-staging.voltcrash.workers.dev/api/auth/callback/github` |
 
 Save its client ID and generated client secret in `backend/.dev.vars.staging`:
@@ -31,8 +33,9 @@ do not copy local development vars or paste secrets into chat.
 
 Create a separate **managed** staging widget in the
 [Cloudflare Turnstile dashboard](https://dash.cloudflare.com/?to=/:account/turnstile).
-Allow `localhost` for this staging frontend. Add your HTTPS frontend hostname when
-hosting it elsewhere, and update `FRONTEND_URL` in `backend/wrangler.jsonc` to match.
+Allow `oxytype-api-staging.voltcrash.workers.dev` for the hosted staging frontend.
+The existing widget also permits `localhost`. When hosting elsewhere, add that
+hostname and set the deployed `FRONTEND_URL` to match.
 The worker checks that hostname and each form's action through
 [Siteverify](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/).
 
@@ -48,12 +51,17 @@ These files already exist in this worktree and contain the staging credentials.
 Development mode honors an explicit site key; ordinary local development uses
 Cloudflare's test widget. Test secrets are rejected by production-mode Workers.
 
-## 3. Upload and enable staging
+## 3. Build, publish and enable staging
 
 Once all placeholders are replaced, run from the repo root:
 
 ```sh
-pnpm --filter @oxytype/backend exec wrangler deploy --secrets-file .dev.vars.staging
+set -a
+. frontend/.env.staging.local
+set +a
+BACKEND_URL=/api pnpm build-fe
+pnpm build-be
+pnpm --filter @oxytype/backend deploy:staging-site --secrets-file .dev.vars.staging
 pnpm --filter @oxytype/backend exec wrangler secret list
 pnpm --filter @oxytype/backend exec wrangler d1 execute oxytype-staging --remote \
   --command "UPDATE configuration SET data=json_set(data,
@@ -66,31 +74,27 @@ pnpm --filter @oxytype/backend exec wrangler d1 execute oxytype-staging --remote
 
 Secret upload is additive; it retains the existing auth secret. Keep automatic
 bans disabled during initial monitoring. No local backend is needed for this test.
+`deploy:staging-site` copies the built frontend under the private `site` asset
+prefix and enables frontend hosting with the HTTPS Worker origin. Public `/api/*`
+requests retain API routing; unknown APIs and missing files do not become SPA HTML.
+Standalone callback/legal HTML resolves before navigation fallback. HTML is not
+cached. Default `deploy:worker` remains API-only and restores its configured origin.
 
 ## 4. Test the browser
 
-Stop the existing frontend terminal with Ctrl+C, then run:
-
-```sh
-pnpm --filter @oxytype/frontend dev --mode staging
-```
-
-Open `http://localhost:3000`. Sign in with GitHub, choose a username, complete Turnstile,
+Open `https://oxytype-api-staging.voltcrash.workers.dev/login` in your regular browser.
+Sign in with GitHub, choose a username, complete Turnstile,
 complete a test, refresh, then sign out/sign in and confirm the result remains.
 Verify the browser requests the staging host. Use an ordinary typing sample;
 the earlier seeded API checks do not establish real-user anticheat compatibility.
-
-For an existing frontend build configured for staging, use the Vite preview server:
-
-```sh
-pnpm --filter @oxytype/frontend start --mode staging
-```
 
 OAuth returns the popup to `/oauth-callback.html?requestId=...`. Static hosts must
 serve this standalone HTML page before the main app's SPA fallback. If the popup
 shows the app's 404 page, close it, fix the frontend server, refresh `/login` and retry.
 
-If third-party cookies block the cross-site session, use a same-site HTTPS
-frontend/API proxy. Return to local backend testing with `pnpm dev-fe`; staging
-settings live in the separate mode file. See [operations](CLOUDFLARE_OPERATIONS.md)
+Use the hosted URL for staging auth checks. Localhost calling the remote API can
+lose OAuth cookies under browser privacy protections; `SameSite=None` alone does
+not prevent partitioning/blocking. See [Better Auth's cookie guidance](https://better-auth.com/docs/concepts/cookies).
+Return to local backend testing with `pnpm dev-be` and `pnpm dev-fe`.
+See [operations](CLOUDFLARE_OPERATIONS.md)
 and [anticheat limits](ANTICHEAT.md) before production cutover.

@@ -342,3 +342,29 @@ the temporary server; both callback paths return the standalone entry, and brows
 hydration was verified. All 13 OAuth runtime/callback tests, type-aware lint and the
 staging-configured frontend production build passed. Real-user staging signup and
 typing verification remain pending.
+
+### Same-origin staging — 3 October 2026
+
+- The localhost/remote-API OAuth attempt closed without completing registration;
+  staging had zero auth users/sessions. Cross-site cookie loss is the suspected
+  cause. A regression test reproduces the rejected callback when its signed state
+  cookie is missing; checks remain enabled.
+- Staging now hosts frontend and API on
+  `https://oxytype-api-staging.voltcrash.workers.dev`, with relative `/api` requests.
+  Better Auth's client requires an absolute base URL, so relative configuration is
+  resolved against the browser origin before client creation.
+- Opt-in Worker frontend routing reads only the public `site` asset prefix;
+  standalone HTML precedes SPA fallback. Unknown APIs, missing files and backend
+  private assets remain outside that fallback. Default API-only deployment remains
+  available; the [staging recipe](STAGING_SETUP.md) enables the hosted site.
+- Managed Turnstile widget now also allows the Worker hostname. Secrets, D1,
+  queues, Cron and GitHub's `/api/auth/callback/github` URL were retained.
+- Deployed Worker version `ca5d3683-07fa-465f-b6b2-c16f4b24c737`. Ten routing tests,
+  35 auth HTTP tests and three real auth-client fetch tests passed, along with
+  type-aware commit checks and frontend/Worker production builds.
+- Eleven live browser route checks passed. Login UI renders; configuration and
+  session initialization return 200 from the same origin. The live signed-state
+  cookie probe reached GitHub code validation (`invalid_code` for an intentional
+  invalid code), preserving the request ID and standalone callback. It created no
+  user/session and does not establish real GitHub authorization or a human result
+  save; those remain the next browser checks on the hosted staging URL.
