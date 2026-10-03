@@ -447,7 +447,7 @@ function ThemeButton(props: { theme: ThemeWithName }): JSXElement {
         "--text": props.theme.text,
       }}
       class={cn(
-        "group/theme grid grid-cols-[1fr_auto_1fr] justify-between p-1 ring-4 ring-transparent",
+        "group/theme relative grid place-items-center overflow-hidden p-1 ring-4 ring-transparent",
         "bg-(--bg) text-(--main)",
         // "hover:bg-(--text) hover:text-(--bg)",
         "hover:ring-(--main)",
@@ -459,17 +459,23 @@ function ThemeButton(props: { theme: ThemeWithName }): JSXElement {
         setConfig("theme", props.theme.name);
       }}
     >
+      {/* the name spans the whole button on one line; the star and colors
+          overlay its ends and fade it out instead of squeezing it */}
+      <div class="w-full px-2 text-center whitespace-nowrap">
+        {replaceUnderscoresWithSpaces(props.theme.name)}
+      </div>
       <div
         class={cn(
-          "align-center place-self-start opacity-0 transition-[opacity,color,background] duration-125 group-hover/theme:opacity-100",
+          "absolute inset-y-0 left-0 flex items-center pr-6 pl-1",
+          "bg-linear-to-r from-(--bg) from-60% to-transparent",
+          "opacity-0 transition-[opacity,color,background] duration-125 group-hover/theme:opacity-100",
           isFav() && "opacity-100",
         )}
       >
         <div
           class={cn(
             "grid justify-center",
-            "rounded-full bg-(--bg) p-1",
-            // "group-hover/theme:text-(--text)",
+            "rounded-full p-1",
             "transition-[opacity,color,background] duration-125",
             "hover:text-(--text)",
           )}
@@ -496,14 +502,15 @@ function ThemeButton(props: { theme: ThemeWithName }): JSXElement {
           />
         </div>
       </div>
-      <div>{replaceUnderscoresWithSpaces(props.theme.name)}</div>
       <div
         class={cn(
-          "place-self-end self-center opacity-0 transition-opacity duration-125 group-hover/theme:opacity-100",
+          "absolute inset-y-0 right-0 flex items-center pr-1.5 pl-8",
+          "bg-linear-to-l from-(--bg) from-70% to-transparent",
+          "opacity-0 transition-opacity duration-125 group-hover/theme:opacity-100",
           isActive() && "opacity-100",
         )}
       >
-        <div class="grid grid-cols-3 gap-2 rounded-full bg-(--bg) p-1.5">
+        <div class="grid shrink-0 grid-cols-3 gap-2">
           <div class="h-4 w-4 rounded-full bg-(--main)"></div>
           <div class="h-4 w-4 rounded-full bg-(--sub)"></div>
           <div class="h-4 w-4 rounded-full bg-(--text)"></div>
