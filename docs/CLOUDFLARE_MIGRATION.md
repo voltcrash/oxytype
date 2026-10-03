@@ -332,3 +332,13 @@ Automatic bans remain disabled by default.
   exchange and a human typing save against staging remain to be checked in an
   ordinary browser. [Staging setup](STAGING_SETUP.md) and [Turnstile policy](TURNSTILE.md)
   describe configuration and the remaining browser steps.
+
+### OAuth popup routing fix — 3 October 2026
+
+The temporary static preview server sent `/oauth-callback` to the main app's SPA
+fallback, showing 404 after GitHub authorization. Sign-in and account linking now
+request the built `/oauth-callback.html` entry explicitly. Vite preview replaced
+the temporary server; both callback paths return the standalone entry, and browser
+hydration was verified. All 13 OAuth runtime/callback tests, type-aware lint and the
+staging-configured frontend production build passed. Real-user staging signup and
+typing verification remain pending.

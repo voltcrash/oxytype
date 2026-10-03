@@ -80,6 +80,16 @@ complete a test, refresh, then sign out/sign in and confirm the result remains.
 Verify the browser requests the staging host. Use an ordinary typing sample;
 the earlier seeded API checks do not establish real-user anticheat compatibility.
 
+For an existing frontend build configured for staging, use the Vite preview server:
+
+```sh
+pnpm --filter @oxytype/frontend start --mode staging
+```
+
+OAuth returns the popup to `/oauth-callback.html?requestId=...`. Static hosts must
+serve this standalone HTML page before the main app's SPA fallback. If the popup
+shows the app's 404 page, close it, fix the frontend server, refresh `/login` and retry.
+
 If third-party cookies block the cross-site session, use a same-site HTTPS
 frontend/API proxy. Return to local backend testing with `pnpm dev-fe`; staging
 settings live in the separate mode file. See [operations](CLOUDFLARE_OPERATIONS.md)
