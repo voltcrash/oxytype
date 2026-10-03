@@ -29,7 +29,6 @@ export type TurnstileOptions = {
   "error-callback": () => void;
 };
 export type TurnstileApi = {
-  ready: (callback: () => void) => void;
   render: (element: HTMLElement, options: TurnstileOptions) => string;
   reset: (widgetId: string) => void;
   remove: (widgetId: string) => void;
@@ -75,42 +74,39 @@ export function Captcha(props: {
     };
     const timer = window.setTimeout(fail, 15_000);
     const loaded = (): void => {
+      if (disposed || widget !== undefined) return;
       api = (window as Window & { turnstile?: TurnstileApi }).turnstile;
       if (api === undefined) {
         fail();
         return;
       }
-      // Cloudflare invokes readiness once per mounted widget; options are mount snapshots.
-      // oxlint-disable-next-line solid/reactivity
-      api.ready(() => {
-        if (disposed || widget !== undefined) return;
-        window.clearTimeout(timer);
-        try {
-          widget = api?.render(el, {
-            sitekey: envConfig.turnstileSiteKey,
-            action,
-            theme: "auto",
-            size: "flexible",
-            "response-field": false,
-            callback: (value) => {
-              if (disposed) return;
-              token = value;
-              setError(false);
-              field.setValue(value);
-            },
-            "expired-callback": () => {
-              if (!disposed) clearToken();
-            },
-            "timeout-callback": () => {
-              if (!disposed) clearToken();
-            },
-            "error-callback": fail,
-          });
-          if (widget === undefined) fail();
-        } catch {
-          fail();
-        }
-      });
+      // The script load event supplies readiness. ready() rejects async scripts.
+      window.clearTimeout(timer);
+      try {
+        widget = api.render(el, {
+          sitekey: envConfig.turnstileSiteKey,
+          action,
+          theme: "auto",
+          size: "flexible",
+          "response-field": false,
+          callback: (value) => {
+            if (disposed) return;
+            token = value;
+            setError(false);
+            field.setValue(value);
+          },
+          "expired-callback": () => {
+            if (!disposed) clearToken();
+          },
+          "timeout-callback": () => {
+            if (!disposed) clearToken();
+          },
+          "error-callback": fail,
+        });
+        if (widget === undefined) fail();
+      } catch {
+        fail();
+      }
     };
 
     if ("turnstile" in window) {

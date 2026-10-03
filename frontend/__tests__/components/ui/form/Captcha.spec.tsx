@@ -19,7 +19,6 @@ import { allFieldsMandatory } from "../../../../src/ts/components/ui/form/utils"
 
 let options: TurnstileOptions;
 const api: TurnstileApi = {
-  ready: vi.fn((callback: () => void): void => callback()),
   render: vi.fn((_el, settings) => {
     options = settings;
     return "widget-1";
@@ -60,7 +59,6 @@ afterEach(() => {
 
 it("waits for the API and binds the form action to a component-owned widget", () => {
   const view = mount();
-  expect(api.ready).toHaveBeenCalledOnce();
   expect(api.render).toHaveBeenCalledWith(
     view.container.firstElementChild?.firstElementChild,
     expect.objectContaining({
@@ -71,6 +69,17 @@ it("waits for the API and binds the form action to a component-owned widget", ()
   );
   options.callback("fresh-token");
   expect(view.value()).toBe("fresh-token");
+});
+
+it("reports a rendering exception without enabling submission", () => {
+  vi.mocked(api.render).mockImplementationOnce(() => {
+    throw new Error("Widget configuration rejected");
+  });
+  const view = mount();
+  expect(screen.getByRole("alert")).toHaveTextContent(
+    "Turnstile verification unavailable",
+  );
+  expect(view.value()).toBe("");
 });
 
 it.each(["expired-callback", "timeout-callback", "error-callback"] as const)(
@@ -117,6 +126,23 @@ it("renders after a delayed script load, sharing one script across forms", () =>
   vi.stubGlobal("turnstile", api);
   script?.dispatchEvent(new Event("load"));
   expect(api.render).toHaveBeenCalledTimes(2);
+});
+
+it("renders an asynchronously loaded API without its incompatible ready helper", () => {
+  vi.stubGlobal("turnstile", undefined);
+  delete (window as Window & { turnstile?: TurnstileApi }).turnstile;
+  const view = mount();
+  const script = document.getElementById("turnstile-api") as HTMLScriptElement;
+  expect(script.async).toBe(true);
+  const ready = vi.fn(() => {
+    throw new Error("Remove async/defer before using turnstile.ready()");
+  });
+  vi.stubGlobal("turnstile", { ...api, ready });
+  script.dispatchEvent(new Event("load"));
+  expect(ready).not.toHaveBeenCalled();
+  expect(api.render).toHaveBeenCalledOnce();
+  options.callback("fresh-token");
+  expect(view.value()).toBe("fresh-token");
 });
 
 it("reports script failure and never enables submission", () => {
