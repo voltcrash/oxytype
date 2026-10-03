@@ -399,3 +399,43 @@ real-user data is retained; it is not an empty fixture database anymore.
 The owner chose a fresh production database on `oxytype.voltcrash.com`. Production
 does not import MongoDB, Redis or staging accounts/history; the preserving import
 workflow remains available for other deployments.
+
+### Fresh production deployment — 3 October 2026
+
+- Deployed **oxytype** at `https://oxytype.voltcrash.com`, Worker version
+  `6304be50-fcb3-406c-b4f1-f7ca2b207508`; frontend reports code `ec3b3919d`.
+  Custom-domain DNS/TLS, every-minute Cron and the queue consumer are configured.
+  Workers.dev and preview URLs are disabled.
+- Separate APAC D1 **oxytype-production**,
+  `43d104e9-2fef-43db-95d7-c64a08310714`, has migrations 0000–0002 applied.
+  The atomic empty-target bootstrap enabled signup, profiles, result saving and
+  payload hash checks; automatic bans remain disabled. No accounts, sessions or
+  results were seeded/imported. Readback showed clean foreign keys and no pending
+  deliveries; schema/config occupied 495,616 bytes at this check.
+- Queues **oxytype-production-tasks** and **oxytype-production-dlq** are isolated
+  from staging. The consumer uses batch/concurrency one, five retries and the DLQ;
+  no automatic DLQ discard consumer is installed.
+- Separate **Oxytype** GitHub OAuth app and managed **Oxytype production** Turnstile
+  widget are configured. The widget permits only `oxytype.voltcrash.com`. Backend
+  credentials remain in ignored `backend/.dev.vars.production` (0600) and deployed
+  secret bindings; the other private values were preserved. Public build settings
+  stay in ignored `frontend/.env.production.local`. Backend credential values were
+  absent from frontend assets.
+- Production login enables GitHub only. Provider flags also control account
+  linking and build cache inputs. Checked production build/deploy commands reject
+  placeholders, dummy captcha keys, reused staging secrets, mixed resource/origin
+  config and mismatched frontend settings. Bootstrap is never part of redeploy.
+- All 21 focused bootstrap/input/login tests, workspace type-aware Oxlint, commit
+  hooks, sequential frontend/backend builds and production Wrangler dry-run passed.
+  Fourteen live HTTPS route/method checks passed: HTML/standalone callback, API
+  health/config/session, private/missing assets and unauthenticated write guards.
+  GitHub sign-in returned 200, matched the saved client ID, used the exact
+  production callback and issued a secure HttpOnly state cookie.
+- Native browser loaded the GitHub-only login and same-origin configuration/session
+  requests. A diagnostic managed widget using the built public key and `signup`
+  action issued a token on the production hostname; it was removed without
+  submitting signup or writing a user/result. DNS initially had a cached negative
+  answer locally, then resolved normally; normal HTTPS health checks passed.
+- Real production GitHub consent/code exchange and human typing persistence remain
+  the owner check in [production setup](PRODUCTION_SETUP.md). Capacity under
+  sustained load is unmeasured. Staging data/secrets were retained unchanged.

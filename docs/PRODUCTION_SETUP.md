@@ -5,6 +5,10 @@ One Worker serves the frontend and `/api` on `https://oxytype.voltcrash.com`.
 Use `backend/wrangler.production.json` explicitly. The default Wrangler config and
 release CLI still target staging.
 
+Live since 3 October 2026: Worker version `6304be50-fcb3-406c-b4f1-f7ca2b207508`,
+frontend code `ec3b3919d`. Production GitHub consent and typing persistence still
+require the owner browser check below.
+
 ## Resources
 
 | Resource | Production |
