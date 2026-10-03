@@ -222,7 +222,8 @@ async function addResultAtomic(
     );
   }
 
-  const completedEvent = req.body.result;
+  // Each optimistic retry starts from the original client payload/hash.
+  const completedEvent = structuredClone(req.body.result);
   completedEvent.uid = uid;
 
   if (isTestTooShort(completedEvent)) {

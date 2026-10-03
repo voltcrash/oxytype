@@ -3,6 +3,7 @@ import {
   CustomTextLimitModeSchema,
   CustomTextModeSchema,
   IdSchema,
+  UidSchema,
   PercentageSchema,
   token,
   WpmSchema,
@@ -80,7 +81,7 @@ const ResultBaseSchema = z.object({
   consistency: PercentageSchema,
   keyConsistency: PercentageSchema,
   chartData: ChartDataSchema.or(z.literal("toolong")),
-  uid: IdSchema,
+  uid: UidSchema,
 
   //required on POST but optional in the database and might be removed to save space
   restartCount: z.number().int().nonnegative().optional(),
