@@ -6,7 +6,7 @@ import { replaceUrl } from "../navigation/navigation";
 import { FaSolidIcon } from "../types/font-awesome";
 import { getActivePage } from "./core";
 
-export const SettingsSectionSchema = z.enum([
+const SettingsSectionSchema = z.enum([
   "behavior",
   "input",
   "sound",
