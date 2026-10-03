@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vite-plus/test";
 import { createTestRuntime } from "./helpers";
 import { withRuntime } from "../../src/runtime/env";
 import { getAuth } from "../../src/init/auth";
@@ -11,13 +11,20 @@ import type { ExecutionContext } from "@cloudflare/workers-types";
 
 describe("Better Auth D1 adapter", () => {
   let test: Awaited<ReturnType<typeof createTestRuntime>>;
+  const siteverify = vi.fn<typeof fetch>();
   beforeAll(async () => {
     test = await createTestRuntime();
     test.env.BETTER_AUTH_URL = "http://localhost:5005/api/auth";
     test.env.BETTER_AUTH_SECRET =
       "local-test-secret-at-least-thirty-two-characters";
+    test.env.TURNSTILE_SECRET_KEY = "private-turnstile-fixture";
+    siteverify.mockImplementation(async () =>
+      Response.json({ success: true, hostname: "localhost", action: "signup" }),
+    );
+    vi.stubGlobal("fetch", siteverify);
   });
   afterAll(async () => {
+    vi.unstubAllGlobals();
     await test?.dispose();
   });
   it("preserves a new social account and session through username onboarding", async () => {
@@ -76,11 +83,39 @@ describe("Better Auth D1 adapter", () => {
       expect(await availability.json()).toMatchObject({
         data: { available: true },
       });
+      // Siteverify failure must preserve the real D1-backed onboarding session.
+      for (const data of [
+        { success: false, "error-codes": ["timeout-or-duplicate"] },
+        { success: true, hostname: "attacker.test", action: "signup" },
+        { success: true, hostname: "localhost", action: "quote-submit" },
+      ]) {
+        siteverify.mockResolvedValueOnce(Response.json(data));
+        expect(
+          (
+            await request("/users/signup", "POST", {
+              name: "Social",
+              captcha: "opaque-token",
+            })
+          ).status,
+        ).toBe(422);
+        expect((await verifySession(headers)).uid).toBe(user.id);
+        expect(await UserDAL.exists(user.id)).toBe(false);
+      }
+      siteverify.mockRejectedValueOnce(new Error("Verification unavailable"));
       expect(
         (
           await request("/users/signup", "POST", {
             name: "Social",
-            captcha: "dev",
+            captcha: "opaque-token",
+          })
+        ).status,
+      ).toBe(422);
+      expect((await verifySession(headers)).uid).toBe(user.id);
+      expect(
+        (
+          await request("/users/signup", "POST", {
+            name: "Social",
+            captcha: "opaque-token",
           })
         ).status,
       ).toBe(200);
@@ -100,7 +135,7 @@ describe("Better Auth D1 adapter", () => {
         (
           await request("/users/signup", "POST", {
             name: "Social",
-            captcha: "dev",
+            captcha: "opaque-token",
           })
         ).status,
       ).toBe(409);
