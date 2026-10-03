@@ -3,7 +3,7 @@ name: Oxytype CI
 env:
   PNPM_VERSION: "12.8.1"
   NODE_VERSION: "24.21.0"
-  RECAPTCHA_SITE_KEY: "6Lc-V8McAAAAAJ7s6LGNe7MBZnRiwbsbiWts87aj"
+  TURNSTILE_SITE_KEY: "1x00000000000000000000AA"
 
 permissions:
   contents: read
