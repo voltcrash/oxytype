@@ -178,6 +178,9 @@ export async function addResult(
     }
     throw error;
   });
+  // Rejections before progression may commit their audit/strike writes. Throw
+  // only after that batch succeeds; thrown errors inside atomicUser roll back.
+  if (response instanceof MonkeyError) throw response;
   if (response.data.dailyLeaderboardRank !== undefined) {
     const daily = getDailyLeaderboard(
       req.body.result.language,
@@ -208,7 +211,7 @@ export async function addResult(
 
 async function addResultAtomic(
   req: MonkeyRequest<undefined, AddResultRequest>,
-): Promise<AddResultResponse> {
+): Promise<AddResultResponse | MonkeyError> {
   const { uid } = req.ctx.decodedToken;
 
   const user = await UserDAL.getUser(uid, "add result");
@@ -248,7 +251,7 @@ async function addResultAtomic(
         uid,
       );
       const status = MonkeyStatusCodes.RESULT_HASH_INVALID;
-      throw new MonkeyError(status.code, "Incorrect result hash");
+      return new MonkeyError(status.code, "Incorrect result hash");
     }
   } else {
     Logger.warning("Object hash check is disabled, skipping hash check");
@@ -306,9 +309,18 @@ async function addResultAtomic(
   const resultFailure =
     getResultFailure(completedEvent) ?? getKeyDataFailure(completedEvent);
   if (resultFailure !== undefined) {
-    Logger.warning(`Anticheat rejected result: ${resultFailure}`);
+    await addImportantLog(
+      "anticheat_rejected",
+      {
+        reason: resultFailure,
+        submissionHash: resulthash,
+        mode: completedEvent.mode,
+        mode2: completedEvent.mode2,
+      },
+      uid,
+    );
     const status = MonkeyStatusCodes.RESULT_DATA_INVALID;
-    throw new MonkeyError(status.code, "Result data doesn't make sense");
+    return new MonkeyError(status.code, "Result data doesn't make sense");
   }
 
   //dont use - result timestamp is unreliable, can be changed by system time and stuff
@@ -362,7 +374,7 @@ async function addResultAtomic(
       uid,
     );
     const status = MonkeyStatusCodes.RESULT_SPACING_INVALID;
-    throw new MonkeyError(status.code, "Invalid result spacing");
+    return new MonkeyError(status.code, "Invalid result spacing");
   }
 
   //check keyspacing and duration here for bots
@@ -374,13 +386,30 @@ async function addResultAtomic(
     user.lbOptOut !== true
   ) {
     if (!keySpacingStats || !keyDurationStats) {
+      await addImportantLog(
+        "anticheat_rejected",
+        {
+          reason: "missing-key-data",
+          submissionHash: resulthash,
+        },
+        uid,
+      );
       const status = MonkeyStatusCodes.MISSING_KEY_DATA;
-      throw new MonkeyError(status.code, "Missing key data");
+      return new MonkeyError(status.code, "Missing key data");
     }
     if (completedEvent.keyOverlap === undefined) {
       throw new MonkeyError(400, "Old key data format");
     }
-    if (getBotFailure(completedEvent) !== undefined) {
+    const botFailure = getBotFailure(completedEvent);
+    if (botFailure !== undefined) {
+      await addImportantLog(
+        "anticheat_rejected",
+        {
+          reason: botFailure,
+          submissionHash: resulthash,
+        },
+        uid,
+      );
       //autoban
       const autoBanConfig = req.ctx.configuration.users.autoBan;
       if (autoBanConfig.enabled) {
@@ -409,7 +438,7 @@ async function addResultAtomic(
         }
       }
       const status = MonkeyStatusCodes.BOT_DETECTED;
-      throw new MonkeyError(status.code, "Possible bot detected");
+      return new MonkeyError(status.code, "Possible bot detected");
     }
   }
 
@@ -426,7 +455,7 @@ async function addResultAtomic(
         uid,
       );
       const status = MonkeyStatusCodes.DUPLICATE_RESULT;
-      throw new MonkeyError(status.code, "Duplicate result");
+      return new MonkeyError(status.code, "Duplicate result");
     } else {
       lastHashes.unshift(resulthash);
       const maxHashes = req.ctx.configuration.users.lastHashesCheck.maxHashes;
