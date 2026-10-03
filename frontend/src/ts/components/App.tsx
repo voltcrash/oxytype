@@ -3,6 +3,7 @@ import { JSXElement, Show } from "solid-js";
 import { Portal } from "solid-js/web";
 
 import { queryClient } from "../queries";
+import { getActivePage } from "../states/core";
 import { isFixingSkillIssue } from "../states/skill-issue";
 import { getFocus } from "../states/test";
 import { cn } from "../utils/cn";
@@ -81,7 +82,14 @@ export function App(props: AppElements): JSXElement {
             />
             <AppPages />
           </main>
-          <Footer />
+          <Show
+            when={
+              getActivePage() !== "settings" &&
+              getActivePage() !== "accountSettings"
+            }
+          >
+            <Footer />
+          </Show>
           <Advertisement
             id="ad-footer"
             visible="sellout"

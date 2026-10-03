@@ -38,10 +38,9 @@ export function PageScroller(props: ParentProps): JSXElement {
       ref={ref}
       class={cn(
         "content-grid grid-rows-[1fr_auto] gap-y-8",
-        // keep the scrollport full screen for the soft header edge. the footer
-        // shares the desktop content column, clear of the fixed sidebar
+        // keep the scrollport full screen for the soft header edge
         isScroller()
-          ? "fixed inset-0 z-10 overflow-y-auto overscroll-y-contain pb-8 [&>main]:mt-(--content-top) [&>main]:h-auto [&>footer]:md:ml-68"
+          ? "fixed inset-0 z-10 grid-rows-[1fr] overflow-y-auto overscroll-y-contain pb-8 [&>main]:mt-(--content-top) [&>main]:h-auto"
           : "full-width row-[content-start/top-end]",
       )}
       // the header's bottom edge includes its own bottom padding (1rem), so
