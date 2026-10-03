@@ -1,4 +1,4 @@
-import { createResource, createSignal, JSXElement, Show } from "solid-js";
+import { createResource, JSXElement, Show } from "solid-js";
 import { z } from "zod/v3";
 
 import { resetConfig } from "../../../config/lifecycle";
@@ -12,14 +12,20 @@ import { useLocalStorage } from "../../../hooks/useLocalStorage";
 import { isAuthenticated } from "../../../states/core";
 import { showModal } from "../../../states/modals";
 import { isSettingsSearchActive } from "../../../states/settings-search";
+import {
+  getCurrentSettingsSection,
+  SettingsSection,
+  settingsSections,
+  setCurrentSettingsSection,
+} from "../../../states/settings-sections";
 import { showSimpleModal } from "../../../states/simple-modal";
 import { cn } from "../../../utils/cn";
 import fileStorage from "../../../utils/file-storage";
-import { wordsToCamelCase } from "../../../utils/strings";
-import { Anime, AnimeShow } from "../../common/anime";
 import { Button } from "../../common/Button";
 import { Fa } from "../../common/Fa";
+import { H2 } from "../../common/Headers";
 import { Page } from "../../common/Page";
+import { SidebarLayout } from "../../common/SidebarLayout";
 import { CommandlineHotkey } from "../../hotkeys/CommandlineHotkey";
 import { AnimationFpsLimit } from "./custom-setting/AnimationFpsLimit";
 import { AutoSwitchTheme } from "./custom-setting/AutoSwitchTheme";
@@ -43,7 +49,6 @@ import { Presets } from "./custom-setting/Presets";
 import { SoundVolume } from "./custom-setting/SoundVolume";
 import { Tags } from "./custom-setting/Tags";
 import { Theme } from "./custom-setting/Theme";
-import { QuickNav } from "./QuickNav";
 import { SearchableAutoSetting } from "./SearchableAutoSetting";
 import { SearchableSetting } from "./SearchableSetting";
 import { SettingsSearch } from "./SettingsSearch";
@@ -56,27 +61,21 @@ export function SettingsPage(): JSXElement {
 
   return (
     <Page id="settings">
-      <div class="grid gap-8">
-        {/* while filtering, only the matching settings stay visible; everything
-            else is hidden with css so nothing unmounts while typing */}
-        <QuickNav class={cn(isSettingsSearchActive() && "hidden")} />
+      <SidebarLayout
+        items={settingsSections}
+        active={getCurrentSettingsSection()}
+        onSelect={setCurrentSettingsSection}
+      >
         <Show when={getConfig.showKeyTips}>
-          <div
-            class={cn(
-              "text-center text-sub",
-              isSettingsSearchActive() && "hidden",
-            )}
-          >
+          <div class={cn("text-sub", isSettingsSearchActive() && "hidden")}>
             tip: You can also change all these settings quickly using the
-            command line
-            <br />( <CommandlineHotkey /> )
+            command line ( <CommandlineHotkey /> )
           </div>
         </Show>
         <AccountSettingsNotice />
         <SettingsSearch />
-        {/* while filtering, lay the matching sections out with a uniform gap */}
-        <div class={cn(isSettingsSearchActive() && "grid gap-8")}>
-          <Section title="behavior">
+        <div class="grid gap-16">
+          <Section section="behavior">
             <Show when={isAuthenticated()}>
               <Tags />
               <Presets />
@@ -97,7 +96,7 @@ export function SettingsPage(): JSXElement {
             <CustomLayoutfluid />
             <CustomPolyglot />
           </Section>
-          <Section title="input">
+          <Section section="input">
             <SearchableAutoSetting key="freedomMode" />
             <SearchableAutoSetting key="strictSpace" />
             <SearchableAutoSetting key="oppositeShiftMode" />
@@ -112,7 +111,7 @@ export function SettingsPage(): JSXElement {
             <Layout />
             <SearchableAutoSetting key="codeUnindentOnBackspace" />
           </Section>
-          <Section title="sound">
+          <Section section="sound">
             <SoundVolume />
             <SearchableAutoSetting
               key="playSoundOnClick"
@@ -139,14 +138,14 @@ export function SettingsPage(): JSXElement {
               }}
             />
           </Section>
-          <Section title="caret">
+          <Section section="caret">
             <SearchableAutoSetting key="smoothCaret" />
             <SearchableAutoSetting key="caretStyle" wide />
             <PaceCaret />
             <SearchableAutoSetting key="repeatedPace" />
             <SearchableAutoSetting key="paceCaretStyle" wide />
           </Section>
-          <Section title="appearance">
+          <Section section="appearance">
             <SearchableAutoSetting key="timerStyle" wide />
             <SearchableAutoSetting key="liveSpeedStyle" />
             <SearchableAutoSetting key="liveAccStyle" />
@@ -174,7 +173,7 @@ export function SettingsPage(): JSXElement {
               <KeymapSize />
             </Show>
           </Section>
-          <Section title="theme">
+          <Section section="theme">
             <SearchableAutoSetting key="flipTestColors" />
             <SearchableAutoSetting key="colorfulMode" />
             <CustomBackground />
@@ -185,13 +184,13 @@ export function SettingsPage(): JSXElement {
             <SearchableAutoSetting key="randomTheme" wide />
             <Theme />
           </Section>
-          <Section title="hide elements">
+          <Section section="hideElements">
             <SearchableAutoSetting key="showKeyTips" />
             <SearchableAutoSetting key="showOutOfFocusWarning" />
             <SearchableAutoSetting key="capsLockWarning" />
             <SearchableAutoSetting key="showAverage" />
           </Section>
-          <Section title="danger zone">
+          <Section section="dangerZone">
             <ImportExport />
             <SearchableAutoSetting key="ads" />
             <SearchableSetting
@@ -252,9 +251,7 @@ export function SettingsPage(): JSXElement {
             />
           </Section>
         </div>
-
-        <AccountSettingsNotice />
-      </div>
+      </SidebarLayout>
     </Page>
   );
 }
@@ -293,44 +290,30 @@ function AccountSettingsNotice(): JSXElement {
   );
 }
 
-function Section(props: { title: string; children: JSXElement }): JSXElement {
-  const [isOpen, setIsOpen] = createSignal(true);
-
+function Section(props: {
+  section: SettingsSection;
+  children: JSXElement;
+}): JSXElement {
   return (
     <div
-      id={`group_${wordsToCamelCase(props.title)}`}
+      id={`group_${props.section}`}
       class={cn(
-        // when filtering, drop sections where every setting is hidden
+        "grid gap-8",
+        // only the selected section is shown, unless filtering, where every
+        // section with a matching setting is shown
+        !isSettingsSearchActive() &&
+          getCurrentSettingsSection() !== props.section &&
+          "hidden",
         isSettingsSearchActive() &&
           "not-has-[[data-setting-key]:not(.hidden)]:hidden",
       )}
     >
-      <Button
-        variant="text"
-        class={cn(
-          "mb-8 w-max gap-4 p-0 text-4xl",
-          isSettingsSearchActive() && "hidden",
-        )}
-        onClick={() => setIsOpen((prev) => !prev)}
-      >
-        <Anime
-          animation={{
-            rotate: isOpen() ? 0 : -90,
-            duration: 125,
-          }}
-        >
-          <Fa icon="fa-chevron-down" />
-        </Anime>
-        {props.title}
-      </Button>
-      <AnimeShow
-        when={isOpen() || isSettingsSearchActive()}
-        slide
-        class="grid gap-8"
-      >
-        {props.children}
-        <div class={cn("h-16", isSettingsSearchActive() && "hidden")}></div>
-      </AnimeShow>
+      <H2
+        text={settingsSections[props.section].text}
+        fa={{ icon: settingsSections[props.section].icon }}
+        class={cn("pb-0", isSettingsSearchActive() && "hidden")}
+      />
+      {props.children}
     </div>
   );
 }
