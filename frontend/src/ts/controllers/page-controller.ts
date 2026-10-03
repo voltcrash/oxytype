@@ -38,6 +38,10 @@ import {
   AccountSettingsUrlParamsSchema,
   readAccountSettingsGetParameters,
 } from "../states/account-settings";
+import {
+  readSettingsGetParameters,
+  SettingsUrlParamsSchema,
+} from "../states/settings-sections";
 
 type ChangeOptions = {
   force?: boolean;
@@ -50,7 +54,9 @@ const pages = {
   loading: PageLoading.page,
   test: PageTest.page,
   settings: solidPage("settings", {
-    beforeShow: async () => {
+    urlParamsSchema: SettingsUrlParamsSchema,
+    beforeShow: async (options) => {
+      readSettingsGetParameters(options.urlParams);
       highlightSetting(
         new URLSearchParams(window.location.search).get("highlight"),
       );
