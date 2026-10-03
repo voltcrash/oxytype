@@ -195,20 +195,34 @@ verification, deployment, and any external blockers throughout implementation.
 ## Progress
 
 - [x] Repository assessment and plan.
-- [ ] Worker foundation and local tooling.
-- [ ] Schema/migrations and identifiers.
-- [ ] DAL/configuration.
-- [ ] Auth/middleware.
-- [ ] Results/progression/inbox.
-- [ ] SQL rankings.
-- [ ] Queues/Cron/integrations.
-- [ ] Import/operations/cleanup.
+- [x] Worker foundation and local tooling.
+- [x] Schema/migrations and identifiers.
+- [x] DAL/configuration.
+- [x] Auth/middleware.
+- [x] Results/progression/inbox.
+- [x] SQL rankings.
+- [x] Queues/Cron/integrations.
+- [x] Import/operations/cleanup.
 - [ ] Full verification, Wrangler deployment, single linked PR.
 
 ## Pending deployment inputs
 
 - Confirmed: new staging Worker with empty D1. Existing deployments remain untouched.
-- Cloudflare account and authenticated Wrangler access still needed.
+- Confirmed account: Lakshmi Tanmay (`eb2679ce4f23ae7db4e6c4e3fcf8c3c1`); Wrangler authenticated.
+- Confirmed trusted frontend: `http://localhost:3000`.
 - Preserving import tooling remains in scope for a later data migration.
 - OAuth secrets, existing auth secret if preserving sessions, and integration
   bridge credentials/callback URLs. These are runtime inputs, not git contents.
+
+## Verification before staging deployment
+
+- 591 backend controller/HTTP/unit checks; 29 workerd-backed D1 checks.
+- Shared contract test and 27 schema checks; workspace type-aware Oxlint clean.
+- Wrangler bundle: 622.31 KiB gzip; 97 static assets; local migrations applied.
+- Local Wrangler: `/api`, configuration, docs, unauthenticated session, 401 user
+  guard and manually invoked Cron pass. Preserving importer CLI fixture validated
+  checksums, canonical BSON, ordered SQL, row counts and foreign keys in local D1.
+- Assessment: [CLOUDFLARE_ASSESSMENT.md](CLOUDFLARE_ASSESSMENT.md).
+  Runbook: [CLOUDFLARE_OPERATIONS.md](CLOUDFLARE_OPERATIONS.md).
+- Production-mode result saves remain blocked by the absent anticheat module;
+  OAuth/captcha/bridge credentials are not supplied. No bypass enabled.
