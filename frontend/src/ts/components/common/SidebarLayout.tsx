@@ -69,8 +69,12 @@ export function SidebarLayout<T extends string>(props: {
             )}
           </For>
           <Show when={props.footer !== undefined}>
-            <Separator class="col-span-full bg-bg" />
-            <div class="col-span-full">{props.footer}</div>
+            {/* the larger gap balances the padding below the last item's label */}
+            <div class="col-span-full grid w-full gap-6">
+              {/* inset to line up with the item icons */}
+              <Separator class="mx-2 w-auto bg-bg" />
+              <div class="grid gap-2">{props.footer}</div>
+            </div>
           </Show>
         </nav>
       </div>
