@@ -26,6 +26,12 @@ export function SearchableAutoSetting<T extends ConfigKey>(props: {
 }): JSXElement {
   const savedIndicator = useSavedIndicator();
 
+  // five or more options don't fit next to the description without wrapping
+  // their labels, so they get a full-width row like explicitly wide settings
+  const hasManyOptions = (): boolean =>
+    (getVisibleOptions(props.key)?.length ?? 0) >= 5;
+  const isWide = (): boolean => props.wide === true || hasManyOptions();
+
   const form = createForm(() => ({
     defaultValues: {
       [props.key]: getConfig[props.key],
@@ -93,12 +99,17 @@ export function SearchableAutoSetting<T extends ConfigKey>(props: {
             // 4 options don't fit in one row of the input column, so use a 2x2
             // grid instead of leaving a single option on its own row
             options.length === 4 && "grid-cols-2",
+            // labels stay on one line; rows fill up and stretch to full width
+            hasManyOptions() && !props.wide && "flex flex-wrap",
             props.wide && "grid-cols-[repeat(auto-fit,minmax(13.5rem,1fr))]",
           )}
         >
           <For each={options}>
             {(option) => (
               <Button
+                class={cn(
+                  hasManyOptions() && !props.wide && "flex-1 whitespace-nowrap",
+                )}
                 active={getConfig[props.key] === option}
                 onClick={() => {
                   if (getConfig[props.key] === option) return;
@@ -123,10 +134,8 @@ export function SearchableAutoSetting<T extends ConfigKey>(props: {
       fa={configMetadata[props.key].fa}
       description={configMetadata[props.key].description}
       extraSearchKeywords={getOptionSearchKeywords(props.key)}
-      inputs={!props.wide ? autoInputs() : props.inputs}
-      fullWidthInputs={
-        props.wide ? (autoInputs() ?? props.inputs) : props.inputs
-      }
+      inputs={!isWide() ? autoInputs() : props.inputs}
+      fullWidthInputs={isWide() ? (autoInputs() ?? props.inputs) : props.inputs}
     />
   );
 }
