@@ -445,9 +445,18 @@ function ThemeButton(props: { theme: ThemeWithName }): JSXElement {
   const isActive = () => getConfig.theme === props.theme.name;
   const isFav = () => getConfig.favThemes.includes(props.theme.name);
 
+  const select = (): void => {
+    if (isActive()) return;
+    setConfig("theme", props.theme.name);
+  };
+
+  // not a <button>: many theme css files style button:hover (colors,
+  // animations, gradients) outside of the tailwind layers. while previewing
+  // one of those themes it would restyle these cards, so avoid matching it
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       style={{
         "--bg": props.theme.bg,
         "--main": props.theme.main,
@@ -455,7 +464,8 @@ function ThemeButton(props: { theme: ThemeWithName }): JSXElement {
         "--text": props.theme.text,
       }}
       class={cn(
-        "group/theme relative grid place-items-center overflow-hidden px-1 py-2 ring-4 ring-transparent",
+        "group/theme relative grid cursor-pointer place-items-center overflow-hidden rounded px-1 py-2 leading-[1.25] ring-4 ring-transparent select-none",
+        "focus-visible:shadow-control-focus focus-visible:outline-none",
         "bg-(--bg) text-(--main)",
         // "hover:bg-(--text) hover:text-(--bg)",
         "hover:ring-(--main)",
@@ -469,9 +479,11 @@ function ThemeButton(props: { theme: ThemeWithName }): JSXElement {
           preview(props.theme.name);
         }
       }}
-      onClick={() => {
-        if (isActive()) return;
-        setConfig("theme", props.theme.name);
+      onClick={select}
+      onKeyDown={(e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        e.preventDefault();
+        select();
       }}
     >
       {/* the name spans the whole button on one line; the star and colors
@@ -531,7 +543,7 @@ function ThemeButton(props: { theme: ThemeWithName }): JSXElement {
           <div class="h-4 w-4 rounded-full bg-(--text)"></div>
         </div>
       </div>
-    </button>
+    </div>
   );
 }
 
