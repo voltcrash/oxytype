@@ -25,7 +25,7 @@ export function SettingsSearch(): JSXElement {
           "focus-visible:shadow-[0_0_0_0.1rem_var(--bg-color),0_0_0_0.2rem_var(--text-color)]",
         )}
         type="text"
-        placeholder="search settings"
+        placeholder="search"
         autocomplete="off"
         value={getSettingsSearch()}
         onInput={(e) => setSettingsSearch(e.currentTarget.value)}
