@@ -11,6 +11,7 @@ import { isAuthenticated } from "../../../states/core";
 import { showModal } from "../../../states/modals";
 import {
   getSearchMatchCounts,
+  getSettingsSearch,
   isSettingsSearchActive,
   setSettingsSearch,
 } from "../../../states/settings-search";
@@ -97,6 +98,16 @@ export function SettingsPage(): JSXElement {
           ) : undefined
         }
       >
+        <Show
+          when={
+            isSettingsSearchActive() &&
+            Object.keys(getSearchMatchCounts()).length === 0
+          }
+        >
+          <div class="text-center text-sub">
+            No settings match &quot;{getSettingsSearch().trim()}&quot;.
+          </div>
+        </Show>
         <div class="grid gap-16">
           <Section section="behavior">
             <Show when={isAuthenticated()}>
