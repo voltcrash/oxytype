@@ -57,16 +57,16 @@ export function SidebarLayout<T extends string>(props: {
 
   return (
     <div class="content-grid flex flex-col gap-8 md:flex-row">
-      {/* starts below the header, then sticks centered in the screen while
-          scrolling (or 2rem from the top when taller than the screen) */}
+      {/* sticks centered in the screen while scrolling, but never under the
+          sticky header (7rem) */}
       <div
-        class="w-full shrink-0 md:sticky md:top-[max(2rem,calc(50vh-var(--sidebar-height)/2))] md:w-60 md:self-start"
+        class="w-full shrink-0 md:sticky md:top-[max(7rem,calc(50vh-var(--sidebar-height)/2))] md:w-60 md:self-start"
         style={{ "--sidebar-height": `${navHeight()}px` }}
       >
         {/* items are laid out in two columns on mobile to keep the sidebar short */}
         <nav
           ref={navRef}
-          class="grid grid-cols-2 gap-2 rounded-double bg-sub-alt p-4 md:flex md:max-h-[calc(100vh-4rem)] md:flex-col md:items-start md:gap-4 md:overflow-y-auto"
+          class="grid grid-cols-2 gap-2 rounded-double bg-sub-alt p-4 md:flex md:max-h-[calc(100vh-9rem)] md:flex-col md:items-start md:gap-4 md:overflow-y-auto"
         >
           <Show when={props.header !== undefined}>
             <div class="col-span-full w-full">{props.header}</div>
@@ -108,7 +108,7 @@ export function SidebarLayout<T extends string>(props: {
       </div>
       <div
         ref={contentRef}
-        class="flex w-full flex-1 scroll-mt-8 flex-col gap-8"
+        class="flex w-full flex-1 scroll-mt-28 flex-col gap-8"
       >
         {props.children}
       </div>
