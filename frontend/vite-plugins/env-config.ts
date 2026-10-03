@@ -29,7 +29,10 @@ export function envConfig(options: {
             "http://localhost:5005",
           ),
           clientVersion: options.clientVersion,
-          recaptchaSiteKey: "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI",
+          recaptchaSiteKey: fallback(
+            options.env["RECAPTCHA_SITE_KEY"],
+            "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI",
+          ),
           sentryDsn:
             options.env["SENTRY_DSN"] === ""
               ? undefined
