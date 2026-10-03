@@ -89,8 +89,9 @@ export function SettingsPage(): JSXElement {
                 />
               </Show>
               <Show when={getConfig.showKeyTips}>
-                {/* inset to line up with the item icons, like the buttons */}
-                <div class="px-2 text-em-xs text-sub">
+                {/* padded like the buttons: inset to line up with the item icons,
+                    and space below to match the gap above the tip */}
+                <div class="px-2 pb-2 text-em-xs text-sub">
                   tip: you can also change all these settings quickly via the
                   command palette (<CommandlineHotkey />)
                 </div>
