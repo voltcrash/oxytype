@@ -6,6 +6,7 @@ import {
   getCurrentTab,
   setCurrentTab,
 } from "../../../states/account-settings";
+import { Button } from "../../common/Button";
 import { Page } from "../../common/Page";
 import { SidebarLayout } from "../../common/SidebarLayout";
 import { AccountTab } from "./AccountTab";
@@ -29,6 +30,15 @@ export function AccountSettingsPage() {
         items={accountSettingsTabs}
         active={getCurrentTab()}
         onSelect={setCurrentTab}
+        footer={
+          <Button
+            text="settings"
+            variant="text"
+            fa={{ icon: "fa-cog" }}
+            href="/settings"
+            router-link
+          />
+        }
       >
         {tabContent[getCurrentTab()]()}
       </SidebarLayout>
