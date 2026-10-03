@@ -19,6 +19,7 @@
     "build:worker": "wrangler deploy --dry-run --outdir dist/worker",
     "deploy:worker": "wrangler deploy",
     "prepare:site": "tsx scripts/prepare-site.ts",
+    "check:production": "tsx scripts/check-production.ts",
     "deploy:staging-site": "pnpm prepare:site && wrangler deploy --var SERVE_FRONTEND:true --var FRONTEND_URL:https://oxytype-api-staging.voltcrash.workers.dev",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "wrangler d1 migrations apply oxytype-staging --local",
