@@ -1,7 +1,7 @@
 import { JSXElement, Show } from "solid-js";
 import { envConfig } from "virtual:env-config";
 
-import { getIsScreenshotting } from "../../../states/core";
+import { getActivePage, getIsScreenshotting } from "../../../states/core";
 import { showModal } from "../../../states/modals";
 import { cn } from "../../../utils/cn";
 import { isDevEnvironment } from "../../../utils/env";
@@ -17,7 +17,14 @@ import { Notifications } from "./Notifications";
 export function Overlays(): JSXElement {
   return (
     <>
-      <ScrollToTop />
+      <Show
+        when={
+          getActivePage() !== "settings" &&
+          getActivePage() !== "accountSettings"
+        }
+      >
+        <ScrollToTop />
+      </Show>
       <button
         type="button"
         id="commandLineMobileButton"
