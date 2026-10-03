@@ -38,8 +38,11 @@ export function SidebarLayout<T extends string>(props: {
   return (
     <div class="content-grid flex flex-col gap-8 md:flex-row">
       <div class="w-full shrink-0 md:sticky md:top-8 md:w-60 md:self-start">
-        <nav class="flex flex-col gap-4 rounded-double bg-sub-alt p-4 md:max-h-[calc(100vh-4rem)] md:items-start md:overflow-y-auto">
-          {props.header}
+        {/* items are laid out in two columns on mobile to keep the sidebar short */}
+        <nav class="grid grid-cols-2 gap-2 rounded-double bg-sub-alt p-4 md:flex md:max-h-[calc(100vh-4rem)] md:flex-col md:items-start md:gap-4 md:overflow-y-auto">
+          <Show when={props.header !== undefined}>
+            <div class="col-span-full w-full">{props.header}</div>
+          </Show>
           <For each={Object.entries(props.items) as [T, SidebarItem][]}>
             {([key, item]) => (
               <Button
@@ -48,7 +51,7 @@ export function SidebarLayout<T extends string>(props: {
                 fa={{ icon: item.icon }}
                 active={props.active === key}
                 class={cn(
-                  "[--themable-button-active:var(--themable-button-text)]",
+                  "justify-start text-left [--themable-button-active:var(--themable-button-text)]",
                   props.counts !== undefined &&
                     "w-full justify-start [&>span:last-child]:ml-auto",
                   props.counts !== undefined &&
@@ -66,8 +69,8 @@ export function SidebarLayout<T extends string>(props: {
             )}
           </For>
           <Show when={props.footer !== undefined}>
-            <Separator class="bg-bg" />
-            {props.footer}
+            <Separator class="col-span-full bg-bg" />
+            <div class="col-span-full">{props.footer}</div>
           </Show>
         </nav>
       </div>
