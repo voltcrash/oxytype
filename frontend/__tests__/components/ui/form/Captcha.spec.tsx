@@ -1,5 +1,11 @@
-import { cleanup, render, screen } from "@solidjs/testing-library";
-import { AnyFieldApi } from "@tanstack/solid-form";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@solidjs/testing-library";
+import { AnyFieldApi, createForm } from "@tanstack/solid-form";
 import { Accessor, Setter, createSignal } from "solid-js";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
 
@@ -8,6 +14,8 @@ import {
   TurnstileApi,
   TurnstileOptions,
 } from "../../../../src/ts/components/ui/form/Captcha";
+import { SubmitButton } from "../../../../src/ts/components/ui/form/SubmitButton";
+import { allFieldsMandatory } from "../../../../src/ts/components/ui/form/utils";
 
 let options: TurnstileOptions;
 const api: TurnstileApi = {
@@ -142,4 +150,47 @@ it("reports a blocked script after the loading deadline", () => {
   vi.advanceTimersByTime(15_000);
   expect(screen.getByRole("alert")).toBeInTheDocument();
   expect(api.render).not.toHaveBeenCalled();
+});
+
+it("disables the real form after expiry or consumption and enables a fresh retry", async () => {
+  const submissions: string[] = [];
+  render(() => {
+    const form = createForm(() => ({
+      defaultValues: { captcha: "" },
+      validators: { onChange: allFieldsMandatory() },
+      onSubmit: ({ value }) => {
+        submissions.push(value.captcha);
+        form.setFieldValue("captcha", "");
+      },
+    }));
+    return (
+      <form
+        data-testid="protected-form"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void form.handleSubmit();
+        }}
+      >
+        <form.Field
+          name="captcha"
+          children={(field) => <Captcha field={field} action="signup" />}
+        />
+        <SubmitButton form={form} text="submit" />
+      </form>
+    );
+  });
+  const button = screen.getByRole("button", { name: "submit" });
+  expect(button).toBeDisabled();
+  options.callback("first-token");
+  await waitFor(() => expect(button).toBeEnabled());
+  options["expired-callback"]();
+  await waitFor(() => expect(button).toBeDisabled());
+  options.callback("second-token");
+  await waitFor(() => expect(button).toBeEnabled());
+  fireEvent.submit(screen.getByTestId("protected-form"));
+  await waitFor(() => expect(submissions).toEqual(["second-token"]));
+  expect(api.reset).toHaveBeenCalledWith("widget-1");
+  await waitFor(() => expect(button).toBeDisabled());
+  options.callback("retry-token");
+  await waitFor(() => expect(button).toBeEnabled());
 });
