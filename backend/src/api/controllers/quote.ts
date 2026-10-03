@@ -1,3 +1,5 @@
+import { tryCatch } from "@oxytype/util/trycatch";
+import type { CaptchaAction } from "@oxytype/contracts/captcha";
 import { atomicUser } from "../../db/mutation";
 import { v4 as uuidv4 } from "uuid";
 import { getPartialUser, updateQuoteRatings } from "../../dal/user";
@@ -25,8 +27,18 @@ import { replaceObjectId, replaceObjectIds } from "../../utils/misc";
 import { MonkeyRequest } from "../types";
 import { Language } from "@oxytype/schemas/languages";
 
-async function verifyCaptcha(captcha: string): Promise<void> {
-  if (!(await verify(captcha))) {
+async function verifyCaptcha(
+  captcha: string,
+  action: CaptchaAction,
+): Promise<void> {
+  const { data: verified, error } = await tryCatch(verify(captcha, action));
+  if (error) {
+    throw new MonkeyError(
+      422,
+      "Captcha verification unavailable, please try again",
+    );
+  }
+  if (!verified) {
     throw new MonkeyError(422, "Captcha check failed");
   }
 }
@@ -62,7 +74,7 @@ export async function addQuote(
   const { uid } = req.ctx.decodedToken;
   const { text, source, language, captcha } = req.body;
 
-  await verifyCaptcha(captcha);
+  await verifyCaptcha(captcha, "quote-submit");
 
   await NewQuotesDAL.add(text, source, language, uid);
   return new MonkeyResponse("Quote submission added", null);
@@ -155,7 +167,7 @@ export async function reportQuote(
 
   const { quoteId, quoteLanguage, reason, comment, captcha } = req.body;
 
-  await verifyCaptcha(captcha);
+  await verifyCaptcha(captcha, "quote-report");
 
   const newReport: ReportDAL.DBReport = {
     _id: newId(),

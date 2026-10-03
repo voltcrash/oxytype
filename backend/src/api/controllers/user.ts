@@ -1,3 +1,4 @@
+import type { CaptchaAction } from "@oxytype/contracts/captcha";
 import { atomicUser } from "../../db/mutation";
 import * as UserDAL from "../../dal/user";
 import MonkeyError from "../../utils/error";
@@ -77,8 +78,11 @@ import { tryCatch } from "@oxytype/util/trycatch";
 import * as ConnectionsDal from "../../dal/connections";
 import { PersonalBest } from "@oxytype/schemas/shared";
 
-async function verifyCaptcha(captcha: string): Promise<void> {
-  const { data: verified, error } = await tryCatch(verify(captcha));
+async function verifyCaptcha(
+  captcha: string,
+  action: CaptchaAction,
+): Promise<void> {
+  const { data: verified, error } = await tryCatch(verify(captcha, action));
   if (error) {
     throw new MonkeyError(
       422,
@@ -100,7 +104,7 @@ export async function createNewUser(
   if (existingUser) throw new MonkeyError(409, "Account already registered");
 
   try {
-    await verifyCaptcha(captcha);
+    await verifyCaptcha(captcha, "signup");
 
     if (email.endsWith("@tidal.lol") || email.endsWith("@selfbot.cc")) {
       throw new MonkeyError(400, "Invalid domain");
@@ -702,7 +706,7 @@ export async function reportUser(
 
   const { uid: uidToReport, reason, comment, captcha } = req.body;
 
-  await verifyCaptcha(captcha);
+  await verifyCaptcha(captcha, "user-report");
 
   const newReport: ReportDAL.DBReport = {
     _id: newId(),

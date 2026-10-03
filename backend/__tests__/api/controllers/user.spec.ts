@@ -42,6 +42,7 @@ describe("user controller test", () => {
       vi.spyOn(UserDal, "exists").mockResolvedValue(false);
       await enableSignup(true);
       usernameAvailableMock.mockResolvedValue(true);
+      verifyCaptchaMock.mockClear().mockResolvedValue(true);
     });
     afterEach(() => {
       [
@@ -79,7 +80,7 @@ describe("user controller test", () => {
 
       //user will be created in Better Auth from the frontend, make sure we remove it
       expect(authDeleteUserMock).toHaveBeenCalledWith(uid);
-      expect(verifyCaptchaMock).toHaveBeenCalledWith("captcha");
+      expect(verifyCaptchaMock).toHaveBeenCalledWith("captcha", "signup");
     });
 
     it("should fail if domain is blacklisted", async () => {
@@ -2365,7 +2366,7 @@ describe("user controller test", () => {
         (await Configuration.getLiveConfiguration()).quotes.reporting
           .contentReportLimit,
       );
-      expect(verifyCaptchaMock).toHaveBeenCalledWith("captcha");
+      expect(verifyCaptchaMock).toHaveBeenCalledWith("captcha", "user-report");
     });
     it("should fail without mandatory properties", async () => {
       //WHEN

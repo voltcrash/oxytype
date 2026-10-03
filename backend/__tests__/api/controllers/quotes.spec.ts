@@ -195,7 +195,10 @@ describe("QuotesController", () => {
         uid,
       );
 
-      expect(verifyCaptchaMock).toHaveBeenCalledWith(newQuote.captcha);
+      expect(verifyCaptchaMock).toHaveBeenCalledWith(
+        newQuote.captcha,
+        "quote-submit",
+      );
     });
     it("should fail without authentication", async () => {
       await mockApp.post("/quotes").expect(401);
@@ -783,7 +786,7 @@ describe("QuotesController", () => {
         data: null,
       });
 
-      expect(verifyCaptchaMock).toHaveBeenCalledWith("captcha");
+      expect(verifyCaptchaMock).toHaveBeenCalledWith("captcha", "quote-report");
 
       expect(createReportMock).toHaveBeenCalledWith(
         expect.objectContaining({
