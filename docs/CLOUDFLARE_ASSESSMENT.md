@@ -6,6 +6,10 @@ Worker + D1/Drizzle + Better Auth + Queues/Cron initially. No KV or application
 Durable Objects required. Production suitability depends on measured database
 size, write throughput and completion of external integrations.
 
+Discord integration has since been removed. Migration `0002_remove_discord.sql`
+cleans its stored identities, avatar metadata and bot deliveries; the optional
+external bridge is now used only for publishing approved quotes.
+
 ## 1. Mongo models and access points
 
 The baseline uses typed Mongo collections, not Mongoose. Schemas come from
@@ -44,9 +48,9 @@ Mongo. These have been replaced or removed from runtime/test infrastructure.
 | --- | --- |
 | Daily sorted sets + result hashes + five Lua scripts | D1 `daily_entries`, conditional best-score UPSERT, top-N pruning, indexed score/UID ordering; same kogascore and reverse lexical ties |
 | Weekly XP sorted sets + hashes | D1 `weekly_entries`; atomic XP/time increments, indexed ranks and expiry |
-| Discord `SETEX`/`GETDEL` state | D1 `oauth_states`; expiring atomic DELETE RETURNING; never KV |
+| Discord `SETEX`/`GETDEL` state | Removed with Discord integration; not imported |
 | BullMQ `later`: daily payouts, seven-day weekly payouts | D1 `scheduled_jobs`; Cron dispatches due IDs to Queues, leased processing and durable page continuations |
-| BullMQ `george-tasks`: Discord roles/link/unlink/ban, release/leaderboard announcements | D1 outbox + Queues; authenticated external HTTPS bridge with idempotency keys |
+| BullMQ `george-tasks`: Discord roles/link/unlink/ban, release/leaderboard announcements | Removed; legacy deliveries discarded, source exports retained |
 | Queue counts, retries, duplicate job IDs | D1 job/outbox ledger; Queues retries + DLQ; unique business reward grants |
 | Rate limits | Baseline used **process memory**, not Redis. Atomic D1 windows retain semantics across isolates; measure write load |
 | Config/quote/isolate caches | Invocation-local config and static assets initially; optional KV for disposable cached public responses |
@@ -79,7 +83,7 @@ Implemented source: `backend/src/db/schema.ts`; migrations `0000` + `0001`.
 | D1 tables | Keys/indexes and mapping |
 | --- | --- |
 | Five `auth_*` tables | string PKs; unique user email/session token/provider+account; user and expiry indexes; Date → integer milliseconds |
-| `users` | uid PK, original application id unique, normalized name unique, Discord unique; scalar counters/eligibility/version + compatibility JSON |
+| `users` | uid PK, original application id unique, normalized name unique; scalar counters/eligibility/version + compatibility JSON |
 | `results` | original id PK; owner/time/id and owner/mode/duration/language indexes; unique owner/submission hash for new writes; payload JSON |
 | `configs`, `presets`, `ape_keys` | owner FKs; owner/time or owner indexes; settings JSON, explicit key hash/use columns |
 | `connections` | unique canonical unordered pair; participant/status indexes; explicit FK participants/status CHECK |
@@ -89,7 +93,7 @@ Implemented source: `backend/src/db/schema.ts`; migrations `0000` + `0001`.
 | `configuration`, `psas`, `public_stats`, `speed_histograms` | singleton IDs or board/bucket PK; atomic counters and bounded JSON |
 | `quote_submissions`, `quote_ratings`, `user_quote_ratings`, `reports` | review status/language/time; language/quote and owner/quote PKs; report ID and reporter/content uniqueness; user rating compatibility JSON retained |
 | `blocklist`, `admin_uids`, `audit_logs` | kind/hash or uid PK; audit owner/time and importance/time indexes; old errors mapped to audit events |
-| `oauth_states`, `rate_counters`, `scheduled_jobs`, `outbox`, `mutation_guards` | expiry/due/lease/pending indexes; unique job IDs; optimistic version CHECK guard |
+| `rate_counters`, `scheduled_jobs`, `outbox`, `mutation_guards` | expiry/due/lease/pending indexes; unique job IDs; optimistic version CHECK guard |
 
 Owned rows cascade on account deletion. Application and authentication users
 remain separate: social auth may precede username registration. IDs stay strings;
@@ -110,7 +114,7 @@ Better Auth uses the Drizzle SQLite adapter with interactive transactions off.
   schema, prepared SQL, guarded units of work and ranking queries.
 - `dal/*`, `init/configuration.ts`, `services/user-deletion.ts`: all storage,
   ownership, counters, settings and account/reset operations ported to D1.
-- `init/auth.ts`, `auth/routes.ts`, `utils/{auth,ape-key,discord}.ts`,
+- `init/auth.ts`, `auth/routes.ts`, `utils/{auth,ape-key}.ts`,
   `middlewares/rate-limit.ts`: D1 auth/revocation/state/quotas and key hashing.
 - `controllers/{result,user,dev}.ts`, `jobs/update-leaderboards.ts`,
   `utils/daily-leaderboards.ts`, `services/weekly-xp-leaderboard.ts`: atomic
@@ -137,7 +141,7 @@ Free Worker CPU is 10 ms per invocation; legacy bcrypt verification/large payloa
 need measurement and likely Paid for production.
 [Workers limits](https://developers.cloudflare.com/workers/platform/limits/).
 
-Keep quote git automation/Discord bot integration external until a tested bridge
+Keep quote git automation external until a tested bridge
 exists. The anticheat module is absent in this checkout: production-mode
 result submissions, including staging, remain rejected; no bypass is enabled. Social OAuth and
 captcha need deployment-owned credentials. Browser third-party cookie blocking

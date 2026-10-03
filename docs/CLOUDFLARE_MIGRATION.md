@@ -13,7 +13,7 @@ verification, deployment, and any external blockers throughout implementation.
 ## Scope and boundaries
 
 - Worker exports `fetch`, `queue`, and `scheduled`; no permanent server process.
-- D1 is authoritative for application/auth data, rankings, expiring OAuth state,
+- D1 is authoritative for application/auth data, rankings,
   rate-limit counters, job scheduling, reward claims, and delivery outbox.
 - Drizzle owns schema/types/migrations. Use prepared SQL for atomic batches and
   SQL features where the ORM cannot express the required D1 behavior.
@@ -28,8 +28,9 @@ verification, deployment, and any external blockers throughout implementation.
 - Quote repository edits become an authenticated HTTP integration with external
   GitHub/CI automation. Workers cannot run local git. Preserve submission and
   moderation behavior; clearly report unavailable external integrations.
-- George/Discord tasks need an HTTP bridge or a native HTTP integration; the
-  existing bot consumer is not in this repository. Delivery must be retryable.
+- Discord integration is removed: linking/avatar UI and APIs, bot tasks, release
+  webhooks and rich presence. Migration 0002 cleans legacy data and deliveries.
+  Quote publishing continues through the optional HTTP bridge.
 - Keep Mongo/Redis clients only in offline import tooling while needed. Never
   include them, native bcrypt, file logging, or subprocesses in the Worker.
 - Default deployment target: a new staging Worker. Existing production routing
@@ -39,7 +40,7 @@ verification, deployment, and any external blockers throughout implementation.
 
 1. Preserve all contract endpoints, envelopes, validation messages, ownership
    checks, feature gates, compatibility headers, conditional GET/HEAD, and custom
-   status codes. Preserve compressed JSON/form limits and exact webhook bytes.
+   status codes. Preserve compressed JSON/form limits.
 2. Preserve `/api` public routing and `/auth` handling; Google/GitHub callbacks,
    cookies, account linking, bearer tokens, fresh sessions, disabled accounts,
    and immediate revocation. Keep the existing secret when importing sessions.
@@ -55,7 +56,7 @@ verification, deployment, and any external blockers throughout implementation.
 7. Rewards and inbox read/delete claims are atomic and exactly-once in D1 even
    when Queues delivers a job more than once. Badge inventory remains unique.
 8. Account deletion/reset removes owned rows, auth sessions, rankings, and pending
-   work; external unlink deliveries use an outbox. Preserve ban blocklisting.
+   work. Preserve ban blocklisting for names and email addresses.
 9. Existing arbitrary rate-limit windows and bad-auth penalties persist. Workers
    Rate Limiting bindings may supplement these but cannot replace their semantics.
 
@@ -84,7 +85,7 @@ verification, deployment, and any external blockers throughout implementation.
 - Add application users/results/config/presets/keys/connections/quotes/reports,
   blocklist/admin/PSA/public tables with owner/time/pair/expiry indexes.
 - Add personal/leaderboard bests, period entries, snapshot generations, activity,
-  reward/mail state, OAuth state, job ledger, rate counters, and outbox.
+  reward/mail state, job ledger, rate counters, and outbox.
 - Add identifier/legacy serialization helpers and D1 transactional batch helpers.
 - Apply migrations locally; check uniqueness/FKs/indexes and rollback on failure.
 
@@ -139,9 +140,8 @@ verification, deployment, and any external blockers throughout implementation.
   multi-day Queue delays or isolate-local scheduling caches.
 - Queue consumer claims jobs, commits unique reward mail/grants, acknowledges
   completed messages, retries failures with backoff, and uses a DLQ.
-- Port Discord/George integration to a configured HTTP bridge with idempotency
-  keys and explicit missing-integration errors. Port quote approval to external
-  HTTP automation; preserve allowed repository/origin policy.
+- Port quote approval to external HTTP automation with idempotency keys, explicit
+  missing-integration errors and allowed repository/origin policy.
 - Add expiry/retention/outbox recovery and snapshot maintenance schedules.
 - Verify duplicate delivery, failures between commit/send/ack, delayed catch-up,
   disabled features, malformed messages, and external integration failures.
@@ -164,7 +164,7 @@ verification, deployment, and any external blockers throughout implementation.
   D1 rather than only mocked SQL. Check existing frontend/contracts behavior.
 - Typecheck/lint with `pnpm oxlint --type-aware --type-check --format agent`;
   format and check diff; build packages/docs/Worker; run Wrangler dry-run.
-- Exercise HTTP health/config/docs/auth guards, body limits, webhook verification,
+- Exercise HTTP health/config/docs/auth guards, body limits, retired endpoint checks,
   result/account workflows, queue retries, scheduled recovery, and local migrations.
 - Create staging D1/Queues/DLQ via Wrangler; configure actual account bindings,
   secrets and public URLs; apply migrations; deploy via Wrangler.
@@ -249,3 +249,19 @@ Final deployed Worker version: `a70e71d5-4646-4b80-8ae1-bcc8db813ef6`.
 Verified capped gzip/deflate → 413, small gzip → authentication guard, malformed
 compression → 400, and request-initialized uptime. Final backend unit rerun:
 591/591 passed. All implementation commits are pushed; PR marked ready for review.
+
+
+### Discord removal follow-up
+
+Removed Discord account linking, avatars, rich presence, bot roles, release and
+leaderboard announcements, and the release webhook. Migration 0002 removes
+legacy stored metadata and deliveries; offline imports discard obsolete bot
+jobs and identities. Quote approval retains its optional publishing bridge.
+
+Validation: 599 backend/D1 tests passed across the full run and a standalone
+rerun of one three-test suite whose setup timed out under concurrent load;
+1,341 frontend tests and 28 shared schema/contract tests passed. Type-aware
+Oxlint, formatting, changed-theme Stylelint, shared-package builds, API docs,
+Worker dry-run and frontend production build with the repository's captcha test
+key passed. This follow-up is committed separately for frontend, backend/data
+and documentation. Deploy after the migration procedure in the runbook.

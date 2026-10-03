@@ -36,13 +36,13 @@ adapter for Google/GitHub accounts and database-backed sessions. `worker.ts`
 exports fetch, queue and scheduled handlers with invocation-scoped bindings.
 
 `api/hono-adapter.ts` preserves transport-independent controllers. D1 owns data,
-exact rate windows, consumed OAuth state, result progression and rankings. User
+exact rate windows, result progression and rankings. User
 JSON writes use optimistic version guards inside atomic batches. An outbox and
 scheduled-job ledger feed Cloudflare Queues; Cron recovers missed deliveries.
 Reward grants and inbox claims deduplicate retries. KV/DOs are unnecessary initially.
 
-Docs/config/quote assets use the Worker ASSETS binding. Quote git automation and
-Discord bot effects require an external HTTPS bridge. Structured console logs
+Docs/config/quote assets use the Worker ASSETS binding. Quote git automation
+requires an external HTTPS bridge. Structured console logs
 feed Workers observability; `/stats/*` remains credential protected. Prometheus
 and stats counters are isolate-local, not fleet-wide metrics.
 
@@ -55,7 +55,7 @@ flowchart LR
   Cron[Cron] --> Worker
   Worker --> Queues[Cloudflare Queues]
   Queues --> Worker
-  Worker --> Bridge[External Discord / quote automation]
+  Worker --> Bridge[External quote automation]
 ```
 
 ## Development and delivery
@@ -73,6 +73,6 @@ for setup, recovery, cutover gates and the preserving importer.
 
 ## Oxytype ownership boundaries
 
-The fork must use its own auth secret and OAuth applications, API endpoint, error reporting destination, Discord application, container registry, and release credentials before those integrations are enabled. The planned site `oxytype.voltcrash.com` and mailbox `contact@voltcrash.com` are not active. Until they are, public contact and security reporting use the Oxytype repository and its security policy. The original GPL license and contributor attribution remain in place.
+The fork must use its own auth secret and OAuth applications, API endpoint, error reporting destination, container registry, and release credentials before those integrations are enabled. The planned site `oxytype.voltcrash.com` and mailbox `contact@voltcrash.com` are not active. Until they are, public contact and security reporting use the Oxytype repository and its security policy. The original GPL license and contributor attribution remain in place.
 
 See [development setup](./CONTRIBUTING_ADVANCED.md), [self-hosting](./SELF_HOSTING.md), and [security reporting](./SECURITY.md) for operational details.
