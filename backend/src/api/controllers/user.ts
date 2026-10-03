@@ -281,40 +281,9 @@ function getRelevantUserInfo(user: UserDAL.DBUser): RelevantUserInfo {
 export async function getUser(req: MonkeyRequest): Promise<GetUserResponse> {
   const { uid } = req.ctx.decodedToken;
 
-  const { data: userInfo, error } = await tryCatch(
-    UserDAL.getUser(uid, "get user"),
-  );
-
-  if (error) {
-    if (error instanceof MonkeyError && error.status === 404) {
-      //if the user is in the auth system but not in the db, its possible that the user was created by bypassing captcha
-      //since there is no data in the database anyway, we can just delete the user from the auth system
-      //and ask them to sign up again
-      try {
-        await AuthUtil.deleteUser(uid);
-        throw new MonkeyError(
-          404,
-          "User not found in the database, but found in the auth system. We have deleted the ghost user from the auth system. Please sign up again.",
-          "get user",
-          uid,
-        );
-      } catch (e) {
-        // oxlint-disable-next-line no-unsafe-member-access
-        if (e.code === "auth/user-not-found") {
-          throw new MonkeyError(
-            404,
-            "User not found in the database or the auth system. Please sign up again.",
-            "get user",
-            uid,
-          );
-        } else {
-          throw e;
-        }
-      }
-    } else {
-      throw error;
-    }
-  }
+  // Social sign-in creates the authentication account before username/captcha
+  // onboarding creates its application profile. Preserve the session on 404.
+  const userInfo = await UserDAL.getUser(uid, "get user");
 
   userInfo.personalBests ??= {
     time: {},

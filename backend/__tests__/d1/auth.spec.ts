@@ -3,6 +3,11 @@ import { createTestRuntime } from "./helpers";
 import { withRuntime } from "../../src/runtime/env";
 import { getAuth } from "../../src/init/auth";
 import { verifySession } from "../../src/utils/auth";
+import { patchConfiguration } from "../../src/init/configuration";
+import * as UserDAL from "../../src/dal/user";
+import Worker from "../../src/worker";
+import { GetUserResponseSchema } from "@oxytype/contracts/users";
+import type { ExecutionContext } from "@cloudflare/workers-types";
 
 describe("Better Auth D1 adapter", () => {
   let test: Awaited<ReturnType<typeof createTestRuntime>>;
@@ -14,6 +19,94 @@ describe("Better Auth D1 adapter", () => {
   });
   afterAll(async () => {
     await test?.dispose();
+  });
+  it("preserves a new social account and session through username onboarding", async () => {
+    await withRuntime(test.env, async () => {
+      const context = await getAuth().$context;
+      const user = await context.internalAdapter.createUser(
+        { name: "Social", email: "social@example.com", emailVerified: true },
+        { method: "oauth", oauth: { providerId: "github" } },
+      );
+      await context.internalAdapter.createAccount({
+        userId: user.id,
+        providerId: "github",
+        accountId: "social-github-account",
+      });
+      const session = await context.internalAdapter.createSession(
+        user.id,
+        false,
+      );
+      if (session === null) throw new Error("Missing session");
+      const headers = new Headers({
+        authorization: `Bearer ${session.token}`,
+        origin: "http://localhost:3000",
+        "content-type": "application/json",
+      });
+      const request = async (
+        path: string,
+        method = "GET",
+        body?: unknown,
+      ): Promise<Response> =>
+        await Worker.fetch(
+          new Request(`http://localhost:5005${path}`, {
+            method,
+            headers,
+            ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+          }),
+          test.env,
+          { waitUntil: () => undefined } as unknown as ExecutionContext,
+        );
+      await patchConfiguration({ users: { signUp: true } });
+
+      // The frontend checks for a missing profile before opening username setup,
+      // including after a refresh while onboarding is still unfinished.
+      expect((await request("/users")).status).toBe(404);
+      expect((await verifySession(headers)).uid).toBe(user.id);
+      expect((await request("/api/users")).status).toBe(404);
+      expect(await UserDAL.exists(user.id)).toBe(false);
+      expect(
+        await context.internalAdapter.findUserById(user.id),
+      ).not.toBeNull();
+      expect(await context.internalAdapter.findAccounts(user.id)).toHaveLength(
+        1,
+      );
+
+      const availability = await request("/users/checkName/Social");
+      expect(availability.status).toBe(200);
+      expect(await availability.json()).toMatchObject({
+        data: { available: true },
+      });
+      expect(
+        (
+          await request("/users/signup", "POST", {
+            name: "Social",
+            captcha: "dev",
+          })
+        ).status,
+      ).toBe(200);
+
+      const profile = await request("/users");
+      expect(profile.status).toBe(200);
+      expect(
+        GetUserResponseSchema.parse(await profile.json()).data,
+      ).toMatchObject({
+        uid: user.id,
+        name: "Social",
+        email: user.email,
+      });
+      expect((await verifySession(headers)).uid).toBe(user.id);
+
+      expect(
+        (
+          await request("/users/signup", "POST", {
+            name: "Social",
+            captcha: "dev",
+          })
+        ).status,
+      ).toBe(409);
+      expect((await verifySession(headers)).uid).toBe(user.id);
+      expect(await UserDAL.exists(user.id)).toBe(true);
+    });
   });
   it("persists sessions, rejects disabled users, and observes revocation", async () => {
     await withRuntime(test.env, async () => {
