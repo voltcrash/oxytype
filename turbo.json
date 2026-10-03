@@ -58,7 +58,7 @@
       "dependsOn": ["^build"],
       "env": [
         "BACKEND_URL",
-        "RECAPTCHA_SITE_KEY",
+        "TURNSTILE_SITE_KEY",
         "SENTRY_DSN",
         "SENTRY_AUTH_TOKEN",
         "SENTRY_ORG",
@@ -68,7 +68,7 @@
     },
     "@oxytype/frontend#dev": {
       "dependsOn": ["^build"],
-      "env": ["BACKEND_URL", "RECAPTCHA_SITE_KEY", "SERVER_OPEN"],
+      "env": ["BACKEND_URL", "TURNSTILE_SITE_KEY", "SERVER_OPEN"],
       "persistent": true
     },
     "@oxytype/backend#dev": {
