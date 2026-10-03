@@ -14,8 +14,9 @@ Allow the **frontend** hostname, then set:
 - Keep staging GitHub callback at
   `https://oxytype-api-staging.voltcrash.workers.dev/api/auth/callback/github`.
 
-Staging currently uses `localhost`, independently of its Worker hostname. Production
-should allow only its deployed frontend hostname. Keys must belong to the same widget.
+Staging allows `localhost` and `oxytype-api-staging.voltcrash.workers.dev` for the
+hosted frontend. Production should allow only its deployed frontend hostname.
+Keys must belong to the same widget.
 See [staging setup](STAGING_SETUP.md) for ignored files and deployment commands.
 
 Local development uses the official [test keys](https://developers.cloudflare.com/turnstile/troubleshooting/testing/):
@@ -42,10 +43,15 @@ expired/replayed tokens fail closed. Dummy response metadata is exempt only with
 an official test secret in `MODE=dev`.
 
 Cloudflare tokens expire after five minutes and can be redeemed once. Each Solid
-component owns its widget, waits for script readiness, clears tokens on expiry,
+component owns its widget, renders after the asynchronous script's `load` event
+(or immediately when the API is already loaded), clears tokens on expiry,
 timeout/error, and removes its widget when the modal closes. After each submitted
 request, forms clear the spent token and reset the widget for retry. Signup retains
 its onboarding session after verification failure.
+
+Do not call `turnstile.ready()` with an asynchronous script: Cloudflare rejects
+that combination before rendering. The shared script's load event provides
+readiness for [explicit rendering](https://developers.cloudflare.com/turnstile/get-started/client-side-rendering/).
 
 Allow `https://challenges.cloudflare.com` in `script-src` and `frame-src` when
 adding a [CSP](https://developers.cloudflare.com/turnstile/reference/content-security-policy/).

@@ -368,3 +368,22 @@ typing verification remain pending.
   invalid code), preserving the request ID and standalone callback. It created no
   user/session and does not establish real GitHub authorization or a human result
   save; those remain the next browser checks on the hosted staging URL.
+
+### Turnstile asynchronous loading fix — 3 October 2026
+
+- Real GitHub authorization now reaches username onboarding on hosted staging.
+  Continue remained disabled because the widget called `turnstile.ready()` after
+  loading an asynchronous script. The live API throws for that combination;
+  the loading deadline then displayed the verification-unavailable error.
+- The shared Solid captcha now renders directly after the script's load event,
+  or immediately when the API is already present. Widget cleanup, token expiry,
+  consumption/reset and server-side verification remain enforced.
+- The regression failed against the old implementation. All 13 captcha/form tests
+  now pass, including asynchronous script loading and a rendering exception;
+  type-aware lint, commit checks and the staging frontend production build passed.
+- Deployed Worker version `b00d3081-5902-4479-9822-5e4923787340`; the hosted frontend
+  reports commit `d5d53220b`, and configuration returns 200. A diagnostic managed
+  widget using the staging hostname and `signup` action completed in the browser
+  and issued a nonempty token. This probe did not submit signup or write D1.
+  Real-user onboarding and a human result save still need the ordinary-browser
+  retry after refreshing the deployed page.
