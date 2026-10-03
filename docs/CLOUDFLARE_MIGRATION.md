@@ -234,7 +234,9 @@ verification, deployment, and any external blockers throughout implementation.
 - Wrangler applied both migrations and deployed fetch/queue/Cron to the confirmed
   account. Generated auth secret stored through Wrangler; no secrets committed.
 - Verified live health/config/docs, HEAD/ETag 304, localhost CORS, null anonymous
-  session, 401 user/stats guards, disabled email login and untrusted-origin 403.
+  session, 401 user/stats guards, disabled email login, untrusted-origin 403 and
+  raw/gzip expanded body limits. Workerd zlib emits an uncoded RangeError on
+  capped output; mapped to the existing 413 contract.
 - D1 contains zero users/results/auth users; one default config and two generated
   board records. Foreign-key check clean. Remote Cron generated board metadata;
   queue info confirms this Worker is producer and consumer.
