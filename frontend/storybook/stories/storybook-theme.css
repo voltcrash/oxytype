@@ -23,10 +23,6 @@ body {
   background: var(--bg-color) !important;
 }
 
-.devIndicator {
-  display: none;
-}
-
 .docs-story .docblock-code-toggle {
   display: none;
 }

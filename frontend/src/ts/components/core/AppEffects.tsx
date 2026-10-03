@@ -6,7 +6,6 @@ import {
   JSXElement,
   onCleanup,
   onMount,
-  Show,
   untrack,
 } from "solid-js";
 import { spread } from "solid-js/web";
@@ -264,22 +263,6 @@ export function AppEffects(props: AppElements): JSXElement {
       </MetaProvider>
       <GlobalEvents />
       <NoCssFallback element={props.noCssWarning} />
-      <Show when={isDevEnvironment() && !isFixingSkillIssue()}>
-        <div
-          class={cn(
-            "devIndicator tl fixed top-8 left-8 -z-1 text-[3rem] text-sub opacity-25",
-          )}
-        >
-          local
-        </div>
-        <div
-          class={cn(
-            "devIndicator br fixed right-8 bottom-8 -z-1 text-[3rem] text-sub opacity-25",
-          )}
-        >
-          local
-        </div>
-      </Show>
     </>
   );
 }
