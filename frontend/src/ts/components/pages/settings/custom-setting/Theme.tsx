@@ -1,5 +1,5 @@
 import { CustomTheme, CustomThemeNameSchema } from "@oxytype/schemas/users";
-import { For, JSXElement, Show, untrack } from "solid-js";
+import { For, JSXElement, onCleanup, Show, untrack } from "solid-js";
 import { debounce } from "throttle-debounce";
 import { z } from "zod/v3";
 
@@ -18,8 +18,10 @@ import {
   ThemeWithName,
 } from "../../../../constants/themes";
 import {
+  clearPreview,
   convertCustomColorsToTheme,
   convertThemeToCustomColors,
+  preview,
 } from "../../../../controllers/theme-controller";
 import { createEffectOn } from "../../../../hooks/effects";
 import { isAuthenticated } from "../../../../states/core";
@@ -52,8 +54,13 @@ export const sortedThemes: ThemeWithName[] = [...ThemesList].sort((a, b) => {
 export function Theme(): JSXElement {
   const customThemes = useCustomThemesLiveQuery();
 
+  // hovering a preset previews it; leaving the presets (or the page) restores
+  // the current theme. cleared on the whole list rather than per button so
+  // moving between buttons doesn't flash the current theme in between
+  onCleanup(() => void clearPreview());
+
   const Presets = () => (
-    <div class="grid gap-4">
+    <div class="grid gap-4" onMouseLeave={() => void clearPreview()}>
       <Show when={getConfig.favThemes.length > 0}>
         <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
           <For
@@ -454,6 +461,13 @@ function ThemeButton(props: { theme: ThemeWithName }): JSXElement {
         "transition-[opacity,color,background,box-shadow] duration-125",
         isActive() && "ring-4 ring-(--main)",
       )}
+      onMouseEnter={() => {
+        if (isActive()) {
+          void clearPreview();
+        } else {
+          preview(props.theme.name);
+        }
+      }}
       onClick={() => {
         if (isActive()) return;
         setConfig("theme", props.theme.name);
