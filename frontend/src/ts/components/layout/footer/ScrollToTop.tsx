@@ -1,6 +1,8 @@
 import { JSXElement, createSignal, onMount, onCleanup } from "solid-js";
 
+import { createEffectOn } from "../../../hooks/effects";
 import { getActivePage } from "../../../states/core";
+import { getPageScroller } from "../../../states/page-layout";
 import { cn } from "../../../utils/cn";
 import { Fa } from "../../common/Fa";
 
@@ -10,7 +12,8 @@ export function ScrollToTop(): JSXElement {
   const handleScroll = (): void => {
     if (getActivePage() === "test") return;
 
-    const scroll = window.scrollY;
+    // some pages scroll their content in their own container instead
+    const scroll = getPageScroller()?.scrollTop ?? window.scrollY;
     setVisible(scroll > 100);
   };
 
@@ -21,6 +24,13 @@ export function ScrollToTop(): JSXElement {
 
   onCleanup(() => {
     window.removeEventListener("scroll", handleScroll);
+  });
+
+  createEffectOn(getPageScroller, (scroller) => {
+    handleScroll();
+    if (scroller === undefined) return;
+    scroller.addEventListener("scroll", handleScroll, { passive: true });
+    onCleanup(() => scroller.removeEventListener("scroll", handleScroll));
   });
 
   return (
@@ -39,7 +49,10 @@ export function ScrollToTop(): JSXElement {
 
         onClick={() => {
           setVisible(false);
-          window.scrollTo({ top: 0, behavior: "smooth" });
+          (getPageScroller() ?? window).scrollTo({
+            top: 0,
+            behavior: "smooth",
+          });
         }}
       >
         <Fa icon="fa-angle-double-up" />
