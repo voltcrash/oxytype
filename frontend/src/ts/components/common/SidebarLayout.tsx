@@ -1,4 +1,11 @@
-import { For, JSXElement, Show } from "solid-js";
+import {
+  createSignal,
+  For,
+  JSXElement,
+  onCleanup,
+  onMount,
+  Show,
+} from "solid-js";
 
 import { useRef } from "../../hooks/useRef";
 import { FaSolidIcon } from "../../types/font-awesome";
@@ -24,6 +31,19 @@ export function SidebarLayout<T extends string>(props: {
   children: JSXElement;
 }): JSXElement {
   const [contentRef, content] = useRef<HTMLDivElement>();
+  const [navRef, nav] = useRef<HTMLElement>();
+
+  // the sidebar's height, so it can stick in the vertical middle of the screen
+  const [navHeight, setNavHeight] = createSignal(0);
+  onMount(() => {
+    const element = nav();
+    if (element === undefined) return;
+    const observer = new ResizeObserver(() =>
+      setNavHeight(element.offsetHeight),
+    );
+    observer.observe(element);
+    onCleanup(() => observer.disconnect());
+  });
 
   const select = (key: T): void => {
     props.onSelect(key);
@@ -37,9 +57,17 @@ export function SidebarLayout<T extends string>(props: {
 
   return (
     <div class="content-grid flex flex-col gap-8 md:flex-row">
-      <div class="w-full shrink-0 md:sticky md:top-8 md:w-60 md:self-start">
+      {/* starts below the header, then sticks centered in the screen while
+          scrolling (or 2rem from the top when taller than the screen) */}
+      <div
+        class="w-full shrink-0 md:sticky md:top-[max(2rem,calc(50vh-var(--sidebar-height)/2))] md:w-60 md:self-start"
+        style={{ "--sidebar-height": `${navHeight()}px` }}
+      >
         {/* items are laid out in two columns on mobile to keep the sidebar short */}
-        <nav class="grid grid-cols-2 gap-2 rounded-double bg-sub-alt p-4 md:flex md:max-h-[calc(100vh-4rem)] md:flex-col md:items-start md:gap-4 md:overflow-y-auto">
+        <nav
+          ref={navRef}
+          class="grid grid-cols-2 gap-2 rounded-double bg-sub-alt p-4 md:flex md:max-h-[calc(100vh-4rem)] md:flex-col md:items-start md:gap-4 md:overflow-y-auto"
+        >
           <Show when={props.header !== undefined}>
             <div class="col-span-full w-full">{props.header}</div>
           </Show>

@@ -1,6 +1,13 @@
 import { cleanup, fireEvent, render, screen } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
-import { afterEach, describe, expect, it } from "vite-plus/test";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 
 import { SidebarLayout } from "../../../src/ts/components/common/SidebarLayout";
 
@@ -9,8 +16,20 @@ const items = {
   second: { text: "second tab", icon: "fa-key" },
 } as const;
 
+beforeEach(() => {
+  // jsdom has no ResizeObserver; the sidebar uses it to center itself
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      observe = vi.fn();
+      disconnect = vi.fn();
+    },
+  );
+});
+
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
 });
 
 describe("SidebarLayout", () => {
