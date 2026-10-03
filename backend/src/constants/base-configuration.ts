@@ -48,9 +48,6 @@ export const BASE_CONFIGURATION: Configuration = {
       enabled: false,
       maxHashes: 0,
     },
-    discordIntegration: {
-      enabled: false,
-    },
     autoBan: {
       enabled: false,
       maxCount: 5,
@@ -92,7 +89,6 @@ export const BASE_CONFIGURATION: Configuration = {
     leaderboardExpirationTimeInDays: 0,
     validModeRules: [],
     scheduleRewardsModeRules: [],
-    topResultsToAnnounce: 1, // This should never be 0. Setting to zero will announce all results.
     xpRewardBrackets: [],
   },
   leaderboards: {
@@ -359,16 +355,6 @@ export const CONFIGURATION_FORM_SCHEMA: ObjectSchema<Configuration> = {
             },
           },
         },
-        discordIntegration: {
-          type: "object",
-          label: "Discord Integration",
-          fields: {
-            enabled: {
-              type: "boolean",
-              label: "Enabled",
-            },
-          },
-        },
         autoBan: {
           type: "object",
           label: "Auto Ban",
@@ -507,12 +493,6 @@ export const CONFIGURATION_FORM_SCHEMA: ObjectSchema<Configuration> = {
               },
             },
           },
-        },
-        topResultsToAnnounce: {
-          type: "number",
-          label: "Top Results To Announce",
-          min: 1,
-          hint: "This should atleast be 1. Setting to zero is very bad.",
         },
         xpRewardBrackets: {
           type: "array",

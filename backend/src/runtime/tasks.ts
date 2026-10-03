@@ -2,7 +2,6 @@ import type { MessageBatch } from "@cloudflare/workers-types";
 import { z } from "zod/v3";
 import { statement, binding } from "../db/client";
 import { runtime } from "./env";
-import { integration } from "../utils/integration";
 import { jobHandler } from "../workers/later-worker";
 import type { LaterTask, LaterTaskType } from "../queues/later-queue";
 import * as UserDAL from "../dal/user";
@@ -95,8 +94,6 @@ async function consume(delivery: Delivery): Promise<void> {
     if (await UserDAL.exists(reward.uid)) {
       await UserDAL.addToInbox(reward.uid, reward.mail, reward.inboxConfig);
     }
-  } else if (row.type === "george-tasks") {
-    await integration("george/tasks", data, delivery.id);
   } else {
     throw new Error(`Unknown delivery type: ${row.type}`);
   }
@@ -130,7 +127,6 @@ export async function scheduled(scheduledTime: number): Promise<void> {
         "DELETE FROM audit_logs WHERE important=0 AND timestamp<?",
         now - 30 * 86400000,
       ),
-      statement("DELETE FROM oauth_states WHERE expires_at<=?", now),
       statement("DELETE FROM rate_counters WHERE expires_at<=?", now),
       statement("DELETE FROM auth_sessions WHERE expires_at<=?", now),
       statement("DELETE FROM auth_verifications WHERE expires_at<=?", now),

@@ -18,6 +18,8 @@ describe("offline migration preflight", () => {
     email: "import@example.com",
     addedAt: new Date(1000),
     xp: BSON.Long.fromNumber(500),
+    discordId: "removed-id",
+    discordAvatar: "removed-avatar",
     personalBests: { time: {} },
     inbox: [
       {
@@ -49,6 +51,11 @@ describe("offline migration preflight", () => {
     expect(JSON.parse(grant ?? "{}")).toEqual({
       rewards: [{ type: "xp", item: 25 }],
     });
+    const imported = await local.db
+      .prepare("SELECT data FROM users WHERE uid='import-user'")
+      .first<string>("data");
+    expect(JSON.parse(imported ?? "{}")).not.toHaveProperty("discordId");
+    expect(JSON.parse(imported ?? "{}")).not.toHaveProperty("discordAvatar");
     expect(() => {
       normalize(BSON.Long.fromString("9007199254740993"));
     }).toThrow("Unsafe BSON integer");
@@ -100,6 +107,46 @@ describe("offline migration preflight", () => {
       ),
     ).rejects.toThrow(/UNIQUE/);
   });
+  it("discards obsolete configuration, blocklist identities and active bot jobs", () => {
+    const rows = mapDocument("configuration", {
+      _id: id,
+      users: { signUp: true, discordIntegration: { enabled: true } },
+      dailyLeaderboards: { enabled: true, topResultsToAnnounce: 10 },
+    });
+    expect(JSON.parse(rows[0]?.values["data"] as string)).toEqual({
+      users: { signUp: true },
+      dailyLeaderboards: { enabled: true },
+    });
+    expect(
+      mapDocument("blocklist", {
+        _id: id,
+        emailHash: "email",
+        discordIdHash: "removed",
+      }),
+    ).toEqual([
+      {
+        table: "blocklist",
+        key: ["kind", "hash"],
+        values: { kind: "email", hash: "email", timestamp: 0 },
+      },
+    ]);
+    const mapped = mapRedisSnapshot([
+      {
+        key: "bull:george-tasks:active",
+        type: "list",
+        expiresAt: null,
+        value: ["running"],
+      },
+      {
+        key: "bull:george-tasks:wait",
+        type: "list",
+        expiresAt: null,
+        value: ["pending"],
+      },
+    ]);
+    expect(mapped.rows).toEqual([]);
+    expect(mapped.discardedDiscordJobs).toBe(2);
+  });
   it("translates period rankings and unstarted Bull jobs; refuses partial jobs", async () => {
     const snapshot = [
       {
@@ -115,6 +162,8 @@ describe("offline migration preflight", () => {
         value: {
           "import-user": JSON.stringify({
             uid: "import-user",
+            discordId: "removed-id",
+            discordAvatar: "removed-avatar",
             wpm: 80,
             acc: 100,
             timestamp: 1,
@@ -146,6 +195,12 @@ describe("offline migration preflight", () => {
       "daily_entries",
       "scheduled_jobs",
     ]);
+    expect(
+      JSON.parse(mapped.rows[0]?.values["data"] as string),
+    ).not.toHaveProperty("discordId");
+    expect(
+      JSON.parse(mapped.rows[0]?.values["data"] as string),
+    ).not.toHaveProperty("discordAvatar");
     for (const row of mapped.rows) {
       await local.db.batch(rowSql(row).map((sql) => local.db.prepare(sql)));
     }

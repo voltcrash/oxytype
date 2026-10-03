@@ -69,9 +69,9 @@ Generate the secret privately (`openssl rand -base64 32`); preserve it across
 redeployments. Set `BETTER_AUTH_URL` in Wrangler vars to the deployed URL plus
 `/api/auth`, rebuild/redeploy. Do not put secrets in git. Optional secrets:
 `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`,
-`GITHUB_CLIENT_SECRET`, `RECAPTCHA_SECRET`, `GITHUB_WEBHOOK_SECRET`,
+`GITHUB_CLIENT_SECRET`, `RECAPTCHA_SECRET`,
 `INTEGRATION_SECRET`, `STATS_USERNAME`, `STATS_PASSWORD`.
-Optional nonsecret vars: `DISCORD_CLIENT_ID`, `INTEGRATION_URL`, `QUOTES_REPOSITORY`.
+Optional nonsecret vars: `INTEGRATION_URL`, `QUOTES_REPOSITORY`.
 
 Without OAuth credentials no social login is available. Without a real captcha
 secret production signup fails closed. **The anticheat implementation is absent:
@@ -83,14 +83,25 @@ Cross-site staging cookies use Secure/SameSite=None and explicit localhost
 origin checks. Some browsers block third-party cookies; a same-site frontend/API
 proxy is preferable for end-to-end OAuth testing.
 
+## Discord removal
+
+Back up D1 and pause API writes/consumers for this update. Apply
+`0002_remove_discord.sql`, deploy the updated Worker, then resume traffic. It drops the
+Discord column/index and OAuth-state table, removes identity/avatar fields from
+user/ranking JSON, deletes Discord blocklist entries and pending bot deliveries,
+and removes obsolete configuration. Accounts, sessions, rankings and rewards
+are retained. Already-published bot delivery IDs acknowledge as missing rows.
+
+The account-linking endpoints, avatar integration, rich presence and Discord
+announcements are removed. Disable the old GitHub release webhook and bot
+consumer; remove obsolete `DISCORD_CLIENT_ID` and `GITHUB_WEBHOOK_SECRET` bindings.
+The quote approval bridge remains optional.
+
 ## External bridge
 
 `INTEGRATION_URL` must be HTTPS; bearer auth uses `INTEGRATION_SECRET`.
 Every POST supplies `Idempotency-Key`; successful replies must be JSON.
 
-- `george/tasks`: body `{name,args}` matching `queues/george-queue.ts`.
-  Persist idempotency keys before Discord/bot effects and return the stored
-  result on repeats. Existing bot code is outside this repo.
 - `quotes/approve`: payload from `dal/new-quotes.ts`, including the allowed
   repository and quote. Restrict repository/origin to deployment-owned Oxytype
   repos; reject upstream repositories. Commit/publish quote assets externally.
@@ -105,11 +116,11 @@ Cron runs every minute: sends at most 10 outbox IDs and 10 due job IDs. Uncomple
 outbox rows are rediscovered after 15 minutes. Scheduled jobs use leases, SQL due
 timestamps and at most 23 processing attempts; Queues adds retry/DLQ delivery.
 Queue concurrency and batch size are one. Rewards process pages of 20, with
-stable period/user mail IDs and unique D1 claims. External effects require bridge
+stable period/user mail IDs and unique D1 claims. Quote publication requires bridge
 idempotency; Queues itself is not exactly once.
 
 Every 15 minutes rebuild indexed all-time snapshots/histograms; hourly purge
-expired auth/state/counters, 30-day nonimportant audits and 90-day completed
+expired auth records/counters, 30-day nonimportant audits and 90-day completed
 outbox rows. Expired period rows remain while their payout jobs are unfinished,
 including failed jobs. Important audits, results and completed scheduler IDs
 have no automatic deletion policy; monitor their growth.
@@ -118,7 +129,7 @@ Inspect `scheduled_jobs` status/attempts/lease and unfinished `outbox` rows;
 monitor Cloudflare queue backlog/DLQ and Workers logs. Resolve the cause before
 replaying a failed job. For a reviewed job ID, reset status to `pending`, attempts
 and lease to zero; Cron rediscovers it. Reward IDs still deduplicate. Replaying
-external outbox rows is safe only with a proven bridge idempotency contract.
+outbox rows requires preserving reward identities and deduplication claims.
 No automatic DLQ consumer silently discards failures.
 
 ## Preserving data migration (separate from empty staging)
@@ -143,11 +154,12 @@ orphans fail preflight. Derived `leaderboards.*` snapshots are rebuilt. Legacy
 `errors` become audit events; original export retains raw source records.
 
 Redis mapping preserves daily/weekly entries and expiry; unstarted `later` jobs
-become D1 scheduled jobs. Active jobs or attempted payout jobs are rejected:
-drain/reconcile them before exporting. Pending `george-tasks` remain archived,
-with a manifest count, for explicit old-bot/bridge handoff. Other Redis keys are
-archived, not authoritative imports. Verify the original bot's queue prefix when
-exporting. No Redis snapshot means active boards/jobs need an explicit reset/drain decision.
+become D1 scheduled jobs. Active `later` jobs or attempted payout jobs are rejected:
+drain/reconcile them before exporting. Legacy `george-tasks` are discarded from
+imports, including active bot jobs, with `discardedDiscordJobs` recorded in the
+manifest. Original exports retain their source records. Discord identity/avatar
+fields and blocklist hashes are also excluded. Other Redis keys are archived,
+not authoritative imports. No Redis snapshot means active boards/jobs need an explicit reset/drain decision.
 
 Keep the original Better Auth secret when retaining sessions; otherwise invalidate
 sessions deliberately. Resolve identity/relationship conflicts in the source or

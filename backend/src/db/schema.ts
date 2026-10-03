@@ -107,7 +107,6 @@ export const users = sqliteTable("users", {
   name: text("name").notNull(),
   nameKey: text("name_key").notNull().unique(),
   email: text("email").notNull(),
-  discordId: text("discord_id").unique(),
   addedAt: integer("added_at").notNull(),
   xp: integer("xp").notNull().default(0),
   timeTyping: real("time_typing").notNull().default(0),
@@ -418,15 +417,6 @@ export const rewardGrants = sqliteTable(
     uniqueIndex("reward_grants_origin_idx").on(t.origin, t.uid),
     index("reward_grants_owner_idx").on(t.uid),
   ],
-);
-export const oauthStates = sqliteTable(
-  "oauth_states",
-  {
-    uid: owner().primaryKey(),
-    token: text("token").notNull(),
-    expiresAt: integer("expires_at").notNull(),
-  },
-  (t) => [index("oauth_states_expiry_idx").on(t.expiresAt)],
 );
 export const rateCounters = sqliteTable(
   "rate_counters",

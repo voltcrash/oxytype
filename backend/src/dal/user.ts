@@ -43,7 +43,6 @@ import type { Result as ResultType } from "@oxytype/schemas/results";
 import type { Configuration } from "@oxytype/schemas/configuration";
 import { isToday, isYesterday } from "@oxytype/util/date-and-time";
 import { addImportantLog } from "./logs";
-import GeorgeQueue from "../queues/george-queue";
 
 export type DBUserTag = WithObjectId<UserTag>;
 
@@ -146,8 +145,6 @@ export async function resetUser(uid: string): Promise<void> {
       streak: { length: 0, lastResultTimestamp: 0, maxLength: 0 },
       testActivity: {},
     });
-    delete user.discordAvatar;
-    delete user.discordId;
     delete user.lbOptOut;
     delete user.inbox;
     await stage(
@@ -272,15 +269,6 @@ export async function getUserByName(
   const user = await findByName(name);
   if (!user) throw new MonkeyError(404, "User not found", stack);
   return user;
-}
-export async function isDiscordIdAvailable(
-  discordId: string,
-): Promise<boolean> {
-  return !(await database()
-    .select({ uid: users.uid })
-    .from(users)
-    .where(eq(users.discordId, discordId))
-    .get());
 }
 export async function addResultFilterPreset(
   uid: string,
@@ -450,22 +438,6 @@ export async function updateTypingStats(
     user.timeTyping = (user.timeTyping ?? 0) + timeTyping;
   });
 }
-export async function linkDiscord(
-  uid: string,
-  discordId: string,
-  discordAvatar?: string,
-): Promise<void> {
-  await mutateUser(uid, (user) => {
-    user.discordId = discordId;
-    if (discordAvatar !== undefined) user.discordAvatar = discordAvatar;
-  });
-}
-export async function unlinkDiscord(uid: string): Promise<void> {
-  await mutateUser(uid, (user) => {
-    delete user.discordId;
-    delete user.discordAvatar;
-  });
-}
 export async function incrementBananas(
   uid: string,
   wpm: number,
@@ -630,9 +602,6 @@ export async function recordAutoBanEvent(
       { autoBanTimestamps: user.autoBanTimestamps, banningUser: banned },
       uid,
     );
-    if (banned && user.discordId !== undefined && user.discordId !== "") {
-      await GeorgeQueue.userBanned(user.discordId, true);
-    }
     return banned;
   });
 }
@@ -904,8 +873,6 @@ export async function getFriends(uid: string): Promise<DBFriend[]> {
     friends.push({
       uid: user.uid,
       name: user.name,
-      discordId: user.discordId,
-      discordAvatar: user.discordAvatar,
       startedTests: user.startedTests,
       completedTests: user.completedTests,
       timeTyping: user.timeTyping,

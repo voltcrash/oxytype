@@ -9,7 +9,6 @@ import presets from "./presets";
 import apeKeys from "./ape-keys";
 import admin from "./admin";
 import { createDocsRoutes } from "./docs";
-import webhooks from "./webhooks";
 import dev from "./dev";
 import configs from "./configs";
 import configuration from "./configuration";
@@ -46,7 +45,6 @@ const router = s.router(contract, {
   dev,
   users,
   quotes,
-  webhooks,
   connections,
 });
 

@@ -23,7 +23,6 @@ import {
   incrementResult,
   incrementDailyLeaderboard,
 } from "../../utils/prometheus";
-import GeorgeQueue from "../../queues/george-queue";
 import {
   getDailyLeaderboard,
   purgeUserFromDailyLeaderboards,
@@ -491,14 +490,6 @@ async function addResultAtomic(
 
   if (completedEvent.mode === "time" && completedEvent.mode2 === "60") {
     await UserDAL.incrementBananas(uid, completedEvent.wpm);
-    if (
-      isPb &&
-      user.discordId !== undefined &&
-      user.discordId !== "" &&
-      user.lbOptOut !== true
-    ) {
-      await GeorgeQueue.updateDiscordRole(user.discordId, completedEvent.wpm);
-    }
   }
 
   delete completedEvent.challenge;
@@ -562,8 +553,6 @@ async function addResultAtomic(
         consistency: completedEvent.consistency,
         timestamp: completedEvent.timestamp,
         uid,
-        discordAvatar: user.discordAvatar,
-        discordId: user.discordId,
         badgeId: selectedBadgeId,
         isPremium,
       },
@@ -661,8 +650,6 @@ async function addResultAtomic(
         entry: {
           uid,
           name: user.name,
-          discordAvatar: user.discordAvatar,
-          discordId: user.discordId,
           badgeId: selectedBadgeId,
           lastActivityTimestamp: Date.now(),
           isPremium,

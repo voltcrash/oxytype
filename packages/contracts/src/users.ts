@@ -167,27 +167,6 @@ export const EditCustomThemeRequstSchema = z.object({
 });
 export type EditCustomThemeRequst = z.infer<typeof EditCustomThemeRequstSchema>;
 
-export const GetDiscordOauthLinkResponseSchema = responseWithData(
-  z.object({
-    url: z.string().url(),
-  }),
-);
-export type GetDiscordOauthLinkResponse = z.infer<
-  typeof GetDiscordOauthLinkResponseSchema
->;
-
-export const LinkDiscordRequestSchema = z.object({
-  tokenType: z.string(),
-  accessToken: z.string(),
-  state: z.string().length(20),
-});
-export type LinkDiscordRequest = z.infer<typeof LinkDiscordRequestSchema>;
-
-export const LinkDiscordResponseSchema = responseWithData(
-  UserSchema.pick({ discordId: true, discordAvatar: true }),
-);
-export type LinkDiscordResponse = z.infer<typeof LinkDiscordResponseSchema>;
-
 export const GetStatsResponseSchema = responseWithData(
   UserSchema.pick({
     completedTests: true,
@@ -612,52 +591,6 @@ export const usersContract = c.router(
       },
       metadata: meta({
         rateLimit: "userCustomThemeEdit",
-      }),
-    },
-    getDiscordOAuth: {
-      summary: "discord oauth",
-      description: "Start OAuth authentication with discord",
-      method: "GET",
-      path: "/discord/oauth",
-      responses: {
-        200: GetDiscordOauthLinkResponseSchema,
-      },
-      metadata: meta({
-        rateLimit: "userDiscordLink",
-        requireConfiguration: {
-          path: "users.discordIntegration.enabled",
-          invalidMessage: "Discord integration is not available at this time",
-        },
-      }),
-    },
-    linkDiscord: {
-      summary: "link with discord",
-      description: "Links a user's account with a discord account",
-      method: "POST",
-      path: "/discord/link",
-      body: LinkDiscordRequestSchema.strict(),
-      responses: {
-        200: LinkDiscordResponseSchema,
-      },
-      metadata: meta({
-        rateLimit: "userDiscordLink",
-        requireConfiguration: {
-          path: "users.discordIntegration.enabled",
-          invalidMessage: "Discord integration is not available at this time",
-        },
-      }),
-    },
-    unlinkDiscord: {
-      summary: "unlink discord",
-      description: "Unlinks a user's account with a discord account",
-      method: "POST",
-      path: "/discord/unlink",
-      body: c.noBody(),
-      responses: {
-        200: MonkeyResponseSchema,
-      },
-      metadata: meta({
-        rateLimit: "userDiscordUnlink",
       }),
     },
     getStats: {

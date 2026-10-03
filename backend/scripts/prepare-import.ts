@@ -88,7 +88,9 @@ async function main(): Promise<void> {
     await local.db.batch(queries.map((query) => local.db.prepare(query)));
     for (const query of queries) await append(query);
   };
-  let redisSummary: { externalJobs: number; archivedKeys: number } | undefined;
+  let redisSummary:
+    | { discardedDiscordJobs: number; archivedKeys: number }
+    | undefined;
   try {
     for (const collection of collections) {
       const item = manifest.collections[collection];
@@ -131,7 +133,7 @@ async function main(): Promise<void> {
       const mapped = mapRedisSnapshot(JSON.parse(json));
       for (const row of mapped.rows) await applyRow(row);
       redisSummary = {
-        externalJobs: mapped.externalJobs,
+        discardedDiscordJobs: mapped.discardedDiscordJobs,
         archivedKeys: mapped.archivedKeys,
       };
     }

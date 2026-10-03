@@ -2,8 +2,11 @@ import { Miniflare } from "miniflare";
 import { readFile, readdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import type { WorkerEnv } from "../../src/runtime/env";
+import type { D1Database } from "@cloudflare/workers-types";
 
-export async function createTestRuntime(): Promise<{
+export async function createTestRuntime(options?: {
+  beforeMigration?: (db: D1Database, file: string) => Promise<void>;
+}): Promise<{
   env: WorkerEnv;
   dispose: () => Promise<void>;
 }> {
@@ -33,6 +36,7 @@ export async function createTestRuntime(): Promise<{
   for (const file of (await readdir(migrations))
     .filter((name) => name.endsWith(".sql"))
     .sort()) {
+    await options?.beforeMigration?.(db, file);
     const queries = (await readFile(resolve(migrations, file), "utf8"))
       .split("--> statement-breakpoint")
       .filter((query) => query.trim());

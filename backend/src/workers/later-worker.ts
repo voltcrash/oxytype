@@ -2,7 +2,6 @@ import Logger from "../utils/logger";
 import { statement, encode, binding } from "../db/client";
 import { createHash } from "node:crypto";
 import type { Configuration } from "@oxytype/schemas/configuration";
-import GeorgeQueue from "../queues/george-queue";
 import { buildMonkeyMail } from "../utils/monkey-mail";
 import { DailyLeaderboard } from "../utils/daily-leaderboards";
 import { getCachedConfiguration } from "../init/configuration";
@@ -28,11 +27,10 @@ async function handleDailyLeaderboardResults(
     users: { inbox: inboxConfig },
   } = await getCachedConfiguration(false);
 
-  const { maxResults, xpRewardBrackets, topResultsToAnnounce } =
-    dailyLeaderboardsConfig;
+  const { maxResults, xpRewardBrackets } = dailyLeaderboardsConfig;
+  if (!inboxConfig.enabled || xpRewardBrackets.length === 0) return;
 
   const maxRankToGet = Math.max(
-    topResultsToAnnounce,
     ...xpRewardBrackets.map((bracket) => bracket.maxRank),
   );
 
@@ -105,28 +103,6 @@ async function handleDailyLeaderboardResults(
       },
     );
   }
-  if ((ctx.offset ?? 0) > 0) return;
-  const announcementResults =
-    topResultsToAnnounce > 20
-      ? await dailyLeaderboard.getResults(
-          0,
-          topResultsToAnnounce,
-          dailyLeaderboardsConfig,
-          false,
-          undefined,
-          true,
-        )
-      : results;
-  const topResults =
-    announcementResults?.entries.slice(0, topResultsToAnnounce) ?? [];
-
-  const leaderboardId = `${mode} ${mode2} ${language}`;
-  await GeorgeQueue.announceDailyLeaderboardTopResults(
-    leaderboardId,
-    yesterdayTimestamp,
-    topResults,
-    `daily-announcement:${yesterdayTimestamp}:${language}:${mode}:${mode2}`,
-  );
 }
 
 async function handleWeeklyXpLeaderboardResults(

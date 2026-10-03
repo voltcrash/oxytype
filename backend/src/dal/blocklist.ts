@@ -3,7 +3,7 @@ import { and, eq, or } from "drizzle-orm";
 import type { User } from "@oxytype/schemas/users";
 import { binding, database, statement } from "../db/client";
 import { blocklist } from "../db/schema";
-type Properties = Pick<User, "name" | "email" | "discordId">;
+type Properties = Pick<User, "name" | "email">;
 function entries(user: Partial<Properties>): { kind: string; hash: string }[] {
   return Object.entries(user)
     .filter(([, value]) => value !== undefined)
@@ -14,20 +14,14 @@ export function hash(value: string): string {
 }
 export async function add(user: Properties): Promise<void> {
   await binding().batch(
-    entries(user)
-      .filter(
-        (entry) =>
-          entry.kind !== "discordId" ||
-          (user.discordId !== undefined && user.discordId !== ""),
-      )
-      .map((entry) =>
-        statement(
-          "INSERT INTO blocklist(kind,hash,timestamp) VALUES(?,?,?) ON CONFLICT(kind,hash) DO UPDATE SET timestamp=excluded.timestamp",
-          entry.kind,
-          entry.hash,
-          Date.now(),
-        ),
+    entries(user).map((entry) =>
+      statement(
+        "INSERT INTO blocklist(kind,hash,timestamp) VALUES(?,?,?) ON CONFLICT(kind,hash) DO UPDATE SET timestamp=excluded.timestamp",
+        entry.kind,
+        entry.hash,
+        Date.now(),
       ),
+    ),
   );
 }
 export async function remove(user: Partial<Properties>): Promise<void> {

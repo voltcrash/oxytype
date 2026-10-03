@@ -17,7 +17,6 @@ import { ObjectId } from "mongodb";
 import { hashApeKey } from "../../src/utils/ape-key-hash";
 import MonkeyError from "../../src/utils/error";
 import * as Misc from "../../src/utils/misc";
-import crypto from "crypto";
 import {
   EndpointMetadata,
   RequestAuthenticationOptions,
@@ -25,8 +24,6 @@ import {
 import * as Prometheus from "../../src/utils/prometheus";
 import { enableMonkeyErrorExpects } from "../__testData__/monkey-error";
 import { Context } from "../../src/middlewares/context";
-
-const signature = `sha256=${"0".repeat(64)}`;
 
 enableMonkeyErrorExpects();
 const mockDecodedToken: AuthenticatedSession = {
@@ -89,10 +86,8 @@ describe("middlewares/auth", () => {
   describe("authenticateTsRestRequest", () => {
     const prometheusRecordAuthTimeMock = vi.spyOn(Prometheus, "recordAuthTime");
     const prometheusIncrementAuthMock = vi.spyOn(Prometheus, "incrementAuth");
-    const timingSafeEqualMock = vi.spyOn(crypto, "timingSafeEqual");
 
     beforeEach(() => {
-      timingSafeEqualMock.mockClear().mockReturnValue(true);
       [prometheusIncrementAuthMock, prometheusRecordAuthTimeMock].forEach(
         (it) => it.mockClear(),
       );
@@ -465,124 +460,6 @@ describe("middlewares/auth", () => {
 
       expect(prometheusIncrementAuthMock).toHaveBeenCalledWith("ApeKey");
       expect(prometheusRecordAuthTimeMock).toHaveBeenCalledOnce();
-    });
-    it("should allow githubwebhook with header", async () => {
-      vi.stubEnv("GITHUB_WEBHOOK_SECRET", "GITHUB_WEBHOOK_SECRET");
-      //WHEN
-      const result = await authenticate(
-        {
-          headers: { "x-hub-signature-256": signature },
-          body: { action: "published", release: { id: 1 } },
-        },
-        { isGithubWebhook: true },
-      );
-
-      //THEN
-      const decodedToken = result.decodedToken;
-      expect(decodedToken?.type).toBe("GithubWebhook");
-      expect(decodedToken?.email).toBe("");
-      expect(decodedToken?.uid).toBe("");
-      expect(nextFunction).toHaveBeenCalledTimes(1);
-
-      expect(prometheusIncrementAuthMock).toHaveBeenCalledWith("GithubWebhook");
-      expect(prometheusRecordAuthTimeMock).toHaveBeenCalledOnce();
-      expect(timingSafeEqualMock).toHaveBeenCalledWith(
-        Buffer.from(
-          "sha256=ff0f3080539e9df19153f6b5b5780f66e558d61038e6cf5ecf4efdc7266a7751",
-        ),
-        Buffer.from(signature),
-      );
-    });
-    it("should fail githubwebhook with mismatched signature", async () => {
-      vi.stubEnv("GITHUB_WEBHOOK_SECRET", "GITHUB_WEBHOOK_SECRET");
-      timingSafeEqualMock.mockReturnValue(false);
-
-      await expect(async () =>
-        authenticate(
-          {
-            headers: { "x-hub-signature-256": signature },
-            body: { action: "published", release: { id: 1 } },
-          },
-          { isGithubWebhook: true },
-        ),
-      ).rejects.toThrow("Github webhook signature invalid");
-
-      //THEH
-      expect(prometheusIncrementAuthMock).not.toHaveBeenCalled();
-      expect(prometheusRecordAuthTimeMock).toHaveBeenCalledWith(
-        "None",
-        "failure",
-        expect.anything(),
-        expect.anything(),
-      );
-    });
-    it("should fail without header when endpoint is using githubwebhook", async () => {
-      vi.stubEnv("GITHUB_WEBHOOK_SECRET", "GITHUB_WEBHOOK_SECRET");
-      await expect(async () =>
-        authenticate(
-          {
-            headers: {},
-            body: { action: "published", release: { id: 1 } },
-          },
-          { isGithubWebhook: true },
-        ),
-      ).rejects.toThrow("Missing Github signature header");
-
-      //THEH
-      expect(prometheusIncrementAuthMock).not.toHaveBeenCalled();
-      expect(prometheusRecordAuthTimeMock).toHaveBeenCalledWith(
-        "None",
-        "failure",
-        expect.anything(),
-        expect.anything(),
-      );
-    });
-    it("should fail with missing GITHUB_WEBHOOK_SECRET when endpoint is using githubwebhook", async () => {
-      vi.stubEnv("GITHUB_WEBHOOK_SECRET", "");
-      await expect(async () =>
-        authenticate(
-          {
-            headers: { "x-hub-signature-256": signature },
-            body: { action: "published", release: { id: 1 } },
-          },
-          { isGithubWebhook: true },
-        ),
-      ).rejects.toThrow("Missing Github Webhook Secret");
-
-      //THEH
-      expect(prometheusIncrementAuthMock).not.toHaveBeenCalled();
-      expect(prometheusRecordAuthTimeMock).toHaveBeenCalledWith(
-        "None",
-        "failure",
-        expect.anything(),
-        expect.anything(),
-      );
-    });
-    it("should throw 500 if something went wrong when validating the signature when endpoint is using githubwebhook", async () => {
-      vi.stubEnv("GITHUB_WEBHOOK_SECRET", "GITHUB_WEBHOOK_SECRET");
-      timingSafeEqualMock.mockImplementation(() => {
-        throw new Error("could not validate");
-      });
-      await expect(async () =>
-        authenticate(
-          {
-            headers: { "x-hub-signature-256": signature },
-            body: { action: "published", release: { id: 1 } },
-          },
-          { isGithubWebhook: true },
-        ),
-      ).rejects.toThrow(
-        "Failed to authenticate Github webhook: could not validate",
-      );
-
-      //THEH
-      expect(prometheusIncrementAuthMock).not.toHaveBeenCalled();
-      expect(prometheusRecordAuthTimeMock).toHaveBeenCalledWith(
-        "None",
-        "failure",
-        expect.anything(),
-        expect.anything(),
-      );
     });
   });
 });

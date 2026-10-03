@@ -82,6 +82,17 @@ function data(value: unknown): string {
 }
 export function mapDocument(collection: string, source: unknown): ImportRow[] {
   const d = normalize(source) as Document;
+  if (collection === "users") {
+    delete d["discordId"];
+    delete d["discordAvatar"];
+  } else if (collection === "configuration") {
+    if (d["users"] !== undefined) delete d["users"]["discordIntegration"];
+    if (d["dailyLeaderboards"] !== undefined) {
+      delete d["dailyLeaderboards"]["topResultsToAnnounce"];
+    }
+  } else if (collection === "configs" || collection === "presets") {
+    if (d["config"] !== undefined) delete d["config"]["showDiscordDot"];
+  }
   const rows: ImportRow[] = [];
   const row = (
     table: string,
@@ -101,10 +112,6 @@ export function mapDocument(collection: string, source: unknown): ImportRow[] {
       name: text(d["name"]),
       name_key: text(d["name"]).toLowerCase(),
       email: text(d["email"]),
-      discord_id:
-        d["discordId"] === undefined || d["discordId"] === ""
-          ? null
-          : text(d["discordId"]),
       added_at: num(d["addedAt"]),
       xp: num(d["xp"]),
       time_typing: num(d["timeTyping"]),
@@ -296,7 +303,6 @@ export function mapDocument(collection: string, source: unknown): ImportRow[] {
     for (const [key, kind] of Object.entries({
       usernameHash: "name",
       emailHash: "email",
-      discordIdHash: "discordId",
     })) {
       if (d[key] !== undefined && d[key] !== "") {
         row("blocklist", ["kind", "hash"], {

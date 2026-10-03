@@ -32,7 +32,7 @@ const Task = z.discriminatedUnion("taskName", [
 ]);
 export function mapRedisSnapshot(input: unknown): {
   rows: ImportRow[];
-  externalJobs: number;
+  discardedDiscordJobs: number;
   archivedKeys: number;
 } {
   const snapshot = Snapshot.parse(input),
@@ -60,6 +60,8 @@ export function mapRedisSnapshot(input: unknown): {
         throw new Error("Incomplete/unsafe Redis score");
       }
       const entry = Entry.parse(JSON.parse(data[uid]));
+      delete entry["discordId"];
+      delete entry["discordAvatar"];
       if (entry.uid !== uid) throw new Error("Redis entry identity mismatch");
       const expiresAt = item.expiresAt ?? 9_000_000_000_000;
       rows.push(
@@ -91,18 +93,18 @@ export function mapRedisSnapshot(input: unknown): {
       );
     }
   }
-  for (const queue of ["later", "george-tasks"]) {
-    const active = keys.get(`bull:${queue}:active`);
-    if (active !== undefined && List.parse(active.value).length > 0) {
-      throw new Error(
-        "Drain active Bull jobs before migration; partial jobs cannot be replayed safely",
-      );
-    }
+  const active = keys.get("bull:later:active");
+  if (active !== undefined && List.parse(active.value).length > 0) {
+    throw new Error(
+      "Drain active Bull jobs before migration; partial jobs cannot be replayed safely",
+    );
   }
-  let externalJobs = 0;
+  let discardedDiscordJobs = 0;
   for (const queue of ["later", "george-tasks"]) {
     const pending = new Set<string>();
-    for (const state of ["wait", "paused", "delayed", "prioritized"]) {
+    const states = ["wait", "paused", "delayed", "prioritized"];
+    if (queue === "george-tasks") states.push("active");
+    for (const state of states) {
       const item = keys.get(`bull:${queue}:${state}`);
       if (item === undefined) continue;
       const values = List.parse(item.value);
@@ -112,7 +114,7 @@ export function mapRedisSnapshot(input: unknown): {
     }
     for (const id of pending) {
       if (queue === "george-tasks") {
-        externalJobs++;
+        discardedDiscordJobs++;
         continue;
       }
       const item = keys.get(`bull:later:${id}`);
@@ -144,5 +146,5 @@ export function mapRedisSnapshot(input: unknown): {
       });
     }
   }
-  return { rows, externalJobs, archivedKeys: snapshot.length };
+  return { rows, discardedDiscordJobs, archivedKeys: snapshot.length };
 }

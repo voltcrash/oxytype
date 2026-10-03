@@ -99,7 +99,7 @@ export async function update(
     statement(
       `INSERT INTO leaderboard_snapshots(generation,board,uid,rank,data)
       SELECT ?,?,u.uid,row_number() OVER(ORDER BY b.wpm DESC,b.acc DESC,b.timestamp DESC,u.uid DESC),
-      json_patch(b.data,json_object('uid',u.uid,'name',u.name,'discordId',u.discord_id,'discordAvatar',json_extract(u.data,'$.discordAvatar'),'badgeId',(SELECT json_extract(value,'$.id') FROM json_each(u.data,'$.inventory.badges') WHERE json_extract(value,'$.selected')=1 LIMIT 1),'isPremium',json(CASE WHEN json_extract(u.data,'$.premium.expirationTimestamp')=-1 OR json_extract(u.data,'$.premium.expirationTimestamp')>? THEN 'true' ELSE 'false' END)))
+      json_patch(b.data,json_object('uid',u.uid,'name',u.name,'badgeId',(SELECT json_extract(value,'$.id') FROM json_each(u.data,'$.inventory.badges') WHERE json_extract(value,'$.selected')=1 LIMIT 1),'isPremium',json(CASE WHEN json_extract(u.data,'$.premium.expirationTimestamp')=-1 OR json_extract(u.data,'$.premium.expirationTimestamp')>? THEN 'true' ELSE 'false' END)))
       FROM leaderboard_bests b JOIN users u ON b.uid=u.uid WHERE b.board=? AND b.wpm>0 AND b.acc>0 AND b.timestamp>0 AND u.banned=0 AND u.lb_opt_out=0 AND u.needs_to_change_name=0 AND u.time_typing>?`,
       generation,
       key,

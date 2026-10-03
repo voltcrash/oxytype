@@ -15,7 +15,6 @@ export type OpenApiTag =
   | "development"
   | "users"
   | "quotes"
-  | "webhooks"
   | "connections";
 
 export type PermissionId =
@@ -62,8 +61,6 @@ export type RequestAuthenticationOptions = {
   noCache?: boolean;
   /** Allow unauthenticated requests on dev  */
   isPublicOnDev?: boolean;
-  /** Endpoint is a webhook only to be called by Github */
-  isGithubWebhook?: boolean;
 };
 
 export const MonkeyResponseSchema = z.object({

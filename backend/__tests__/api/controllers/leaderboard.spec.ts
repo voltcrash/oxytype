@@ -58,8 +58,6 @@ describe("Loaderboard Controller", () => {
             consistency: 80,
             uid: "user1",
             name: "user1",
-            discordId: "discordId",
-            discordAvatar: "discordAvatar",
             rank: 1,
             badgeId: 1,
             isPremium: true,
@@ -507,8 +505,6 @@ describe("Loaderboard Controller", () => {
             raw: 92,
             consistency: 80,
             uid: "user1",
-            discordId: "discordId",
-            discordAvatar: "discordAvatar",
           },
           {
             wpm: 10,
@@ -1056,8 +1052,6 @@ describe("Loaderboard Controller", () => {
           timeTypedSeconds: 100,
           uid: "user1",
           name: "user1",
-          discordId: "discordId",
-          discordAvatar: "discordAvatar",
           lastActivityTimestamp: 1000,
         },
         {
@@ -1066,8 +1060,6 @@ describe("Loaderboard Controller", () => {
           timeTypedSeconds: 200,
           uid: "user2",
           name: "user2",
-          discordId: "discordId2",
-          discordAvatar: "discordAvatar2",
           lastActivityTimestamp: 2000,
         },
       ];
@@ -1280,8 +1272,6 @@ describe("Loaderboard Controller", () => {
         timeTypedSeconds: 100,
         uid: "user1",
         name: "user1",
-        discordId: "discordId",
-        discordAvatar: "discordAvatar",
         lastActivityTimestamp: 1000,
       };
 

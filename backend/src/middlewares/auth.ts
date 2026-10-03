@@ -1,18 +1,16 @@
-import { envValue } from "../runtime/env";
 import { getSessionCookie } from "better-auth/cookies";
 import { verifyApeKey, hashApeKey } from "../utils/ape-key-hash";
 import { upgradeHash, getApeKey, updateLastUsedOn } from "../dal/ape-keys";
 import MonkeyError from "../utils/error";
 import { verifySession } from "../utils/auth";
 import { base64UrlDecode, isDevEnvironment } from "../utils/misc";
-import { ApiMiddleware, HttpRequest } from "../api/http";
+import { ApiMiddleware } from "../api/http";
 import statuses from "../constants/monkey-status-codes";
 import {
   incrementAuth,
   recordAuthTime,
   recordRequestCountry,
 } from "../utils/prometheus";
-import crypto from "crypto";
 import { performance } from "perf_hooks";
 import {
   EndpointMetadata,
@@ -22,13 +20,12 @@ import { Configuration } from "@oxytype/schemas/configuration";
 import { getMetadata } from "./utility";
 
 export type DecodedToken = {
-  type: "Bearer" | "Session" | "ApeKey" | "None" | "GithubWebhook";
+  type: "Bearer" | "Session" | "ApeKey" | "None";
   uid: string;
   email: string;
 };
 
 const DEFAULT_OPTIONS: RequestAuthenticationOptions = {
-  isGithubWebhook: false,
   isPublic: false,
   acceptApeKeys: false,
   requireFreshToken: false,
@@ -56,15 +53,10 @@ export function authenticateTsRestRequest(): ApiMiddleware {
       options.isPublic === true ||
       (options.isPublicOnDev && isDevEnvironment());
 
-    const {
-      authorization: authHeader,
-      "x-hub-signature-256": githubWebhookHeader,
-    } = req.headers;
+    const { authorization: authHeader } = req.headers;
 
     try {
-      if (options.isGithubWebhook) {
-        token = authenticateGithubWebhook(req, githubWebhookHeader);
-      } else if (authHeader !== undefined && authHeader !== "") {
+      if (authHeader !== undefined && authHeader !== "") {
         token = await authenticateWithAuthHeader(
           authHeader,
           req.ctx.configuration,
@@ -278,53 +270,4 @@ async function authenticateWithUid(token: string): Promise<DecodedToken> {
     uid: uid,
     email: email ?? "",
   };
-}
-
-export function authenticateGithubWebhook(
-  req: HttpRequest,
-  authHeader: string | string[] | undefined,
-): DecodedToken {
-  try {
-    const webhookSecret = envValue("GITHUB_WEBHOOK_SECRET");
-
-    if (webhookSecret === undefined || webhookSecret === "") {
-      throw new MonkeyError(500, "Missing Github Webhook Secret");
-    }
-
-    if (
-      Array.isArray(authHeader) ||
-      authHeader === undefined ||
-      authHeader === ""
-    ) {
-      throw new MonkeyError(401, "Missing Github signature header");
-    }
-
-    const signature = crypto
-      .createHmac("sha256", webhookSecret)
-      .update(req.rawBody)
-      .digest("hex");
-    const trusted = Buffer.from(`sha256=${signature}`, "ascii");
-    const untrusted = Buffer.from(authHeader, "ascii");
-    const isSignatureValid =
-      trusted.length === untrusted.length &&
-      crypto.timingSafeEqual(trusted, untrusted);
-
-    if (!isSignatureValid) {
-      throw new MonkeyError(401, "Github webhook signature invalid");
-    }
-
-    return {
-      type: "GithubWebhook",
-      uid: "",
-      email: "",
-    };
-  } catch (error) {
-    if (error instanceof MonkeyError) {
-      throw error;
-    }
-    throw new MonkeyError(
-      500,
-      `Failed to authenticate Github webhook: ${(error as Error).message}`,
-    );
-  }
 }

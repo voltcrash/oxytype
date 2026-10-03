@@ -2,7 +2,6 @@ import { MonkeyResponse } from "../../utils/monkey-response";
 import { buildMonkeyMail } from "../../utils/monkey-mail";
 import * as UserDAL from "../../dal/user";
 import * as ReportDAL from "../../dal/report";
-import GeorgeQueue from "../../queues/george-queue";
 import {
   AcceptReportsRequest,
   ClearStreakHourOffsetRequest,
@@ -28,17 +27,11 @@ export async function toggleBan(
 ): Promise<ToggleBanResponse> {
   const { uid } = req.body;
 
-  const user = await UserDAL.getPartialUser(uid, "toggle ban", [
-    "banned",
-    "discordId",
-  ]);
-  const discordId = user.discordId;
-  const discordIdIsValid = discordId !== undefined && discordId !== "";
+  const user = await UserDAL.getPartialUser(uid, "toggle ban", ["banned"]);
 
   const banning = !user.banned;
 
   await UserDAL.setBanned(uid, banning);
-  if (discordIdIsValid) await GeorgeQueue.userBanned(discordId, banning);
 
   if (banning) {
     await Promise.all([

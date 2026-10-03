@@ -155,7 +155,6 @@ describe("D1 data contracts", () => {
     await withRuntime(test.env, async () => {
       await mutateUser("delete", (user) => {
         user.banned = true;
-        user.discordId = "discord123";
       });
       await test.env.DB.prepare(
         "INSERT INTO auth_users(id,name,email,created_at,updated_at) VALUES('delete','delete','delete@example.com',0,0)",
@@ -177,10 +176,10 @@ describe("D1 data contracts", () => {
         true,
       );
       expect(
-        await test.env.DB.prepare(
-          "SELECT count(*) AS count FROM outbox WHERE type='george-tasks'",
-        ).first("count"),
-      ).toBe(1);
+        await test.env.DB.prepare("SELECT count(*) AS count FROM outbox").first(
+          "count",
+        ),
+      ).toBe(0);
     });
   });
   it("resets all owned history and pending rewards atomically; refuses banned resets", async () => {

@@ -2,7 +2,6 @@ import { atomicUser } from "../../db/mutation";
 import * as UserDAL from "../../dal/user";
 import MonkeyError from "../../utils/error";
 import { MonkeyResponse } from "../../utils/monkey-response";
-import * as DiscordUtils from "../../utils/discord";
 import {
   buildAgentLog,
   omit,
@@ -10,7 +9,6 @@ import {
   replaceObjectIds,
   sanitizeString,
 } from "../../utils/misc";
-import GeorgeQueue from "../../queues/george-queue";
 import { verify } from "../../utils/captcha";
 import * as LeaderboardsDAL from "../../dal/leaderboards";
 import { purgeUserFromDailyLeaderboards } from "../../utils/daily-leaderboards";
@@ -49,7 +47,6 @@ import {
   EditTagRequest,
   GetCurrentTestActivityResponse,
   GetCustomThemesResponse,
-  GetDiscordOauthLinkResponse,
   GetFavoriteQuotesResponse,
   GetFriendsResponse,
   GetPersonalBestsQuery,
@@ -63,8 +60,6 @@ import {
   GetTestActivityResponse,
   GetUserInboxResponse,
   GetUserResponse,
-  LinkDiscordRequest,
-  LinkDiscordResponse,
   RemoveFavoriteQuoteRequest,
   RemoveResultFilterPresetPathParams,
   ReportUserRequest,
@@ -152,7 +147,6 @@ export async function resetUser(req: MonkeyRequest): Promise<MonkeyResponse> {
   const userInfo = await atomicUser(uid, async () => {
     const user = await UserDAL.getPartialUser(uid, "reset user", [
       "banned",
-      "discordId",
       "email",
       "name",
     ]);
@@ -160,9 +154,6 @@ export async function resetUser(req: MonkeyRequest): Promise<MonkeyResponse> {
       throw new MonkeyError(403, "Banned users cannot reset their account");
     }
     await UserDAL.resetUser(uid);
-    if (user.discordId !== undefined && user.discordId !== "") {
-      await GeorgeQueue.unlinkDiscord(user.discordId, uid);
-    }
     return user;
   });
   void addImportantLog("user_reset", `${userInfo.email} ${userInfo.name}`, uid);
@@ -382,107 +373,6 @@ export async function getUser(req: MonkeyRequest): Promise<GetUserResponse> {
   });
 }
 
-export async function getOauthLink(
-  req: MonkeyRequest,
-): Promise<GetDiscordOauthLinkResponse> {
-  const { uid } = req.ctx.decodedToken;
-
-  //build the url
-  const url = await DiscordUtils.getOauthLink(uid);
-
-  //return
-  return new MonkeyResponse("Discord oauth link generated", {
-    url: url,
-  });
-}
-
-export async function linkDiscord(
-  req: MonkeyRequest<undefined, LinkDiscordRequest>,
-): Promise<LinkDiscordResponse> {
-  const { uid } = req.ctx.decodedToken;
-  const { tokenType, accessToken, state } = req.body;
-
-  if (!(await DiscordUtils.iStateValidForUser(state, uid))) {
-    throw new MonkeyError(403, "Invalid user token");
-  }
-
-  const userInfo = await UserDAL.getPartialUser(uid, "link discord", [
-    "banned",
-    "discordId",
-    "lbOptOut",
-  ]);
-  if (userInfo.banned) {
-    throw new MonkeyError(403, "Banned accounts cannot link with Discord");
-  }
-
-  const { id: discordId, avatar: discordAvatar } =
-    await DiscordUtils.getDiscordUser(tokenType, accessToken);
-
-  if (userInfo.discordId !== undefined && userInfo.discordId !== "") {
-    await UserDAL.linkDiscord(uid, userInfo.discordId, discordAvatar);
-    return new MonkeyResponse("Discord avatar updated", {
-      discordId,
-      discordAvatar,
-    });
-  }
-
-  if (!discordId) {
-    throw new MonkeyError(
-      500,
-      "Could not get Discord account info",
-      "discord id is undefined",
-    );
-  }
-
-  const discordIdAvailable = await UserDAL.isDiscordIdAvailable(discordId);
-  if (!discordIdAvailable) {
-    throw new MonkeyError(
-      409,
-      "This Discord account is linked to a different account",
-    );
-  }
-
-  if (await BlocklistDal.contains({ discordId })) {
-    throw new MonkeyError(409, "The Discord account is blocked");
-  }
-
-  await UserDAL.linkDiscord(uid, discordId, discordAvatar);
-
-  await GeorgeQueue.linkDiscord(discordId, uid, userInfo.lbOptOut ?? false);
-  void addImportantLog("user_discord_link", `linked to ${discordId}`, uid);
-
-  return new MonkeyResponse("Discord account linked", {
-    discordId,
-    discordAvatar,
-  });
-}
-
-export async function unlinkDiscord(
-  req: MonkeyRequest,
-): Promise<MonkeyResponse> {
-  const { uid } = req.ctx.decodedToken;
-
-  const userInfo = await UserDAL.getPartialUser(uid, "unlink discord", [
-    "banned",
-    "discordId",
-  ]);
-
-  if (userInfo.banned) {
-    throw new MonkeyError(403, "Banned accounts cannot unlink Discord");
-  }
-
-  const discordId = userInfo.discordId;
-  if (discordId === undefined || discordId === "") {
-    throw new MonkeyError(404, "User does not have a linked Discord account");
-  }
-
-  await GeorgeQueue.unlinkDiscord(discordId, uid);
-  await UserDAL.unlinkDiscord(uid);
-  void addImportantLog("user_discord_unlinked", discordId, uid);
-
-  return new MonkeyResponse("Discord account unlinked", null);
-}
-
 export async function addResultFilterPreset(
   req: MonkeyRequest<undefined, AddResultFilterPresetRequest>,
 ): Promise<AddResultFilterPresetResponse> {
@@ -683,8 +573,6 @@ export async function getProfile(
     startedTests,
     timeTyping,
     addedAt,
-    discordId,
-    discordAvatar,
     xp,
     streak,
     lbOptOut,
@@ -732,8 +620,6 @@ export async function getProfile(
     addedAt,
     typingStats,
     personalBests: relevantPersonalBests,
-    discordId,
-    discordAvatar,
     xp,
     streak: streak?.length ?? 0,
     maxStreak: streak?.maxLength ?? 0,

@@ -38,13 +38,10 @@ export function userStatement(
   version: number,
 ): D1PreparedStatement {
   return statement(
-    `UPDATE users SET name=?,name_key=?,email=?,discord_id=?,xp=?,time_typing=?,completed_tests=?,started_tests=?,banned=?,lb_opt_out=?,needs_to_change_name=?,data=?,version=version+1 WHERE uid=? AND version=?`,
+    `UPDATE users SET name=?,name_key=?,email=?,xp=?,time_typing=?,completed_tests=?,started_tests=?,banned=?,lb_opt_out=?,needs_to_change_name=?,data=?,version=version+1 WHERE uid=? AND version=?`,
     user.name,
     user.name.toLowerCase(),
     user.email,
-    user.discordId === undefined || user.discordId === ""
-      ? null
-      : user.discordId,
     user.xp ?? 0,
     user.timeTyping ?? 0,
     user.completedTests ?? 0,

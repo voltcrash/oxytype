@@ -21,9 +21,7 @@ export type WorkerEnv = {
   GOOGLE_CLIENT_SECRET?: string;
   GITHUB_CLIENT_ID?: string;
   GITHUB_CLIENT_SECRET?: string;
-  GITHUB_WEBHOOK_SECRET?: string;
   RECAPTCHA_SECRET?: string;
-  DISCORD_CLIENT_ID?: string;
   INTEGRATION_URL?: string;
   INTEGRATION_SECRET?: string;
   QUOTES_REPOSITORY?: string;

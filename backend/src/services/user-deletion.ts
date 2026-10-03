@@ -1,10 +1,9 @@
 import type { Configuration } from "@oxytype/schemas/configuration";
-import { binding, statement, encode } from "../db/client";
+import { binding, statement } from "../db/client";
 import { hash } from "../dal/blocklist";
 import { readUser, atomicUser, stage } from "../db/mutation";
-import { newId } from "../utils/id";
 import type { DBUser } from "../dal/user";
-type DeletedUserInfo = Pick<DBUser, "banned" | "name" | "email" | "discordId">;
+type DeletedUserInfo = Pick<DBUser, "banned" | "name" | "email">;
 /** Delete application/auth owners together; foreign keys cascade dependent rows. */
 export async function deleteUserAccount(
   uid: string,
@@ -30,7 +29,6 @@ export async function deleteUserAccount(
       for (const [kind, value] of Object.entries({
         name: user.name,
         email: user.email,
-        discordId: user.discordId,
       })) {
         if (value !== undefined && value !== "") {
           statements.push(
@@ -44,16 +42,6 @@ export async function deleteUserAccount(
         }
       }
     }
-    if (user?.discordId !== undefined && user.discordId !== "") {
-      statements.push(
-        statement(
-          "INSERT INTO outbox(id,type,created_at,data) VALUES(?,'george-tasks',?,?)",
-          newId(),
-          Date.now(),
-          encode({ name: "unlinkDiscord", args: [user.discordId, uid] }),
-        ),
-      );
-    }
     for (const query of statements) await stage(query);
     return user === undefined
       ? undefined
@@ -61,7 +49,6 @@ export async function deleteUserAccount(
           banned: user.banned,
           name: user.name,
           email: user.email,
-          discordId: user.discordId,
         };
   });
 }

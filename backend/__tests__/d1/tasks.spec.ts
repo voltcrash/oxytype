@@ -5,6 +5,7 @@ import { createTestRuntime, seedUser } from "./helpers";
 import { runtime, withRuntime } from "../../src/runtime/env";
 import { __testing, dispatch } from "../../src/runtime/tasks";
 import * as UserDAL from "../../src/dal/user";
+import * as Quotes from "../../src/dal/new-quotes";
 import { BASE_CONFIGURATION } from "../../src/constants/base-configuration";
 import { statement } from "../../src/db/client";
 import { MonkeyQueue } from "../../src/queues/monkey-queue";
@@ -25,7 +26,7 @@ describe("durable queue delivery", () => {
       TASKS: { sendBatch } as unknown as WorkerEnv["TASKS"],
     };
     await withRuntime(env, async () => {
-      const queue = new MonkeyQueue("george-tasks");
+      const queue = new MonkeyQueue("reward");
       await queue.add(
         "future",
         { name: "future" },
@@ -78,7 +79,7 @@ describe("durable queue delivery", () => {
       expect((await UserDAL.getUser("recipient", "test")).xp).toBe(75);
     });
   });
-  it("sends integration idempotency keys and retains failed deliveries", async () => {
+  it("reuses quote approval idempotency keys and retains failed submissions", async () => {
     const fetch = vi
       .spyOn(globalThis, "fetch")
       .mockResolvedValueOnce(new Response("failure", { status: 503 }))
@@ -91,32 +92,48 @@ describe("durable queue delivery", () => {
           INTEGRATION_SECRET: "test-secret",
         },
         async () => {
+          await statement(
+            "INSERT INTO quote_submissions(id,language,submitted_by,timestamp,data) VALUES('approval','english','submitter',0,?)",
+            JSON.stringify({
+              text: "Quote",
+              source: "Source",
+              language: "english",
+            }),
+          ).run();
           await expect(
-            __testing.consume({ id: "immediate", kind: "outbox" }),
+            Quotes.approve("approval", undefined, undefined, "Moderator"),
           ).rejects.toThrow(/503/);
           expect(
             await statement(
-              "SELECT completed_at FROM outbox WHERE id='immediate'",
-            ).first("completed_at"),
-          ).toBeNull();
-          await __testing.consume({ id: "immediate", kind: "outbox" });
-          await __testing.consume({ id: "immediate", kind: "outbox" });
+              "SELECT count(*) AS count FROM quote_submissions WHERE id='approval'",
+            ).first("count"),
+          ).toBe(1);
+          await Quotes.approve("approval", undefined, undefined, "Moderator");
           expect(fetch).toHaveBeenCalledTimes(2);
-          expect(fetch.mock.calls[1]?.[1]?.headers).toMatchObject({
-            "idempotency-key": "immediate",
-          });
+          for (const call of fetch.mock.calls) {
+            expect(call[0]).toEqual(
+              new URL("https://bridge.example/quotes/approve"),
+            );
+            expect(call[1]?.headers).toMatchObject({
+              "idempotency-key": "quote:approval",
+            });
+          }
+          expect(
+            await statement(
+              "SELECT count(*) AS count FROM quote_submissions",
+            ).first("count"),
+          ).toBe(0);
         },
       );
     } finally {
       fetch.mockRestore();
     }
   });
-  it("recovers expired daily periods across pages without duplicate rewards or truncated announcements", async () => {
+  it("recovers expired daily periods across pages without duplicate rewards or bot tasks", async () => {
     const period = Date.now() - 10 * 86400000;
     await withRuntime(test.env, async () => {
       const configuration = structuredClone(BASE_CONFIGURATION);
       configuration.dailyLeaderboards.enabled = true;
-      configuration.dailyLeaderboards.topResultsToAnnounce = 21;
       configuration.dailyLeaderboards.xpRewardBrackets = [
         { minRank: 1, maxRank: 21, maxReward: 100, minReward: 10 },
       ];
@@ -169,13 +186,11 @@ describe("durable queue delivery", () => {
           "SELECT count(*) AS count FROM outbox WHERE type='reward' AND uid LIKE 'payout%' ",
         ).first("count"),
       ).toBe(21);
-      const announcement = await statement(
-        "SELECT data FROM outbox WHERE id=?",
-        `daily-announcement:${period}:english:time:15`,
-      ).first<string>("data");
       expect(
-        (JSON.parse(announcement ?? "{}") as { args: unknown[][] }).args[2],
-      ).toHaveLength(21);
+        await statement(
+          "SELECT count(*) AS count FROM outbox WHERE type<>'reward'",
+        ).first("count"),
+      ).toBe(0);
       expect(
         await statement(
           "SELECT count(*) AS count FROM scheduled_jobs WHERE id=?",

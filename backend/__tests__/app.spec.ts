@@ -15,7 +15,6 @@ import { mkdtemp, writeFile, rm } from "fs/promises";
 import { tmpdir } from "os";
 import { join } from "path";
 import { getRequestListener } from "@hono/node-server";
-import { createHmac } from "crypto";
 import { gzipSync } from "zlib";
 import { buildApp } from "../src/app";
 import { BASE_CONFIGURATION } from "../src/constants/base-configuration";
@@ -25,7 +24,6 @@ import {
 } from "@oxytype/contracts";
 import * as Configuration from "../src/init/configuration";
 import * as UserDal from "../src/dal/user";
-import GeorgeQueue from "../src/queues/george-queue";
 import MonkeyError from "../src/utils/error";
 import { MAX_BODY_SIZE } from "../src/middlewares/body";
 import {
@@ -399,34 +397,16 @@ describe("Hono HTTP application", () => {
       "Too many bad authentication attempts",
     );
   });
-  it("verifies webhook whitespace and unknown properties using original bytes", async () => {
-    vi.stubEnv("GITHUB_WEBHOOK_SECRET", "secret");
-    const send = vi
-      .spyOn(GeorgeQueue, "sendReleaseAnnouncement")
-      .mockResolvedValue();
-    const payload =
-      '{ "action": "published", "release": { "id": 42, "extra": true }, "unknown": 1 }';
-    const signature = `sha256=${createHmac("sha256", "secret").update(payload).digest("hex")}`;
+  it("returns 404 for retired Discord and bot announcement endpoints", async () => {
     const client = createClient();
-    await client
-      .post("/webhooks/githubRelease")
-      .type("json")
-      .set("X-Hub-Signature-256", signature)
-      .send(payload)
-      .expect(200);
-    expect(send).toHaveBeenCalledWith("42");
-    await client
-      .post("/webhooks/githubRelease")
-      .type("json")
-      .set("X-Hub-Signature-256", "invalid-length")
-      .send(payload)
-      .expect(401);
-    await client
-      .post("/webhooks/githubRelease")
-      .type("json")
-      .set("X-Hub-Signature-256", signature)
-      .send(payload.replace("42", "43"))
-      .expect(401);
+    await client.get("/users/discord/oauth").expect(404);
+    for (const path of [
+      "/users/discord/link",
+      "/users/discord/unlink",
+      "/webhooks/githubRelease",
+    ]) {
+      await client.post(path).send({}).expect(404);
+    }
   });
   it("serves stats and all Prometheus metrics in development", async () => {
     const client = createClient();
