@@ -45,7 +45,8 @@ controller/HTTP contracts. No container services are required.
 ## Staging deployment
 
 Dedicated account: Lakshmi Tanmay, `eb2679ce4f23ae7db4e6c4e3fcf8c3c1`.
-Worker: `oxytype-api-staging`. D1: `oxytype-staging`,
+Worker: [oxytype-api-staging](https://oxytype-api-staging.voltcrash.workers.dev).
+Auth URL: `https://oxytype-api-staging.voltcrash.workers.dev/api/auth`. D1: `oxytype-staging`,
 `17b0ae8b-92bf-4d7e-a29e-0ac4cc6f2b59`, APAC placement hint.
 Queues: `oxytype-staging-tasks` and `oxytype-staging-dlq`.
 Trusted frontend origin: `http://localhost:3000`. No production route is configured.

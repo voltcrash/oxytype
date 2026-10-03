@@ -123,7 +123,8 @@ Better Auth uses the Drizzle SQLite adapter with interactive transactions off.
   Wrangler development/build/deploy; Mongo/Redis clients confined to offline tools.
 - `__tests__/d1/*`: workerd-backed SQL regressions; existing HTTP/controller
   suites retained with a D1 transport harness. Shared mail schema accepts old
-  token/UUID IDs and new 24-character reward IDs.
+  token/UUID IDs and new 24-character reward IDs; result/admin UID schemas accept
+  Better Auth UUIDs. Result CAS retries clone the original hashed client payload.
 
 ## 6. Limits and external dependencies
 

@@ -203,7 +203,7 @@ verification, deployment, and any external blockers throughout implementation.
 - [x] SQL rankings.
 - [x] Queues/Cron/integrations.
 - [x] Import/operations/cleanup.
-- [ ] Full verification, Wrangler deployment, single linked PR.
+- [x] Full verification, Wrangler deployment, single linked PR.
 
 ## Pending deployment inputs
 
@@ -216,7 +216,7 @@ verification, deployment, and any external blockers throughout implementation.
 
 ## Verification before staging deployment
 
-- 591 backend controller/HTTP/unit checks; 29 workerd-backed D1 checks.
+- 591 backend controller/HTTP/unit checks; 30 workerd-backed D1 checks.
 - Shared contract test and 27 schema checks; workspace type-aware Oxlint clean.
 - Wrangler bundle: 622.31 KiB gzip; 97 static assets; local migrations applied.
 - Local Wrangler: `/api`, configuration, docs, unauthenticated session, 401 user
@@ -226,3 +226,19 @@ verification, deployment, and any external blockers throughout implementation.
   Runbook: [CLOUDFLARE_OPERATIONS.md](CLOUDFLARE_OPERATIONS.md).
 - Production-mode result saves remain blocked by the absent anticheat module;
   OAuth/captcha/bridge credentials are not supplied. No bypass enabled.
+
+## Staging deployment record — 3 October 2026
+
+- URL: https://oxytype-api-staging.voltcrash.workers.dev
+- Auth base: https://oxytype-api-staging.voltcrash.workers.dev/api/auth
+- Wrangler applied both migrations and deployed fetch/queue/Cron to the confirmed
+  account. Generated auth secret stored through Wrangler; no secrets committed.
+- Verified live health/config/docs, HEAD/ETag 304, localhost CORS, null anonymous
+  session, 401 user/stats guards, disabled email login and untrusted-origin 403.
+- D1 contains zero users/results/auth users; one default config and two generated
+  board records. Foreign-key check clean. Remote Cron generated board metadata;
+  queue info confirms this Worker is producer and consumer.
+- Frontend: 1,340 tests passed. UUID result/admin compatibility and a full hashed
+  result save under forced CAS retry verified; progression commits once.
+- PR: https://github.com/voltcrash/oxytype/pull/24. Production cutover remains a
+  separate operation after the documented data/integration/anticheat gates.
