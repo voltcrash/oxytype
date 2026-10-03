@@ -37,10 +37,10 @@ export function SearchableSetting(props: SearchableSettingProps): JSXElement {
 
   // scoring is global (a setting shows only if it ties the best match across all
   // settings), so register this haystack for the shared best-match computation.
-  // oxlint-disable-next-line solid/reactivity -- getter stored, called in a tracked memo
-  registerSearchable(haystack);
-
   const section = useContext(SettingsSectionContext);
+
+  // oxlint-disable-next-line solid/reactivity -- getter stored, called in a tracked memo
+  registerSearchable(haystack, section);
 
   return (
     <Setting

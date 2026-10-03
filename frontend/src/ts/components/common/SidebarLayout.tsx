@@ -1,6 +1,7 @@
-import { For, JSXElement } from "solid-js";
+import { For, JSXElement, Show } from "solid-js";
 
 import { FaSolidIcon } from "../../types/font-awesome";
+import { cn } from "../../utils/cn";
 import { Button } from "./Button";
 
 export type SidebarItem = { text: string; icon: FaSolidIcon };
@@ -14,6 +15,8 @@ export function SidebarLayout<T extends string>(props: {
   onSelect: (key: T) => void;
   // extra content above the items
   header?: JSXElement;
+  // when set, shows a count next to each item and dims items without one
+  counts?: Partial<Record<T, number>>;
   children: JSXElement;
 }): JSXElement {
   return (
@@ -28,9 +31,22 @@ export function SidebarLayout<T extends string>(props: {
                 variant="text"
                 fa={{ icon: item.icon }}
                 active={props.active === key}
-                class="[--themable-button-active:var(--themable-button-text)]"
+                class={cn(
+                  "[--themable-button-active:var(--themable-button-text)]",
+                  props.counts !== undefined &&
+                    "w-full justify-start [&>span:last-child]:ml-auto",
+                  props.counts !== undefined &&
+                    (props.counts[key] ?? 0) === 0 &&
+                    "opacity-50",
+                )}
                 onClick={() => props.onSelect(key)}
-              />
+              >
+                <Show when={props.counts !== undefined}>
+                  <span class="rounded bg-bg px-[0.5em] text-em-xs text-sub">
+                    {props.counts?.[key] ?? 0}
+                  </span>
+                </Show>
+              </Button>
             )}
           </For>
         </nav>

@@ -12,6 +12,7 @@ import { useLocalStorage } from "../../../hooks/useLocalStorage";
 import { isAuthenticated } from "../../../states/core";
 import { showModal } from "../../../states/modals";
 import {
+  getSearchMatchCounts,
   isSettingsSearchActive,
   setSettingsSearch,
 } from "../../../states/settings-search";
@@ -76,6 +77,7 @@ export function SettingsPage(): JSXElement {
           setCurrentSettingsSection(section);
         }}
         header={<SettingsSearch />}
+        counts={isSettingsSearchActive() ? getSearchMatchCounts() : undefined}
       >
         <Show when={getConfig.showKeyTips}>
           <div class={cn("text-sub", isSettingsSearchActive() && "hidden")}>
