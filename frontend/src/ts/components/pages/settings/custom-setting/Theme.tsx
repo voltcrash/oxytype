@@ -55,7 +55,7 @@ export function Theme(): JSXElement {
   const Presets = () => (
     <div class="grid gap-4">
       <Show when={getConfig.favThemes.length > 0}>
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] gap-2">
+        <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
           <For
             each={sortedThemes.filter((t) =>
               getConfig.favThemes.includes(t.name),
@@ -68,7 +68,7 @@ export function Theme(): JSXElement {
       <Show when={getConfig.favThemes.length > 0}>
         <Separator />
       </Show>
-      <div class="grid grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] gap-2">
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
         <For
           each={sortedThemes.filter(
             (t) => !getConfig.favThemes.includes(t.name),
@@ -83,7 +83,7 @@ export function Theme(): JSXElement {
   const Customs = () => (
     <div class="grid gap-4">
       <Show when={isAuthenticated()}>
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] gap-2">
+        <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
           <For each={customThemes()}>
             {(theme) => <CustomThemeButton theme={theme} />}
           </For>
