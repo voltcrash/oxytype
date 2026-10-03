@@ -11,7 +11,10 @@ import {
 import { useLocalStorage } from "../../../hooks/useLocalStorage";
 import { isAuthenticated } from "../../../states/core";
 import { showModal } from "../../../states/modals";
-import { isSettingsSearchActive } from "../../../states/settings-search";
+import {
+  isSettingsSearchActive,
+  setSettingsSearch,
+} from "../../../states/settings-search";
 import {
   getCurrentSettingsSection,
   SettingsSection,
@@ -64,8 +67,15 @@ export function SettingsPage(): JSXElement {
     <Page id="settings">
       <SidebarLayout
         items={settingsSections}
-        active={getCurrentSettingsSection()}
-        onSelect={setCurrentSettingsSection}
+        // while filtering, results from every section are shown
+        active={
+          isSettingsSearchActive() ? undefined : getCurrentSettingsSection()
+        }
+        onSelect={(section) => {
+          setSettingsSearch("");
+          setCurrentSettingsSection(section);
+        }}
+        header={<SettingsSearch />}
       >
         <Show when={getConfig.showKeyTips}>
           <div class={cn("text-sub", isSettingsSearchActive() && "hidden")}>
@@ -74,7 +84,6 @@ export function SettingsPage(): JSXElement {
           </div>
         </Show>
         <AccountSettingsNotice />
-        <SettingsSearch />
         <div class="grid gap-16">
           <Section section="behavior">
             <Show when={isAuthenticated()}>
@@ -314,7 +323,7 @@ function Section(props: {
       <H2
         text={settingsSections[props.section].text}
         fa={{ icon: settingsSections[props.section].icon }}
-        class={cn("pb-0", isSettingsSearchActive() && "hidden")}
+        class="pb-0"
       />
       <SettingsSectionContext.Provider value={section}>
         {props.children}

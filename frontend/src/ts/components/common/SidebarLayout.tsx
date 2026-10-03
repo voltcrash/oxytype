@@ -9,14 +9,18 @@ export type SidebarItem = { text: string; icon: FaSolidIcon };
 // and the active tab's content on the right
 export function SidebarLayout<T extends string>(props: {
   items: Record<T, SidebarItem>;
-  active: T;
+  // no item is shown as active when undefined
+  active: T | undefined;
   onSelect: (key: T) => void;
+  // extra content above the items
+  header?: JSXElement;
   children: JSXElement;
 }): JSXElement {
   return (
     <div class="content-grid flex flex-col gap-8 md:flex-row">
       <div class="w-full shrink-0 md:w-60">
         <nav class="flex flex-col gap-4 rounded-double bg-sub-alt p-4 md:items-start">
+          {props.header}
           <For each={Object.entries(props.items) as [T, SidebarItem][]}>
             {([key, item]) => (
               <Button

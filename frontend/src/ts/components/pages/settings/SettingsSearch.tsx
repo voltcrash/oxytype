@@ -13,14 +13,14 @@ export function SettingsSearch(): JSXElement {
   onCleanup(() => setSettingsSearch(""));
 
   return (
-    <div class="relative">
+    <div class="relative w-full">
       <Fa
         icon="fa-search"
         class="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-sub"
       />
       <input
         class={cn(
-          "w-full rounded border-none bg-sub-alt py-3 pr-10 pl-10",
+          "w-full rounded border-none bg-bg py-3 pr-10 pl-10",
           "text-em-base text-text caret-main outline-none placeholder:text-sub",
           "focus-visible:shadow-[0_0_0_0.1rem_var(--bg-color),0_0_0_0.2rem_var(--text-color)]",
         )}

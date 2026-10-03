@@ -39,4 +39,24 @@ describe("SidebarLayout", () => {
     expect(active()).toBe("second");
     expect(screen.getByText("second")).toBeInTheDocument();
   });
+
+  it("renders the header above the items", () => {
+    render(() => (
+      <SidebarLayout
+        items={items}
+        active={undefined}
+        onSelect={() => undefined}
+        header={<input placeholder="search" />}
+      >
+        <div />
+      </SidebarLayout>
+    ));
+
+    const header = screen.getByPlaceholderText("search");
+    const firstItem = screen.getByText("first tab");
+    expect(
+      header.compareDocumentPosition(firstItem) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
 });
