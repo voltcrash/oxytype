@@ -3,6 +3,7 @@ export type EnvConfig = {
   isDevelopment: boolean;
   clientVersion: string;
   turnstileSiteKey: string;
+  authProviders: ("google" | "github")[];
   sentryDsn?: string;
 };
 

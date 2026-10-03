@@ -6,6 +6,11 @@ import { Login } from "../../../../src/ts/components/pages/login/Login";
 import { enableLoginPageInputs } from "../../../../src/ts/states/login";
 import { showErrorNotification } from "../../../../src/ts/states/notifications";
 
+const config = vi.hoisted(() => ({
+  authProviders: ["google", "github"] as ("google" | "github")[],
+}));
+vi.mock("virtual:env-config", () => ({ envConfig: config }));
+
 vi.mock("../../../../src/ts/auth", () => ({
   signInWithProvider: vi.fn(),
   getAuthMethodDisplay: (method: string) =>
@@ -16,13 +21,17 @@ vi.mock("../../../../src/ts/states/notifications", () => ({
 }));
 
 beforeEach(() => {
+  config.authProviders = ["google", "github"];
   enableLoginPageInputs();
   vi.mocked(signInWithProvider)
     .mockReset()
     .mockResolvedValue({ success: true });
   vi.mocked(showErrorNotification).mockReset();
 });
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  config.authProviders = ["google", "github"];
+});
 
 it("offers only Google/GitHub sign-in and remember me", () => {
   const { getAllByRole, queryByRole } = render(() => <Login />);
@@ -32,6 +41,12 @@ it("offers only Google/GitHub sign-in and remember me", () => {
   ]);
   expect(queryByRole("textbox")).toBeNull();
   expect(queryByRole("checkbox", { name: "remember me" })).toBeChecked();
+});
+it("omits Google sign-in when production only enables GitHub", () => {
+  config.authProviders = ["github"];
+  const { getByRole, queryByRole } = render(() => <Login />);
+  expect(queryByRole("button", { name: "sign in with Google" })).toBeNull();
+  expect(getByRole("button", { name: "sign in with GitHub" })).toBeEnabled();
 });
 it.each([
   ["google", "Google"],

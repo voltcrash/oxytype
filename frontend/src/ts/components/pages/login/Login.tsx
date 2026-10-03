@@ -1,5 +1,6 @@
 import { createForm } from "@tanstack/solid-form";
-import { JSXElement } from "solid-js";
+import { JSXElement, Show } from "solid-js";
+import { envConfig } from "virtual:env-config";
 
 import {
   AuthResult,
@@ -42,34 +43,38 @@ export function Login(): JSXElement {
     <div class="grid w-full grid-cols-1 justify-center gap-4 sm:w-80">
       <H3 text="sign in" fa={{ icon: "fa-sign-in-alt" }} class="p-0" />
       <p class="text-sub">New here? Sign in to create an account.</p>
-      <Button
-        text="sign in with Google"
-        fa={{ icon: "fa-google", variant: "brand" }}
-        onClick={() =>
-          void trySignIn(
-            async () =>
-              signInWithProvider("google", {
-                rememberMe: form.getFieldValue("rememberMe"),
-              }),
-            getAuthMethodDisplay("google"),
-          )
-        }
-        disabled={!getLoginPageInputsEnabled()}
-      />
-      <Button
-        text="sign in with GitHub"
-        fa={{ icon: "fa-github", variant: "brand" }}
-        onClick={() =>
-          void trySignIn(
-            async () =>
-              signInWithProvider("github", {
-                rememberMe: form.getFieldValue("rememberMe"),
-              }),
-            getAuthMethodDisplay("github"),
-          )
-        }
-        disabled={!getLoginPageInputsEnabled()}
-      />
+      <Show when={envConfig.authProviders.includes("google")}>
+        <Button
+          text="sign in with Google"
+          fa={{ icon: "fa-google", variant: "brand" }}
+          onClick={() =>
+            void trySignIn(
+              async () =>
+                signInWithProvider("google", {
+                  rememberMe: form.getFieldValue("rememberMe"),
+                }),
+              getAuthMethodDisplay("google"),
+            )
+          }
+          disabled={!getLoginPageInputsEnabled()}
+        />
+      </Show>
+      <Show when={envConfig.authProviders.includes("github")}>
+        <Button
+          text="sign in with GitHub"
+          fa={{ icon: "fa-github", variant: "brand" }}
+          onClick={() =>
+            void trySignIn(
+              async () =>
+                signInWithProvider("github", {
+                  rememberMe: form.getFieldValue("rememberMe"),
+                }),
+              getAuthMethodDisplay("github"),
+            )
+          }
+          disabled={!getLoginPageInputsEnabled()}
+        />
+      </Show>
       <form.Field
         name="rememberMe"
         children={(field) => (
