@@ -59,4 +59,24 @@ describe("SidebarLayout", () => {
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });
+
+  it("renders the footer below the items", () => {
+    render(() => (
+      <SidebarLayout
+        items={items}
+        active="first"
+        onSelect={() => undefined}
+        footer={<div>footer</div>}
+      >
+        <div />
+      </SidebarLayout>
+    ));
+
+    const footer = screen.getByText("footer");
+    const lastItem = screen.getByText("second tab");
+    expect(
+      footer.compareDocumentPosition(lastItem) &
+        Node.DOCUMENT_POSITION_PRECEDING,
+    ).toBeTruthy();
+  });
 });

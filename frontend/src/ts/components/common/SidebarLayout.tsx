@@ -3,6 +3,7 @@ import { For, JSXElement, Show } from "solid-js";
 import { FaSolidIcon } from "../../types/font-awesome";
 import { cn } from "../../utils/cn";
 import { Button } from "./Button";
+import { Separator } from "./Separator";
 
 export type SidebarItem = { text: string; icon: FaSolidIcon };
 
@@ -15,6 +16,8 @@ export function SidebarLayout<T extends string>(props: {
   onSelect: (key: T) => void;
   // extra content above the items
   header?: JSXElement;
+  // extra content below the items, split off by a separator
+  footer?: JSXElement;
   // when set, shows a count next to each item and dims items without one
   counts?: Partial<Record<T, number>>;
   children: JSXElement;
@@ -49,6 +52,10 @@ export function SidebarLayout<T extends string>(props: {
               </Button>
             )}
           </For>
+          <Show when={props.footer !== undefined}>
+            <Separator class="bg-bg" />
+            {props.footer}
+          </Show>
         </nav>
       </div>
       <div class="flex w-full flex-1 flex-col gap-8">{props.children}</div>

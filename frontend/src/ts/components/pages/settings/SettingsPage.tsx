@@ -1,5 +1,4 @@
 import { createResource, JSXElement, Show } from "solid-js";
-import { z } from "zod/v3";
 
 import { resetConfig } from "../../../config/lifecycle";
 import { getConfig } from "../../../config/store";
@@ -8,7 +7,6 @@ import {
   previewClick,
   previewError,
 } from "../../../controllers/sound-controller";
-import { useLocalStorage } from "../../../hooks/useLocalStorage";
 import { isAuthenticated } from "../../../states/core";
 import { showModal } from "../../../states/modals";
 import {
@@ -26,7 +24,6 @@ import { showSimpleModal } from "../../../states/simple-modal";
 import { cn } from "../../../utils/cn";
 import fileStorage from "../../../utils/file-storage";
 import { Button } from "../../common/Button";
-import { Fa } from "../../common/Fa";
 import { H2 } from "../../common/Headers";
 import { Page } from "../../common/Page";
 import { SidebarLayout } from "../../common/SidebarLayout";
@@ -78,6 +75,17 @@ export function SettingsPage(): JSXElement {
         }}
         header={<SettingsSearch />}
         counts={isSettingsSearchActive() ? getSearchMatchCounts() : undefined}
+        footer={
+          isAuthenticated() ? (
+            <Button
+              text="account settings"
+              variant="text"
+              fa={{ icon: "fa-user-cog" }}
+              href="/account-settings"
+              router-link
+            />
+          ) : undefined
+        }
       >
         <Show when={getConfig.showKeyTips}>
           <div class={cn("text-sub", isSettingsSearchActive() && "hidden")}>
@@ -85,7 +93,6 @@ export function SettingsPage(): JSXElement {
             command line ( <CommandlineHotkey /> )
           </div>
         </Show>
-        <AccountSettingsNotice />
         <div class="grid gap-16">
           <Section section="behavior">
             <Show when={isAuthenticated()}>
@@ -265,40 +272,6 @@ export function SettingsPage(): JSXElement {
         </div>
       </SidebarLayout>
     </Page>
-  );
-}
-
-function AccountSettingsNotice(): JSXElement {
-  const [dismissed, setDismissed] = useLocalStorage({
-    key: "accountSettingsMessageDismissed",
-    schema: z.boolean(),
-    fallback: false,
-  });
-  return (
-    <Show when={!dismissed()}>
-      <div
-        class={cn(
-          "grid grid-cols-[auto_1fr] items-center gap-4 rounded px-4 py-4 ring-4 ring-sub-alt md:grid-cols-[auto_1fr_auto] md:gap-8",
-          isSettingsSearchActive() && "hidden",
-        )}
-      >
-        <Fa icon="fa-user-cog" class="text-4xl text-sub" />
-        <div>
-          Account settings have moved. You can now access them by hovering over
-          the account button in the top right corner, then clicking
-          &quot;Account settings&quot;.
-        </div>
-        <Button
-          text="go to account settings"
-          href="/account-settings"
-          class="col-span-2 p-4 md:col-span-1"
-          router-link
-          onClick={() => {
-            setDismissed(true);
-          }}
-        />
-      </div>
-    </Show>
   );
 }
 
