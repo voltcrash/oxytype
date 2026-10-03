@@ -35,9 +35,11 @@ export function SettingsSearch(): JSXElement {
           variant="text"
           class="absolute top-1/2 right-2 -translate-y-1/2"
           fa={{ icon: "fa-times" }}
-          balloon={{ text: "clear search", position: "left" }}
           onClick={() => setSettingsSearch("")}
-        />
+        >
+          {/* no tooltip: it covered the search input */}
+          <span class="sr-only">clear search</span>
+        </Button>
       </Show>
     </div>
   );
