@@ -103,9 +103,10 @@ export async function createNewUser(
   const existingUser = await UserDAL.exists(uid);
   if (existingUser) throw new MonkeyError(409, "Account already registered");
 
-  try {
-    await verifyCaptcha(captcha, "signup");
+  // Expired challenges and verification outages can be retried in this session.
+  await verifyCaptcha(captcha, "signup");
 
+  try {
     if (email.endsWith("@tidal.lol") || email.endsWith("@selfbot.cc")) {
       throw new MonkeyError(400, "Invalid domain");
     }

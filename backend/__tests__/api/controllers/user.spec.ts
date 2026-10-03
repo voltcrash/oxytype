@@ -162,6 +162,17 @@ describe("user controller test", () => {
 
       //THEN
       expect(body.message).toEqual("Captcha challenge failed");
+      expect(authDeleteUserMock).not.toHaveBeenCalled();
+    });
+    it("keeps the onboarding session if verification is unavailable", async () => {
+      verifyCaptchaMock.mockRejectedValue(new Error("Turnstile unavailable"));
+      const { body } = await mockApp
+        .post("/users/signup")
+        .set("Authorization", `Bearer ${uid}`)
+        .send({ name: "NewUser", captcha: "captcha" })
+        .expect(422);
+      expect(body.message).toContain("please try again later");
+      expect(authDeleteUserMock).not.toHaveBeenCalled();
     });
     it("should fail if username too long", async () => {
       //GIVEN
