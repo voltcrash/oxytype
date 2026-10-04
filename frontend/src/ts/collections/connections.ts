@@ -68,22 +68,6 @@ export function usePendingConnectionsQuery() {
       : undefined,
   );
 }
-// oxlint-disable-next-line typescript/explicit-function-return-type
-export function useBlockedConnectionsQuery() {
-  return useLiveQuery((q) =>
-    isAuthenticated()
-      ? q
-          .from({ connections: connectionsCollection })
-          .where(({ connections }) =>
-            and(
-              eq(connections.status, "blocked"),
-              not(eq(connections.initiatorUid, getUserId())),
-            ),
-          )
-          .orderBy(({ connections }) => connections.lastModified, "desc")
-      : undefined,
-  );
-}
 
 type ActionType = {
   acceptConnection: {
