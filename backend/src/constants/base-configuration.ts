@@ -94,8 +94,8 @@ export const BASE_CONFIGURATION: Configuration = {
   leaderboards: {
     minTimeTyping: 2 * 60 * 60,
     weeklyXp: {
-      enabled: false,
-      expirationTimeInDays: 0, // This should atleast be 15
+      enabled: true,
+      expirationTimeInDays: 15, // This should atleast be 15
       xpRewardBrackets: [],
     },
   },
