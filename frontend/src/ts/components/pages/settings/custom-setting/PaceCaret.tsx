@@ -17,6 +17,7 @@ import { Button } from "../../../common/Button";
 import { InputField } from "../../../ui/form/InputField";
 import { fromSchema } from "../../../ui/form/utils";
 import { SearchableSetting } from "../SearchableSetting";
+import { SettingsSearchMatch } from "../SettingsSearchMatch";
 
 export function PaceCaret(): JSXElement {
   const savedIndicator = useSavedIndicator();
@@ -41,6 +42,10 @@ export function PaceCaret(): JSXElement {
   return (
     <SearchableSetting
       key="paceCaret"
+      resetKeys={["paceCaretCustomSpeed", "paceCaret"]}
+      onReset={() =>
+        form.reset({ paceCaretCustomSpeed: getConfig.paceCaretCustomSpeed })
+      }
       title={configMetadata.paceCaret.displayString ?? "pace caret"}
       fa={configMetadata.paceCaret.fa}
       extraSearchKeywords={getOptionSearchKeywords("paceCaret")}
@@ -94,7 +99,7 @@ export function PaceCaret(): JSXElement {
                       setConfig("paceCaret", option);
                     }}
                   >
-                    {displayString}
+                    <SettingsSearchMatch text={displayString} />
                   </Button>
                 );
               }}

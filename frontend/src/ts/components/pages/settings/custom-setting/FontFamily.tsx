@@ -19,11 +19,18 @@ import { Button } from "../../../common/Button";
 import { Fa } from "../../../common/Fa";
 import { Separator } from "../../../common/Separator";
 import { SearchableSetting } from "../SearchableSetting";
+import { SettingsSearchMatch } from "../SettingsSearchMatch";
 
 export function FontFamily(): JSXElement {
   const [hasLocalFont, { refetch }] = createResource(async () =>
     FileStorage.hasFile("LocalFontFamilyFile"),
   );
+
+  const resetFont = async (): Promise<void> => {
+    await FileStorage.deleteFile("LocalFontFamilyFile");
+    await applyFontFamily();
+    await refetch();
+  };
 
   const fontOptions = getOptions(ConfigSchema.shape.fontFamily);
   const isCustomFont = () =>
@@ -41,6 +48,8 @@ export function FontFamily(): JSXElement {
   return (
     <SearchableSetting
       key="fontFamily"
+      hasCustomChanges={hasLocalFont() === true}
+      onReset={resetFont}
       title={configMetadata.fontFamily.displayString ?? "font family"}
       fa={configMetadata.fontFamily.fa}
       extraSearchKeywords={getOptionSearchKeywords("fontFamily")}
@@ -148,13 +157,14 @@ export function FontFamily(): JSXElement {
                   >
                     <Button
                       class="w-full"
-                      text={displayString}
                       active={getConfig.fontFamily === option}
                       onClick={() => {
                         if (getConfig.fontFamily === option) return;
                         setConfig("fontFamily", option);
                       }}
-                    />
+                    >
+                      <SettingsSearchMatch text={displayString} />
+                    </Button>
                   </div>
                 );
               }}

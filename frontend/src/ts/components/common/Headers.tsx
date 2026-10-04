@@ -29,7 +29,7 @@ export function H2(props: {
 export function H3(props: {
   id?: string;
   class?: string;
-  text: string;
+  text: string | JSXElement;
   fa: FaProps;
 }): JSXElement {
   return (

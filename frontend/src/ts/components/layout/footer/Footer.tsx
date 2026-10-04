@@ -20,11 +20,11 @@ export function Footer(): JSXElement {
 
       <div
         class={cn(
-          "-m-2 flex justify-between gap-8 transition-opacity",
+          "-m-2 flex flex-wrap justify-between gap-8 transition-opacity",
           getFocus() && "opacity-0",
         )}
       >
-        <div class="grid grid-cols-1 justify-items-start xs:grid-cols-2 sm:grid-cols-4 lg:flex">
+        <div class="grid grid-cols-1 justify-items-start xs:grid-cols-2 sm:grid-cols-4 lg:flex lg:flex-wrap">
           <Button
             variant="text"
             text="contact"

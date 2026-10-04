@@ -4,6 +4,7 @@ import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
 
 import { ScrollToTop } from "../../../../src/ts/components/layout/footer/ScrollToTop";
 import * as CoreSignals from "../../../../src/ts/states/core";
+import { setPageScroller } from "../../../../src/ts/states/page-layout";
 
 describe("ScrollToTop", () => {
   const getActivePageMock = vi.spyOn(CoreSignals, "getActivePage");
@@ -96,6 +97,23 @@ describe("ScrollToTop", () => {
       "scroll",
       expect.any(Function),
     );
+  });
+
+  it("follows the page scroll container when there is one", async () => {
+    const scroller = document.createElement("div");
+    const scrollToSpy = vi.fn();
+    scroller.scrollTo = scrollToSpy;
+    setPageScroller(scroller);
+    const { button } = renderElement();
+
+    scroller.scrollTop = 150;
+    scroller.dispatchEvent(new Event("scroll"));
+    expect(button).not.toHaveClass("opacity-0");
+
+    await userEvent.click(button);
+    expect(scrollToSpy).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
+
+    setPageScroller(undefined);
   });
 
   function scrollTo(value: number): void {

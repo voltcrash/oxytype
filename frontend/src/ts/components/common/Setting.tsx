@@ -19,13 +19,16 @@ import { FaProps } from "./Fa";
 import { H3 } from "./Headers";
 
 export type SettingProps = {
-  title: string;
+  title: string | JSXElement;
   fa: FaProps;
   description: string | JSXElement;
   inputs?: JSXElement;
   fullWidthInputs?: JSXElement;
+  titleActions?: JSXElement;
   breakpoints?: "none" | "normal" | "narrow";
   class?: string;
+  // called when a deep link targets this setting, before it is scrolled to
+  onHighlight?: () => void;
 } & ParentProps &
   (
     | {
@@ -59,6 +62,7 @@ export function Setting(props: SettingProps): JSXElement {
     let timer: ReturnType<typeof setTimeout> | undefined;
     onCleanup(
       registerSettingHighlight(key, () => {
+        props.onHighlight?.();
         timer = setTimeout(() => {
           element()?.scrollIntoView({ block: "center", behavior: "auto" });
           setHighlightedSetting(key);
@@ -84,8 +88,9 @@ export function Setting(props: SettingProps): JSXElement {
         ? { "data-setting-key": props.key }
         : {})}
     >
-      <div class="flex gap-2">
+      <div class="flex items-center gap-2">
         <H3 text={props.title} fa={props.fa} class="pb-0" />
+        {props.titleActions}
         <Show when={props.showDeepLink !== false}>
           <DeepLinkButton key={(props as { key: string }).key} />
         </Show>

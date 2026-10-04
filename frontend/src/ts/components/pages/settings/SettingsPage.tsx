@@ -1,5 +1,4 @@
-import { createResource, createSignal, JSXElement, Show } from "solid-js";
-import { z } from "zod/v3";
+import { createResource, JSXElement, Show } from "solid-js";
 
 import { resetConfig } from "../../../config/lifecycle";
 import { getConfig } from "../../../config/store";
@@ -8,18 +7,27 @@ import {
   previewClick,
   previewError,
 } from "../../../controllers/sound-controller";
-import { useLocalStorage } from "../../../hooks/useLocalStorage";
 import { isAuthenticated } from "../../../states/core";
 import { showModal } from "../../../states/modals";
-import { isSettingsSearchActive } from "../../../states/settings-search";
+import {
+  getSearchMatchCounts,
+  getSettingsSearch,
+  isSettingsSearchActive,
+  setSettingsSearch,
+} from "../../../states/settings-search";
+import {
+  getCurrentSettingsSection,
+  SettingsSection,
+  settingsSections,
+  setCurrentSettingsSection,
+} from "../../../states/settings-sections";
 import { showSimpleModal } from "../../../states/simple-modal";
 import { cn } from "../../../utils/cn";
 import fileStorage from "../../../utils/file-storage";
-import { wordsToCamelCase } from "../../../utils/strings";
-import { Anime, AnimeShow } from "../../common/anime";
 import { Button } from "../../common/Button";
-import { Fa } from "../../common/Fa";
+import { H2 } from "../../common/Headers";
 import { Page } from "../../common/Page";
+import { SidebarLayout } from "../../common/SidebarLayout";
 import { CommandlineHotkey } from "../../hotkeys/CommandlineHotkey";
 import { AnimationFpsLimit } from "./custom-setting/AnimationFpsLimit";
 import { AutoSwitchTheme } from "./custom-setting/AutoSwitchTheme";
@@ -43,9 +51,10 @@ import { Presets } from "./custom-setting/Presets";
 import { SoundVolume } from "./custom-setting/SoundVolume";
 import { Tags } from "./custom-setting/Tags";
 import { Theme } from "./custom-setting/Theme";
-import { QuickNav } from "./QuickNav";
 import { SearchableAutoSetting } from "./SearchableAutoSetting";
 import { SearchableSetting } from "./SearchableSetting";
+import { SettingsSectionContext } from "./settings-section-context";
+import { SettingsGroup } from "./SettingsGroup";
 import { SettingsSearch } from "./SettingsSearch";
 
 export function SettingsPage(): JSXElement {
@@ -56,281 +65,306 @@ export function SettingsPage(): JSXElement {
 
   return (
     <Page id="settings">
-      <div class="grid gap-8">
-        {/* while filtering, only the matching settings stay visible; everything
-            else is hidden with css so nothing unmounts while typing */}
-        <QuickNav class={cn(isSettingsSearchActive() && "hidden")} />
-        <Show when={getConfig.showKeyTips}>
-          <div
-            class={cn(
-              "text-center text-sub",
-              isSettingsSearchActive() && "hidden",
-            )}
-          >
-            tip: You can also change all these settings quickly using the
-            command line
-            <br />( <CommandlineHotkey /> )
+      <SidebarLayout
+        items={settingsSections}
+        // while filtering, results from every section are shown
+        active={
+          isSettingsSearchActive() ? undefined : getCurrentSettingsSection()
+        }
+        onSelect={(section) => {
+          setSettingsSearch("");
+          setCurrentSettingsSection(section);
+        }}
+        header={<SettingsSearch />}
+        counts={isSettingsSearchActive() ? getSearchMatchCounts() : undefined}
+        footer={
+          isAuthenticated() || getConfig.showKeyTips ? (
+            <>
+              <Show when={isAuthenticated()}>
+                <Button
+                  text="account settings"
+                  variant="text"
+                  fa={{ icon: "fa-user-cog" }}
+                  href="/account-settings"
+                  router-link
+                />
+              </Show>
+              <Show when={getConfig.showKeyTips}>
+                {/* padded like the buttons: inset to line up with the item icons,
+                    and space below to match the gap above the tip */}
+                <div class="px-2 pb-2 text-em-xs text-sub">
+                  tip: you can also change all these settings quickly via the
+                  command palette (<CommandlineHotkey />)
+                </div>
+              </Show>
+            </>
+          ) : undefined
+        }
+      >
+        <Show
+          when={
+            isSettingsSearchActive() &&
+            Object.keys(getSearchMatchCounts()).length === 0
+          }
+        >
+          <div class="text-center text-sub">
+            No settings match &quot;{getSettingsSearch().trim()}&quot;.
           </div>
         </Show>
-        <AccountSettingsNotice />
-        <SettingsSearch />
-        {/* while filtering, lay the matching sections out with a uniform gap */}
-        <div class={cn(isSettingsSearchActive() && "grid gap-8")}>
-          <Section title="behavior">
+        <div class="grid gap-16">
+          <Section section="behavior">
             <Show when={isAuthenticated()}>
-              <Tags />
-              <Presets />
-              <SearchableAutoSetting key="resultSaving" />
+              <SettingsGroup title="saved tests">
+                <Tags />
+                <Presets />
+                <SearchableAutoSetting key="resultSaving" />
+              </SettingsGroup>
             </Show>
-            <SearchableAutoSetting key="difficulty" />
-            <SearchableAutoSetting key="quickRestart" />
-            <SearchableAutoSetting key="repeatQuotes" />
-            <SearchableAutoSetting key="blindMode" />
-            <SearchableAutoSetting key="alwaysShowWordsHistory" />
-            <SearchableAutoSetting key="singleListCommandLine" />
-            <MinSpeed />
-            <MinAcc />
-            <MinBurst />
-            <SearchableAutoSetting key="britishEnglish" />
-            <Language />
-            <Funbox />
-            <CustomLayoutfluid />
-            <CustomPolyglot />
+            <SettingsGroup title="test behavior">
+              <SearchableAutoSetting key="difficulty" />
+              <SearchableAutoSetting key="quickRestart" />
+              <SearchableAutoSetting key="repeatQuotes" />
+              <SearchableAutoSetting key="blindMode" />
+              <SearchableAutoSetting key="alwaysShowWordsHistory" />
+              <SearchableAutoSetting key="singleListCommandLine" />
+            </SettingsGroup>
+            <SettingsGroup title="speed & accuracy">
+              <MinSpeed />
+              <MinAcc />
+              <MinBurst />
+            </SettingsGroup>
+            <SettingsGroup title="language">
+              <Language />
+              <SearchableAutoSetting key="britishEnglish" />
+            </SettingsGroup>
+            <SettingsGroup title="funbox">
+              <Funbox />
+              <CustomLayoutfluid />
+              <CustomPolyglot />
+            </SettingsGroup>
           </Section>
-          <Section title="input">
-            <SearchableAutoSetting key="freedomMode" />
-            <SearchableAutoSetting key="strictSpace" />
-            <SearchableAutoSetting key="oppositeShiftMode" />
-            <SearchableAutoSetting key="stopOnError" />
-            <SearchableAutoSetting key="deleteOnError" />
-            <SearchableAutoSetting key="confidenceMode" />
-            <SearchableAutoSetting key="quickEnd" />
-            <SearchableAutoSetting key="indicateTypos" />
-            <SearchableAutoSetting key="hideExtraLetters" />
-            <SearchableAutoSetting key="compositionDisplay" />
-            <SearchableAutoSetting key="lazyMode" />
-            <Layout />
-            <SearchableAutoSetting key="codeUnindentOnBackspace" />
+          <Section section="input">
+            <SettingsGroup title="editing">
+              <SearchableAutoSetting key="freedomMode" />
+              <SearchableAutoSetting key="strictSpace" />
+              <SearchableAutoSetting key="confidenceMode" />
+              <SearchableAutoSetting key="codeUnindentOnBackspace" />
+            </SettingsGroup>
+            <SettingsGroup title="errors & corrections">
+              <SearchableAutoSetting key="stopOnError" />
+              <SearchableAutoSetting key="deleteOnError" />
+              <SearchableAutoSetting key="quickEnd" />
+              <SearchableAutoSetting key="indicateTypos" />
+              <SearchableAutoSetting key="hideExtraLetters" />
+            </SettingsGroup>
+            <SettingsGroup title="keyboard & composition">
+              <Layout />
+              <SearchableAutoSetting key="oppositeShiftMode" />
+              <SearchableAutoSetting key="compositionDisplay" />
+              <SearchableAutoSetting key="lazyMode" />
+            </SettingsGroup>
           </Section>
-          <Section title="sound">
-            <SoundVolume />
-            <SearchableAutoSetting
-              key="playSoundOnClick"
-              wide
-              onOptionClick={(option) => {
-                if (option === "off") return;
-                void previewClick(option);
-              }}
-            />
-            <SearchableAutoSetting
-              key="playSoundOnError"
-              wide
-              onOptionClick={(option) => {
-                if (option === "off") return;
-                void previewError(option);
-              }}
-            />
-            <SearchableAutoSetting
-              key="playTimeWarning"
-              wide
-              onOptionClick={(option) => {
-                if (option === "off") return;
-                void playTimeWarning();
-              }}
-            />
+          <Section section="sound">
+            <SettingsGroup title="sound effects">
+              <SoundVolume />
+              <SearchableAutoSetting
+                key="playSoundOnClick"
+                wide
+                onOptionClick={(option) => {
+                  if (option === "off") return;
+                  void previewClick(option);
+                }}
+              />
+              <SearchableAutoSetting
+                key="playSoundOnError"
+                wide
+                onOptionClick={(option) => {
+                  if (option === "off") return;
+                  void previewError(option);
+                }}
+              />
+              <SearchableAutoSetting
+                key="playTimeWarning"
+                wide
+                onOptionClick={(option) => {
+                  if (option === "off") return;
+                  void playTimeWarning();
+                }}
+              />
+            </SettingsGroup>
           </Section>
-          <Section title="caret">
-            <SearchableAutoSetting key="smoothCaret" />
-            <SearchableAutoSetting key="caretStyle" wide />
-            <PaceCaret />
-            <SearchableAutoSetting key="repeatedPace" />
-            <SearchableAutoSetting key="paceCaretStyle" wide />
+          <Section section="caret">
+            <SettingsGroup title="typing caret">
+              <SearchableAutoSetting key="smoothCaret" />
+              <SearchableAutoSetting key="caretStyle" wide />
+            </SettingsGroup>
+            <SettingsGroup title="pace caret">
+              <PaceCaret />
+              <SearchableAutoSetting key="repeatedPace" />
+              <SearchableAutoSetting key="paceCaretStyle" wide />
+            </SettingsGroup>
           </Section>
-          <Section title="appearance">
-            <SearchableAutoSetting key="timerStyle" wide />
-            <SearchableAutoSetting key="liveSpeedStyle" />
-            <SearchableAutoSetting key="liveAccStyle" />
-            <SearchableAutoSetting key="liveBurstStyle" />
-            <SearchableAutoSetting key="timerColor" />
-            <SearchableAutoSetting key="timerOpacity" />
-            <SearchableAutoSetting key="highlightMode" wide />
-            <SearchableAutoSetting key="typedEffect" />
-            <SearchableAutoSetting key="tapeMode" />
-            <SearchableAutoSetting key="tapeMargin" />
-            <SearchableAutoSetting key="smoothLineScroll" />
-            <SearchableAutoSetting key="showAllLines" />
-            <SearchableAutoSetting key="alwaysShowDecimalPlaces" />
-            <SearchableAutoSetting key="typingSpeedUnit" />
-            <SearchableAutoSetting key="startGraphsAtZero" />
-            <MaxLineWidth />
-            <SearchableAutoSetting key="fontSize" />
-            <FontFamily />
-            <SearchableAutoSetting key="keymapMode" />
-            <Show when={getConfig.keymapMode !== "off"}>
-              <KeymapLayout />
-              <SearchableAutoSetting key="keymapStyle" wide />
-              <SearchableAutoSetting key="keymapLegendStyle" wide />
-              <SearchableAutoSetting key="keymapKeys" wide />
-              <KeymapSize />
-            </Show>
+          <Section section="appearance">
+            <SettingsGroup title="timer & stats">
+              <SearchableAutoSetting key="timerStyle" wide />
+              <SearchableAutoSetting key="timerColor" />
+              <SearchableAutoSetting key="timerOpacity" />
+              <SearchableAutoSetting key="liveSpeedStyle" />
+              <SearchableAutoSetting key="liveAccStyle" />
+              <SearchableAutoSetting key="liveBurstStyle" />
+              <SearchableAutoSetting key="alwaysShowDecimalPlaces" />
+              <SearchableAutoSetting key="typingSpeedUnit" />
+              <SearchableAutoSetting key="startGraphsAtZero" />
+            </SettingsGroup>
+            <SettingsGroup title="text & layout">
+              <SearchableAutoSetting key="fontSize" />
+              <FontFamily />
+              <SearchableAutoSetting key="highlightMode" wide />
+              <SearchableAutoSetting key="typedEffect" />
+              <SearchableAutoSetting key="tapeMode" />
+              <SearchableAutoSetting key="tapeMargin" />
+              <SearchableAutoSetting key="smoothLineScroll" />
+              <SearchableAutoSetting key="showAllLines" />
+              <MaxLineWidth />
+            </SettingsGroup>
+            <SettingsGroup title="keymap">
+              <SearchableAutoSetting key="keymapMode" />
+              <Show when={getConfig.keymapMode !== "off"}>
+                <KeymapLayout />
+                <SearchableAutoSetting key="keymapStyle" wide />
+                <SearchableAutoSetting key="keymapLegendStyle" wide />
+                <SearchableAutoSetting key="keymapKeys" wide />
+                <KeymapSize />
+              </Show>
+            </SettingsGroup>
           </Section>
-          <Section title="theme">
-            <SearchableAutoSetting key="flipTestColors" />
-            <SearchableAutoSetting key="colorfulMode" />
-            <CustomBackground />
-            <Show when={getConfig.customBackground !== "" || hasLocalBg()}>
-              <CustomBackgroundFilters />
-            </Show>
-            <AutoSwitchTheme />
-            <SearchableAutoSetting key="randomTheme" wide />
-            <Theme />
+          <Section section="theme">
+            <SettingsGroup title="colors">
+              <SearchableAutoSetting key="flipTestColors" />
+              <SearchableAutoSetting key="colorfulMode" />
+            </SettingsGroup>
+            <SettingsGroup title="background">
+              <CustomBackground />
+              <Show when={getConfig.customBackground !== "" || hasLocalBg()}>
+                <CustomBackgroundFilters />
+              </Show>
+            </SettingsGroup>
+            <SettingsGroup title="automatic themes">
+              <AutoSwitchTheme />
+              <SearchableAutoSetting key="randomTheme" wide />
+            </SettingsGroup>
+            <SettingsGroup title="preset & custom themes">
+              <Theme />
+            </SettingsGroup>
           </Section>
-          <Section title="hide elements">
-            <SearchableAutoSetting key="showKeyTips" />
-            <SearchableAutoSetting key="showOutOfFocusWarning" />
-            <SearchableAutoSetting key="capsLockWarning" />
-            <SearchableAutoSetting key="showAverage" />
+          <Section section="hideElements">
+            <SettingsGroup title="interface visibility">
+              <SearchableAutoSetting key="showKeyTips" />
+              <SearchableAutoSetting key="showOutOfFocusWarning" />
+              <SearchableAutoSetting key="capsLockWarning" />
+              <SearchableAutoSetting key="showAverage" />
+            </SettingsGroup>
           </Section>
-          <Section title="danger zone">
-            <ImportExport />
-            <SearchableAutoSetting key="ads" />
-            <SearchableSetting
-              key="cookies"
-              title="update cookie preferences"
-              description="If you changed your mind about which cookies you consent to, you can change your preferences here."
-              fa={{
-                icon: "fa-cookie-bite",
-              }}
-              inputs={
-                <Button
-                  class="w-full"
-                  onClick={() => {
-                    showModal("Cookies");
-                  }}
-                >
-                  open
-                </Button>
-              }
-            />
-            <AnimationFpsLimit />
-            <SearchableSetting
-              key="resetSettings"
-              title="reset settings"
-              description={
-                <div>
-                  Resets settings to the default (but doesn&apos;t touch your
-                  tags and presets).
-                  <br />
-                  <div class="text-error">You can&apos;t undo this!</div>
-                </div>
-              }
-              fa={{
-                icon: "fa-undo",
-              }}
-              inputs={
-                <Button
-                  class="w-full"
-                  danger
-                  onClick={() => {
-                    showSimpleModal({
-                      title: "Are you sure?",
-                      buttonText: "reset",
-                      execFn: async () => {
-                        await resetConfig();
-                        await fileStorage.deleteFile("LocalBackgroundFile");
-                        return {
-                          status: "success",
-                          message: "Settings reset",
-                        };
-                      },
-                    });
-                  }}
-                >
-                  reset settings
-                </Button>
-              }
-            />
+          <Section section="dangerZone">
+            <SettingsGroup title="privacy">
+              <SearchableAutoSetting key="ads" />
+              <SearchableSetting
+                key="cookies"
+                title="update cookie preferences"
+                description="If you changed your mind about which cookies you consent to, you can change your preferences here."
+                fa={{
+                  icon: "fa-cookie-bite",
+                }}
+                inputs={
+                  <Button
+                    class="w-full"
+                    onClick={() => {
+                      showModal("Cookies");
+                    }}
+                  >
+                    open
+                  </Button>
+                }
+              />
+            </SettingsGroup>
+            <SettingsGroup title="performance">
+              <AnimationFpsLimit />
+            </SettingsGroup>
+            <SettingsGroup title="settings data">
+              <ImportExport />
+              <SearchableSetting
+                key="resetSettings"
+                title="reset settings"
+                description={
+                  <div>
+                    Resets settings to the default (but doesn&apos;t touch your
+                    tags and presets).
+                    <br />
+                    <div class="text-error">You can&apos;t undo this!</div>
+                  </div>
+                }
+                fa={{
+                  icon: "fa-undo",
+                }}
+                inputs={
+                  <Button
+                    class="w-full"
+                    danger
+                    onClick={() => {
+                      showSimpleModal({
+                        title: "Are you sure?",
+                        buttonText: "reset",
+                        execFn: async () => {
+                          await resetConfig();
+                          await fileStorage.deleteFile("LocalBackgroundFile");
+                          return {
+                            status: "success",
+                            message: "Settings reset",
+                          };
+                        },
+                      });
+                    }}
+                  >
+                    reset settings
+                  </Button>
+                }
+              />
+            </SettingsGroup>
           </Section>
         </div>
-
-        <AccountSettingsNotice />
-      </div>
+      </SidebarLayout>
     </Page>
   );
 }
 
-function AccountSettingsNotice(): JSXElement {
-  const [dismissed, setDismissed] = useLocalStorage({
-    key: "accountSettingsMessageDismissed",
-    schema: z.boolean(),
-    fallback: false,
-  });
-  return (
-    <Show when={!dismissed()}>
-      <div
-        class={cn(
-          "grid grid-cols-[auto_1fr] items-center gap-4 rounded px-4 py-4 ring-4 ring-sub-alt md:grid-cols-[auto_1fr_auto] md:gap-8",
-          isSettingsSearchActive() && "hidden",
-        )}
-      >
-        <Fa icon="fa-user-cog" class="text-4xl text-sub" />
-        <div>
-          Account settings have moved. You can now access them by hovering over
-          the account button in the top right corner, then clicking
-          &quot;Account settings&quot;.
-        </div>
-        <Button
-          text="go to account settings"
-          href="/account-settings"
-          class="col-span-2 p-4 md:col-span-1"
-          router-link
-          onClick={() => {
-            setDismissed(true);
-          }}
-        />
-      </div>
-    </Show>
-  );
-}
-
-function Section(props: { title: string; children: JSXElement }): JSXElement {
-  const [isOpen, setIsOpen] = createSignal(true);
-
+function Section(props: {
+  section: SettingsSection;
+  children: JSXElement;
+}): JSXElement {
+  // oxlint-disable-next-line solid/reactivity -- each section is static
+  const section = props.section;
   return (
     <div
-      id={`group_${wordsToCamelCase(props.title)}`}
+      id={`group_${props.section}`}
       class={cn(
-        // when filtering, drop sections where every setting is hidden
+        "grid gap-8",
+        // only the selected section is shown, unless filtering, where every
+        // section with a matching setting is shown
+        !isSettingsSearchActive() &&
+          getCurrentSettingsSection() !== props.section &&
+          "hidden",
         isSettingsSearchActive() &&
           "not-has-[[data-setting-key]:not(.hidden)]:hidden",
       )}
     >
-      <Button
-        variant="text"
-        class={cn(
-          "mb-8 w-max gap-4 p-0 text-4xl",
-          isSettingsSearchActive() && "hidden",
-        )}
-        onClick={() => setIsOpen((prev) => !prev)}
-      >
-        <Anime
-          animation={{
-            rotate: isOpen() ? 0 : -90,
-            duration: 125,
-          }}
-        >
-          <Fa icon="fa-chevron-down" />
-        </Anime>
-        {props.title}
-      </Button>
-      <AnimeShow
-        when={isOpen() || isSettingsSearchActive()}
-        slide
-        class="grid gap-8"
-      >
+      <H2
+        text={settingsSections[props.section].text}
+        fa={{ icon: settingsSections[props.section].icon }}
+        class="pb-0"
+      />
+      <SettingsSectionContext.Provider value={section}>
         {props.children}
-        <div class={cn("h-16", isSettingsSearchActive() && "hidden")}></div>
-      </AnimeShow>
+      </SettingsSectionContext.Provider>
     </div>
   );
 }

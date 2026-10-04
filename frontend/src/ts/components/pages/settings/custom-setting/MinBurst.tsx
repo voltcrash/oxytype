@@ -35,6 +35,10 @@ export function MinBurst(): JSXElement {
   return (
     <SearchableSetting
       key="minBurst"
+      resetKeys={["minBurstCustomSpeed", "minBurst"]}
+      onReset={() =>
+        form.reset({ minBurstCustomSpeed: getConfig.minBurstCustomSpeed })
+      }
       title={configMetadata.minBurst.displayString ?? "min burst"}
       fa={configMetadata.minBurst.fa}
       description={configMetadata.minBurst.description}

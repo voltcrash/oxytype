@@ -35,6 +35,8 @@ export function MinAcc(): JSXElement {
   return (
     <SearchableSetting
       key="minAcc"
+      resetKeys={["minAccCustom", "minAcc"]}
+      onReset={() => form.reset({ minAccCustom: getConfig.minAccCustom })}
       title={configMetadata.minAcc.displayString ?? "min accuracy"}
       fa={configMetadata.minAcc.fa}
       description={configMetadata.minAcc.description}

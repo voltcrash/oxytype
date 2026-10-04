@@ -520,7 +520,7 @@ export const configMetadata: ConfigMetadataObject = {
     changeRequiresRestart: false,
     group: "input",
     description:
-      "Letter mode will automatically delete the incorrect character and the one before it. Word mode will delete the entire current word. The hard variants will additionally jump back to the previous word if you make a mistake on the first character.",
+      "Letter deletes the incorrect character and the character before it. Word deletes the current word. The hard modes also go back to the previous word if the first character is incorrect.",
     overrideConfig: ({ value }) => {
       if (value !== "off") {
         return {

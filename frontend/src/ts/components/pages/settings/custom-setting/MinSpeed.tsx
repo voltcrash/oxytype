@@ -35,6 +35,10 @@ export function MinSpeed(): JSXElement {
   return (
     <SearchableSetting
       key="minSpeed"
+      resetKeys={["minWpmCustomSpeed", "minWpm"]}
+      onReset={() =>
+        form.reset({ minWpmCustomSpeed: getConfig.minWpmCustomSpeed })
+      }
       title={configMetadata.minWpm.displayString ?? "min speed"}
       fa={configMetadata.minWpm.fa}
       description={configMetadata.minWpm.description}
