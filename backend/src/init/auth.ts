@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
+import { dash } from "@better-auth/infra";
 import { database } from "../db/client";
 import {
   authUsers,
@@ -10,7 +11,7 @@ import {
   authVerifications,
   authRateLimits,
 } from "../db/schema";
-import { runtime, envValue, type WorkerEnv } from "../runtime/env";
+import { background, runtime, envValue, type WorkerEnv } from "../runtime/env";
 import { mutateUser } from "../db/mutation";
 import {
   APIError,
@@ -26,6 +27,7 @@ export function createAuth(
 ): ReturnType<typeof betterAuth> {
   const frontendUrl = getFrontendUrl();
   const secret = envValue("BETTER_AUTH_SECRET");
+  const dashboardApiKey = envValue("BETTER_AUTH_API_KEY")?.trim();
   if (!isDevEnvironment() && (secret === undefined || secret.length < 32)) {
     throw new Error("BETTER_AUTH_SECRET must contain at least 32 characters");
   }
@@ -63,6 +65,7 @@ export function createAuth(
     trustedOrigins: [new URL(frontendUrl).origin],
     socialProviders,
     advanced: {
+      backgroundTasks: { handler: background },
       database: { generateId: () => randomUUID() },
       cookiePrefix: "oxytype",
       ...(new URL(baseURL).protocol === "https:" &&
@@ -187,7 +190,12 @@ export function createAuth(
         },
       },
     },
-    plugins: [bearer()],
+    plugins: [
+      bearer(),
+      ...(dashboardApiKey !== undefined && dashboardApiKey !== ""
+        ? [dash({ apiKey: dashboardApiKey })]
+        : []),
+    ],
     rateLimit: {
       enabled: true,
       storage: "database",

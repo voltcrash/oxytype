@@ -27,6 +27,7 @@
     "generate-icon-types": "tsx scripts/generate-fontawesome-types.ts"
   },
   "dependencies": {
+    "@better-auth/infra": "0.4.14",
     "@date-fns/utc": "2.1.1",
     "@leonabcd123/modern-caps-lock": "3.1.7",
     "@oxytype/challenges": "workspace:*",

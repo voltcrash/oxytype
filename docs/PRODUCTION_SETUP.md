@@ -55,6 +55,26 @@ also requires production Google OAuth credentials and a matching callback.
 Linked providers remain manageable in account settings. Backend secrets are not
 passed into the frontend build. Examples are checked in; actual files are ignored.
 
+## Better Auth dashboard
+
+The backend connects to [Better Auth Infrastructure](https://better-auth.com/docs/infrastructure/plugins/dashboard)
+when `BETTER_AUTH_API_KEY` is configured. Add the private project API key to
+`backend/.dev.vars.production`, or save it as a separate GitHub Actions secret
+named `BETTER_AUTH_API_KEY`. The daily workflow appends that secret to the private
+backend file before deploying it to the Worker. Preserve the other backend
+credentials; this API key does not replace `BETTER_AUTH_SECRET`.
+
+In the dashboard's **Connect Your App** form, use:
+
+- Base URL: `https://oxytype.voltcrash.com`
+- Base Path: `/api/auth`
+
+Deploy the integration before verifying the connection. Dashboard endpoints use
+the plugin's signed authorization. Auth events use the Worker's `waitUntil` so
+they can finish after the response. The client installs `dashClient()` for audit
+log APIs. Activity tracking and Sentinel security policies remain opt-in; the
+basic dashboard connection requires no database migration.
+
 ## First database setup — already completed for this deployment
 
 On a **new, empty** production D1 only:
@@ -103,6 +123,7 @@ environment before the first run:
 | --- | --- | --- |
 | Secret | `CLOUDFLARE_API_TOKEN` | Cloudflare token scoped to the production account, with Worker deployment, D1 migration, queue and custom-domain access. |
 | Secret | `PRODUCTION_BACKEND_ENV` | Full contents of the existing private `backend/.dev.vars.production` file, preserving the deployed auth/OAuth/Turnstile credentials. |
+| Secret (optional) | `BETTER_AUTH_API_KEY` | Private Better Auth dashboard project key. Overrides the same key in `PRODUCTION_BACKEND_ENV`; uploaded only to the backend Worker. |
 | Variable | `PRODUCTION_FRONTEND_ENV` | Full contents of `frontend/.env.production.local`: real production site key, `BACKEND_URL=/api`, and enabled auth providers. |
 
 The account ID and isolated resource IDs come from `backend/wrangler.production.json`.

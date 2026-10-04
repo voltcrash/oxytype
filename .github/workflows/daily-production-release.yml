@@ -65,6 +65,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           PRODUCTION_BACKEND_ENV: ${{ secrets.PRODUCTION_BACKEND_ENV }}
+          BETTER_AUTH_API_KEY: ${{ secrets.BETTER_AUTH_API_KEY }}
           PRODUCTION_FRONTEND_ENV: ${{ vars.PRODUCTION_FRONTEND_ENV }}
           RELEASE_VERSION: ${{ steps.plan.outputs.version }}
         run: |
@@ -73,7 +74,9 @@ jobs:
           for (const key of ['CLOUDFLARE_API_TOKEN', 'PRODUCTION_BACKEND_ENV', 'PRODUCTION_FRONTEND_ENV']) {
             if (!process.env[key]?.trim()) throw new Error(`Configure the production Actions input ${key}`);
           }
-          writeFileSync('backend/.dev.vars.production', process.env.PRODUCTION_BACKEND_ENV, { mode: 0o600 });
+          const dashboardApiKey = process.env.BETTER_AUTH_API_KEY?.trim();
+          const backendEnv = process.env.PRODUCTION_BACKEND_ENV + (dashboardApiKey ? `\nBETTER_AUTH_API_KEY=${JSON.stringify(dashboardApiKey)}\n` : '');
+          writeFileSync('backend/.dev.vars.production', backendEnv, { mode: 0o600 });
           writeFileSync('frontend/.env.production.local', process.env.PRODUCTION_FRONTEND_ENV, { mode: 0o600 });
           const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
           pkg.version = process.env.RELEASE_VERSION;

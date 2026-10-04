@@ -1,5 +1,13 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
+import { parseEnv } from "node:util";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -261,3 +269,69 @@ it("wires scheduled/manual production deployment before publication and always c
   expect(steps[publish].if).toBe("steps.plan.outputs.shouldDeploy == 'true'");
   expect(steps.at(-1).if).toBe("always()");
 });
+
+it.each(["", "ba_dashboard_workflow_fixture"])(
+  "materializes the optional dashboard key only into the private backend file (%s)",
+  (apiKey) => {
+    const workflow = parse(
+      readFileSync(
+        fileURLToPath(
+          new URL(
+            "../../../.github/workflows/daily-production-release.yml",
+            import.meta.url,
+          ),
+        ),
+        "utf8",
+      ),
+    );
+    const settings = workflow.jobs.release.steps.find(
+      (step) =>
+        step.name === "Prepare production credentials and build settings",
+    );
+    expect(settings.env.BETTER_AUTH_API_KEY).toBe(
+      "${{ secrets.BETTER_AUTH_API_KEY }}",
+    );
+    const script = settings.run.match(/<<'NODE'\n([\s\S]+)\nNODE/)?.[1];
+    if (script === undefined) {
+      throw new Error("Missing production settings script");
+    }
+    const directory = mkdtempSync(
+      join(tmpdir(), "oxytype-dashboard-settings-"),
+    );
+    try {
+      mkdirSync(join(directory, "backend"));
+      mkdirSync(join(directory, "frontend"));
+      writeFileSync(
+        join(directory, "package.json"),
+        JSON.stringify({ version: "old" }),
+      );
+      const frontend =
+        "BACKEND_URL=/api\nTURNSTILE_SITE_KEY=public-fixture\nAUTH_PROVIDERS=github\n";
+      execFileSync(process.execPath, ["--input-type=module"], {
+        cwd: directory,
+        input: script,
+        env: {
+          ...process.env,
+          CLOUDFLARE_API_TOKEN: "cloudflare-fixture",
+          PRODUCTION_BACKEND_ENV:
+            "BETTER_AUTH_SECRET=auth-secret-fixture\nBETTER_AUTH_API_KEY=existing-dashboard-key\n",
+          BETTER_AUTH_API_KEY: apiKey,
+          PRODUCTION_FRONTEND_ENV: frontend,
+          RELEASE_VERSION: "2026.10.04",
+        },
+      });
+      const backendPath = join(directory, "backend/.dev.vars.production");
+      const backend = parseEnv(readFileSync(backendPath, "utf8"));
+      expect(backend.BETTER_AUTH_SECRET).toBe("auth-secret-fixture");
+      expect(backend.BETTER_AUTH_API_KEY).toBe(
+        apiKey || "existing-dashboard-key",
+      );
+      expect(statSync(backendPath).mode & 0o777).toBe(0o600);
+      expect(
+        readFileSync(join(directory, "frontend/.env.production.local"), "utf8"),
+      ).toBe(frontend);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  },
+);
