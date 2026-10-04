@@ -72,7 +72,7 @@ it("filters without remounting edited inputs or rich descriptions", () => {
       inputs={<input aria-label="draft" />}
     />
   ));
-  const input = getByLabelText("draft") as HTMLInputElement;
+  const input = getByLabelText<HTMLInputElement>("draft");
   const button = getByText("documentation");
   fireEvent.input(input, { target: { value: "draft value" } });
   setSettingsSearch("documentation");
