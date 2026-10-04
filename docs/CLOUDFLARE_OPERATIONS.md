@@ -1,10 +1,11 @@
 # Cloudflare operations
 
 See [assessment](CLOUDFLARE_ASSESSMENT.md) and [implementation plan](CLOUDFLARE_MIGRATION.md).
-Backend runtime: one Worker, D1, Queues and Cron. Node is used for builds/offline
-import tooling only. Local workerd needs no MongoDB/Redis or Cloudflare login.
+Backend runtime: one Worker, D1, Queues and Cron. Node is used for builds only.
+Local workerd uses local D1 without a Cloudflare login.
 The [production setup](PRODUCTION_SETUP.md) uses a fresh, separate database and
-`backend/wrangler.production.json`; the preserving importer below is optional.
+`backend/wrangler.production.json`. Legacy database export/import tooling has
+been retired.
 
 ## Local development
 
@@ -146,51 +147,12 @@ and lease to zero; Cron rediscovers it. Reward IDs still deduplicate. Replaying
 outbox rows requires preserving reward identities and deduplication claims.
 No automatic DLQ consumer silently discards failures.
 
-## Preserving data migration (separate from empty staging)
+## Database capacity and recovery
 
-Use read-only source credentials; exports contain secrets/PII and remain outside
-repo (directories mode 0700, files 0600). Never import into a live writable D1.
-A backup and write/cron/consumer freeze are required for a consistent snapshot.
+Measure DB+indexes against the account tier and projected growth; benchmark
+result saves, exact rate counters, ranking reads/rebuilds and bcrypt CPU. Large
+history may need external SQL, partitioning or R2 archival.
 
-```sh
-# Set MONGODB_URI and MONGODB_DATABASE privately in the shell.
-pnpm --filter @oxytype/backend export:mongo /private/path/export
-# Set REDIS_URI privately; capture active boards and pending jobs after draining.
-pnpm --filter @oxytype/backend export:redis /private/path/export
-pnpm --filter @oxytype/backend import:prepare /private/path/export /private/path/sql
-```
-
-Preparation verifies checksums/counts, canonical BSON conversion, full ordered
-SQL application in disposable local D1, PK count reconciliation and foreign keys.
-Only a successful run writes `manifest.json` with `validated:true`. Unknown
-collections, unsafe integers, oversized rows, duplicate normalized names and
-orphans fail preflight. Derived `leaderboards.*` snapshots are rebuilt. Legacy
-`errors` become audit events; original export retains raw source records.
-
-Redis mapping preserves daily/weekly entries and expiry; unstarted `later` jobs
-become D1 scheduled jobs. Active `later` jobs or attempted payout jobs are rejected:
-drain/reconcile them before exporting. Legacy `george-tasks` are discarded from
-imports, including active bot jobs, with `discardedDiscordJobs` recorded in the
-manifest. Original exports retain their source records. Discord identity/avatar
-fields and blocklist hashes are also excluded. Other Redis keys are archived,
-not authoritative imports. No Redis snapshot means active boards/jobs need an explicit reset/drain decision.
-
-Keep the original Better Auth secret when retaining sessions; otherwise invalidate
-sessions deliberately. Resolve identity/relationship conflicts in the source or
-explicit reviewed mapping, then rerun into a **new** output directory. No source
-data is changed. Fixture validation does not replace a rehearsal on the real export.
-
-For an approved fresh target: apply schema migrations, then run ordered SQL files
-from the validated manifest with `wrangler d1 execute <target> --remote --file`.
-Check each SHA-256 first. Record each successful file/checkpoint; replaying ordered
-UPSERT files is supported while writes remain frozen. Large JSON is split into
-multiple statements: an interrupted file must be replayed before target use.
-Compare manifest table counts, foreign keys, representative profiles/results,
-PBs, pending rewards, auth and active boards. Rebuild snapshots after import.
-
-Before cutover, measure DB+indexes against the account tier and projected growth;
-benchmark result saves, exact rate counters, ranking reads/rebuilds and bcrypt
-CPU. Large history may need external SQL/partitioning/R2 archival. Freeze final
-source writes, stop old consumers/cron, import final snapshot/delta and validate,
-then switch routing. Retain original exports/databases. After D1 accepts writes,
-routing rollback needs write reconciliation; old Mongo is no longer current.
+Production starts with a fresh D1 database. For existing D1 deployments, back up
+the database and pause writes/consumers before schema changes. A code rollback
+that requires an older schema also requires a matching database restore.
