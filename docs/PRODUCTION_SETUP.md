@@ -1,6 +1,6 @@
 # Production setup
 
-Production starts fresh, as requested; no MongoDB, Redis or staging data is imported.
+Production starts fresh, as requested; no legacy or staging data is imported.
 One Worker serves the frontend and `/api` on `https://oxytype.voltcrash.com`.
 Use `backend/wrangler.production.json` explicitly. The default Wrangler config and
 release CLI still target staging.
