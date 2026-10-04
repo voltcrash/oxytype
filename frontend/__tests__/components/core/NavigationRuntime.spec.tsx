@@ -191,8 +191,8 @@ describe("Solid Router page integration", () => {
     "redirects an initial legacy %s link while preserving query and hash",
     async (tab) => {
       state.authenticated = true;
-      const length = window.history.length;
       mount(`/account-settings/?tab=${tab}&highlight=details#security`);
+      const length = window.history.length;
       await ready();
       expect(
         window.location.pathname +

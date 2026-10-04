@@ -99,7 +99,8 @@ export function NavigationRuntime(): null {
             pending?.resolve();
             pending = { options, resolve, reject };
             ready = true;
-            routeTo(target, options);
+            // Auth refreshes may normalize a trailing slash; keep the current history entry.
+            routeTo(target, options, url === undefined);
             // Same-URL auth refreshes still run the page lifecycle.
             setRevision((value) => value + 1);
           });
