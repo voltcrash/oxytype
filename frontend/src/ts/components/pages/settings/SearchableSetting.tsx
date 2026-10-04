@@ -7,6 +7,7 @@ import {
 } from "../../../states/settings-search";
 import { setCurrentSettingsSection } from "../../../states/settings-sections";
 import { cn } from "../../../utils/cn";
+import { createSettingSearchIndex } from "../../../utils/settings-search";
 import { Setting, SettingProps } from "../../common/Setting";
 import { ResetSetting } from "./ResetSetting";
 import { SettingsSectionContext } from "./settings-section-context";
@@ -39,19 +40,19 @@ export function SearchableSetting(props: SearchableSettingProps): JSXElement {
     const key = ConfigKeySchema.safeParse(props.key);
     return key.success ? [key.data] : [];
   });
-  // static per setting — only the query changes as the user types, so build once
-  const haystack = createMemo(() =>
-    [props.title, textOf(props.description), props.extraSearchKeywords ?? ""]
-      .join(" ")
-      .toLowerCase(),
+  const index = createMemo(() =>
+    createSettingSearchIndex({
+      key: props.key,
+      title: props.title,
+      description: textOf(props.description),
+      keywords: props.extraSearchKeywords,
+    }),
   );
 
-  // scoring is global (a setting shows only if it ties the best match across all
-  // settings), so register this haystack for the shared best-match computation.
   const section = useContext(SettingsSectionContext);
 
   // oxlint-disable-next-line solid/reactivity -- getter stored, called in a tracked memo
-  registerSearchable(haystack, section);
+  registerSearchable(index, section);
 
   return (
     <Setting
@@ -71,7 +72,7 @@ export function SearchableSetting(props: SearchableSettingProps): JSXElement {
         if (section !== undefined) setCurrentSettingsSection(section);
         props.onHighlight?.();
       }}
-      class={cn(props.class, !settingMatchesSearch(haystack()) && "hidden")}
+      class={cn(props.class, !settingMatchesSearch(index()) && "hidden")}
     />
   );
 }

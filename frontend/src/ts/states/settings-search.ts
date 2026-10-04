@@ -1,5 +1,10 @@
 import { createMemo, createSignal, onCleanup } from "solid-js";
 
+import {
+  scoreSettingSearch,
+  SettingSearchIndex,
+  tokenizeSettingsSearch,
+} from "../utils/settings-search";
 import { SettingsSection } from "./settings-sections";
 
 // the current settings filter query, shared between the search input and the
@@ -9,10 +14,12 @@ export const [getSettingsSearch, setSettingsSearch] = createSignal("");
 export const isSettingsSearchActive = (): boolean =>
   getSettingsSearch().trim() !== "";
 
-type Searchable = { haystack: () => string; section?: SettingsSection };
+type Searchable = {
+  index: () => SettingSearchIndex;
+  section?: SettingsSection;
+};
 
-// registry of every searchable setting's haystack getter. settings register on
-// mount and clean up on unmount, so best-match scoring sees only live settings.
+// Only mounted settings participate; conditional controls register on mount.
 const [getSearchables, setSearchables] = createSignal<Set<Searchable>>(
   new Set(),
   {
@@ -21,10 +28,10 @@ const [getSearchables, setSearchables] = createSignal<Set<Searchable>>(
 );
 
 export function registerSearchable(
-  haystack: () => string,
+  index: () => SettingSearchIndex,
   section?: SettingsSection,
 ): void {
-  const searchable: Searchable = { haystack, section };
+  const searchable: Searchable = { index, section };
   setSearchables((s) => s.add(searchable));
   onCleanup(() =>
     setSearchables((s) => {
@@ -34,45 +41,41 @@ export function registerSearchable(
   );
 }
 
-const queryTokens = createMemo(() => {
-  const query = getSettingsSearch().trim().toLowerCase();
-  return query === "" ? [] : query.split(/\s+/);
-});
+export const getSettingsSearchTokens = createMemo(() =>
+  tokenizeSettingsSearch(getSettingsSearch()),
+);
 
-// how many of the query's tokens appear in this haystack
-function scoreOf(haystack: string, tokens: string[]): number {
-  let score = 0;
-  for (const token of tokens) if (haystack.includes(token)) score++;
-  return score;
-}
-
-// the highest token-match count any live setting achieves for the current query.
-// we only reveal settings that tie this, so a partial match shows only when
-// nothing matches better (2/2 beats 1/2; 1/2 shows only if nothing hits 2/2).
-const bestScore = createMemo(() => {
-  const tokens = queryTokens();
-  if (tokens.length === 0) return 0;
+// Score once per query, sharing the same matches between rows and sidebar counts.
+const getMatchingSettings = createMemo(() => {
+  const tokens = getSettingsSearchTokens();
+  const scores = new Map<SettingSearchIndex, number>();
   let best = 0;
-  for (const { haystack } of getSearchables()) {
-    const score = scoreOf(haystack(), tokens);
-    if (score > best) best = score;
+  if (tokens.length > 0) {
+    for (const { index } of getSearchables()) {
+      const setting = index();
+      const score = scoreSettingSearch(setting, tokens);
+      scores.set(setting, score);
+      best = Math.max(best, score);
+    }
   }
-  return best;
+  return new Set(
+    [...scores]
+      .filter(([, score]) => score > 0 && score === best)
+      .map(([setting]) => setting),
+  );
 });
 
-export function settingMatchesSearch(haystack: string): boolean {
-  const tokens = queryTokens();
-  if (tokens.length === 0) return true;
-  const best = bestScore();
-  return best > 0 && scoreOf(haystack, tokens) === best;
+export function settingMatchesSearch(index: SettingSearchIndex): boolean {
+  return !isSettingsSearchActive() || getMatchingSettings().has(index);
 }
 
 // how many settings in each section match the active search
 export const getSearchMatchCounts = createMemo(() => {
   const counts: Partial<Record<SettingsSection, number>> = {};
-  if (queryTokens().length === 0) return counts;
-  for (const { haystack, section } of getSearchables()) {
-    if (section === undefined || !settingMatchesSearch(haystack())) continue;
+  if (!isSettingsSearchActive()) return counts;
+  const matches = getMatchingSettings();
+  for (const { index, section } of getSearchables()) {
+    if (section === undefined || !matches.has(index())) continue;
     counts[section] = (counts[section] ?? 0) + 1;
   }
   return counts;
