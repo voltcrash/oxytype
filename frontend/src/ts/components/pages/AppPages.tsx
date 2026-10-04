@@ -8,7 +8,6 @@ import { getPageView } from "../../states/page-transition";
 import { cn } from "../../utils/cn";
 import { NotFoundPage } from "./404Page";
 import { AboutPage } from "./AboutPage";
-import { AccountSettingsPage } from "./account-settings/AccountSettingsPage";
 import { AccountPage } from "./account/AccountPage";
 import { FriendsPage } from "./connections/FriendsPage";
 import { LeaderboardPage } from "./leaderboard/LeaderboardPage";
@@ -61,7 +60,6 @@ export function AppPages(): JSXElement {
     profileSearch: shell("profileSearch", <ProfileSearchPage />),
     test: <TestPage ref={(el) => refs.set("test", el)} />,
     "404": shell("404", <NotFoundPage />),
-    accountSettings: shell("accountSettings", <AccountSettingsPage />),
     friends: shell("friends", <FriendsPage />),
     leaderboards: shell("leaderboards", <LeaderboardPage />),
   };

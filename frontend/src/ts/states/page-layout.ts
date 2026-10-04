@@ -5,7 +5,7 @@ import { PageName } from "../pages/page";
 // long pages with a sticky sidebar. the header stays in place and only the
 // page content scrolls, in its own scroll container, so overscroll (rubber
 // banding) only moves the content
-const fixedHeaderPages: PageName[] = ["settings", "accountSettings"];
+const fixedHeaderPages: PageName[] = ["settings"];
 
 export function hasFixedHeader(page: PageName): boolean {
   return fixedHeaderPages.includes(page);

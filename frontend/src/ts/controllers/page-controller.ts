@@ -35,10 +35,6 @@ import {
   waitForConnectionsReady,
 } from "../collections/connections";
 import {
-  AccountSettingsUrlParamsSchema,
-  readAccountSettingsGetParameters,
-} from "../states/account-settings";
-import {
   readSettingsGetParameters,
   SettingsUrlParamsSchema,
 } from "../states/settings-sections";
@@ -120,12 +116,6 @@ const pages = {
           text: "Downloading friend requests...",
         },
       ],
-    },
-  }),
-  accountSettings: solidPage("accountSettings", {
-    urlParamsSchema: AccountSettingsUrlParamsSchema,
-    beforeShow: async (options) => {
-      readAccountSettingsGetParameters(options.urlParams);
     },
   }),
   leaderboards: solidPage("leaderboards", {

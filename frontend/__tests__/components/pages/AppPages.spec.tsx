@@ -17,10 +17,6 @@ vi.mock("../../../src/ts/components/pages/404Page", () => ({
 vi.mock("../../../src/ts/components/pages/AboutPage", () => ({
   AboutPage: () => <div />,
 }));
-vi.mock(
-  "../../../src/ts/components/pages/account-settings/AccountSettingsPage",
-  () => ({ AccountSettingsPage: () => <div /> }),
-);
 vi.mock("../../../src/ts/components/pages/account/AccountPage", () => ({
   AccountPage: () => <div />,
 }));
