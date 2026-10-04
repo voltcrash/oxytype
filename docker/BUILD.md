@@ -1,7 +1,7 @@
 # Frontend Docker hosting
 
-The backend deploys through Wrangler; there is no backend container or Mongo/Redis
-Compose dependency. See [Cloudflare operations](../docs/CLOUDFLARE_OPERATIONS.md).
+The backend deploys through Wrangler with D1 and Queues; Compose serves the
+static frontend. See [Cloudflare operations](../docs/CLOUDFLARE_OPERATIONS.md).
 
 Copy `docker/example.env` to `docker/.env`, set `OXYTYPE_BACKEND_URL` to the Worker
 URL including `/api`, then run `pnpm docker`. Trust the frontend's origin in the
@@ -14,5 +14,4 @@ docker build -f docker/frontend/Dockerfile -t oxytype-frontend .
 ```
 
 The image replaces its API/captcha placeholders on startup. Backend secrets belong
-in Wrangler, never in frontend environment variables. Existing production database
-volumes require a deliberate export/cutover; do not run Compose volume deletion.
+in Wrangler, never in frontend environment variables.
