@@ -40,3 +40,22 @@
 .fa-bullhorn {
   scale: 1.11;
 }
+
+/* replay and sound controls */
+.fa-play {
+  scale: 1.11;
+}
+.fa-step-backward,
+.fa-backward-step,
+.fa-step-forward,
+.fa-forward-step {
+  scale: 0.91;
+}
+.fa-volume-mute,
+.fa-volume-xmark {
+  scale: 0.9;
+}
+.fa-volume-down,
+.fa-volume-low {
+  scale: 0.89;
+}
