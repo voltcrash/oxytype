@@ -220,11 +220,13 @@ export function SettingsPage(): JSXElement {
               <SearchableAutoSetting key="alwaysShowDecimalPlaces" />
               <SearchableAutoSetting key="startGraphsAtZero" />
             </SettingsGroup>
-            <SettingsGroup title="text & layout">
+            <SettingsGroup title="text">
               <SearchableAutoSetting key="fontSize" />
               <FontFamily />
               <SearchableAutoSetting key="highlightMode" wide />
               <SearchableAutoSetting key="typedEffect" />
+            </SettingsGroup>
+            <SettingsGroup title="layout">
               <SearchableAutoSetting key="tapeMode" />
               <SearchableAutoSetting key="tapeMargin" />
               <SearchableAutoSetting key="smoothLineScroll" />
