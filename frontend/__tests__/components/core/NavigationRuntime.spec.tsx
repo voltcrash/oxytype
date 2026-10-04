@@ -181,6 +181,66 @@ describe("Solid Router page integration", () => {
     expect(state.change).toHaveBeenLastCalledWith("test", expect.any(Object));
   });
 
+  it.each([
+    "account",
+    "authentication",
+    "blockedUsers",
+    "apeKeys",
+    "dangerZone",
+  ])(
+    "redirects an initial legacy %s link while preserving query and hash",
+    async (tab) => {
+      state.authenticated = true;
+      const length = window.history.length;
+      mount(`/account-settings/?tab=${tab}&highlight=details#security`);
+      await ready();
+      expect(
+        window.location.pathname +
+          window.location.search +
+          window.location.hash,
+      ).toBe(`/settings?tab=${tab}&highlight=details#security`);
+      expect(window.history.length).toBe(length);
+      expect(state.change).toHaveBeenCalledOnce();
+      expect(state.change).toHaveBeenLastCalledWith(
+        "settings",
+        expect.objectContaining({ force: true }),
+      );
+    },
+  );
+
+  it("replaces a legacy visit without adding redirect history and retains navigation options", async () => {
+    state.authenticated = true;
+    mount("/about");
+    await ready();
+    const length = window.history.length;
+    await navigate("/account-settings?tab=apeKeys", {
+      force: true,
+      data: { source: "account" },
+    });
+    expect(window.location.pathname + window.location.search).toBe(
+      "/settings?tab=apeKeys",
+    );
+    expect(window.history.length).toBe(length + 1);
+    expect(state.change).toHaveBeenLastCalledWith("settings", {
+      force: true,
+      data: { source: "account" },
+    });
+    window.history.back();
+    await waitFor(() => expect(window.location.pathname).toBe("/about"));
+    await waitFor(() =>
+      expect(state.change).toHaveBeenLastCalledWith("about", {}),
+    );
+    window.history.forward();
+    await waitFor(() =>
+      expect(window.location.pathname + window.location.search).toBe(
+        "/settings?tab=apeKeys",
+      ),
+    );
+    await waitFor(() =>
+      expect(state.change).toHaveBeenLastCalledWith("settings", {}),
+    );
+  });
+
   it.each(["restarting", "calculating", "transition"] as const)(
     "blocks navigation and history changes during %s",
     async (key) => {
