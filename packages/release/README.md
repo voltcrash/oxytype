@@ -11,3 +11,5 @@ Release versions use the UTC date in `YYYY.MM.DD` format, with zero-padded month
 Only one tagged release is allowed per UTC day. Normal releases and dry runs check local and origin tags before installing dependencies, building, or deploying. An existing date tag stops the release; use `pnpm hotfix` for additional deployments that day, or make a new release on a later UTC date. Hotfixes keep the current version and do not create a tag or GitHub release.
 
 Frontend build IDs remain separate timestamp-and-commit identifiers for cache invalidation and diagnostics.
+
+The **Daily production release** GitHub workflow deploys the complete production Worker site at midnight UTC, or manually from `main`, then publishes a date-named release with all changes since the previous production release. It keeps retries tied to the original date and deployed commit. See [production automation setup](../../docs/PRODUCTION_SETUP.md#daily-production-releases) for required Actions inputs and first-release behavior. The interactive CLI above remains a separate staging/Firebase release flow.
