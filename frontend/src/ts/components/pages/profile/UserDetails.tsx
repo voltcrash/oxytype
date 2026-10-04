@@ -264,7 +264,8 @@ function AvatarAndName(props: {
         props.variant === "hasSocials" && "sm:col-span-2 md:col-span-1",
       )}
     >
-      <UserAvatar class="h-auto w-full place-self-center text-center text-[5rem]" />
+      {/* the avatar box is 1.25em, so 4rem fills the 5rem column */}
+      <UserAvatar class="h-auto w-full place-self-center text-[4rem]" />
 
       <div class="flex h-min flex-col gap-1 text-xs [&>div]:w-fit">
         <AutoShrink upperLimitRem={2} class="flex text-text">

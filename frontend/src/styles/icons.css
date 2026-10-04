@@ -1,0 +1,139 @@
+/*
+ * Font Awesome 7 redrew many glyphs larger or smaller than the Font Awesome 5
+ * icons this layout was designed around, so neighbouring icons looked
+ * mismatched. These scales restore each glyph's FA5 visual size.
+ * `scale` composes with Font Awesome's spin and flip transforms.
+ */
+
+/* header */
+.fa-crown {
+  scale: 1.18;
+}
+.fa-cog,
+.fa-gear {
+  scale: 0.92;
+}
+
+/* quotes */
+.fa-quote-left,
+.fa-quote-right {
+  scale: 1.25;
+}
+
+/* test config and modes notice */
+.fa-mountain {
+  scale: 1.15;
+}
+.fa-hashtag {
+  scale: 0.87;
+}
+.fa-exchange-alt,
+.fa-right-left {
+  scale: 0.88;
+}
+
+/* alerts and warnings */
+.fa-exclamation-triangle,
+.fa-triangle-exclamation {
+  scale: 1.1;
+}
+.fa-bullhorn {
+  scale: 1.11;
+}
+
+/* replay and sound controls */
+.fa-play {
+  scale: 1.11;
+}
+.fa-step-backward,
+.fa-backward-step,
+.fa-step-forward,
+.fa-forward-step {
+  scale: 0.91;
+}
+.fa-volume-mute,
+.fa-volume-xmark {
+  scale: 0.9;
+}
+.fa-volume-down,
+.fa-volume-low {
+  scale: 0.89;
+}
+
+/* arrows and sorting */
+.fa-angle-down,
+.fa-angle-up {
+  scale: 0.88;
+}
+.fa-angle-double-up,
+.fa-angles-up {
+  scale: 0.89;
+}
+.fa-sort-down,
+.fa-sort-up {
+  scale: 0.75;
+}
+
+/* tags */
+.fa-tags {
+  scale: 1.2;
+}
+.fa-tag {
+  scale: 1.09;
+}
+
+/* account, social and results */
+.fa-user-times,
+.fa-user-xmark {
+  scale: 1.08;
+}
+.fa-comments {
+  scale: 0.88;
+}
+.fa-download {
+  scale: 1.1;
+}
+.fa-file-csv {
+  scale: 0.81;
+}
+.fa-award {
+  scale: 0.88;
+}
+.fa-sun {
+  scale: 0.89;
+}
+
+/* settings and funbox */
+.fa-tape {
+  scale: 1.08;
+}
+.fa-gamepad {
+  scale: 0.91;
+}
+.fa-fire {
+  scale: 0.9;
+}
+.fa-fire-alt,
+.fa-fire-flame-curved {
+  scale: 1.08;
+}
+.fa-language {
+  scale: 0.9;
+}
+.fa-text-width {
+  scale: 0.91;
+}
+.fa-ellipsis-h,
+.fa-ellipsis,
+.fa-ellipsis-v,
+.fa-ellipsis-vertical {
+  scale: 1.11;
+}
+
+/* developer tools */
+.fa-terminal {
+  scale: 1.2;
+}
+.fa-vials {
+  scale: 1.12;
+}
