@@ -8,9 +8,19 @@ export function UserAvatar(props: {
   fallbackIcon?: "user-circle" | "user";
 }): JSXElement {
   return (
-    <Fa
-      icon={props.fallbackIcon === "user" ? "fa-user" : "fa-circle-user"}
-      class={cn("text-[1.25em] transition-colors duration-125", props.class)}
-    />
+    <div
+      class={cn(
+        "grid aspect-square h-[1.25em] w-[1.25em] place-items-center transition-colors duration-125",
+        props.class,
+      )}
+    >
+      {/* the bare user glyph fills its box, so inset it like other icons */}
+      <Fa
+        icon={props.fallbackIcon === "user" ? "fa-user" : "fa-circle-user"}
+        class={
+          props.fallbackIcon === "user" ? "text-[0.85em]" : "text-[1.25em]"
+        }
+      />
+    </div>
   );
 }
