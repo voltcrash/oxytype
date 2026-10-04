@@ -16,6 +16,7 @@ const SettingsSectionSchema = z.enum([
   "hideElements",
   "account",
   "dangerZone",
+  "apeKeys",
   "blockedUsers",
   "authentication",
 ]);
@@ -45,6 +46,11 @@ export const settingsSections: Record<
   blockedUsers: {
     text: "blocked users",
     icon: "fa-ban",
+    requiresAuthentication: true,
+  },
+  apeKeys: {
+    text: "API keys",
+    icon: "fa-code",
     requiresAuthentication: true,
   },
   dangerZone: { text: "danger zone", icon: "fa-exclamation-triangle" },

@@ -31,6 +31,7 @@ import { Page } from "../../common/Page";
 import { SidebarLayout } from "../../common/SidebarLayout";
 import { CommandlineHotkey } from "../../hotkeys/CommandlineHotkey";
 import { AccountTab } from "../account-settings/AccountTab";
+import { ApeKeysTab } from "../account-settings/ApeKeysTab";
 import { AuthenticationTab } from "../account-settings/AuthenticationTab";
 import { BlockedUsersTab } from "../account-settings/BlockedUsersTab";
 import { AnimationFpsLimit } from "./custom-setting/AnimationFpsLimit";
@@ -293,6 +294,13 @@ export function SettingsPage(): JSXElement {
             <Section section="blockedUsers">
               <SettingsGroup title="blocked users">
                 <BlockedUsersTab />
+              </SettingsGroup>
+            </Section>
+          </Show>
+          <Show when={isAuthenticated()}>
+            <Section section="apeKeys">
+              <SettingsGroup title="API access">
+                <ApeKeysTab />
               </SettingsGroup>
             </Section>
           </Show>
