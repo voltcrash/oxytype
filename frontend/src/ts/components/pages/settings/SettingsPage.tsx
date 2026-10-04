@@ -267,6 +267,7 @@ export function SettingsPage(): JSXElement {
             <SettingsGroup title="interface visibility">
               <SearchableAutoSetting key="showKeyTips" />
               <SearchableAutoSetting key="showOutOfFocusWarning" />
+              <SearchableAutoSetting key="showTestModesNotice" />
               <SearchableAutoSetting key="capsLockWarning" />
               <SearchableAutoSetting key="showAverage" />
             </SettingsGroup>
