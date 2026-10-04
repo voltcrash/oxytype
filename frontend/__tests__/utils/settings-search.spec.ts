@@ -24,6 +24,7 @@ describe("settings search relevance", () => {
       "size",
     ]);
     expect(tokenizeSettingsSearch("???")).toEqual([]);
+    expect(tokenizeSettingsSearch("FPSLimit")).toEqual(["fps", "limit"]);
   });
 
   it("prefers names and aliases over options, then descriptions", () => {
@@ -48,6 +49,15 @@ describe("settings search relevance", () => {
     ).toBeGreaterThan(0);
   });
 
+  it("finds config identifiers without spaces, regardless of case", () => {
+    expect(
+      score("FONTSIZE", { title: "font size", key: "fontSize" }),
+    ).toBeGreaterThan(0);
+    expect(
+      score("audio", { title: "play time warning", key: "playTimeWarning" }),
+    ).toBe(score("audio", { title: "sound volume" }));
+  });
+
   it.each([
     ["cursor", "caret style"],
     ["audio", "sound volume"],
@@ -56,6 +66,7 @@ describe("settings search relevance", () => {
     ["minimum accuracy", "min accuracy"],
     ["colourful", "colorful mode"],
     ["shortcuts", "show key tips"],
+    ["frame rate", "animation fps limit"],
   ])("finds %s via a common alias", (query, title) => {
     expect(score(query, { title })).toBeGreaterThan(0);
   });
@@ -101,6 +112,19 @@ describe("settings search relevance", () => {
 });
 
 describe("settings search highlights", () => {
+  it("highlights the corresponding name for an alias, without expanding descriptions", () => {
+    expect(
+      getSettingsSearchHighlights("caret style", ["cursor"], true)
+        .filter((part) => part.matched)
+        .map((part) => part.text),
+    ).toEqual(["caret"]);
+    expect(
+      getSettingsSearchHighlights("caret style", ["cursor"]).some(
+        (part) => part.matched,
+      ),
+    ).toBe(false);
+  });
+
   it("highlights prefixes and corrected words, preserving original text", () => {
     const parts = getSettingsSearchHighlights(
       "Smooth caret — café!",

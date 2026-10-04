@@ -176,7 +176,7 @@ export function Filters(props: {
         <Show when={options.icon !== undefined && options.text !== undefined}>
           <H3
             fa={{ icon: options.icon as FaSolidIcon, fixedWidth: true }}
-            text={options.text as string}
+            text={options.text}
           />
         </Show>
         <div

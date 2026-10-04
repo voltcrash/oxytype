@@ -11,8 +11,10 @@ import { createSettingSearchIndex } from "../../../utils/settings-search";
 import { Setting, SettingProps } from "../../common/Setting";
 import { ResetSetting } from "./ResetSetting";
 import { SettingsSectionContext } from "./settings-section-context";
+import { SettingsSearchMatch } from "./SettingsSearchMatch";
 
 export type SearchableSettingProps = SettingProps & {
+  title: string;
   // extra text (e.g. option labels) the search filter also matches against
   extraSearchKeywords?: string;
   // Composite rows list all their config values, with the controlling mode last.
@@ -57,6 +59,14 @@ export function SearchableSetting(props: SearchableSettingProps): JSXElement {
   return (
     <Setting
       {...props}
+      title={<SettingsSearchMatch text={props.title} includeAliases />}
+      description={
+        typeof props.description === "string" && props.description !== "" ? (
+          <SettingsSearchMatch text={props.description} />
+        ) : (
+          props.description
+        )
+      }
       titleActions={
         <>
           {props.titleActions}

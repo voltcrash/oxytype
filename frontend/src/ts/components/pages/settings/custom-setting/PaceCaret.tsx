@@ -17,6 +17,7 @@ import { Button } from "../../../common/Button";
 import { InputField } from "../../../ui/form/InputField";
 import { fromSchema } from "../../../ui/form/utils";
 import { SearchableSetting } from "../SearchableSetting";
+import { SettingsSearchMatch } from "../SettingsSearchMatch";
 
 export function PaceCaret(): JSXElement {
   const savedIndicator = useSavedIndicator();
@@ -98,7 +99,7 @@ export function PaceCaret(): JSXElement {
                       setConfig("paceCaret", option);
                     }}
                   >
-                    {displayString}
+                    <SettingsSearchMatch text={displayString} />
                   </Button>
                 );
               }}

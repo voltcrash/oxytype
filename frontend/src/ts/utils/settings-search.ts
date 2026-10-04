@@ -25,12 +25,15 @@ const aliases: Record<string, string> = {
   tips: "shortcuts hotkeys",
   pace: "ghost",
   timer: "countdown",
+  fps: "framerate frames frame rate",
+  playtimewarning: "sound sounds audio",
 };
 
 export function tokenizeSettingsSearch(text: string): string[] {
   return [
     ...new Set(
       text
+        .replace(/([A-Z])([A-Z][a-z])/g, "$1 $2")
         .replace(/([a-z])([A-Z])/g, "$1 $2")
         .normalize("NFKD")
         .replace(/\p{M}/gu, "")
@@ -40,20 +43,30 @@ export function tokenizeSettingsSearch(text: string): string[] {
   ];
 }
 
+function nameWords(words: string[]): string[] {
+  return [
+    ...new Set([
+      ...words,
+      ...words.flatMap((word) =>
+        tokenizeSettingsSearch(
+          Object.hasOwn(aliases, word) ? (aliases[word] ?? "") : "",
+        ),
+      ),
+    ]),
+  ];
+}
+
 export function createSettingSearchIndex(setting: {
   key?: string;
   title: string;
   description?: string;
   keywords?: string;
 }): SettingSearchIndex {
-  const names = tokenizeSettingsSearch(`${setting.title} ${setting.key ?? ""}`);
+  const names = tokenizeSettingsSearch(
+    `${setting.title} ${setting.key ?? ""} ${setting.key?.toLowerCase() ?? ""}`,
+  );
   return {
-    names: [
-      ...new Set([
-        ...names,
-        ...names.flatMap((name) => tokenizeSettingsSearch(aliases[name] ?? "")),
-      ]),
-    ],
+    names: nameWords(names),
     options: tokenizeSettingsSearch(setting.keywords ?? ""),
     description: tokenizeSettingsSearch(setting.description ?? ""),
   };
@@ -109,14 +122,18 @@ export function scoreSettingSearch(
 export function getSettingsSearchHighlights(
   text: string,
   tokens: string[],
+  includeAliases = false,
 ): { text: string; matched: boolean }[] {
   return text
     .split(/([\p{L}\p{N}]+)/u)
     .filter((part) => part !== "")
-    .map((part) => ({
-      text: part,
-      matched: tokenizeSettingsSearch(part).some((word) =>
-        tokens.some((token) => matchWord(word, token) !== undefined),
-      ),
-    }));
+    .map((part) => {
+      const words = tokenizeSettingsSearch(part);
+      return {
+        text: part,
+        matched: (includeAliases ? nameWords(words) : words).some((word) =>
+          tokens.some((token) => matchWord(word, token) !== undefined),
+        ),
+      };
+    });
 }

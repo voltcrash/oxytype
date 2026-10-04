@@ -17,6 +17,7 @@ import { Button } from "../../common/Button";
 import { InputField } from "../../ui/form/InputField";
 import { fromSchema } from "../../ui/form/utils";
 import { SearchableSetting } from "./SearchableSetting";
+import { SettingsSearchMatch } from "./SettingsSearchMatch";
 
 export function SearchableAutoSetting<T extends ConfigKey>(props: {
   key: T;
@@ -117,7 +118,7 @@ export function SearchableAutoSetting<T extends ConfigKey>(props: {
                   setConfig(props.key, option);
                 }}
               >
-                {getOptionLabel(props.key, option)}
+                <SettingsSearchMatch text={getOptionLabel(props.key, option)} />
               </Button>
             )}
           </For>

@@ -19,7 +19,7 @@ import { FaProps } from "./Fa";
 import { H3 } from "./Headers";
 
 export type SettingProps = {
-  title: string;
+  title: string | JSXElement;
   fa: FaProps;
   description: string | JSXElement;
   inputs?: JSXElement;

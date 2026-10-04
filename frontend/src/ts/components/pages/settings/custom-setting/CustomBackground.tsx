@@ -19,6 +19,7 @@ import { Separator } from "../../../common/Separator";
 import { InputField } from "../../../ui/form/InputField";
 import { fromSchema } from "../../../ui/form/utils";
 import { SearchableSetting } from "../SearchableSetting";
+import { SettingsSearchMatch } from "../SettingsSearchMatch";
 
 export function CustomBackground(): JSXElement {
   const savedIndicator = useSavedIndicator();
@@ -186,7 +187,7 @@ export function CustomBackground(): JSXElement {
                       setConfig("customBackgroundSize", option);
                     }}
                   >
-                    {displayString}
+                    <SettingsSearchMatch text={displayString} />
                   </Button>
                 );
               }}

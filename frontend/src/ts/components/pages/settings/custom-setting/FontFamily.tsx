@@ -19,6 +19,7 @@ import { Button } from "../../../common/Button";
 import { Fa } from "../../../common/Fa";
 import { Separator } from "../../../common/Separator";
 import { SearchableSetting } from "../SearchableSetting";
+import { SettingsSearchMatch } from "../SettingsSearchMatch";
 
 export function FontFamily(): JSXElement {
   const [hasLocalFont, { refetch }] = createResource(async () =>
@@ -156,13 +157,14 @@ export function FontFamily(): JSXElement {
                   >
                     <Button
                       class="w-full"
-                      text={displayString}
                       active={getConfig.fontFamily === option}
                       onClick={() => {
                         if (getConfig.fontFamily === option) return;
                         setConfig("fontFamily", option);
                       }}
-                    />
+                    >
+                      <SettingsSearchMatch text={displayString} />
+                    </Button>
                   </div>
                 );
               }}
