@@ -3,6 +3,10 @@ import { intervalToDuration } from "date-fns";
 import Ape from "../ape";
 import { getContributorsList, getReleasesFromGitHub } from "../utils/json-data";
 import { getNumberWithMagnitude, numberWithSpaces } from "../utils/numbers";
+import {
+  releaseNotesToHtml,
+  VersionHistoryRelease,
+} from "../utils/release-notes";
 import { baseKey } from "./utils/keys";
 import { format as dateFormat } from "date-fns/format";
 
@@ -46,7 +50,8 @@ export const getVersionHistoryQueryOptions = () =>
   infiniteQueryOptions({
     queryKey: queryKeys.versionHistory(),
     queryFn: fetchVersionHistory,
-    staleTime,
+    // Releases ship daily, so reopening the modal should pick up new ones.
+    staleTime: 1000 * 60 * 5,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     initialPageParam: 1,
   });
@@ -159,40 +164,25 @@ async function fetchTypingStats(): Promise<{
 
 async function fetchVersionHistory(options: { pageParam: number }): Promise<{
   nextCursor: number | undefined;
-  releases: { name: string; publishedAt: string; bodyHTML: string }[];
+  releases: VersionHistoryRelease[];
 }> {
   const releases = await getReleasesFromGitHub({ page: options.pageParam });
-  const data = [];
+  const data: VersionHistoryRelease[] = [];
   for (const release of releases) {
     if (release.draft || release.prerelease) continue;
 
-    let body = release.body;
-
-    body = body.replace(/\r\n/g, "<br>");
-    //replace ### title with h3 title h3
-    body = body.replace(
-      /### (.*?)<br>/g,
-      '<h3 class="text-sub mb-2 text-xl">$1</h3>',
-    );
-    body = body.replace(/<\/h3><br>/gi, "</h3>");
-    //remove - at the start of a line
-    body = body.replace(/^- /gm, "");
-    //replace **bold** with bold
-    body = body.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
-    //replace links with a tags
-    body = body.replace(
-      /\[(.*?)\]\((.*?)\)/g,
-      '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>',
-    );
-
+    const publishedAt = new Date(release.published_at);
     data.push({
+      tag: release.tag_name,
       name: release.name,
-      publishedAt: dateFormat(new Date(release.published_at), "dd MMM yyyy"),
-      bodyHTML: body,
+      publishedAt: dateFormat(publishedAt, "dd MMM yyyy"),
+      timestamp: publishedAt.getTime(),
+      bodyHTML: releaseNotesToHtml(release.body),
     });
   }
   return {
-    nextCursor: data.length > 0 ? options.pageParam + 1 : undefined,
+    // Drafts are skipped, so an emptied page does not mean the end.
+    nextCursor: releases.length > 0 ? options.pageParam + 1 : undefined,
     releases: data,
   };
 }

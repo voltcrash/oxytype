@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { buildDailyChangelog } from "./daily-changelog.js";
 import { getReleaseVersion } from "./version.js";
 
 const productionMarker = "<!-- oxytype-production-release -->";
@@ -6,10 +7,6 @@ const dateTag = /^v\d{4}\.\d{2}\.\d{2}$/;
 
 function git(cwd, ...args) {
   return execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
-}
-
-function escapeMarkdown(value) {
-  return value.replace(/[\\`*_[\]<>]/g, "\\$&");
 }
 
 export async function prepareDailyRelease({ github, context, cwd }) {
@@ -99,19 +96,22 @@ export async function prepareDailyRelease({ github, context, cwd }) {
     "--format=%H%x00%s",
     base ? `${base}..${sha}` : sha,
   );
-  const changes = commits
-    ? commits
-        .split("\n")
-        .map((line) => {
+  const changelog = buildDailyChangelog(
+    commits
+      ? commits.split("\n").map((line) => {
           const [hash, subject] = line.split("\0");
-          return `- ${escapeMarkdown(subject)} ([${hash.slice(0, 7)}](${repoUrl}/commit/${hash}))`;
+          return { hash, subject };
         })
-        .join("\n")
-    : "No new changes merged to main since the previous production release.";
+      : [],
+    repoUrl,
+  );
+  const changes =
+    changelog ||
+    "No new changes merged to main since the previous production release.";
   const comparison = base
     ? `\n\n**Full changelog:** [${base}...${sha.slice(0, 7)}](${repoUrl}/compare/${base}...${sha})`
     : "";
-  const body = `## What's changed\n\n${changes}${comparison}\n\nDeployed to [production](https://oxytype.voltcrash.com) from [${sha.slice(0, 7)}](${repoUrl}/commit/${sha}).\n\n${productionMarker}\n`;
+  const body = `${changes}${comparison}\n\nDeployed to [production](https://oxytype.voltcrash.com) from [${sha.slice(0, 7)}](${repoUrl}/commit/${sha}).\n\n${productionMarker}\n`;
   return { version, tag, sha, body, shouldDeploy: true };
 }
 
