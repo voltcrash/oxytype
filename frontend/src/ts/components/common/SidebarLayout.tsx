@@ -78,12 +78,11 @@ export function SidebarLayout<T extends string>(props: {
           <For each={Object.entries(props.items) as [T, SidebarItem][]}>
             {([key, item]) => (
               <Button
-                text={item.text}
                 variant="text"
-                fa={{ icon: item.icon }}
+                fa={{ icon: item.icon, class: "shrink-0" }}
                 active={props.active === key}
                 class={cn(
-                  "justify-start text-left [--themable-button-active:var(--themable-button-text)]",
+                  "min-w-0 justify-start text-left [--themable-button-active:var(--themable-button-text)]",
                   props.counts !== undefined &&
                     "w-full justify-start [&>span:last-child]:ml-auto",
                   props.counts !== undefined &&
@@ -92,8 +91,9 @@ export function SidebarLayout<T extends string>(props: {
                 )}
                 onClick={() => select(key)}
               >
+                <span class="min-w-0 wrap-anywhere">{item.text}</span>
                 <Show when={props.counts !== undefined}>
-                  <span class="rounded bg-bg px-[0.5em] text-em-xs text-sub">
+                  <span class="shrink-0 rounded bg-bg px-[0.5em] text-em-xs text-sub">
                     {props.counts?.[key] ?? 0}
                   </span>
                 </Show>
