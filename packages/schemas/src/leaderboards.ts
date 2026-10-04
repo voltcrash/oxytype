@@ -22,13 +22,11 @@ export const LeaderboardEntrySchema = z.object({
 });
 export type LeaderboardEntry = z.infer<typeof LeaderboardEntrySchema>;
 
-export const RedisDailyLeaderboardEntrySchema = LeaderboardEntrySchema.omit({
+export const DailyLeaderboardEntrySchema = LeaderboardEntrySchema.omit({
   rank: true,
   friendsRank: true,
 });
-export type RedisDailyLeaderboardEntry = z.infer<
-  typeof RedisDailyLeaderboardEntrySchema
->;
+export type DailyLeaderboardEntry = z.infer<typeof DailyLeaderboardEntrySchema>;
 
 export const RedisXpLeaderboardEntrySchema = z.object({
   uid: z.string(),
