@@ -1,10 +1,9 @@
 import { inArray } from "drizzle-orm";
 import { database, statement, encode, isUniqueViolation } from "../db/client";
 import { reports } from "../db/schema";
-import type { StoredId } from "../utils/id";
 import MonkeyError from "../utils/error";
 export type DBReport = {
-  _id: StoredId;
+  _id: string;
   id: string;
   type: "quote" | "user";
   timestamp: number;
@@ -38,7 +37,7 @@ export async function createReport(
   try {
     const result = await statement(
       "INSERT INTO reports(id,report_id,uid,content_id,type,timestamp,data) SELECT ?,?,?,?,?,?,? WHERE (SELECT count(*) FROM reports) < ? AND (SELECT count(*) FROM reports WHERE content_id=?) < ?",
-      report._id.toString(),
+      report._id,
       report.id,
       report.uid,
       report.contentId,

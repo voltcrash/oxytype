@@ -64,10 +64,10 @@ describe("QuotesController", () => {
       //THEN
       expect(body.message).toEqual("Quote submissions retrieved");
       expect(body.data).toEqual([
-        { ...quoteOne, _id: quoteOne._id.toString() },
+        { ...quoteOne, _id: quoteOne._id },
         {
           ...quoteTwo,
-          _id: quoteTwo._id.toString(),
+          _id: quoteTwo._id,
         },
       ]);
 

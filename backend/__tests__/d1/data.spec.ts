@@ -53,16 +53,16 @@ describe("D1 data contracts", () => {
       const preset = (await Presets.getPresets("owner"))[0];
       if (preset === undefined) throw new Error("Missing preset");
       await Presets.editPreset("owner", {
-        _id: preset._id.toString(),
+        _id: preset._id,
         name: "updated",
         settingGroups: ["behavior"],
       });
       expect((await Presets.getPresets("owner"))[0]?.settingGroups).toEqual([
         "behavior",
       ]);
-      await expect(
-        Presets.removePreset("other", preset._id.toString()),
-      ).rejects.toThrow("Preset not found");
+      await expect(Presets.removePreset("other", preset._id)).rejects.toThrow(
+        "Preset not found",
+      );
     });
   });
   it("caps concurrent ApeKey creation and prevents disabled key use", async () => {
@@ -88,12 +88,12 @@ describe("D1 data contracts", () => {
       expect(attempts.filter((r) => r.status === "fulfilled")).toHaveLength(1);
       const key = (await Keys.getApeKeys("owner"))[0];
       if (key === undefined) throw new Error("Missing key");
-      await expect(
-        Keys.updateLastUsedOn("owner", key._id.toString()),
-      ).rejects.toThrow("ApeKey not found");
-      await expect(
-        Keys.editApeKey("other", key._id.toString(), "stolen"),
-      ).rejects.toThrow("ApeKey not found");
+      await expect(Keys.updateLastUsedOn("owner", key._id)).rejects.toThrow(
+        "ApeKey not found",
+      );
+      await expect(Keys.editApeKey("other", key._id, "stolen")).rejects.toThrow(
+        "ApeKey not found",
+      );
     });
   });
   it("deduplicates reversed connection requests and restricts status changes", async () => {
@@ -105,17 +105,9 @@ describe("D1 data contracts", () => {
         "Connection request already sent",
       );
       await expect(
-        Connections.updateStatus(
-          "other",
-          connection._id.toString(),
-          "accepted",
-        ),
+        Connections.updateStatus("other", connection._id, "accepted"),
       ).rejects.toThrow("No permission");
-      await Connections.updateStatus(
-        "friend",
-        connection._id.toString(),
-        "accepted",
-      );
+      await Connections.updateStatus("friend", connection._id, "accepted");
       expect(await Connections.getFriendsUids("owner")).toEqual([
         "owner",
         "friend",
@@ -146,9 +138,9 @@ describe("D1 data contracts", () => {
       expect((await Users.getUser("dedupe", "test")).xp).toBe(10);
       expect((await Public.getTypingStats()).testsCompleted).toBe(1);
       const result = await Results.getLastResult("dedupe");
-      await expect(
-        Results.getResult("other", result._id.toString()),
-      ).rejects.toThrow("Result not found");
+      await expect(Results.getResult("other", result._id)).rejects.toThrow(
+        "Result not found",
+      );
     });
   });
   it("deletes application and auth data together, retaining banned identity hashes", async () => {

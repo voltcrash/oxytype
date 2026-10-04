@@ -1,6 +1,5 @@
 import { describe, it, expect, afterAll, vi } from "vite-plus/test";
 import * as Misc from "../../src/utils/misc";
-import { ObjectId } from "mongodb";
 
 describe("Misc Utils", () => {
   afterAll(() => {
@@ -315,56 +314,6 @@ describe("Misc Utils", () => {
 
     testCases.forEach(({ seconds, expected }) => {
       expect(Misc.formatSeconds(seconds)).toBe(expected);
-    });
-  });
-
-  describe("replaceObjectId", () => {
-    it("replaces objecId with string", () => {
-      const fromDatabase = {
-        _id: new ObjectId(),
-        test: "test",
-        number: 1,
-      };
-      expect(Misc.replaceObjectId(fromDatabase)).toStrictEqual({
-        _id: fromDatabase._id.toString(),
-        test: "test",
-        number: 1,
-      });
-    });
-    it("ignores null values", () => {
-      expect(Misc.replaceObjectId(null)).toBeNull();
-    });
-  });
-
-  describe("replaceObjectIds", () => {
-    it("replaces objecIds with string", () => {
-      const fromDatabase = {
-        _id: new ObjectId(),
-        test: "test",
-        number: 1,
-      };
-      const fromDatabase2 = {
-        _id: new ObjectId(),
-        test: "bob",
-        number: 2,
-      };
-      expect(
-        Misc.replaceObjectIds([fromDatabase, fromDatabase2]),
-      ).toStrictEqual([
-        {
-          _id: fromDatabase._id.toString(),
-          test: "test",
-          number: 1,
-        },
-        {
-          _id: fromDatabase2._id.toString(),
-          test: "bob",
-          number: 2,
-        },
-      ]);
-    });
-    it("handles undefined", () => {
-      expect(Misc.replaceObjectIds(undefined as any)).toBeUndefined();
     });
   });
 

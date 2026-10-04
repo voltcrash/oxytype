@@ -4,9 +4,8 @@ import { database, encode, statement } from "../db/client";
 import { presets } from "../db/schema";
 import { atomicUser, stage } from "../db/mutation";
 import { newId } from "../utils/id";
-import type { WithObjectId } from "../utils/misc";
 import MonkeyError from "../utils/error";
-type DBConfigPreset = WithObjectId<Preset & { uid: string }>;
+type DBConfigPreset = Preset & { uid: string };
 export async function getPresets(uid: string): Promise<DBConfigPreset[]> {
   return (
     await database()

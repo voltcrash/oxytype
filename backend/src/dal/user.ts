@@ -5,8 +5,7 @@ import {
   type LbPersonalBests,
 } from "../utils/pb";
 import MonkeyError from "../utils/error";
-import { type WithObjectId } from "../utils/misc";
-import { newId, type StoredId } from "../utils/id";
+import { newId } from "../utils/id";
 import {
   database,
   statement,
@@ -44,7 +43,7 @@ import type { Configuration } from "@oxytype/schemas/configuration";
 import { isToday, isYesterday } from "@oxytype/util/date-and-time";
 import { addImportantLog } from "./logs";
 
-export type DBUserTag = WithObjectId<UserTag>;
+export type DBUserTag = UserTag;
 
 export type DBUser = Omit<
   User,
@@ -55,11 +54,11 @@ export type DBUser = Omit<
   | "allTimeLbs"
   | "testActivity"
 > & {
-  _id: StoredId;
-  resultFilterPresets?: WithObjectId<ResultFilters>[];
+  _id: string;
+  resultFilterPresets?: ResultFilters[];
   tags?: DBUserTag[];
   lbPersonalBests?: LbPersonalBests;
-  customThemes?: WithObjectId<CustomTheme>[];
+  customThemes?: CustomTheme[];
   autoBanTimestamps?: number[];
   inbox?: MonkeyMail[];
   ips?: string[];
@@ -100,7 +99,7 @@ export async function addUser(
   try {
     await database().insert(users).values({
       uid,
-      id: user._id.toString(),
+      id: user._id,
       name,
       nameKey: name.toLowerCase(),
       email,
@@ -274,7 +273,7 @@ export async function addResultFilterPreset(
   uid: string,
   resultFilter: ResultFilters,
   maxFiltersPerUser: number,
-): Promise<StoredId> {
+): Promise<string> {
   const id = newId();
   await mutateUser(uid, (user) => {
     if ((user.resultFilterPresets?.length ?? 0) >= maxFiltersPerUser) {
@@ -289,11 +288,11 @@ export async function removeResultFilterPreset(
   id: string,
 ): Promise<void> {
   await mutateUser(uid, (user) => {
-    if (!user.resultFilterPresets?.some((item) => item._id.toString() === id)) {
+    if (!user.resultFilterPresets?.some((item) => item._id === id)) {
       throw new MonkeyError(404, "Custom filter not found");
     }
     user.resultFilterPresets = user.resultFilterPresets.filter(
-      (item) => item._id.toString() !== id,
+      (item) => item._id !== id,
     );
   });
 }
@@ -311,7 +310,7 @@ export async function getTags(uid: string): Promise<DBUserTag[]> {
   return (await getUser(uid, "get tags")).tags ?? [];
 }
 function tagById(user: DBUser, id: string): DBUserTag {
-  const tag = user.tags?.find((item) => item._id.toString() === id);
+  const tag = user.tags?.find((item) => item._id === id);
   if (!tag) throw new MonkeyError(404, "Tag not found");
   return tag;
 }
@@ -327,7 +326,7 @@ export async function editTag(
 export async function removeTag(uid: string, id: string): Promise<void> {
   await mutateUser(uid, (user) => {
     tagById(user, id);
-    user.tags = user.tags?.filter((item) => item._id.toString() !== id);
+    user.tags = user.tags?.filter((item) => item._id !== id);
   });
 }
 export async function removeTagPb(uid: string, id: string): Promise<void> {
@@ -402,7 +401,7 @@ export async function checkIfTagPb(
   return await mutateUser(uid, (user) => {
     const updated: string[] = [];
     for (const tag of user.tags ?? []) {
-      if (!result.tags?.includes(tag._id.toString())) continue;
+      if (!result.tags?.includes(tag._id)) continue;
       const pb = checkAndUpdatePb(
         tag.personalBests ?? emptyPb(),
         undefined,
@@ -410,7 +409,7 @@ export async function checkIfTagPb(
       );
       if (pb.isPb) {
         tag.personalBests = pb.personalBests;
-        updated.push(tag._id.toString());
+        updated.push(tag._id);
       }
     }
     return updated;
@@ -480,11 +479,11 @@ export async function incrementTestActivity(
     );
   });
 }
-export type DBCustomTheme = WithObjectId<CustomTheme>;
+export type DBCustomTheme = CustomTheme;
 export async function addTheme(
   uid: string,
   { name, colors }: Omit<CustomTheme, "_id">,
-): Promise<{ _id: StoredId; name: string }> {
+): Promise<{ _id: string; name: string }> {
   const theme = { _id: newId(), name, colors };
   await mutateUser(uid, (user) => {
     if ((user.customThemes?.length ?? 0) >= 20) {
@@ -495,16 +494,14 @@ export async function addTheme(
   return { _id: theme._id, name };
 }
 function themeById(user: DBUser, id: string): DBCustomTheme {
-  const theme = user.customThemes?.find((item) => item._id.toString() === id);
+  const theme = user.customThemes?.find((item) => item._id === id);
   if (!theme) throw new MonkeyError(404, "Custom theme not found");
   return theme;
 }
 export async function removeTheme(uid: string, id: string): Promise<void> {
   await mutateUser(uid, (user) => {
     themeById(user, id);
-    user.customThemes = user.customThemes?.filter(
-      (item) => item._id.toString() !== id,
-    );
+    user.customThemes = user.customThemes?.filter((item) => item._id !== id);
   });
 }
 export async function editTheme(

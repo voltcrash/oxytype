@@ -1,11 +1,10 @@
 import type { LeaderboardEntry } from "@oxytype/schemas/leaderboards";
-import type { StoredId } from "../utils/id";
 import { newId } from "../utils/id";
 import { binding, statement } from "../db/client";
 import { getCachedConfiguration } from "../init/configuration";
 import { isDevEnvironment, omit } from "../utils/misc";
 export type DBLeaderboardEntry = Omit<LeaderboardEntry, "_id"> & {
-  _id: StoredId;
+  _id: string;
 };
 const friendsFilter =
   "(s.uid=? OR s.uid IN (SELECT CASE WHEN initiator_uid=? THEN receiver_uid ELSE initiator_uid END FROM connections WHERE status='accepted' AND (initiator_uid=? OR receiver_uid=?)))";

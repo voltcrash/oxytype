@@ -3,9 +3,8 @@ import { database, statement } from "../db/client";
 import { apeKeys } from "../db/schema";
 import MonkeyError from "../utils/error";
 import type { ApeKey } from "@oxytype/schemas/ape-keys";
-import type { StoredId } from "../utils/id";
 export type DBApeKey = ApeKey & {
-  _id: StoredId;
+  _id: string;
   uid: string;
   hash: string;
   useCount: number;
@@ -40,7 +39,7 @@ export async function countApeKeysForUser(uid: string): Promise<number> {
 export async function addApeKey(key: DBApeKey, maxKeys = 100): Promise<string> {
   const result = await statement(
     "INSERT INTO ape_keys(id,uid,name,enabled,hash,created_on,modified_on,last_used_on,use_count) SELECT ?,?,?,?,?,?,?,?,? WHERE (SELECT count(*) FROM ape_keys WHERE uid=?) < ?",
-    key._id.toString(),
+    key._id,
     key.uid,
     key.name,
     Number(key.enabled),
@@ -55,7 +54,7 @@ export async function addApeKey(key: DBApeKey, maxKeys = 100): Promise<string> {
   if (!result.meta.changes) {
     throw new MonkeyError(409, "Maximum number of ApeKeys have been generated");
   }
-  return key._id.toString();
+  return key._id;
 }
 export async function editApeKey(
   uid: string,

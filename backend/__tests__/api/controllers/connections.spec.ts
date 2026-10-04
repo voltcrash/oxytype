@@ -51,7 +51,7 @@ describe("ConnectionsController", () => {
 
       //THEN
       expect(body.data).toEqual([
-        { ...friend, _id: friend._id.toString(), key: undefined },
+        { ...friend, _id: friend._id, key: undefined },
       ]);
       expect(getConnectionsMock).toHaveBeenCalledWith({
         initiatorUid: uid,
@@ -210,7 +210,7 @@ describe("ConnectionsController", () => {
 
       //THEN
       expect(body.data).toEqual({
-        _id: result._id.toString(),
+        _id: result._id,
         lastModified: 42,
         initiatorUid: me.uid,
         initiatorName: me.name,

@@ -64,8 +64,8 @@ describe("result controller test", () => {
 
       expect(body.message).toEqual("Results retrieved");
       expect(body.data).toEqual([
-        { ...resultOne, _id: resultOne._id.toString() },
-        { ...resultTwo, _id: resultTwo._id.toString() },
+        { ...resultOne, _id: resultOne._id },
+        { ...resultTwo, _id: resultTwo._id },
       ]);
     });
     it("should get results with ape key", async () => {
@@ -326,7 +326,7 @@ describe("result controller test", () => {
 
       //THEN
       expect(body.message).toEqual("Result retrieved");
-      expect(body.data).toEqual({ ...result, _id: result._id.toString() });
+      expect(body.data).toEqual({ ...result, _id: result._id });
     });
     it("should get last result with ape key", async () => {
       //GIVEN
@@ -382,7 +382,7 @@ describe("result controller test", () => {
 
       //THEN
       expect(body.message).toEqual("Result retrieved");
-      expect(body.data).toEqual({ ...result, _id: result._id.toString() });
+      expect(body.data).toEqual({ ...result, _id: result._id });
     });
     it("should get last result with ape key", async () => {
       //GIVEN
@@ -433,7 +433,7 @@ describe("result controller test", () => {
     it("should update tags", async () => {
       //GIVEN
       const result = givenDbResult(uid);
-      const resultIdString = result._id.toString();
+      const resultIdString = result._id;
       const tagIds = [newId(), newId()];
       const partialUser = { tags: [] };
       getResultMock.mockResolvedValue(result);
@@ -473,7 +473,7 @@ describe("result controller test", () => {
         "numbers",
       ]);
 
-      const resultIdString = result._id.toString();
+      const resultIdString = result._id;
       const tagIds = [newId(), newId()];
       const partialUser = { tags: [] };
       getResultMock.mockResolvedValue(partialResult);

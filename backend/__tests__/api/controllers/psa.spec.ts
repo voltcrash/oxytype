@@ -42,14 +42,14 @@ describe("Psa Controller", () => {
         message: "PSAs retrieved",
         data: [
           {
-            _id: psaOne._id.toString(),
+            _id: psaOne._id,
             date: 1000,
             level: 1,
             message: "test2",
             sticky: true,
           },
           {
-            _id: psaTwo._id.toString(),
+            _id: psaTwo._id,
             date: 2000,
             level: 2,
             message: "test2",

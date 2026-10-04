@@ -52,14 +52,14 @@ describe("ApeKeyController", () => {
 
       //THEN
       expect(body).toHaveProperty("message", "ApeKeys retrieved");
-      expect(body.data).toHaveProperty(keyOne._id.toString(), {
+      expect(body.data).toHaveProperty(keyOne._id, {
         name: keyOne.name,
         enabled: keyOne.enabled,
         createdOn: keyOne.createdOn,
         modifiedOn: keyOne.modifiedOn,
         lastUsedOn: keyOne.lastUsedOn,
       });
-      expect(body.data).toHaveProperty(keyTwo._id.toString(), {
+      expect(body.data).toHaveProperty(keyTwo._id, {
         name: keyTwo.name,
         enabled: keyTwo.enabled,
         createdOn: keyTwo.createdOn,

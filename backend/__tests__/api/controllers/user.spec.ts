@@ -1116,8 +1116,8 @@ describe("user controller test", () => {
       expect(body).toEqual({
         message: "Tags retrieved",
         data: [
-          { ...tagOne, _id: tagOne._id.toString() },
-          { ...tagTwo, _id: tagTwo._id.toString() },
+          { ...tagOne, _id: tagOne._id },
+          { ...tagTwo, _id: tagTwo._id },
         ],
       });
       expect(getTagsMock).toHaveBeenCalledWith(uid);
@@ -1225,8 +1225,8 @@ describe("user controller test", () => {
       expect(body).toEqual({
         message: "Custom themes retrieved",
         data: [
-          { ...themeOne, _id: themeOne._id.toString() },
-          { ...themeTwo, _id: themeTwo._id.toString() },
+          { ...themeOne, _id: themeOne._id },
+          { ...themeTwo, _id: themeTwo._id },
         ],
       });
     });
@@ -1259,7 +1259,7 @@ describe("user controller test", () => {
       //THEN
       expect(body).toEqual({
         message: "Custom theme added",
-        data: { ...addedTheme, _id: addedTheme._id.toString() },
+        data: { ...addedTheme, _id: addedTheme._id },
       });
       expect(addThemeMock).toHaveBeenCalledWith(uid, {
         name: "customTheme",

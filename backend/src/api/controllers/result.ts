@@ -2,12 +2,7 @@ import { isUniqueViolation } from "../../db/client";
 import { atomicUser } from "../../db/mutation";
 import * as ResultDAL from "../../dal/result";
 import * as PublicDAL from "../../dal/public";
-import {
-  isDevEnvironment,
-  omit,
-  replaceObjectId,
-  replaceObjectIds,
-} from "../../utils/misc";
+import { isDevEnvironment, omit } from "../../utils/misc";
 import objectHash from "object-hash";
 import Logger from "../../utils/logger";
 import { MonkeyResponse } from "../../utils/monkey-response";
@@ -117,7 +112,7 @@ export async function getResults(
     uid,
   );
 
-  return new MonkeyResponse("Results retrieved", replaceObjectIds(results));
+  return new MonkeyResponse("Results retrieved", results);
 }
 
 export async function getResultById(
@@ -127,7 +122,7 @@ export async function getResultById(
   const { resultId } = req.params;
 
   const result = await ResultDAL.getResult(uid, resultId);
-  return new MonkeyResponse("Result retrieved", replaceObjectId(result));
+  return new MonkeyResponse("Result retrieved", result);
 }
 
 export async function getLastResult(
@@ -135,7 +130,7 @@ export async function getLastResult(
 ): Promise<GetLastResultResponse> {
   const { uid } = req.ctx.decodedToken;
   const result = await ResultDAL.getLastResult(uid);
-  return new MonkeyResponse("Result retrieved", replaceObjectId(result));
+  return new MonkeyResponse("Result retrieved", result);
 }
 
 export async function updateTags(
@@ -697,7 +692,7 @@ async function addResultAtomic(
   const data: PostResultResponse = {
     isPb,
     tagPbs,
-    insertedId: addedResult.insertedId.toString(),
+    insertedId: addedResult.insertedId,
     xp: xpGained.xp,
     dailyXpBonus: xpGained.dailyBonus ?? false,
     xpBreakdown: xpGained.breakdown ?? {},

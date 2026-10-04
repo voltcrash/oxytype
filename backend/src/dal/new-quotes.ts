@@ -5,7 +5,6 @@ import { compareTwoStrings } from "string-similarity";
 import { database, statement, encode } from "../db/client";
 import { quoteSubmissions } from "../db/schema";
 import { newId } from "../utils/id";
-import type { WithObjectId } from "../utils/misc";
 import { envValue, runtime } from "../runtime/env";
 import { integration } from "../utils/integration";
 import MonkeyError from "../utils/error";
@@ -13,7 +12,7 @@ import { z } from "zod/v3";
 const QuoteDataSchema = z.object({
   quotes: z.array(z.object({ id: z.number(), text: z.string() })),
 });
-export type DBNewQuote = WithObjectId<Quote>;
+export type DBNewQuote = Quote;
 function validateLanguage(language: string): void {
   if (!/^\w+$/.test(language)) {
     throw new MonkeyError(400, "Invalid language name", language);
