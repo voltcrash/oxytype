@@ -57,15 +57,15 @@ export const BASE_CONFIGURATION: Configuration = {
       enabled: false,
     },
     xp: {
-      enabled: false,
-      funboxBonus: 0,
-      gainMultiplier: 0,
-      maxDailyBonus: 0,
-      minDailyBonus: 0,
+      enabled: true,
+      funboxBonus: 0.1,
+      gainMultiplier: 1,
+      maxDailyBonus: 1000,
+      minDailyBonus: 100,
       streak: {
-        enabled: false,
-        maxStreakDays: 0,
-        maxStreakMultiplier: 0,
+        enabled: true,
+        maxStreakDays: 100,
+        maxStreakMultiplier: 2,
       },
     },
     inbox: {

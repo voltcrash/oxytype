@@ -611,15 +611,14 @@ describe("result controller test", () => {
       expect(body.data).toEqual({
         isPb: true,
         tagPbs: [],
-        xp: 0,
-        dailyXpBonus: false,
+        xp: 177,
+        dailyXpBonus: true,
         xpBreakdown: {
-          configMultiplier: 0,
           accPenalty: 28,
           base: 20,
           incomplete: 5,
           funbox: 80,
-          daily: 0,
+          daily: 100,
         },
         streak: 0,
         insertedId: insertedId.toString(),
@@ -664,7 +663,7 @@ describe("result controller test", () => {
         4,
         15.1 + 10 - 5, //duration + incompleteTestSeconds-afk
       );
-      expect(userIncrementXpMock).toHaveBeenCalledWith(uid, 0);
+      expect(userIncrementXpMock).toHaveBeenCalledWith(uid, 177);
       expect(userUpdateTypingStatsMock).toHaveBeenCalledWith(
         uid,
         4,
