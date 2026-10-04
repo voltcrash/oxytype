@@ -10,6 +10,7 @@ export type ModalId =
   | "EventLogViewer"
   | "Alerts"
   | "SimpleModal"
+  | "ImportSettings"
   | "CustomText"
   | "SaveCustomText"
   | "SavedTexts"
