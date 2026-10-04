@@ -28,7 +28,7 @@ export const DailyLeaderboardEntrySchema = LeaderboardEntrySchema.omit({
 });
 export type DailyLeaderboardEntry = z.infer<typeof DailyLeaderboardEntrySchema>;
 
-export const RedisXpLeaderboardEntrySchema = z.object({
+export const XpLeaderboardProfileSchema = z.object({
   uid: z.string(),
   name: z.string(),
   lastActivityTimestamp: z.number().int().nonnegative(),
@@ -37,18 +37,13 @@ export const RedisXpLeaderboardEntrySchema = z.object({
   badgeId: z.number().int().optional(),
   isPremium: z.boolean().optional(),
 });
-export type RedisXpLeaderboardEntry = z.infer<
-  typeof RedisXpLeaderboardEntrySchema
->;
+export type XpLeaderboardProfile = z.infer<typeof XpLeaderboardProfileSchema>;
 
-export const RedisXpLeaderboardScoreSchema = z.number().int().nonnegative();
-export type RedisXpLeaderboardScore = z.infer<
-  typeof RedisXpLeaderboardScoreSchema
->;
+export const XpLeaderboardScoreSchema = z.number().int().nonnegative();
+export type XpLeaderboardScore = z.infer<typeof XpLeaderboardScoreSchema>;
 
-export const XpLeaderboardEntrySchema = RedisXpLeaderboardEntrySchema.extend({
-  //based on another redis collection
-  totalXp: RedisXpLeaderboardScoreSchema,
+export const XpLeaderboardEntrySchema = XpLeaderboardProfileSchema.extend({
+  totalXp: XpLeaderboardScoreSchema,
   // dynamically added when generating response on the backend
   rank: z.number().nonnegative().int(),
   friendsRank: FriendsRankSchema,
