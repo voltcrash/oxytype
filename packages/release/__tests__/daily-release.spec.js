@@ -102,7 +102,7 @@ describe("daily production releases", () => {
     commit("merged at midnight", "2026-10-04T00:00:00Z");
     commit("merged before deployment", "2026-10-04T23:59:59Z");
     const plan = await prepareDailyRelease({ github, context, cwd });
-    expect(plan.body).toContain("## What's changed");
+    expect(plan.body).toContain("### Nerd stuff");
     expect(plan.body).toContain("merged at midnight");
     expect(plan.body).toContain("merged before deployment");
     expect(plan.body).not.toContain("old inherited history");
