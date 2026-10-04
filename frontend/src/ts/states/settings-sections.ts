@@ -16,6 +16,7 @@ const SettingsSectionSchema = z.enum([
   "hideElements",
   "account",
   "dangerZone",
+  "blockedUsers",
   "authentication",
 ]);
 export type SettingsSection = z.infer<typeof SettingsSectionSchema>;
@@ -39,6 +40,11 @@ export const settingsSections: Record<
   authentication: {
     text: "authentication",
     icon: "fa-key",
+    requiresAuthentication: true,
+  },
+  blockedUsers: {
+    text: "blocked users",
+    icon: "fa-ban",
     requiresAuthentication: true,
   },
   dangerZone: { text: "danger zone", icon: "fa-exclamation-triangle" },

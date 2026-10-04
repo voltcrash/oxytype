@@ -32,6 +32,7 @@ import { SidebarLayout } from "../../common/SidebarLayout";
 import { CommandlineHotkey } from "../../hotkeys/CommandlineHotkey";
 import { AccountTab } from "../account-settings/AccountTab";
 import { AuthenticationTab } from "../account-settings/AuthenticationTab";
+import { BlockedUsersTab } from "../account-settings/BlockedUsersTab";
 import { AnimationFpsLimit } from "./custom-setting/AnimationFpsLimit";
 import { AutoSwitchTheme } from "./custom-setting/AutoSwitchTheme";
 import { CustomBackground } from "./custom-setting/CustomBackground";
@@ -285,6 +286,13 @@ export function SettingsPage(): JSXElement {
             <Section section="authentication">
               <SettingsGroup title="sign-in methods">
                 <AuthenticationTab />
+              </SettingsGroup>
+            </Section>
+          </Show>
+          <Show when={isAuthenticated()}>
+            <Section section="blockedUsers">
+              <SettingsGroup title="blocked users">
+                <BlockedUsersTab />
               </SettingsGroup>
             </Section>
           </Show>
