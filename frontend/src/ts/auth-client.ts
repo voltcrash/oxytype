@@ -1,4 +1,5 @@
 import { createAuthClient } from "better-auth/client";
+import { dashClient } from "@better-auth/infra/client";
 import { envConfig } from "virtual:env-config";
 import { createSignal } from "solid-js";
 import { promiseWithResolvers } from "./utils/misc";
@@ -14,6 +15,7 @@ export const authClient = createAuthClient({
   baseURL: authURL.href,
   basePath: authURL.pathname,
   fetchOptions: { credentials: "include" },
+  plugins: [dashClient()],
 });
 import type { AuthUser, SocialProvider } from "./auth-types";
 export type { AuthUser, UserCredential, SocialProvider } from "./auth-types";

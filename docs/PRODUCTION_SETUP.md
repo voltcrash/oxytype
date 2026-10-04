@@ -55,6 +55,26 @@ also requires production Google OAuth credentials and a matching callback.
 Linked providers remain manageable in account settings. Backend secrets are not
 passed into the frontend build. Examples are checked in; actual files are ignored.
 
+## Better Auth dashboard
+
+The backend connects to [Better Auth Infrastructure](https://better-auth.com/docs/infrastructure/plugins/dashboard)
+when `BETTER_AUTH_API_KEY` is configured. Add the private project API key to
+`backend/.dev.vars.production`, or save it as a separate GitHub Actions secret
+named `BETTER_AUTH_API_KEY`. The daily workflow appends that secret to the private
+backend file before deploying it to the Worker. Preserve the other backend
+credentials; this API key does not replace `BETTER_AUTH_SECRET`.
+
+In the dashboard's **Connect Your App** form, use:
+
+- Base URL: `https://oxytype.voltcrash.com`
+- Base Path: `/api/auth`
+
+Deploy the integration before verifying the connection. Dashboard endpoints use
+the plugin's signed authorization. Auth events use the Worker's `waitUntil` so
+they can finish after the response. The client installs `dashClient()` for audit
+log APIs. Activity tracking and Sentinel security policies remain opt-in; the
+basic dashboard connection requires no database migration.
+
 ## First database setup — already completed for this deployment
 
 On a **new, empty** production D1 only:
@@ -88,6 +108,48 @@ Deployment checks isolated bindings, required secrets, the real Turnstile key,
 enabled providers and the built frontend's `/api` configuration before upload.
 The deploy command uploads secrets from the private file and packages the frontend
 under the Worker's public site prefix. Preserve other private values when editing.
+
+## Daily production releases
+
+The **Daily production release** Actions workflow runs at `00:00 UTC` each day.
+It also supports **Run workflow** on `main`. It deploys the complete frontend/API
+site with the production Wrangler config, applies pending production D1 migrations,
+and publishes a GitHub release only after deployment succeeds.
+
+Configure these Actions inputs in repository settings or the `production`
+environment before the first run:
+
+| Type | Name | Value |
+| --- | --- | --- |
+| Secret | `CLOUDFLARE_API_TOKEN` | Cloudflare token scoped to the production account, with Worker deployment, D1 migration, queue and custom-domain access. |
+| Secret | `PRODUCTION_BACKEND_ENV` | Full contents of the existing private `backend/.dev.vars.production` file, preserving the deployed auth/OAuth/Turnstile credentials. |
+| Secret (optional) | `BETTER_AUTH_API_KEY` | Private Better Auth dashboard project key. Overrides the same key in `PRODUCTION_BACKEND_ENV`; uploaded only to the backend Worker. |
+| Variable | `PRODUCTION_FRONTEND_ENV` | Full contents of `frontend/.env.production.local`: real production site key, `BACKEND_URL=/api`, and enabled auth providers. |
+
+The account ID and isolated resource IDs come from `backend/wrangler.production.json`.
+The workflow writes credential files with mode `0600` for the validated production
+commands, then removes them even on failure. It never bootstraps or resets the database.
+
+A midnight run on October 5 creates release `2026.10.05` and tag `v2026.10.05`
+at the exact deployed `main` commit. It sets the Worker `VERSION` and the build
+checkout's package version to `2026.10.05`, without pushing a version commit to `main`.
+“What's changed” lists all commits added since the previous successful production
+release, including older branch commits merged during the day. Missed days are
+included in the next successful release. The first scheduled release covers the
+preceding UTC day; the first manual run covers its current UTC day. Days without
+changes still deploy and publish a release with an empty-change notice.
+
+Runs are serialized. Rerunning a completed date skips deployment and publication;
+retrying a failed run keeps its original date and `main` snapshot. An older failed
+run cannot deploy over a newer production release. A date tag belonging to another
+commit or a conflicting manual release stops the workflow before deployment.
+
+GitHub's scheduler can run late or drop jobs under load; midnight is the requested
+trigger time, not an exact-time guarantee. See [GitHub scheduling behavior](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).
+Scheduled execution starts after this workflow is merged into the default branch.
+GitHub releases use the workflow's `GITHUB_TOKEN`, so they do not trigger the
+separate release-event Docker workflow; dispatch that workflow on the tag when
+container images are needed.
 
 ## Browser verification and monitoring
 

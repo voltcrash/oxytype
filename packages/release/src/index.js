@@ -1,11 +1,12 @@
 import { Octokit } from "@octokit/rest";
 import { execSync } from "child_process";
 import dotenv from "dotenv";
-import fs, { readFileSync } from "fs";
+import fs from "fs";
 import readlineSync from "readline-sync";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import { getRepository } from "./repository.js";
+import { assertReleaseTagAvailable, getReleaseVersion } from "./version.js";
 
 const FILENAME = fileURLToPath(import.meta.url);
 const DIRNAME = dirname(FILENAME);
@@ -108,34 +109,6 @@ const checkBranchSync = () => {
     console.error(error);
     process.exit(1);
   }
-};
-
-const getCurrentVersion = () => {
-  console.log("Getting current version...");
-
-  const rootPackageJson = JSON.parse(
-    readFileSync(`${PROJECT_ROOT}/package.json`, "utf-8"),
-  );
-
-  return rootPackageJson.version;
-};
-
-const incrementVersion = (currentVersion) => {
-  console.log("Incrementing version...");
-  const now = new Date();
-  const year = Number(now.getFullYear().toString().slice(-2));
-  const start = new Date(now.getFullYear(), 0, 1);
-  const week = Math.ceil(((now - start) / 86400000 + start.getDay() + 1) / 7);
-  const [prevYear, prevWeek, minor] = currentVersion.split(".").map(Number);
-
-  let newMinor = minor + 1;
-  if (year !== prevYear || week !== prevWeek) {
-    newMinor = 0;
-  }
-
-  const v = `v${year}.${week}.${newMinor}`;
-
-  return v;
 };
 
 const updatePackage = (newVersion) => {
@@ -343,10 +316,16 @@ const main = async () => {
     if (!isBackend || isFrontend) getFirebaseProjectId();
   }
 
+  let newVersion;
+  if (!hotfix) {
+    newVersion = getReleaseVersion();
+    console.log(`New version: ${newVersion}`);
+    assertReleaseTagAvailable(newVersion, PROJECT_ROOT);
+  }
+
   installDependencies();
 
   let changelogContent;
-  let newVersion;
   if (!hotfix) {
     changelogContent = await generateChangelog();
 
@@ -356,10 +335,6 @@ const main = async () => {
       console.log("Exiting.");
       process.exit(1);
     }
-
-    const currentVersion = getCurrentVersion();
-    newVersion = incrementVersion(currentVersion);
-    console.log(`New version: ${newVersion}`);
   }
   buildProject();
 

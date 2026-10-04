@@ -34,7 +34,7 @@ jobs:
           images: ${{ env.FE_REPO }}
           tags: |
             type=raw,value=latest
-            type=semver,pattern={{version}}
+            type=match,pattern=^v(\d{4}\.\d{2}\.\d{2})$,group=1,value=${{ github.event.release.tag_name || github.ref_name }}
 
       - name: Build and publish frontend
         uses: docker/build-push-action@v7.4.0

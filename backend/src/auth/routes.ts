@@ -20,7 +20,16 @@ export function addAuthRoutes(app: Hono<ApiEnv>): void {
     const request = new Request(publicUrl, c.req.raw);
     // Resolve through the API's proxy policy; never trust this caller-supplied header.
     request.headers.set("x-oxytype-auth-ip", getClientIp(c));
-    if (c.req.method !== "GET" && c.req.method !== "HEAD") {
+    // Dashboard server requests use the plugin's signed JWT, rather than cookies.
+    const dashboardRequest =
+      c.req.path.startsWith("/auth/dash/") &&
+      request.headers.get("authorization")?.startsWith("Bearer ") === true &&
+      !request.headers.has("cookie");
+    if (
+      c.req.method !== "GET" &&
+      c.req.method !== "HEAD" &&
+      !dashboardRequest
+    ) {
       const origin = c.req.header("origin");
       if (origin !== new URL(getFrontendUrl()).origin) {
         return c.json({ message: "Untrusted origin" }, 403);
