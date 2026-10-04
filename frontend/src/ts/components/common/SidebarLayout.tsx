@@ -19,7 +19,7 @@ export type SidebarItem = { text: string; icon: FaSolidIcon };
 // page layout with a navigation sidebar on the left (stacked on top on mobile)
 // and the active tab's content on the right
 export function SidebarLayout<T extends string>(props: {
-  items: Record<T, SidebarItem>;
+  items: Partial<Record<T, SidebarItem>>;
   // no item is shown as active when undefined
   active: T | undefined;
   onSelect: (key: T) => void;
