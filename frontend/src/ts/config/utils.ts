@@ -8,6 +8,29 @@ import { typedKeys } from "@oxytype/util/objects";
 import { getDefaultConfig } from "../constants/default-config";
 import { sanitize } from "../utils/sanitize";
 import { Config } from "./store";
+
+// The shared schema retains removed features for saved-config compatibility.
+const supportedCaretStyleSchema = ConfigSchemas.CaretStyleSchema.refine(
+  (style) => !["banana", "carrot", "monkey"].includes(style),
+);
+const supportedConfigSchema = ConfigSchemas.ConfigSchema.omit({
+  ads: true,
+  monkey: true,
+})
+  .extend({
+    caretStyle: supportedCaretStyleSchema,
+    paceCaretStyle: supportedCaretStyleSchema,
+  })
+  .strip();
+
+export function exportConfigToJson(): string {
+  return JSON.stringify(
+    supportedConfigSchema.parse(migrateConfig(Config)),
+    null,
+    2,
+  );
+}
+
 /**
  * migrates possible outdated config and merges with the default config values
  * @param config partial or possible outdated config
@@ -34,8 +57,7 @@ function mergeWithDefaultConfig(config: PartialConfig): ConfigSchema {
 function sanitizeConfig(
   config: ConfigSchemas.PartialConfig,
 ): ConfigSchemas.PartialConfig {
-  //make sure to use strip()
-  return sanitize(ConfigSchemas.PartialConfigSchema.strip(), config);
+  return sanitize(supportedConfigSchema.partial(), config);
 }
 
 function replaceLegacyValues(

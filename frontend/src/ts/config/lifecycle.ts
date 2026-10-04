@@ -13,20 +13,20 @@ import { Config, setFullConfigStore } from "./store";
 import { getDefaultConfig } from "../constants/default-config";
 import { configEvent } from "../events/config";
 import { migrateConfig } from "./utils";
-import { promiseWithResolvers } from "../utils/misc";
+import { isObject, promiseWithResolvers } from "../utils/misc";
 import { setConfig } from "./setters";
 import { deleteConfig } from "../ape/config";
 import { typedKeys } from "@oxytype/util/objects";
 
-export async function applyConfigFromJson(json: string): Promise<void> {
+export async function applyConfigFromJson(json: string): Promise<boolean> {
   try {
     const parsedConfig = parseJsonWithSchema(
       json,
-      ConfigSchemas.PartialConfigSchema.strip(),
+      ConfigSchemas.PartialConfigSchema,
       {
         migrate: (value) => {
-          if (Array.isArray(value)) {
-            throw new Error("Invalid config");
+          if (!isObject(value)) {
+            throw new Error("Settings JSON must be an object");
           }
           return migrateConfig(value);
         },
@@ -35,9 +35,11 @@ export async function applyConfigFromJson(json: string): Promise<void> {
     await applyConfig(parsedConfig);
     saveFullConfigToLocalStorage();
     showSuccessNotification("Done");
+    return true;
   } catch (e) {
     console.error(e);
     showErrorNotification("Failed to import settings", { error: e });
+    return false;
   }
 }
 
