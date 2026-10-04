@@ -134,3 +134,23 @@ it("restores both automatic themes even when switching is disabled", async () =>
     expect(view.queryByRole("button", { name: "Reset to default" })).toBeNull();
   });
 });
+
+it("does not apply a pending color-picker edit after resetting the theme", async () => {
+  const defaults = getDefaultConfig();
+  setConfig("customTheme", true);
+  const view = render(() => <Theme />);
+  const color = await waitFor(() => {
+    const input = view.container.querySelector<HTMLInputElement>(
+      'input[type="color"]',
+    );
+    if (input === null) throw new Error("Color picker not rendered");
+    return input;
+  });
+  fireEvent.input(color, { target: { value: "#000000" } });
+  fireEvent.click(view.getByRole("button", { name: "Reset to default" }));
+
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  expect(getTheme().bg).toBe(defaults.customThemeColors[0]);
+  expect(getConfig.customTheme).toBe(false);
+  expect(view.queryByRole("button", { name: "Reset to default" })).toBeNull();
+});
