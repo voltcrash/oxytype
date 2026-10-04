@@ -35,7 +35,7 @@ export const settingsSections: Record<
     icon: "fa-user",
     requiresAuthentication: true,
   },
-  dangerZone: { text: "danger zone", icon: "fa-exclamation-triangle" },
+  dangerZone: { text: "advanced", icon: "fa-sliders-h" },
 };
 
 export const SettingsUrlParamsSchema = z
