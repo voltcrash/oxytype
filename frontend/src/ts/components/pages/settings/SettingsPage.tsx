@@ -16,6 +16,7 @@ import {
   setSettingsSearch,
 } from "../../../states/settings-search";
 import {
+  getAvailableSettingsSections,
   getCurrentSettingsSection,
   SettingsSection,
   settingsSections,
@@ -29,6 +30,7 @@ import { H2 } from "../../common/Headers";
 import { Page } from "../../common/Page";
 import { SidebarLayout } from "../../common/SidebarLayout";
 import { CommandlineHotkey } from "../../hotkeys/CommandlineHotkey";
+import { AccountTab } from "../account-settings/AccountTab";
 import { AnimationFpsLimit } from "./custom-setting/AnimationFpsLimit";
 import { AutoSwitchTheme } from "./custom-setting/AutoSwitchTheme";
 import { CustomBackground } from "./custom-setting/CustomBackground";
@@ -66,7 +68,7 @@ export function SettingsPage(): JSXElement {
   return (
     <Page id="settings">
       <SidebarLayout
-        items={settingsSections}
+        items={getAvailableSettingsSections()}
         // while filtering, results from every section are shown
         active={
           isSettingsSearchActive() ? undefined : getCurrentSettingsSection()
@@ -271,6 +273,13 @@ export function SettingsPage(): JSXElement {
               <SearchableAutoSetting key="showAverage" />
             </SettingsGroup>
           </Section>
+          <Show when={isAuthenticated()}>
+            <Section section="account">
+              <SettingsGroup title="account preferences">
+                <AccountTab />
+              </SettingsGroup>
+            </Section>
+          </Show>
           <Section section="dangerZone">
             <SettingsGroup title="privacy">
               <SearchableAutoSetting key="ads" />

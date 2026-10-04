@@ -4,7 +4,7 @@ import { serialize as serializeUrlSearchParams } from "zod-urlsearchparams";
 import { createEffectOn } from "../hooks/effects";
 import { replaceUrl } from "../navigation/navigation";
 import { FaSolidIcon } from "../types/font-awesome";
-import { getActivePage } from "./core";
+import { getActivePage, isAuthenticated } from "./core";
 
 const SettingsSectionSchema = z.enum([
   "behavior",
@@ -14,13 +14,14 @@ const SettingsSectionSchema = z.enum([
   "appearance",
   "theme",
   "hideElements",
+  "account",
   "dangerZone",
 ]);
 export type SettingsSection = z.infer<typeof SettingsSectionSchema>;
 
 export const settingsSections: Record<
   SettingsSection,
-  { icon: FaSolidIcon; text: string }
+  { icon: FaSolidIcon; text: string; requiresAuthentication?: boolean }
 > = {
   behavior: { text: "behavior", icon: "fa-tools" },
   input: { text: "input", icon: "fa-keyboard" },
@@ -29,6 +30,11 @@ export const settingsSections: Record<
   appearance: { text: "appearance", icon: "fa-palette" },
   theme: { text: "theme", icon: "fa-brush" },
   hideElements: { text: "hide elements", icon: "fa-eye-slash" },
+  account: {
+    text: "account",
+    icon: "fa-user",
+    requiresAuthentication: true,
+  },
   dangerZone: { text: "danger zone", icon: "fa-exclamation-triangle" },
 };
 
@@ -42,13 +48,35 @@ type SettingsUrlParams = z.infer<typeof SettingsUrlParamsSchema>;
 export const [getCurrentSettingsSection, setCurrentSettingsSection] =
   createSignal<SettingsSection>("behavior");
 
+export function getAvailableSettingsSections(): Partial<
+  typeof settingsSections
+> {
+  return Object.fromEntries(
+    Object.entries(settingsSections).filter(
+      ([, section]) => !section.requiresAuthentication || isAuthenticated(),
+    ),
+  );
+}
+
+function isSectionAvailable(section: SettingsSection): boolean {
+  return !settingsSections[section].requiresAuthentication || isAuthenticated();
+}
+
 export function readSettingsGetParameters(
   params: SettingsUrlParams | undefined,
 ): void {
   if (params?.tab === undefined) return;
 
-  setCurrentSettingsSection(params.tab);
+  setCurrentSettingsSection(
+    isSectionAvailable(params.tab) ? params.tab : "behavior",
+  );
 }
+
+createEffectOn(isAuthenticated, () => {
+  if (!isSectionAvailable(getCurrentSettingsSection())) {
+    setCurrentSettingsSection("behavior");
+  }
+});
 
 createEffectOn(getCurrentSettingsSection, (tab) => {
   //only replace the url while on the settings page, otherwise the url-handler breaks
