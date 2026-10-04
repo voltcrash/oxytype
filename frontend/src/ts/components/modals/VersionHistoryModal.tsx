@@ -2,7 +2,9 @@ import { LiteDebouncer } from "@tanstack/pacer-lite/lite-debouncer";
 import { useInfiniteQuery } from "@tanstack/solid-query";
 import { For, JSXElement, Show } from "solid-js";
 
+import { createEffectOn } from "../../hooks/effects";
 import { getVersionHistoryQueryOptions } from "../../queries/public";
+import { getVersion } from "../../states/core";
 import { isModalOpen } from "../../states/modals";
 import { cn } from "../../utils/cn";
 import { mergeReleasePages } from "../../utils/release-notes";
@@ -17,6 +19,22 @@ export function VersionHistoryModal(): JSXElement {
     ...getVersionHistoryQueryOptions(),
     enabled: isOpen(),
   }));
+
+  // The footer can learn about a release before the cached list does.
+  let refetchedFor = "";
+  createEffectOn(
+    () => [isOpen(), getVersion().text, releases.data] as const,
+    ([open, latest, data]) => {
+      if (!open || latest === "" || data === undefined) return;
+      if (refetchedFor === latest) return;
+      const listed = data.pages.some((page) =>
+        page.releases.some((release) => release.name === latest),
+      );
+      if (listed) return;
+      refetchedFor = latest;
+      void releases.refetch();
+    },
+  );
 
   const debouncedFetch = new LiteDebouncer(
     (callback: () => void) => callback(),
