@@ -3,6 +3,7 @@ import { createSignal } from "solid-js";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
 
 import "../../../__harness__/mock-static";
+import { AuthenticationTab } from "../../../../src/ts/components/pages/account-settings/AuthenticationTab";
 import { Section } from "../../../../src/ts/components/pages/account-settings/utils";
 import { SettingsSectionContext } from "../../../../src/ts/components/pages/settings/settings-section-context";
 import { setUserId } from "../../../../src/ts/states/core";
@@ -15,6 +16,19 @@ import {
   getCurrentSettingsSection,
   setCurrentSettingsSection,
 } from "../../../../src/ts/states/settings-sections";
+
+vi.mock(
+  "../../../../src/ts/components/modals/account-settings/ReauthConfirmModals",
+  () => ({
+    showRevokeAllTokensModal: vi.fn(),
+  }),
+);
+vi.mock(
+  "../../../../src/ts/components/modals/account-settings/RemoveAuthMethodModal",
+  () => ({
+    showRemoveAuthMethodModal: vi.fn(),
+  }),
+);
 
 beforeEach(() => setUserId("settings-user"));
 afterEach(() => {
@@ -50,6 +64,32 @@ it("searches account descriptions and counts matches in the main sidebar", () =>
     container.querySelector('[data-setting-key="accountName"]'),
   ).toHaveClass("hidden");
   expect(getSearchMatchCounts()).toEqual({ account: 1 });
+});
+
+it("searches authentication controls under account and deep links back to account", () => {
+  vi.useFakeTimers();
+  const { container } = render(() => (
+    <SettingsSectionContext.Provider value="account">
+      <AuthenticationTab />
+    </SettingsSectionContext.Provider>
+  ));
+  setSettingsSearch("authentication");
+  expect(getSearchMatchCounts()).toEqual({ account: 2 });
+  expect(
+    container.querySelector('[data-setting-key="authenticationGoogle"]'),
+  ).not.toHaveClass("hidden");
+  expect(
+    container.querySelector('[data-setting-key="authenticationGitHub"]'),
+  ).not.toHaveClass("hidden");
+  expect(
+    container.querySelector('[data-setting-key="revokeAllTokens"]'),
+  ).toHaveClass("hidden");
+  setSettingsSearch("");
+  highlightSetting("authenticationGoogle");
+  expect(getCurrentSettingsSection()).toBe("account");
+  setCurrentSettingsSection("behavior");
+  highlightSetting("revokeAllTokens");
+  expect(getCurrentSettingsSection()).toBe("account");
 });
 
 it("keeps API tables inside their searchable row without remounting them", () => {
