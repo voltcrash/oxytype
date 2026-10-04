@@ -13,7 +13,7 @@ import * as UserDal from "../../../src/dal/user";
 import * as PublicDal from "../../../src/dal/public";
 import * as LogsDal from "../../../src/dal/logs";
 import { WeeklyXpLeaderboard } from "../../../src/services/weekly-xp-leaderboard";
-import { ObjectId } from "mongodb";
+import { newId } from "../../../src/utils/id";
 import { mockAuthenticateWithApeKey } from "../../__testData__/auth";
 import { enableRateLimitExpects } from "../../__testData__/rate-limit";
 import { DBResult } from "../../../src/utils/result";
@@ -434,7 +434,7 @@ describe("result controller test", () => {
       //GIVEN
       const result = givenDbResult(uid);
       const resultIdString = result._id.toString();
-      const tagIds = [new ObjectId().toString(), new ObjectId().toString()];
+      const tagIds = [newId(), newId()];
       const partialUser = { tags: [] };
       getResultMock.mockResolvedValue(result);
       updateTagsMock.mockResolvedValue({} as any);
@@ -474,7 +474,7 @@ describe("result controller test", () => {
       ]);
 
       const resultIdString = result._id.toString();
-      const tagIds = [new ObjectId().toString(), new ObjectId().toString()];
+      const tagIds = [newId(), newId()];
       const partialUser = { tags: [] };
       getResultMock.mockResolvedValue(partialResult);
       updateTagsMock.mockResolvedValue({} as any);
@@ -549,7 +549,7 @@ describe("result controller test", () => {
   });
   describe("addResult", () => {
     //TODO improve test coverage for addResult
-    const insertedId = new ObjectId();
+    const insertedId = newId();
     const userGetMock = vi.spyOn(UserDal, "getUser");
     const userUpdateStreakMock = vi.spyOn(UserDal, "updateStreak");
     const userCheckIfTagPbMock = vi.spyOn(UserDal, "checkIfTagPb");
@@ -628,7 +628,7 @@ describe("result controller test", () => {
           daily: 100,
         },
         streak: 0,
-        insertedId: insertedId.toString(),
+        insertedId: insertedId,
       });
 
       expect(resultAddMock).toHaveBeenCalledWith(
@@ -847,7 +847,7 @@ async function enablePremiumFeatures(enabled: boolean): Promise<void> {
 }
 function givenDbResult(uid: string, customize?: Partial<DBResult>): DBResult {
   return {
-    _id: new ObjectId(),
+    _id: newId(),
     wpm: Math.random() * 100,
     rawWpm: Math.random() * 100,
     charStats: [
