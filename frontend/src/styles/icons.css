@@ -1,0 +1,15 @@
+/*
+ * Font Awesome 7 redrew many glyphs larger or smaller than the Font Awesome 5
+ * icons this layout was designed around, so neighbouring icons looked
+ * mismatched. These scales restore each glyph's FA5 visual size.
+ * `scale` composes with the transforms used by fa-spin and fa-flip.
+ */
+
+/* header */
+.fa-crown {
+  scale: 1.18;
+}
+.fa-cog,
+.fa-gear {
+  scale: 0.92;
+}
