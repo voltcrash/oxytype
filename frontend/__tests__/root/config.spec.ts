@@ -16,6 +16,7 @@ import { configEvent } from "../../src/ts/events/config";
 import * as ApeConfig from "../../src/ts/ape/config";
 import * as Notifications from "../../src/ts/states/notifications";
 import * as TestState from "../../src/ts/states/test";
+import { getConfig as getConfigStore } from "../../src/ts/config/store";
 
 const { replaceConfig, getConfig } = __testing;
 
@@ -322,6 +323,97 @@ describe("Config", () => {
   });
 
   describe("apply", () => {
+    it.each(["[]", "null", "42", "not JSON"])(
+      "rejects invalid JSON %s without changing settings",
+      async (json) => {
+        replaceConfig({ theme: "nord", time: 60 });
+        const original = structuredClone(getConfig());
+        const errorMock = vi.spyOn(Notifications, "showErrorNotification");
+        const consoleMock = vi
+          .spyOn(console, "error")
+          .mockImplementation(() => undefined);
+        try {
+          expect(await Lifecycle.applyConfigFromJson(json)).toBe(false);
+          expect(getConfig()).toEqual(original);
+          expect(errorMock).toHaveBeenCalled();
+        } finally {
+          errorMock.mockRestore();
+          consoleMock.mockRestore();
+        }
+      },
+    );
+
+    it("cleans imported settings and keeps exports clean after reimport", async () => {
+      const saveConfigMock = vi
+        .spyOn(ApeConfig, "saveConfig")
+        .mockResolvedValue();
+      const successMock = vi.spyOn(Notifications, "showSuccessNotification");
+      const errorMock = vi.spyOn(Notifications, "showErrorNotification");
+
+      try {
+        await Lifecycle.applyConfigFromJson(
+          JSON.stringify({
+            ads: "result",
+            monkey: true,
+            caretStyle: "banana",
+            paceCaretStyle: "monkey",
+            unknownSetting: true,
+            quickTab: true,
+            theme: "miami_nights",
+            language: "english_10k",
+            fontFamily: "Mononoki",
+            favThemes: ["nord", "serika_dark"],
+            monkeyPowerLevel: "3",
+            liveSpeedStyle: "text",
+            liveAccStyle: "text",
+            showPb: true,
+            burstHeatmap: true,
+            accountChart: ["on", "off", "on", "off"],
+          }),
+        );
+
+        const supportedSettings = {
+          caretStyle: "default",
+          paceCaretStyle: "default",
+          quickRestart: "tab",
+          theme: "miami_nights",
+          language: "english_10k",
+          fontFamily: "Mononoki",
+          favThemes: ["nord", "serika_dark"],
+          monkeyPowerLevel: "3",
+          liveSpeedStyle: "text",
+          liveAccStyle: "text",
+          showPb: true,
+          burstHeatmap: true,
+          accountChart: ["on", "off", "on", "off"],
+        };
+        expect(getConfig()).toMatchObject({
+          ...supportedSettings,
+          ads: "off",
+          monkey: false,
+        });
+        expect(getConfigStore).toMatchObject(supportedSettings);
+        expect(saveConfigMock).toHaveBeenCalledWith(getConfig());
+        expect(errorMock).not.toHaveBeenCalled();
+
+        const json = ConfigUtils.exportConfigToJson();
+        const exported = JSON.parse(json) as Partial<ConfigType>;
+        expect(exported).toMatchObject(supportedSettings);
+        for (const key of ["ads", "monkey", "unknownSetting", "quickTab"]) {
+          expect(exported).not.toHaveProperty(key);
+        }
+
+        await Lifecycle.applyConfigFromJson(json);
+        expect(ConfigUtils.exportConfigToJson()).toBe(json);
+        expect(successMock).toHaveBeenCalledTimes(2);
+        expect(errorMock).not.toHaveBeenCalled();
+      } finally {
+        saveConfigMock.mockRestore();
+        successMock.mockRestore();
+        errorMock.mockRestore();
+      }
+    });
+
     it("should fill missing values with defaults", async () => {
       //GIVEN
       replaceConfig({

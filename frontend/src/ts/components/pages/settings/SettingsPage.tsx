@@ -205,22 +205,28 @@ export function SettingsPage(): JSXElement {
             </SettingsGroup>
           </Section>
           <Section section="appearance">
-            <SettingsGroup title="timer & stats">
+            <SettingsGroup title="timer">
               <SearchableAutoSetting key="timerStyle" wide />
               <SearchableAutoSetting key="timerColor" />
               <SearchableAutoSetting key="timerOpacity" />
+            </SettingsGroup>
+            <SettingsGroup title="speed">
               <SearchableAutoSetting key="liveSpeedStyle" />
               <SearchableAutoSetting key="liveAccStyle" />
               <SearchableAutoSetting key="liveBurstStyle" />
-              <SearchableAutoSetting key="alwaysShowDecimalPlaces" />
               <SearchableAutoSetting key="typingSpeedUnit" />
+            </SettingsGroup>
+            <SettingsGroup title="stats">
+              <SearchableAutoSetting key="alwaysShowDecimalPlaces" />
               <SearchableAutoSetting key="startGraphsAtZero" />
             </SettingsGroup>
-            <SettingsGroup title="text & layout">
+            <SettingsGroup title="text">
               <SearchableAutoSetting key="fontSize" />
               <FontFamily />
               <SearchableAutoSetting key="highlightMode" wide />
               <SearchableAutoSetting key="typedEffect" />
+            </SettingsGroup>
+            <SettingsGroup title="layout">
               <SearchableAutoSetting key="tapeMode" />
               <SearchableAutoSetting key="tapeMargin" />
               <SearchableAutoSetting key="smoothLineScroll" />

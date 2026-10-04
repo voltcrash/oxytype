@@ -9,6 +9,11 @@ const {
   reject,
 } = promiseWithResolvers<boolean>();
 
+// Startup can fail before any page starts awaiting server configuration.
+void configurationPromise.catch((error: unknown) => {
+  console.error("Failed to synchronize server configuration", error);
+});
+
 export { configurationPromise };
 
 export function get(): Configuration | undefined {

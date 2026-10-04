@@ -39,6 +39,35 @@ describe("config.ts", () => {
       expect(result.time).toEqual(120);
       expect(result.accountChart).toEqual(["off", "off", "off", "off"]);
     });
+    it("discards removed features without changing supported settings", () => {
+      const result = migrateConfig({
+        ads: "result",
+        monkey: true,
+        monkeyPowerLevel: "3",
+        liveSpeedStyle: "text",
+        liveAccStyle: "text",
+      });
+
+      expect(result).toMatchObject({
+        ads: "off",
+        monkey: false,
+        monkeyPowerLevel: "3",
+        liveSpeedStyle: "text",
+        liveAccStyle: "text",
+      });
+    });
+    it.for(["banana", "carrot", "monkey"] as const)(
+      "resets removed %s caret styles",
+      (style) => {
+        const result = migrateConfig({
+          caretStyle: style,
+          paceCaretStyle: style,
+        });
+
+        expect(result.caretStyle).toBe(defaultConfig.caretStyle);
+        expect(result.paceCaretStyle).toBe(defaultConfig.paceCaretStyle);
+      },
+    );
     describe("should replace value with default config if invalid", () => {
       it.for([
         {
