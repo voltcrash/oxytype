@@ -730,6 +730,12 @@ export const commandlineConfigMetadata: CommandlineConfigMetadataObject = {
     },
     display: "Out of focus warning...",
   },
+  showTestModesNotice: {
+    subgroup: {
+      options: "fromSchema",
+    },
+    display: "Test modes notice...",
+  },
   capsLockWarning: {
     subgroup: {
       options: "fromSchema",

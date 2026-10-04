@@ -1216,6 +1216,19 @@ export const configMetadata: ConfigMetadataObject = {
       false: { displayString: "hide" },
     },
   },
+  showTestModesNotice: {
+    key: "showTestModesNotice",
+    fa: { icon: "fa-info-circle" },
+    displayString: "show test modes notice",
+    changeRequiresRestart: false,
+    group: "hideElements",
+    description:
+      "Shows the active test settings above the words, such as language, pace caret and funbox.",
+    optionsMetadata: {
+      true: { displayString: "show" },
+      false: { displayString: "hide" },
+    },
+  },
   capsLockWarning: {
     key: "capsLockWarning",
     fa: { icon: "fa-exclamation-triangle" },

@@ -505,6 +505,7 @@ export const ConfigSchema = z
     // hide elements
     showKeyTips: z.boolean(),
     showOutOfFocusWarning: z.boolean(),
+    showTestModesNotice: z.boolean(),
     capsLockWarning: z.boolean(),
     showAverage: ShowAverageSchema,
     showPb: ShowPbSchema,

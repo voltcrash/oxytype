@@ -71,6 +71,7 @@ const obj: Config = {
   soundVolume: 0.5,
   startGraphsAtZero: true,
   showOutOfFocusWarning: true,
+  showTestModesNotice: true,
   paceCaret: "off",
   paceCaretCustomSpeed: 100,
   repeatedPace: true,
