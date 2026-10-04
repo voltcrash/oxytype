@@ -59,3 +59,17 @@
 .fa-volume-low {
   scale: 0.89;
 }
+
+/* arrows and sorting */
+.fa-angle-down,
+.fa-angle-up {
+  scale: 0.88;
+}
+.fa-angle-double-up,
+.fa-angles-up {
+  scale: 0.89;
+}
+.fa-sort-down,
+.fa-sort-up {
+  scale: 0.75;
+}
