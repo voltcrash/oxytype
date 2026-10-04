@@ -34,6 +34,7 @@ import { AccountTab } from "../account-settings/AccountTab";
 import { ApeKeysTab } from "../account-settings/ApeKeysTab";
 import { AuthenticationTab } from "../account-settings/AuthenticationTab";
 import { BlockedUsersTab } from "../account-settings/BlockedUsersTab";
+import { DangerZoneTab } from "../account-settings/DangerZoneTab";
 import { AnimationFpsLimit } from "./custom-setting/AnimationFpsLimit";
 import { AutoSwitchTheme } from "./custom-setting/AutoSwitchTheme";
 import { CustomBackground } from "./custom-setting/CustomBackground";
@@ -305,6 +306,11 @@ export function SettingsPage(): JSXElement {
             </Section>
           </Show>
           <Section section="dangerZone">
+            <Show when={isAuthenticated()}>
+              <SettingsGroup title="account data">
+                <DangerZoneTab />
+              </SettingsGroup>
+            </Show>
             <SettingsGroup title="privacy">
               <SearchableAutoSetting key="ads" />
               <SearchableSetting
