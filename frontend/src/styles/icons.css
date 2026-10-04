@@ -73,3 +73,11 @@
 .fa-sort-up {
   scale: 0.75;
 }
+
+/* tags */
+.fa-tags {
+  scale: 1.2;
+}
+.fa-tag {
+  scale: 1.09;
+}
