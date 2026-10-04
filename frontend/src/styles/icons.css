@@ -31,3 +31,12 @@
 .fa-right-left {
   scale: 0.88;
 }
+
+/* alerts and warnings */
+.fa-exclamation-triangle,
+.fa-triangle-exclamation {
+  scale: 1.1;
+}
+.fa-bullhorn {
+  scale: 1.11;
+}
