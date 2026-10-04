@@ -13,7 +13,7 @@ import { HttpRequest } from "../../src/api/http";
 import { invokeMiddleware } from "../__testData__/middleware";
 import { getCachedConfiguration } from "../../src/init/configuration";
 import * as ApeKeys from "../../src/dal/ape-keys";
-import { ObjectId } from "mongodb";
+import { newId } from "../../src/utils/id";
 import { hashApeKey } from "../../src/utils/ape-key-hash";
 import MonkeyError from "../../src/utils/error";
 import * as Misc from "../../src/utils/misc";
@@ -35,7 +35,7 @@ const mockDecodedToken: AuthenticatedSession = {
 vi.spyOn(AuthUtils, "verifySession").mockResolvedValue(mockDecodedToken);
 
 const mockApeKey = {
-  _id: new ObjectId(),
+  _id: newId(),
   uid: "123",
   name: "test",
   hash: hashApeKey("key"),
