@@ -81,3 +81,24 @@
 .fa-tag {
   scale: 1.09;
 }
+
+/* account, social and results */
+.fa-user-times,
+.fa-user-xmark {
+  scale: 1.08;
+}
+.fa-comments {
+  scale: 0.88;
+}
+.fa-download {
+  scale: 1.1;
+}
+.fa-file-csv {
+  scale: 0.81;
+}
+.fa-award {
+  scale: 0.88;
+}
+.fa-sun {
+  scale: 0.89;
+}
