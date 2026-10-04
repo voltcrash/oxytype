@@ -41,6 +41,10 @@ export function PaceCaret(): JSXElement {
   return (
     <SearchableSetting
       key="paceCaret"
+      resetKeys={["paceCaretCustomSpeed", "paceCaret"]}
+      onReset={() =>
+        form.reset({ paceCaretCustomSpeed: getConfig.paceCaretCustomSpeed })
+      }
       title={configMetadata.paceCaret.displayString ?? "pace caret"}
       fa={configMetadata.paceCaret.fa}
       extraSearchKeywords={getOptionSearchKeywords("paceCaret")}

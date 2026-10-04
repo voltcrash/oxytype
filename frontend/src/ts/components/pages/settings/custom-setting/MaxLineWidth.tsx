@@ -29,6 +29,7 @@ export function MaxLineWidth(): JSXElement {
   return (
     <SearchableSetting
       key="maxLineWidth"
+      onReset={() => form.reset({ maxLineWidth: getConfig.maxLineWidth })}
       title={configMetadata.maxLineWidth.displayString ?? "max line width"}
       fa={configMetadata.maxLineWidth.fa}
       description={configMetadata.maxLineWidth.description}

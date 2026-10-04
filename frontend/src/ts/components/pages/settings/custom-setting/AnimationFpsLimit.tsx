@@ -26,6 +26,12 @@ export function AnimationFpsLimit(): JSXElement {
   return (
     <SearchableSetting
       key="animationFpsLimit"
+      hasCustomChanges={getfpsLimit() !== 1000}
+      onReset={() => {
+        setfpsLimit(1000);
+        form.reset({ fpsLimit: "" });
+        savedIndicator.hide();
+      }}
       title="animation fps limit"
       description={`Limit the maximum fps for animations. Setting this to "native" will run the animations as fast as possible (at your monitor's refresh rate). Setting this above your monitor's refresh rate will have no effect.`}
       fa={{

@@ -134,6 +134,7 @@ export function SearchableAutoSetting<T extends ConfigKey>(props: {
       fa={configMetadata[props.key].fa}
       description={configMetadata[props.key].description}
       extraSearchKeywords={getOptionSearchKeywords(props.key)}
+      onReset={() => form.reset({ [props.key]: getConfig[props.key] })}
       inputs={!isWide() ? autoInputs() : props.inputs}
       fullWidthInputs={isWide() ? (autoInputs() ?? props.inputs) : props.inputs}
     />
