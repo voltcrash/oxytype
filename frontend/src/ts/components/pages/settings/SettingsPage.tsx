@@ -165,38 +165,44 @@ export function SettingsPage(): JSXElement {
             </SettingsGroup>
           </Section>
           <Section section="sound">
-            <SoundVolume />
-            <SearchableAutoSetting
-              key="playSoundOnClick"
-              wide
-              onOptionClick={(option) => {
-                if (option === "off") return;
-                void previewClick(option);
-              }}
-            />
-            <SearchableAutoSetting
-              key="playSoundOnError"
-              wide
-              onOptionClick={(option) => {
-                if (option === "off") return;
-                void previewError(option);
-              }}
-            />
-            <SearchableAutoSetting
-              key="playTimeWarning"
-              wide
-              onOptionClick={(option) => {
-                if (option === "off") return;
-                void playTimeWarning();
-              }}
-            />
+            <SettingsGroup title="sound effects">
+              <SoundVolume />
+              <SearchableAutoSetting
+                key="playSoundOnClick"
+                wide
+                onOptionClick={(option) => {
+                  if (option === "off") return;
+                  void previewClick(option);
+                }}
+              />
+              <SearchableAutoSetting
+                key="playSoundOnError"
+                wide
+                onOptionClick={(option) => {
+                  if (option === "off") return;
+                  void previewError(option);
+                }}
+              />
+              <SearchableAutoSetting
+                key="playTimeWarning"
+                wide
+                onOptionClick={(option) => {
+                  if (option === "off") return;
+                  void playTimeWarning();
+                }}
+              />
+            </SettingsGroup>
           </Section>
           <Section section="caret">
-            <SearchableAutoSetting key="smoothCaret" />
-            <SearchableAutoSetting key="caretStyle" wide />
-            <PaceCaret />
-            <SearchableAutoSetting key="repeatedPace" />
-            <SearchableAutoSetting key="paceCaretStyle" wide />
+            <SettingsGroup title="typing caret">
+              <SearchableAutoSetting key="smoothCaret" />
+              <SearchableAutoSetting key="caretStyle" wide />
+            </SettingsGroup>
+            <SettingsGroup title="pace caret">
+              <PaceCaret />
+              <SearchableAutoSetting key="repeatedPace" />
+              <SearchableAutoSetting key="paceCaretStyle" wide />
+            </SettingsGroup>
           </Section>
           <Section section="appearance">
             <SettingsGroup title="timer & stats">
@@ -233,81 +239,97 @@ export function SettingsPage(): JSXElement {
             </SettingsGroup>
           </Section>
           <Section section="theme">
-            <SearchableAutoSetting key="flipTestColors" />
-            <SearchableAutoSetting key="colorfulMode" />
-            <CustomBackground />
-            <Show when={getConfig.customBackground !== "" || hasLocalBg()}>
-              <CustomBackgroundFilters />
-            </Show>
-            <AutoSwitchTheme />
-            <SearchableAutoSetting key="randomTheme" wide />
-            <Theme />
+            <SettingsGroup title="colors">
+              <SearchableAutoSetting key="flipTestColors" />
+              <SearchableAutoSetting key="colorfulMode" />
+            </SettingsGroup>
+            <SettingsGroup title="background">
+              <CustomBackground />
+              <Show when={getConfig.customBackground !== "" || hasLocalBg()}>
+                <CustomBackgroundFilters />
+              </Show>
+            </SettingsGroup>
+            <SettingsGroup title="automatic themes">
+              <AutoSwitchTheme />
+              <SearchableAutoSetting key="randomTheme" wide />
+            </SettingsGroup>
+            <SettingsGroup title="preset & custom themes">
+              <Theme />
+            </SettingsGroup>
           </Section>
           <Section section="hideElements">
-            <SearchableAutoSetting key="showKeyTips" />
-            <SearchableAutoSetting key="showOutOfFocusWarning" />
-            <SearchableAutoSetting key="capsLockWarning" />
-            <SearchableAutoSetting key="showAverage" />
+            <SettingsGroup title="interface visibility">
+              <SearchableAutoSetting key="showKeyTips" />
+              <SearchableAutoSetting key="showOutOfFocusWarning" />
+              <SearchableAutoSetting key="capsLockWarning" />
+              <SearchableAutoSetting key="showAverage" />
+            </SettingsGroup>
           </Section>
           <Section section="dangerZone">
-            <ImportExport />
-            <SearchableAutoSetting key="ads" />
-            <SearchableSetting
-              key="cookies"
-              title="update cookie preferences"
-              description="If you changed your mind about which cookies you consent to, you can change your preferences here."
-              fa={{
-                icon: "fa-cookie-bite",
-              }}
-              inputs={
-                <Button
-                  class="w-full"
-                  onClick={() => {
-                    showModal("Cookies");
-                  }}
-                >
-                  open
-                </Button>
-              }
-            />
-            <AnimationFpsLimit />
-            <SearchableSetting
-              key="resetSettings"
-              title="reset settings"
-              description={
-                <div>
-                  Resets settings to the default (but doesn&apos;t touch your
-                  tags and presets).
-                  <br />
-                  <div class="text-error">You can&apos;t undo this!</div>
-                </div>
-              }
-              fa={{
-                icon: "fa-undo",
-              }}
-              inputs={
-                <Button
-                  class="w-full"
-                  danger
-                  onClick={() => {
-                    showSimpleModal({
-                      title: "Are you sure?",
-                      buttonText: "reset",
-                      execFn: async () => {
-                        await resetConfig();
-                        await fileStorage.deleteFile("LocalBackgroundFile");
-                        return {
-                          status: "success",
-                          message: "Settings reset",
-                        };
-                      },
-                    });
-                  }}
-                >
-                  reset settings
-                </Button>
-              }
-            />
+            <SettingsGroup title="privacy">
+              <SearchableAutoSetting key="ads" />
+              <SearchableSetting
+                key="cookies"
+                title="update cookie preferences"
+                description="If you changed your mind about which cookies you consent to, you can change your preferences here."
+                fa={{
+                  icon: "fa-cookie-bite",
+                }}
+                inputs={
+                  <Button
+                    class="w-full"
+                    onClick={() => {
+                      showModal("Cookies");
+                    }}
+                  >
+                    open
+                  </Button>
+                }
+              />
+            </SettingsGroup>
+            <SettingsGroup title="performance">
+              <AnimationFpsLimit />
+            </SettingsGroup>
+            <SettingsGroup title="settings data">
+              <ImportExport />
+              <SearchableSetting
+                key="resetSettings"
+                title="reset settings"
+                description={
+                  <div>
+                    Resets settings to the default (but doesn&apos;t touch your
+                    tags and presets).
+                    <br />
+                    <div class="text-error">You can&apos;t undo this!</div>
+                  </div>
+                }
+                fa={{
+                  icon: "fa-undo",
+                }}
+                inputs={
+                  <Button
+                    class="w-full"
+                    danger
+                    onClick={() => {
+                      showSimpleModal({
+                        title: "Are you sure?",
+                        buttonText: "reset",
+                        execFn: async () => {
+                          await resetConfig();
+                          await fileStorage.deleteFile("LocalBackgroundFile");
+                          return {
+                            status: "success",
+                            message: "Settings reset",
+                          };
+                        },
+                      });
+                    }}
+                  >
+                    reset settings
+                  </Button>
+                }
+              />
+            </SettingsGroup>
           </Section>
         </div>
       </SidebarLayout>
