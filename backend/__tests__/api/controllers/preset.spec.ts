@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach, vi } from "vite-plus/test";
 import { setup } from "../../__testData__/controller-test";
 import * as PresetDal from "../../../src/dal/preset";
-import { ObjectId } from "mongodb";
+import { newId } from "../../../src/utils/id";
 
 const { mockApp, uid } = setup();
 
@@ -16,13 +16,13 @@ describe("PresetController", () => {
     it("should get the users presets", async () => {
       //GIVEN
       const presetOne = {
-        _id: new ObjectId(),
+        _id: newId(),
         uid: uid,
         name: "test1",
         config: { language: "english" },
       };
       const presetTwo = {
-        _id: new ObjectId(),
+        _id: newId(),
         uid: uid,
         name: "test2",
         settingGroups: ["hideElements"],
@@ -46,12 +46,12 @@ describe("PresetController", () => {
         message: "Presets retrieved",
         data: [
           {
-            _id: presetOne._id.toString(),
+            _id: presetOne._id,
             name: "test1",
             config: { language: "english" },
           },
           {
-            _id: presetTwo._id.toString(),
+            _id: presetTwo._id,
             name: "test2",
             settingGroups: ["hideElements"],
             config: {
