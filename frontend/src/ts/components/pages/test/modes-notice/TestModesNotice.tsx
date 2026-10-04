@@ -1,4 +1,4 @@
-import { createMemo } from "solid-js";
+import { createMemo, Show } from "solid-js";
 
 import { useActiveTagsLiveQuery } from "../../../../collections/tags";
 import * as Commandline from "../../../../commandline/commandline";
@@ -31,38 +31,40 @@ import { PbNotice } from "./PbNotice";
 
 export function TestModesNotice() {
   return (
-    <div
-      class={cn(
-        "flex flex-wrap justify-center gap-x-4 text-base text-sub transition-opacity duration-125 select-none",
-        {
-          "opacity-0": getFocus(),
-        },
-      )}
-    >
-      <Repeated />
-      <ResultSaving />
-      <QuickRestart />
-      <LongText />
-      <LoadedChallenge />
-      <ZenMode />
-      <Language />
-      <Difficulty />
-      <BlindMode />
-      <LazyMode />
-      <PaceCaretNotice />
-      <AverageNotice />
-      <PbNotice />
-      <MinSpeed />
-      <MinAcc />
-      <MinBurst />
-      <Funbox />
-      <ConfidenceMode />
-      <StopOnError />
-      <DeleteOnError />
-      <Layout />
-      <OppositeShift />
-      <Tags />
-    </div>
+    <Show when={getConfig.showTestModesNotice}>
+      <div
+        class={cn(
+          "flex flex-wrap justify-center gap-x-4 text-base text-sub transition-opacity duration-125 select-none",
+          {
+            "opacity-0": getFocus(),
+          },
+        )}
+      >
+        <Repeated />
+        <ResultSaving />
+        <QuickRestart />
+        <LongText />
+        <LoadedChallenge />
+        <ZenMode />
+        <Language />
+        <Difficulty />
+        <BlindMode />
+        <LazyMode />
+        <PaceCaretNotice />
+        <AverageNotice />
+        <PbNotice />
+        <MinSpeed />
+        <MinAcc />
+        <MinBurst />
+        <Funbox />
+        <ConfidenceMode />
+        <StopOnError />
+        <DeleteOnError />
+        <Layout />
+        <OppositeShift />
+        <Tags />
+      </div>
+    </Show>
   );
 }
 
