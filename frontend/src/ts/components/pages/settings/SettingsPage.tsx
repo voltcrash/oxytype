@@ -216,8 +216,8 @@ export function SettingsPage(): JSXElement {
               <SearchableAutoSetting key="liveBurstStyle" />
             </SettingsGroup>
             <SettingsGroup title="stats">
-              <SearchableAutoSetting key="alwaysShowDecimalPlaces" />
               <SearchableAutoSetting key="typingSpeedUnit" />
+              <SearchableAutoSetting key="alwaysShowDecimalPlaces" />
               <SearchableAutoSetting key="startGraphsAtZero" />
             </SettingsGroup>
             <SettingsGroup title="text & layout">
