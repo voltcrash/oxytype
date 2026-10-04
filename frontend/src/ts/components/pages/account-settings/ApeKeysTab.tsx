@@ -27,42 +27,43 @@ export function ApeKeysTab() {
   const columns = createMemo(() => getColumns());
   const apeKeyQuery = useApeKeyLiveQuery();
   return (
-    <>
-      <Section
-        title="API keys"
-        fa={{ icon: "fa-key" }}
-        description=<>
-          Generate API keys to access certain API endpoints (
-          <Button text="documentation" href="/api/docs" variant="text" />
-          ).
-        </>
-        button={{
-          text: "generate new key",
-          onClick: addNewKey,
-        }}
-        disabled={isApeKeysDenied() === true}
-        disabledDescription=<>
-          <Fa icon="fa-times" /> You have lost access to API keys. Please
-          contact support if you believe this is a mistake.
-        </>
-      />
-      <Show when={isApeKeysDenied() !== true}>
-        <AsyncContent collections={{ apeKeyQuery }}>
-          {({ apeKeyQueryData }) => (
-            <DataTable
-              id="apeKeys"
-              columns={columns()}
-              data={apeKeyQueryData()}
-              fallback={
-                <div class="text-center text-sub">
-                  You don&lsquo;t have any API keys yet.
-                </div>
-              }
-            />
-          )}
-        </AsyncContent>
-      </Show>
-    </>
+    <Section
+      key="apeKeys"
+      title="API keys"
+      fa={{ icon: "fa-key" }}
+      description=<>
+        Generate API keys to access certain API endpoints (
+        <Button text="documentation" href="/api/docs" variant="text" />
+        ).
+      </>
+      button={{
+        text: "generate new key",
+        onClick: addNewKey,
+      }}
+      disabled={isApeKeysDenied() === true}
+      disabledDescription=<>
+        <Fa icon="fa-times" /> You have lost access to API keys. Please contact
+        support if you believe this is a mistake.
+      </>
+      fullWidthInputs={
+        <Show when={isApeKeysDenied() !== true}>
+          <AsyncContent collections={{ apeKeyQuery }}>
+            {({ apeKeyQueryData }) => (
+              <DataTable
+                id="apeKeys"
+                columns={columns()}
+                data={apeKeyQueryData()}
+                fallback={
+                  <div class="text-center text-sub">
+                    You don&lsquo;t have any API keys yet.
+                  </div>
+                }
+              />
+            )}
+          </AsyncContent>
+        </Show>
+      }
+    />
   );
 }
 

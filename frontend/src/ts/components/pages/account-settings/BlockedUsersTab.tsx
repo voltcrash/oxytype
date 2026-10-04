@@ -20,6 +20,7 @@ export function BlockedUsersTab() {
 
   return (
     <Section
+      key="blockedUsers"
       title="blocked users"
       fa={{ icon: "fa-ban" }}
       fullWidth
