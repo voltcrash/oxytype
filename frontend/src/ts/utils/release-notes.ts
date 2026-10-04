@@ -84,3 +84,25 @@ export function releaseNotesToHtml(markdown: string): string {
 
   return blocks.join("");
 }
+
+export type VersionHistoryRelease = {
+  tag: string;
+  name: string;
+  publishedAt: string;
+  timestamp: number;
+  bodyHTML: string;
+};
+
+/**
+ * Flattens paged releases newest first. Pages shift when a release is
+ * published between page loads, so repeated tags are dropped.
+ */
+export function mergeReleasePages(
+  pages: { releases: VersionHistoryRelease[] }[],
+): VersionHistoryRelease[] {
+  const byTag = new Map<string, VersionHistoryRelease>();
+  for (const release of pages.flatMap((page) => page.releases)) {
+    if (!byTag.has(release.tag)) byTag.set(release.tag, release);
+  }
+  return [...byTag.values()].sort((a, b) => b.timestamp - a.timestamp);
+}

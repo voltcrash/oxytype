@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vite-plus/test";
-import { releaseNotesToHtml } from "../../src/ts/utils/release-notes";
+import {
+  mergeReleasePages,
+  releaseNotesToHtml,
+  VersionHistoryRelease,
+} from "../../src/ts/utils/release-notes";
 
 describe("releaseNotesToHtml", () => {
   it("renders headings, lists and paragraphs with unix newlines", () => {
@@ -46,5 +50,33 @@ describe("releaseNotesToHtml", () => {
     expect(releaseNotesToHtml("[x](javascript:alert(1))")).toBe(
       "<p>[x](javascript:alert(1))</p>",
     );
+  });
+});
+
+describe("mergeReleasePages", () => {
+  const release = (tag: string, timestamp: number): VersionHistoryRelease => ({
+    tag,
+    name: tag,
+    publishedAt: "",
+    timestamp,
+    bodyHTML: "",
+  });
+
+  it("puts the newest release first", () => {
+    expect(
+      mergeReleasePages([
+        { releases: [release("v1", 1), release("v3", 3)] },
+        { releases: [release("v2", 2)] },
+      ]).map((it) => it.tag),
+    ).toEqual(["v3", "v2", "v1"]);
+  });
+
+  it("drops releases repeated when pages shift", () => {
+    expect(
+      mergeReleasePages([
+        { releases: [release("v3", 3), release("v2", 2)] },
+        { releases: [release("v2", 2), release("v1", 1)] },
+      ]).map((it) => it.tag),
+    ).toEqual(["v3", "v2", "v1"]);
   });
 });

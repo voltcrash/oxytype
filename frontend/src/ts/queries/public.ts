@@ -3,7 +3,10 @@ import { intervalToDuration } from "date-fns";
 import Ape from "../ape";
 import { getContributorsList, getReleasesFromGitHub } from "../utils/json-data";
 import { getNumberWithMagnitude, numberWithSpaces } from "../utils/numbers";
-import { releaseNotesToHtml } from "../utils/release-notes";
+import {
+  releaseNotesToHtml,
+  VersionHistoryRelease,
+} from "../utils/release-notes";
 import { baseKey } from "./utils/keys";
 import { format as dateFormat } from "date-fns/format";
 
@@ -160,16 +163,19 @@ async function fetchTypingStats(): Promise<{
 
 async function fetchVersionHistory(options: { pageParam: number }): Promise<{
   nextCursor: number | undefined;
-  releases: { name: string; publishedAt: string; bodyHTML: string }[];
+  releases: VersionHistoryRelease[];
 }> {
   const releases = await getReleasesFromGitHub({ page: options.pageParam });
-  const data = [];
+  const data: VersionHistoryRelease[] = [];
   for (const release of releases) {
     if (release.draft || release.prerelease) continue;
 
+    const publishedAt = new Date(release.published_at);
     data.push({
+      tag: release.tag_name,
       name: release.name,
-      publishedAt: dateFormat(new Date(release.published_at), "dd MMM yyyy"),
+      publishedAt: dateFormat(publishedAt, "dd MMM yyyy"),
+      timestamp: publishedAt.getTime(),
       bodyHTML: releaseNotesToHtml(release.body),
     });
   }

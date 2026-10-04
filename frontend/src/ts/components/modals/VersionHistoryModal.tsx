@@ -5,6 +5,7 @@ import { For, JSXElement, Show } from "solid-js";
 import { getVersionHistoryQueryOptions } from "../../queries/public";
 import { isModalOpen } from "../../states/modals";
 import { cn } from "../../utils/cn";
+import { mergeReleasePages } from "../../utils/release-notes";
 import { AnimatedModal } from "../common/AnimatedModal";
 import AsyncContent from "../common/AsyncContent";
 import { LoadingCircle } from "../common/LoadingCircle";
@@ -49,7 +50,7 @@ export function VersionHistoryModal(): JSXElement {
         {({ releasesData }) => (
           <>
             <div class="releases">
-              <For each={releasesData().pages.flatMap((it) => it.releases)}>
+              <For each={mergeReleasePages(releasesData().pages)}>
                 {(release) => <ReleaseItem {...release} />}
               </For>
             </div>
