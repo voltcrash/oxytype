@@ -133,8 +133,10 @@ commands, then removes them even on failure. It never bootstraps or resets the d
 A midnight run on October 5 creates release `2026.10.05` and tag `v2026.10.05`
 at the exact deployed `main` commit. It sets the Worker `VERSION` and the build
 checkout's package version to `2026.10.05`, without pushing a version commit to `main`.
-“What's changed” lists all commits added since the previous successful production
-release, including older branch commits merged during the day. Missed days are
+The release notes list all commits added since the previous successful production
+release, including older branch commits merged during the day. They are grouped
+into Features (`feat`), Improvements (`impr`, `perf`), Fixes (`fix`) and Nerd
+stuff (everything else); GitHub merge commits are omitted. Missed days are
 included in the next successful release. The first scheduled release covers the
 preceding UTC day; the first manual run covers its current UTC day. Days without
 changes still deploy and publish a release with an empty-change notice.
