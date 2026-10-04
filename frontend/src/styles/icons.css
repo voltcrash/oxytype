@@ -13,3 +13,9 @@
 .fa-gear {
   scale: 0.92;
 }
+
+/* quotes */
+.fa-quote-left,
+.fa-quote-right {
+  scale: 1.25;
+}
