@@ -129,3 +129,11 @@
 .fa-ellipsis-vertical {
   scale: 1.11;
 }
+
+/* developer tools */
+.fa-terminal {
+  scale: 1.2;
+}
+.fa-vials {
+  scale: 1.12;
+}
