@@ -4,6 +4,7 @@ import { For, JSXElement, Show } from "solid-js";
 
 import { getVersionHistoryQueryOptions } from "../../queries/public";
 import { isModalOpen } from "../../states/modals";
+import { cn } from "../../utils/cn";
 import { AnimatedModal } from "../common/AnimatedModal";
 import AsyncContent from "../common/AsyncContent";
 import { LoadingCircle } from "../common/LoadingCircle";
@@ -76,8 +77,17 @@ function ReleaseItem(props: {
         <div class="text-4xl text-main">{props.name}</div>
         <div class="text-sub">{props.publishedAt}</div>
       </div>
-      {/* oxlint-disable-next-line solid/no-innerhtml */}
-      <div innerHTML={props.bodyHTML}></div>
+      <div
+        class={cn(
+          "grid gap-4",
+          "[&_h3]:mt-4 [&_h3]:text-xl [&_h3]:text-sub [&_h3:first-child]:mt-0",
+          "[&_ul]:grid [&_ul]:gap-1",
+          "[&_li]:relative [&_li]:pl-[2ch] [&_li]:before:absolute [&_li]:before:left-0 [&_li]:before:content-['-']",
+          "[&_code]:rounded [&_code]:bg-sub-alt [&_code]:px-1",
+        )}
+        // oxlint-disable-next-line solid/no-innerhtml
+        innerHTML={props.bodyHTML}
+      ></div>
       <div class="mt-4 mb-16 h-1 w-full rounded bg-sub-alt"></div>
     </div>
   );
