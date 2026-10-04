@@ -7,7 +7,7 @@ import {
   vi,
 } from "vite-plus/test";
 import { setup } from "../../__testData__/controller-test";
-import { ObjectId } from "mongodb";
+import { newId } from "../../../src/utils/id";
 import * as LeaderboardDal from "../../../src/dal/leaderboards";
 import * as ConnectionsDal from "../../../src/dal/connections";
 import * as DailyLeaderboards from "../../../src/utils/daily-leaderboards";
@@ -75,7 +75,7 @@ describe("Loaderboard Controller", () => {
       };
       const mockData = resultData.entries.map((it) => ({
         ...it,
-        _id: new ObjectId(),
+        _id: newId(),
       }));
       getLeaderboardMock.mockResolvedValue(mockData);
       getLeaderboardCountMock.mockResolvedValue(42);
@@ -284,7 +284,7 @@ describe("Loaderboard Controller", () => {
     it("should get for english time 60", async () => {
       //GIVEN
 
-      const entryId = new ObjectId();
+      const entryId = newId();
       const resultEntry = {
         _id: entryId,
         wpm: 10,
@@ -647,7 +647,7 @@ describe("Loaderboard Controller", () => {
       const lbConf = (await configuration).dailyLeaderboards;
       const premiumEnabled = (await configuration).users.premium.enabled;
       await enableConnectionsFeature(true);
-      const friends = [new ObjectId().toString(), new ObjectId().toString()];
+      const friends = [newId(), newId()];
       getFriendsUidsMock.mockResolvedValue(friends);
 
       //WHEN
@@ -1163,7 +1163,7 @@ describe("Loaderboard Controller", () => {
       await enableConnectionsFeature(true);
       const page = 2;
       const pageSize = 25;
-      const friends = [new ObjectId().toString(), new ObjectId().toString()];
+      const friends = [newId(), newId()];
       getFriendsUidsMock.mockResolvedValue(friends);
 
       //WHEN
