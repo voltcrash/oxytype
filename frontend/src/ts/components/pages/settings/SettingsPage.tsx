@@ -54,6 +54,7 @@ import { Theme } from "./custom-setting/Theme";
 import { SearchableAutoSetting } from "./SearchableAutoSetting";
 import { SearchableSetting } from "./SearchableSetting";
 import { SettingsSectionContext } from "./settings-section-context";
+import { SettingsGroup } from "./SettingsGroup";
 import { SettingsSearch } from "./SettingsSearch";
 
 export function SettingsPage(): JSXElement {
@@ -182,32 +183,38 @@ export function SettingsPage(): JSXElement {
             <SearchableAutoSetting key="paceCaretStyle" wide />
           </Section>
           <Section section="appearance">
-            <SearchableAutoSetting key="timerStyle" wide />
-            <SearchableAutoSetting key="liveSpeedStyle" />
-            <SearchableAutoSetting key="liveAccStyle" />
-            <SearchableAutoSetting key="liveBurstStyle" />
-            <SearchableAutoSetting key="timerColor" />
-            <SearchableAutoSetting key="timerOpacity" />
-            <SearchableAutoSetting key="highlightMode" wide />
-            <SearchableAutoSetting key="typedEffect" />
-            <SearchableAutoSetting key="tapeMode" />
-            <SearchableAutoSetting key="tapeMargin" />
-            <SearchableAutoSetting key="smoothLineScroll" />
-            <SearchableAutoSetting key="showAllLines" />
-            <SearchableAutoSetting key="alwaysShowDecimalPlaces" />
-            <SearchableAutoSetting key="typingSpeedUnit" />
-            <SearchableAutoSetting key="startGraphsAtZero" />
-            <MaxLineWidth />
-            <SearchableAutoSetting key="fontSize" />
-            <FontFamily />
-            <SearchableAutoSetting key="keymapMode" />
-            <Show when={getConfig.keymapMode !== "off"}>
-              <KeymapLayout />
-              <SearchableAutoSetting key="keymapStyle" wide />
-              <SearchableAutoSetting key="keymapLegendStyle" wide />
-              <SearchableAutoSetting key="keymapKeys" wide />
-              <KeymapSize />
-            </Show>
+            <SettingsGroup title="timer & stats">
+              <SearchableAutoSetting key="timerStyle" wide />
+              <SearchableAutoSetting key="timerColor" />
+              <SearchableAutoSetting key="timerOpacity" />
+              <SearchableAutoSetting key="liveSpeedStyle" />
+              <SearchableAutoSetting key="liveAccStyle" />
+              <SearchableAutoSetting key="liveBurstStyle" />
+              <SearchableAutoSetting key="alwaysShowDecimalPlaces" />
+              <SearchableAutoSetting key="typingSpeedUnit" />
+              <SearchableAutoSetting key="startGraphsAtZero" />
+            </SettingsGroup>
+            <SettingsGroup title="text & layout">
+              <SearchableAutoSetting key="fontSize" />
+              <FontFamily />
+              <SearchableAutoSetting key="highlightMode" wide />
+              <SearchableAutoSetting key="typedEffect" />
+              <SearchableAutoSetting key="tapeMode" />
+              <SearchableAutoSetting key="tapeMargin" />
+              <SearchableAutoSetting key="smoothLineScroll" />
+              <SearchableAutoSetting key="showAllLines" />
+              <MaxLineWidth />
+            </SettingsGroup>
+            <SettingsGroup title="keymap">
+              <SearchableAutoSetting key="keymapMode" />
+              <Show when={getConfig.keymapMode !== "off"}>
+                <KeymapLayout />
+                <SearchableAutoSetting key="keymapStyle" wide />
+                <SearchableAutoSetting key="keymapLegendStyle" wide />
+                <SearchableAutoSetting key="keymapKeys" wide />
+                <KeymapSize />
+              </Show>
+            </SettingsGroup>
           </Section>
           <Section section="theme">
             <SearchableAutoSetting key="flipTestColors" />
