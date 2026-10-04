@@ -1,7 +1,7 @@
 import { getRequestListener } from "@hono/node-server";
 import request from "supertest";
 import app from "../../src/app";
-import { ObjectId } from "mongodb";
+import { newId } from "../../src/utils/id";
 import { BearerAuthenticationMock, mockBearerAuthentication } from "./auth";
 import { beforeEach } from "vite-plus/test";
 import TestAgent from "supertest/lib/agent";
@@ -12,7 +12,7 @@ export function setup(): {
   mockAuth: BearerAuthenticationMock;
 } {
   const mockApp = request(getRequestListener(app.fetch));
-  const uid = new ObjectId().toString();
+  const uid = newId();
   const mockAuth = mockBearerAuthentication(uid);
 
   beforeEach(() => {
