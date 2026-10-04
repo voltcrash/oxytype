@@ -19,3 +19,15 @@
 .fa-quote-right {
   scale: 1.25;
 }
+
+/* test config and modes notice */
+.fa-mountain {
+  scale: 1.15;
+}
+.fa-hashtag {
+  scale: 0.87;
+}
+.fa-exchange-alt,
+.fa-right-left {
+  scale: 0.88;
+}
