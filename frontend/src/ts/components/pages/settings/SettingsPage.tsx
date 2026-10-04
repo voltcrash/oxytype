@@ -16,6 +16,7 @@ import {
   setSettingsSearch,
 } from "../../../states/settings-search";
 import {
+  getAvailableSettingsSections,
   getCurrentSettingsSection,
   SettingsSection,
   settingsSections,
@@ -29,6 +30,9 @@ import { H2 } from "../../common/Headers";
 import { Page } from "../../common/Page";
 import { SidebarLayout } from "../../common/SidebarLayout";
 import { CommandlineHotkey } from "../../hotkeys/CommandlineHotkey";
+import { AccountTab } from "../account-settings/AccountTab";
+import { AuthenticationTab } from "../account-settings/AuthenticationTab";
+import { DangerZoneTab } from "../account-settings/DangerZoneTab";
 import { AnimationFpsLimit } from "./custom-setting/AnimationFpsLimit";
 import { AutoSwitchTheme } from "./custom-setting/AutoSwitchTheme";
 import { CustomBackground } from "./custom-setting/CustomBackground";
@@ -66,7 +70,7 @@ export function SettingsPage(): JSXElement {
   return (
     <Page id="settings">
       <SidebarLayout
-        items={settingsSections}
+        items={getAvailableSettingsSections()}
         // while filtering, results from every section are shown
         active={
           isSettingsSearchActive() ? undefined : getCurrentSettingsSection()
@@ -78,25 +82,14 @@ export function SettingsPage(): JSXElement {
         header={<SettingsSearch />}
         counts={isSettingsSearchActive() ? getSearchMatchCounts() : undefined}
         footer={
-          isAuthenticated() || getConfig.showKeyTips ? (
+          getConfig.showKeyTips ? (
             <>
-              <Show when={isAuthenticated()}>
-                <Button
-                  text="account settings"
-                  variant="text"
-                  fa={{ icon: "fa-user-cog" }}
-                  href="/account-settings"
-                  router-link
-                />
-              </Show>
-              <Show when={getConfig.showKeyTips}>
-                {/* padded like the buttons: inset to line up with the item icons,
+              {/* padded like the buttons: inset to line up with the item icons,
                     and space below to match the gap above the tip */}
-                <div class="px-2 pb-2 text-em-xs text-sub">
-                  tip: you can also change all these settings quickly via the
-                  command palette (<CommandlineHotkey />)
-                </div>
-              </Show>
+              <div class="px-2 pb-2 text-em-xs text-sub">
+                tip: you can also change all these settings quickly via the
+                command palette (<CommandlineHotkey />)
+              </div>
             </>
           ) : undefined
         }
@@ -272,7 +265,22 @@ export function SettingsPage(): JSXElement {
               <SearchableAutoSetting key="showAverage" />
             </SettingsGroup>
           </Section>
+          <Show when={isAuthenticated()}>
+            <Section section="account">
+              <SettingsGroup title="account preferences">
+                <AccountTab />
+              </SettingsGroup>
+              <SettingsGroup title="sign-in methods">
+                <AuthenticationTab />
+              </SettingsGroup>
+            </Section>
+          </Show>
           <Section section="dangerZone">
+            <Show when={isAuthenticated()}>
+              <SettingsGroup title="account data">
+                <DangerZoneTab />
+              </SettingsGroup>
+            </Show>
             <SettingsGroup title="privacy">
               <SearchableAutoSetting key="ads" />
               <SearchableSetting

@@ -42,6 +42,7 @@ export function AuthenticationTab() {
 function ProviderAuthentication(props: { authMethod: AuthMethod }) {
   return (
     <Section
+      key={`authentication${getAuthMethodDisplay(props.authMethod)}`}
       title={`${getAuthMethodDisplay(props.authMethod)}`}
       fa={getAuthMethodIcon(props.authMethod)}
       description=<>
@@ -118,6 +119,7 @@ function maskAfterFirstCharacter(value: string): string {
 function RevokeAllTokens() {
   return (
     <Section
+      key="revokeAllTokens"
       title="revoke all tokens"
       fa={{ icon: "fa-user-slash" }}
       description=<>

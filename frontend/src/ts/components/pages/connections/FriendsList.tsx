@@ -74,7 +74,7 @@ export function FriendsList() {
                       if (existingConnection?.status === "blocked") {
                         return existingConnection.receiverName === name
                           ? `${name} has blocked you from sending friend requests.`
-                          : `You have blocked ${name}. Unblock them to sent a friend request in the account settings.`;
+                          : `You have blocked ${name}.`;
                       }
                       if (existingConnection?.status === "pending") {
                         return `You have already sent a friend request to ${name}`;

@@ -31,7 +31,6 @@ export type ModalId =
   | "AddPresetModal"
   | "EditPresetModal"
   | "EditProfile"
-  | "ViewApeKey"
   | "LastSignedOutResult"
   | "StreakHourOffset"
   | "GoogleSignup"

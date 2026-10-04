@@ -2,24 +2,26 @@ import { splitProps } from "solid-js";
 
 import { cn } from "../../../utils/cn";
 import { Button, ButtonProps } from "../../common/Button";
-import { Setting, SettingProps } from "../../common/Setting";
+import {
+  SearchableSetting,
+  SearchableSettingProps,
+} from "../settings/SearchableSetting";
 
 export function Section(
   props: Omit<
-    SettingProps,
-    "breakpoints" | "inputs" | "key" | "showDeepLink" | "fullWidthInputs"
+    SearchableSettingProps,
+    "breakpoints" | "inputs" | "key" | "showDeepLink"
   > & {
+    key: string;
     button?: ButtonProps;
-    fullWidth?: boolean;
   },
 ) {
-  const [local, settingsProps] = splitProps(props, ["button", "fullWidth"]);
+  const [local, settingsProps] = splitProps(props, ["button"]);
   return (
-    <Setting
-      {...(settingsProps as SettingProps)}
-      showDeepLink={false}
-      key={undefined}
-      breakpoints={local.fullWidth ? "none" : "narrow"}
+    <SearchableSetting
+      {...(settingsProps as SearchableSettingProps)}
+      resetKeys={[]}
+      breakpoints="narrow"
       inputs={
         local.button !== undefined ? (
           <Button {...local.button} class={cn("w-full", local.button?.class)} />

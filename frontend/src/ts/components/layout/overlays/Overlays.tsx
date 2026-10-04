@@ -17,12 +17,7 @@ import { Notifications } from "./Notifications";
 export function Overlays(): JSXElement {
   return (
     <>
-      <Show
-        when={
-          getActivePage() !== "settings" &&
-          getActivePage() !== "accountSettings"
-        }
-      >
+      <Show when={getActivePage() !== "settings"}>
         <ScrollToTop />
       </Show>
       <button

@@ -22,6 +22,7 @@ export function AccountTab() {
 function UpdateAccountName() {
   return (
     <Section
+      key="accountName"
       title="update account name"
       fa={{ icon: "fa-user" }}
       description=<>
@@ -39,6 +40,7 @@ function UpdateAccountName() {
 function UpdateStreakOffset() {
   return (
     <Section
+      key="streakHourOffset"
       title="set streak hour offset"
       fa={{ icon: "fa-clock" }}
       description=<>
@@ -65,6 +67,7 @@ function UpdateStreakOffset() {
 function OptOutLeaderboard() {
   return (
     <Section
+      key="lbOptOut"
       title="opt out of leaderboards"
       fa={{ icon: "fa-crown" }}
       description=<>
@@ -88,6 +91,7 @@ function OptOutLeaderboard() {
 function ResetPersonalBests() {
   return (
     <Section
+      key="resetPersonalBests"
       title="reset personal bests"
       fa={{ icon: "fa-crown" }}
       description=<>

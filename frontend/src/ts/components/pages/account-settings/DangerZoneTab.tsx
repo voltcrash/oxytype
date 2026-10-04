@@ -16,6 +16,7 @@ export function DangerZoneTab() {
 function ResetAccount() {
   return (
     <Section
+      key="resetAccount"
       title="reset account"
       fa={{ icon: "fa-redo-alt" }}
       description=<>
@@ -36,6 +37,7 @@ function ResetAccount() {
 function DeleteAccount() {
   return (
     <Section
+      key="deleteAccount"
       title="delete account"
       fa={{ icon: "fa-trash" }}
       description=<>

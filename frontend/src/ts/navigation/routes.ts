@@ -5,6 +5,7 @@ import { PageName } from "../pages/page";
 export type AppRouteInfo = {
   page: PageName;
   access?: "guest" | "user";
+  redirect?: string;
 };
 
 // Keep frontend/firebase.json rewrites in sync when adding routes.
@@ -17,7 +18,11 @@ export const appRoutes = [
   { path: "/account", info: { page: "account", access: "user" } },
   {
     path: "/account-settings",
-    info: { page: "accountSettings", access: "user" },
+    info: {
+      page: "settings",
+      access: "user",
+      redirect: "/settings?tab=account",
+    },
   },
   { path: "/profile", info: { page: "profileSearch" } },
   { path: "/profile/:uidOrName", info: { page: "profile" } },

@@ -82,12 +82,7 @@ export function App(props: AppElements): JSXElement {
             />
             <AppPages />
           </main>
-          <Show
-            when={
-              getActivePage() !== "settings" &&
-              getActivePage() !== "accountSettings"
-            }
-          >
+          <Show when={getActivePage() !== "settings"}>
             <Footer />
           </Show>
           <Advertisement
