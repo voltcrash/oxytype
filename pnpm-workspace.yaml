@@ -19,6 +19,9 @@ allowBuilds:
   workerd: true
 
 overrides:
+  # Authentication uses Drizzle; exclude the unused adapter and optional driver.
+  "better-auth>@better-auth/mongo-adapter": "-"
+  "better-auth>mongodb": "-"
   "postcss": "8.5.28"
   "cssnano": "8.0.10"
   "re2": "1.27.0"
