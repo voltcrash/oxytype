@@ -27,6 +27,9 @@ describe("fresh production bootstrap on D1", () => {
     expect(configuration.results.savingEnabled).toBe(true);
     expect(configuration.results.objectHashCheckEnabled).toBe(true);
     expect(configuration.users.autoBan.enabled).toBe(false);
+    expect(configuration.users.xp.enabled).toBe(true);
+    expect(configuration.users.xp.gainMultiplier).toBe(1);
+    expect(configuration.leaderboards.weeklyXp.enabled).toBe(true);
     expect(configuration.quotes.submissionsEnabled).toBe(false);
     expect(configuration.admin.endpointsEnabled).toBe(false);
     const counts = await test.env.DB.prepare(

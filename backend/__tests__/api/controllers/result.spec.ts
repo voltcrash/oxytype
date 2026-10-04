@@ -12,6 +12,7 @@ import * as ResultDal from "../../../src/dal/result";
 import * as UserDal from "../../../src/dal/user";
 import * as PublicDal from "../../../src/dal/public";
 import * as LogsDal from "../../../src/dal/logs";
+import { WeeklyXpLeaderboard } from "../../../src/services/weekly-xp-leaderboard";
 import { ObjectId } from "mongodb";
 import { mockAuthenticateWithApeKey } from "../../__testData__/auth";
 import { enableRateLimitExpects } from "../../__testData__/rate-limit";
@@ -564,6 +565,10 @@ describe("result controller test", () => {
       "getLastResultTimestamp",
     );
     const publicUpdateStatsMock = vi.spyOn(PublicDal, "updateStats");
+    const weeklyXpAddResultMock = vi.spyOn(
+      WeeklyXpLeaderboard.prototype,
+      "addResult",
+    );
 
     beforeEach(async () => {
       await enableResultsSaving(true);
@@ -579,6 +584,7 @@ describe("result controller test", () => {
         resultAddMock,
         resultGetLastTimestampMock,
         publicUpdateStatsMock,
+        weeklyXpAddResultMock,
       ].forEach((it) => it.mockClear());
 
       userGetMock.mockResolvedValue({ name: "bob" } as any);
@@ -590,6 +596,7 @@ describe("result controller test", () => {
       resultGetLastTimestampMock.mockResolvedValue(0);
       userIncrementXpMock.mockResolvedValue();
       userUpdateTypingStatsMock.mockResolvedValue();
+      weeklyXpAddResultMock.mockResolvedValue(1);
     });
 
     it("should add result", async () => {
@@ -611,15 +618,14 @@ describe("result controller test", () => {
       expect(body.data).toEqual({
         isPb: true,
         tagPbs: [],
-        xp: 0,
-        dailyXpBonus: false,
+        xp: 177,
+        dailyXpBonus: true,
         xpBreakdown: {
-          configMultiplier: 0,
           accPenalty: 28,
           base: 20,
           incomplete: 5,
           funbox: 80,
-          daily: 0,
+          daily: 100,
         },
         streak: 0,
         insertedId: insertedId.toString(),
@@ -664,7 +670,11 @@ describe("result controller test", () => {
         4,
         15.1 + 10 - 5, //duration + incompleteTestSeconds-afk
       );
-      expect(userIncrementXpMock).toHaveBeenCalledWith(uid, 0);
+      expect(userIncrementXpMock).toHaveBeenCalledWith(uid, 177);
+      expect(weeklyXpAddResultMock).toHaveBeenCalledWith(
+        expect.objectContaining({ enabled: true }),
+        expect.objectContaining({ xpGained: 177 }),
+      );
       expect(userUpdateTypingStatsMock).toHaveBeenCalledWith(
         uid,
         4,
