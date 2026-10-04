@@ -1,12 +1,12 @@
 import { mutateUser } from "../../src/db/mutation";
 import * as UserDAL from "../../src/dal/user";
-import { ObjectId } from "mongodb";
+import { newId } from "../../src/utils/id";
 import { PersonalBest } from "@oxytype/schemas/shared";
 
 export async function createUser(
   user?: Partial<UserDAL.DBUser>,
 ): Promise<UserDAL.DBUser> {
-  const uid = new ObjectId().toString();
+  const uid = newId();
   await UserDAL.addUser(`user${uid}`, `${uid}@example.com`, uid);
   await mutateUser(uid, (profile) => {
     Object.assign(profile, user);
@@ -17,7 +17,7 @@ export async function createUser(
 export async function createUserWithoutMigration(
   user?: Partial<UserDAL.DBUser>,
 ): Promise<UserDAL.DBUser> {
-  const uid = new ObjectId().toString();
+  const uid = newId();
   await UserDAL.addUser(`user${uid}`, `${uid}@example.com`, uid);
   await mutateUser(uid, (profile) => {
     Object.assign(profile, user);
