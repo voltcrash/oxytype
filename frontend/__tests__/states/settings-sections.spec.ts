@@ -17,7 +17,7 @@ afterEach(() => {
 });
 
 describe("settings sections", () => {
-  const accountSections = ["account", "blockedUsers", "apeKeys"] as const;
+  const accountSections = ["account"] as const;
 
   it("reads legacy authentication query strings and writes canonical account links", () => {
     expect(

@@ -92,46 +92,47 @@ it("searches authentication controls under account and deep links back to accoun
   expect(getCurrentSettingsSection()).toBe("account");
 });
 
-it("keeps API tables inside their searchable row without remounting them", () => {
+it("keeps account inputs inside their searchable row without remounting them", () => {
   const onClick = vi.fn();
   const { container, getByRole, getByLabelText } = render(() => (
     <Section
-      key="apeKeys"
-      title="API keys"
-      fa={{ icon: "fa-key" }}
-      description="Manage API access."
-      button={{ text: "generate new key", onClick }}
-      fullWidthInputs={<input aria-label="API key draft" />}
-    />
+      key="accountName"
+      title="account name"
+      fa={{ icon: "fa-user" }}
+      description="Change your account name."
+      button={{ text: "update name", onClick }}
+    >
+      <input aria-label="account name draft" />
+    </Section>
   ));
-  const input = getByLabelText<HTMLInputElement>("API key draft");
+  const input = getByLabelText<HTMLInputElement>("account name draft");
   fireEvent.input(input, { target: { value: "draft" } });
   setSettingsSearch("no matching setting");
   expect(input.closest("[data-setting-key]")).toHaveClass("hidden");
   setSettingsSearch("");
-  expect(getByLabelText("API key draft")).toBe(input);
+  expect(getByLabelText("account name draft")).toBe(input);
   expect(input.value).toBe("draft");
   expect(
     container.querySelector("[data-setting-key] [data-setting-key]"),
   ).toBeNull();
-  fireEvent.click(getByRole("button", { name: "generate new key" }));
+  fireEvent.click(getByRole("button", { name: "update name" }));
   expect(onClick).toHaveBeenCalledOnce();
 });
 
 it("selects account sections through individual setting deep links", () => {
   vi.useFakeTimers();
   render(() => (
-    <SettingsSectionContext.Provider value="blockedUsers">
+    <SettingsSectionContext.Provider value="account">
       <Section
-        key="blockedUsers"
-        title="blocked users"
-        fa={{ icon: "fa-ban" }}
-        description="Manage blocked users."
+        key="accountName"
+        title="account name"
+        fa={{ icon: "fa-user" }}
+        description="Change your account name."
       />
     </SettingsSectionContext.Provider>
   ));
-  highlightSetting("blockedUsers");
-  expect(getCurrentSettingsSection()).toBe("blockedUsers");
+  highlightSetting("accountName");
+  expect(getCurrentSettingsSection()).toBe("account");
 });
 
 it("preserves reactive restrictions on account actions", () => {

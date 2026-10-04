@@ -16,8 +16,6 @@ const SettingsSectionSchema = z.enum([
   "hideElements",
   "account",
   "dangerZone",
-  "apeKeys",
-  "blockedUsers",
 ]);
 export type SettingsSection = z.infer<typeof SettingsSectionSchema>;
 
@@ -37,22 +35,17 @@ export const settingsSections: Record<
     icon: "fa-user",
     requiresAuthentication: true,
   },
-  blockedUsers: {
-    text: "blocked users",
-    icon: "fa-ban",
-    requiresAuthentication: true,
-  },
-  apeKeys: {
-    text: "API keys",
-    icon: "fa-code",
-    requiresAuthentication: true,
-  },
   dangerZone: { text: "danger zone", icon: "fa-exclamation-triangle" },
 };
 
 export const SettingsUrlParamsSchema = z
   .object({
-    tab: z.enum([...SettingsSectionSchema.options, "authentication"]),
+    tab: z.enum([
+      ...SettingsSectionSchema.options,
+      "authentication",
+      "blockedUsers",
+      "apeKeys",
+    ]),
   })
   .partial();
 type SettingsUrlParams = z.infer<typeof SettingsUrlParamsSchema>;
@@ -79,7 +72,12 @@ export function readSettingsGetParameters(
 ): void {
   if (params?.tab === undefined) return;
 
-  const section = params.tab === "authentication" ? "account" : params.tab;
+  const section =
+    params.tab === "authentication"
+      ? "account"
+      : params.tab === "blockedUsers" || params.tab === "apeKeys"
+        ? "behavior"
+        : params.tab;
   setCurrentSettingsSection(isSectionAvailable(section) ? section : "behavior");
 }
 
