@@ -138,7 +138,11 @@ export function NavigationRuntime(): null {
       if (!ready || (urlOnly && pending === undefined)) return;
       const match = matches().at(-1);
       if (match === undefined) return;
-      const { page, access } = match.route.info as AppRouteInfo;
+      const {
+        page,
+        access,
+        redirect: routeRedirect,
+      } = match.route.info as AppRouteInfo;
       const request = pending;
       const options = request?.options ?? {};
 
@@ -154,6 +158,16 @@ export function NavigationRuntime(): null {
                 : undefined;
       if (redirect !== undefined) {
         routeTo(redirect, options, true);
+        return;
+      }
+
+      if (routeRedirect !== undefined) {
+        const target = new URL(routeRedirect, window.location.origin);
+        new URLSearchParams(location.search).forEach((value, key) => {
+          target.searchParams.set(key, value);
+        });
+        target.hash = location.hash;
+        routeTo(target.pathname + target.search + target.hash, options, true);
         return;
       }
 

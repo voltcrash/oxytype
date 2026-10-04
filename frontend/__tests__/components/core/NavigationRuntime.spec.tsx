@@ -165,7 +165,10 @@ describe("Solid Router page integration", () => {
     await ready();
     expect(window.location.pathname).toBe("/account");
     await navigate("/account-settings");
-    expect(state.change).toHaveBeenLastCalledWith("accountSettings", {});
+    expect(window.location.pathname + window.location.search).toBe(
+      "/settings?tab=account",
+    );
+    expect(state.change).toHaveBeenLastCalledWith("settings", {});
     await navigate("/friends");
     expect(state.change).toHaveBeenLastCalledWith("friends", {});
   });
