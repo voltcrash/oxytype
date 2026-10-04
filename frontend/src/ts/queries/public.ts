@@ -180,7 +180,8 @@ async function fetchVersionHistory(options: { pageParam: number }): Promise<{
     });
   }
   return {
-    nextCursor: data.length > 0 ? options.pageParam + 1 : undefined,
+    // Drafts are skipped, so an emptied page does not mean the end.
+    nextCursor: releases.length > 0 ? options.pageParam + 1 : undefined,
     releases: data,
   };
 }
