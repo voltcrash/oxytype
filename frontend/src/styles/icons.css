@@ -102,3 +102,30 @@
 .fa-sun {
   scale: 0.89;
 }
+
+/* settings and funbox */
+.fa-tape {
+  scale: 1.08;
+}
+.fa-gamepad {
+  scale: 0.91;
+}
+.fa-fire {
+  scale: 0.9;
+}
+.fa-fire-alt,
+.fa-fire-flame-curved {
+  scale: 1.08;
+}
+.fa-language {
+  scale: 0.9;
+}
+.fa-text-width {
+  scale: 0.91;
+}
+.fa-ellipsis-h,
+.fa-ellipsis,
+.fa-ellipsis-v,
+.fa-ellipsis-vertical {
+  scale: 1.11;
+}
