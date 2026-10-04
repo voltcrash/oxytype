@@ -22,7 +22,7 @@ export function Notice(
 
   const ButtonNotice = () => (
     <Button
-      class={cn("h-full gap-3", props.class)}
+      class={cn("gap-3", props.class)}
       variant="text"
       onClick={
         props.onClick ??
