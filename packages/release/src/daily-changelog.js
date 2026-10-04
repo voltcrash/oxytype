@@ -5,6 +5,8 @@ const sections = [
 ];
 
 const conventionalSubject = /^(\w+)(?:\(([^)]+)\))?!?:\s+(.+)$/;
+// GitHub merge commits only repeat the branch name; their commits are listed.
+const mergeSubject = /^Merge (?:pull request|branch|remote-tracking branch) /;
 
 export function escapeMarkdown(value) {
   return value.replace(/[\\`*_[\]<>]/g, "\\$&");
@@ -34,7 +36,9 @@ function formatCommit(commit, repoUrl, includeType) {
  * @returns {string} Markdown, or an empty string when nothing is listed.
  */
 export function buildDailyChangelog(commits, repoUrl) {
-  const parsed = commits.map(parseCommit);
+  const parsed = commits
+    .filter((commit) => !mergeSubject.test(commit.subject))
+    .map(parseCommit);
 
   const blocks = [];
   for (const section of sections) {

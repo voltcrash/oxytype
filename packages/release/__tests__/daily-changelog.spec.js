@@ -47,6 +47,22 @@ describe("buildDailyChangelog", () => {
     expect(notes).not.toContain("### Features");
   });
 
+  it("omits github merge commits", () => {
+    const notes = buildDailyChangelog(
+      [
+        {
+          hash: hash(1),
+          subject: "Merge pull request #26 from voltcrash/settings",
+        },
+        { hash: hash(2), subject: "Merge branch 'main' into settings" },
+        { hash: hash(3), subject: "feat(settings): add sidebar" },
+      ],
+      repoUrl,
+    );
+    expect(notes).not.toContain("Merge");
+    expect(notes).toContain("add sidebar");
+  });
+
   it("returns an empty string without commits", () => {
     expect(buildDailyChangelog([], repoUrl)).toBe("");
   });
