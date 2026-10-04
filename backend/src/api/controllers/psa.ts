@@ -1,14 +1,13 @@
 import { GetPsaResponse } from "@oxytype/contracts/psas";
 import * as PsaDAL from "../../dal/psa";
 import { MonkeyResponse } from "../../utils/monkey-response";
-import { replaceObjectIds } from "../../utils/misc";
 import { MonkeyRequest } from "../types";
 import { PSA } from "@oxytype/schemas/psas";
 import { cacheWithTTL } from "../../utils/ttl-cache";
 
 //cache for one minute
 const cache = cacheWithTTL<PSA[]>(1 * 60 * 1000, async () => {
-  return replaceObjectIds(await PsaDAL.get());
+  return await PsaDAL.get();
 });
 
 export async function getPsas(_req: MonkeyRequest): Promise<GetPsaResponse> {

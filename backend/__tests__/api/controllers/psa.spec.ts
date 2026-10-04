@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach, vi } from "vite-plus/test";
 import { setup } from "../../__testData__/controller-test";
 import * as PsaDal from "../../../src/dal/psa";
 import * as Prometheus from "../../../src/utils/prometheus";
-import { ObjectId } from "mongodb";
+import { newId } from "../../../src/utils/id";
 
 const { mockApp, uid } = setup();
 
@@ -19,14 +19,14 @@ describe("Psa Controller", () => {
     it("get psas without authorization", async () => {
       //GIVEN
       const psaOne: PsaDal.DBPSA = {
-        _id: new ObjectId(),
+        _id: newId(),
         message: "test2",
         date: 1000,
         level: 1,
         sticky: true,
       };
       const psaTwo: PsaDal.DBPSA = {
-        _id: new ObjectId(),
+        _id: newId(),
         message: "test2",
         date: 2000,
         level: 2,
@@ -42,14 +42,14 @@ describe("Psa Controller", () => {
         message: "PSAs retrieved",
         data: [
           {
-            _id: psaOne._id.toString(),
+            _id: psaOne._id,
             date: 1000,
             level: 1,
             message: "test2",
             sticky: true,
           },
           {
-            _id: psaTwo._id.toString(),
+            _id: psaTwo._id,
             date: 2000,
             level: 2,
             message: "test2",

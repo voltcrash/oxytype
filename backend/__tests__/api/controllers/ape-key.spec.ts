@@ -9,7 +9,7 @@ import {
 import { setup } from "../../__testData__/controller-test";
 import { Test as SuperTest } from "supertest";
 import * as ApeKeyDal from "../../../src/dal/ape-keys";
-import { ObjectId } from "mongodb";
+import { newId } from "../../../src/utils/id";
 import * as Configuration from "../../../src/init/configuration";
 import * as UserDal from "../../../src/dal/user";
 
@@ -52,14 +52,14 @@ describe("ApeKeyController", () => {
 
       //THEN
       expect(body).toHaveProperty("message", "ApeKeys retrieved");
-      expect(body.data).toHaveProperty(keyOne._id.toString(), {
+      expect(body.data).toHaveProperty(keyOne._id, {
         name: keyOne.name,
         enabled: keyOne.enabled,
         createdOn: keyOne.createdOn,
         modifiedOn: keyOne.modifiedOn,
         lastUsedOn: keyOne.lastUsedOn,
       });
-      expect(body.data).toHaveProperty(keyTwo._id.toString(), {
+      expect(body.data).toHaveProperty(keyTwo._id, {
         name: keyTwo.name,
         enabled: keyTwo.enabled,
         createdOn: keyTwo.createdOn,
@@ -199,7 +199,7 @@ describe("ApeKeyController", () => {
 
   describe("edit ape key", () => {
     const editApeKeyMock = vi.spyOn(ApeKeyDal, "editApeKey");
-    const apeKeyId = new ObjectId().toString();
+    const apeKeyId = newId();
 
     afterEach(() => {
       editApeKeyMock.mockClear();
@@ -284,7 +284,7 @@ describe("ApeKeyController", () => {
   });
   describe("delete ape key", () => {
     const deleteApeKeyMock = vi.spyOn(ApeKeyDal, "deleteApeKey");
-    const apeKeyId = new ObjectId().toString();
+    const apeKeyId = newId();
 
     afterEach(() => {
       deleteApeKeyMock.mockClear();
@@ -348,7 +348,7 @@ function apeKeyDb(
   data?: Partial<ApeKeyDal.DBApeKey>,
 ): ApeKeyDal.DBApeKey {
   return {
-    _id: new ObjectId(),
+    _id: newId(),
     uid,
     hash: "hash",
     useCount: 1,

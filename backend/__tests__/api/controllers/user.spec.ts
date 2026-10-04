@@ -20,7 +20,7 @@ import * as DailyLeaderboards from "../../../src/utils/daily-leaderboards";
 import * as LeaderboardDal from "../../../src/dal/leaderboards";
 import * as Captcha from "../../../src/utils/captcha";
 import * as LogDal from "../../../src/dal/logs";
-import { ObjectId } from "mongodb";
+import { newId } from "../../../src/utils/id";
 import { PersonalBest } from "@oxytype/schemas/shared";
 import { mockAuthenticateWithApeKey } from "../../__testData__/auth";
 import { randomUUID } from "node:crypto";
@@ -777,7 +777,7 @@ describe("user controller test", () => {
         none: true,
       },
     };
-    const generatedId = new ObjectId();
+    const generatedId = newId();
 
     const addResultFilterPresetMock = vi.spyOn(
       UserDal,
@@ -801,7 +801,7 @@ describe("user controller test", () => {
       //THEN
       expect(body).toEqual({
         message: "Result filter preset created",
-        data: generatedId.toString(),
+        data: generatedId,
       });
 
       expect(addResultFilterPresetMock).toHaveBeenCalledWith(
@@ -913,7 +913,7 @@ describe("user controller test", () => {
   describe("add tag", () => {
     const addTagMock = vi.spyOn(UserDal, "addTag");
     const newTag = {
-      _id: new ObjectId(),
+      _id: newId(),
       name: "tagName",
       personalBests: {
         time: {},
@@ -941,7 +941,7 @@ describe("user controller test", () => {
       //THEN
       expect(body).toEqual({
         message: "Tag updated",
-        data: { ...newTag, _id: newTag._id.toString() },
+        data: { ...newTag, _id: newTag._id },
       });
       expect(addTagMock).toHaveBeenCalledWith(uid, "tagName");
     });
@@ -986,7 +986,7 @@ describe("user controller test", () => {
 
     it("should clear tag pb", async () => {
       //GIVEN
-      const tagId = new ObjectId().toString();
+      const tagId = newId();
       //WHEN
       const { body } = await mockApp
         .delete(`/users/tags/${tagId}/personalBest`)
@@ -1010,7 +1010,7 @@ describe("user controller test", () => {
 
     it("should update tag", async () => {
       //GIVEN
-      const tagId = new ObjectId().toString();
+      const tagId = newId();
 
       //WHEN
       const { body } = await mockApp
@@ -1045,7 +1045,7 @@ describe("user controller test", () => {
         .patch(`/users/tags`)
         .set("Authorization", `Bearer ${uid}`)
         .send({
-          tagId: new ObjectId().toString(),
+          tagId: newId(),
           newName: "newName",
           extra: "value",
         })
@@ -1067,7 +1067,7 @@ describe("user controller test", () => {
 
     it("should remove tag", async () => {
       //GIVEN
-      const tagId = new ObjectId().toString();
+      const tagId = newId();
 
       //WHEN
       const { body } = await mockApp
@@ -1094,12 +1094,12 @@ describe("user controller test", () => {
     it("should get tags", async () => {
       //GIVEN
       const tagOne: UserDal.DBUserTag = {
-        _id: new ObjectId(),
+        _id: newId(),
         name: "tagOne",
         personalBests: {} as any,
       };
       const tagTwo: UserDal.DBUserTag = {
-        _id: new ObjectId(),
+        _id: newId(),
         name: "tagOne",
         personalBests: {} as any,
       };
@@ -1116,8 +1116,8 @@ describe("user controller test", () => {
       expect(body).toEqual({
         message: "Tags retrieved",
         data: [
-          { ...tagOne, _id: tagOne._id.toString() },
-          { ...tagTwo, _id: tagTwo._id.toString() },
+          { ...tagOne, _id: tagOne._id },
+          { ...tagTwo, _id: tagTwo._id },
         ],
       });
       expect(getTagsMock).toHaveBeenCalledWith(uid);
@@ -1204,12 +1204,12 @@ describe("user controller test", () => {
     it("should get custom themes", async () => {
       //GIVEN
       const themeOne: UserDal.DBCustomTheme = {
-        _id: new ObjectId(),
+        _id: newId(),
         name: "themeOne",
         colors: new Array(10).fill("#000000") as any,
       };
       const themeTwo: UserDal.DBCustomTheme = {
-        _id: new ObjectId(),
+        _id: newId(),
         name: "themeTwo",
         colors: new Array(10).fill("#FFFFFF") as any,
       };
@@ -1225,8 +1225,8 @@ describe("user controller test", () => {
       expect(body).toEqual({
         message: "Custom themes retrieved",
         data: [
-          { ...themeOne, _id: themeOne._id.toString() },
-          { ...themeTwo, _id: themeTwo._id.toString() },
+          { ...themeOne, _id: themeOne._id },
+          { ...themeTwo, _id: themeTwo._id },
         ],
       });
     });
@@ -1240,7 +1240,7 @@ describe("user controller test", () => {
     it("should add", async () => {
       //GIVEN
       const addedTheme: UserDal.DBCustomTheme = {
-        _id: new ObjectId(),
+        _id: newId(),
         name: "custom",
         colors: new Array(10).fill("#000000") as any,
       };
@@ -1259,7 +1259,7 @@ describe("user controller test", () => {
       //THEN
       expect(body).toEqual({
         message: "Custom theme added",
-        data: { ...addedTheme, _id: addedTheme._id.toString() },
+        data: { ...addedTheme, _id: addedTheme._id },
       });
       expect(addThemeMock).toHaveBeenCalledWith(uid, {
         name: "customTheme",
@@ -1327,7 +1327,7 @@ describe("user controller test", () => {
 
     it("should remove theme", async () => {
       //GIVEN
-      const themeId = new ObjectId().toString();
+      const themeId = newId();
 
       //WHEN
       const { body } = await mockApp
@@ -1361,7 +1361,7 @@ describe("user controller test", () => {
       const { body } = await mockApp
         .delete("/users/customThemes")
         .set("Authorization", `Bearer ${uid}`)
-        .send({ themeId: new ObjectId().toString(), extra: "value" })
+        .send({ themeId: newId(), extra: "value" })
         .expect(422);
 
       //THEN
@@ -1379,7 +1379,7 @@ describe("user controller test", () => {
 
     it("should edit custom theme", async () => {
       //GIVEN
-      const themeId = new ObjectId().toString();
+      const themeId = newId();
       const theme = {
         name: "newName",
         colors: new Array(10).fill("#000000") as any,
@@ -1421,7 +1421,7 @@ describe("user controller test", () => {
         .patch("/users/customThemes")
         .set("Authorization", `Bearer ${uid}`)
         .send({
-          themeId: new ObjectId().toString(),
+          themeId: newId(),
           theme: {
             name: "newName",
             colors: new Array(10).fill("#000000") as any,
@@ -1706,8 +1706,8 @@ describe("user controller test", () => {
     const leaderboardGetCountMock = vi.spyOn(LeaderboardDal, "getCount");
 
     const foundUser: Partial<UserDal.DBUser> = {
-      _id: new ObjectId(),
-      uid: new ObjectId().toString(),
+      _id: newId(),
+      uid: newId(),
       name: "bob",
       banned: false,
       inventory: { badges: [{ id: 1, selected: true }, { id: 2 }] },
@@ -2345,7 +2345,7 @@ describe("user controller test", () => {
 
     it("should report", async () => {
       //WHEN
-      const uidToReport = new ObjectId().toString();
+      const uidToReport = newId();
 
       const { body } = await mockApp
         .post("/users/report")
@@ -2402,7 +2402,7 @@ describe("user controller test", () => {
         .post("/users/report")
         .set("Authorization", `Bearer ${uid}`)
         .send({
-          uid: new ObjectId().toString(),
+          uid: newId(),
           reason: "Suspected cheating",
           comment: "comment",
           captcha: "captcha",
@@ -2425,7 +2425,7 @@ describe("user controller test", () => {
         .post("/users/report")
         .set("Authorization", `Bearer ${uid}`)
         .send({
-          uid: new ObjectId().toString(),
+          uid: newId(),
           reason: "Suspected cheating",
           comment: "comment",
           captcha: "captcha",
@@ -2469,7 +2469,7 @@ describe("user controller test", () => {
         .post("/users/report")
         .set("Authorization", `Bearer ${uid}`)
         .send({
-          uid: new ObjectId().toString(),
+          uid: newId(),
           reason: "Suspected cheating",
           comment: "comment",
           captcha: "captcha",
@@ -2488,7 +2488,7 @@ describe("user controller test", () => {
         .post("/users/report")
         .set("Authorization", `Bearer ${uid}`)
         .send({
-          uid: new ObjectId().toString(),
+          uid: newId(),
           reason: "Suspected cheating",
           comment: "comment",
           captcha: "captcha",

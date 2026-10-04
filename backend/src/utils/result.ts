@@ -6,10 +6,9 @@ import {
 } from "@oxytype/schemas/results";
 import { Mode } from "@oxytype/schemas/shared";
 import { newId } from "./id";
-import { WithObjectId } from "./misc";
 import { FunboxName } from "@oxytype/schemas/configs";
 
-export type DBResult = WithObjectId<Result<Mode>> & {
+export type DBResult = Result<Mode> & {
   //legacy values
   correctChars?: number;
   incorrectChars?: number;

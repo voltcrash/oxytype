@@ -1,5 +1,9 @@
 # Cloudflare backend migration
 
+> Historical implementation record. Legacy database clients and offline
+> export/import tooling have since been retired. Current deployments use D1,
+> Queues and Cron; see [the runbook](CLOUDFLARE_OPERATIONS.md).
+
 ## Objective
 
 Replace the production Node/MongoDB/Redis/BullMQ backend with one Hono Worker,
@@ -210,7 +214,8 @@ verification, deployment, and any external blockers throughout implementation.
 - Confirmed: new staging Worker with empty D1. Existing deployments remain untouched.
 - Confirmed account: Lakshmi Tanmay (`eb2679ce4f23ae7db4e6c4e3fcf8c3c1`); Wrangler authenticated.
 - Confirmed trusted frontend: `http://localhost:3000`.
-- Preserving import tooling remains in scope for a later data migration.
+- The preserving importer was implemented for migration, then retired after
+  production was configured to start fresh.
 - OAuth secrets, existing auth secret if preserving sessions, and integration
   bridge credentials/callback URLs. These are runtime inputs, not git contents.
 
@@ -397,8 +402,8 @@ sign-out/sign-in persistence had already been confirmed separately. Staging's
 real-user data is retained; it is not an empty fixture database anymore.
 
 The owner chose a fresh production database on `oxytype.voltcrash.com`. Production
-does not import MongoDB, Redis or staging accounts/history; the preserving import
-workflow remains available for other deployments.
+does not import legacy or staging accounts/history. The preserving import
+workflow was subsequently retired.
 
 ### Fresh production deployment — 3 October 2026
 

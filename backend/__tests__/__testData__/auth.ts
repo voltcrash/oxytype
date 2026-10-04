@@ -2,7 +2,7 @@ import { expect, vi } from "vite-plus/test";
 import { Configuration } from "@oxytype/schemas/configuration";
 import { randomBytes } from "crypto";
 import { hashApeKey } from "../../src/utils/ape-key-hash";
-import { ObjectId } from "mongodb";
+import { newId } from "../../src/utils/id";
 import { base64UrlEncode } from "../../src/utils/misc";
 import * as ApeKeyDal from "../../src/dal/ape-keys";
 import { AuthenticatedSession } from "../../src/utils/auth";
@@ -21,7 +21,7 @@ export async function mockAuthenticateWithApeKey(
   const saltyHash = hashApeKey(apiKey);
 
   const apeKey: ApeKeyDal.DBApeKey = {
-    _id: new ObjectId(),
+    _id: newId(),
     name: "bob",
     enabled: true,
     uid,
@@ -32,7 +32,7 @@ export async function mockAuthenticateWithApeKey(
     useCount: 0,
   };
 
-  const apeKeyId = new ObjectId().toString();
+  const apeKeyId = newId();
 
   vi.spyOn(ApeKeyDal, "getApeKey").mockResolvedValue(apeKey);
   vi.spyOn(ApeKeyDal, "updateLastUsedOn").mockResolvedValue();

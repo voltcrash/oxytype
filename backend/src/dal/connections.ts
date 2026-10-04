@@ -6,9 +6,8 @@ import type {
 import { database, statement, binding, isUniqueViolation } from "../db/client";
 import { connections } from "../db/schema";
 import { newId } from "../utils/id";
-import type { WithObjectId } from "../utils/misc";
 import MonkeyError from "../utils/error";
-export type DBConnection = WithObjectId<Connection & { key: string }>;
+export type DBConnection = Connection & { key: string };
 function unpack(row: typeof connections.$inferSelect): DBConnection {
   return { ...row, _id: row.id };
 }
@@ -60,7 +59,7 @@ export async function create(
   try {
     const result = await statement(
       "INSERT INTO connections(id,key,initiator_uid,initiator_name,receiver_uid,receiver_name,last_modified,status) SELECT ?,?,?,?,?,?,?,'pending' WHERE (SELECT count(*) FROM connections WHERE initiator_uid=?) < ?",
-      created._id.toString(),
+      created._id,
       key,
       initiator.uid,
       initiator.name,

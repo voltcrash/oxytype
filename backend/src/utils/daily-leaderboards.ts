@@ -6,7 +6,7 @@ import type {
 } from "@oxytype/schemas/configuration";
 import type {
   LeaderboardEntry,
-  RedisDailyLeaderboardEntry,
+  DailyLeaderboardEntry,
 } from "@oxytype/schemas/leaderboards";
 import type { Mode, Mode2 } from "@oxytype/schemas/shared";
 import { getCurrentDayTimestamp } from "@oxytype/util/date-and-time";
@@ -15,7 +15,7 @@ import { stage } from "../db/mutation";
 import { rankingPage, rankingUser, type RankingRow } from "../db/ranking";
 function unpack(row: RankingRow): LeaderboardEntry {
   return {
-    ...(JSON.parse(row.data) as RedisDailyLeaderboardEntry),
+    ...(JSON.parse(row.data) as DailyLeaderboardEntry),
     rank: row.rank,
     friendsRank: row.friendsRank,
   };
@@ -33,7 +33,7 @@ export class DailyLeaderboard {
     return this.customTime === -1 ? getCurrentDayTimestamp() : this.customTime;
   }
   public async addResult(
-    entry: RedisDailyLeaderboardEntry,
+    entry: DailyLeaderboardEntry,
     config: Configuration["dailyLeaderboards"],
   ): Promise<number> {
     if (!config.enabled) return -1;

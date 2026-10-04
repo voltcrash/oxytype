@@ -3,7 +3,7 @@
 Make the responses extremely concise. Sacrifice grammar for the sake of concision.
 
 ## Architecture
-**Monorepo**: pnpm + Turborepo with frontend (Vite + SolidJS), backend (Express + MongoDB + Redis), and shared packages.
+**Monorepo**: pnpm + Turborepo with frontend (Vite + SolidJS), backend (Hono on Cloudflare Workers + D1 + Queues), and shared packages.
 
 ## Commands
 All commands support `-fe`, `-be`, `-pkg` suffixes for targeted execution:

@@ -16,6 +16,6 @@ Set its API URL to the Worker URL plus `/api`; trust the frontend origin in the
 Worker. Google/GitHub OAuth, captcha and quote publishing require your
 own credentials. Prefer a same-site HTTPS frontend/API route for browser cookies.
 
-Docker Compose now runs the frontend only. Existing Mongo/Redis volumes are not
-removed by this change; retain/export them before any later data cutover. The
-preserving importer is offline tooling, not an automatic import on deployment.
+Docker Compose runs the frontend only. Production starts with a fresh D1
+database; deployment applies its schema migrations. Legacy database import
+tooling is no longer included.

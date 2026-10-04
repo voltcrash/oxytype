@@ -5,7 +5,6 @@ import { stage } from "../db/mutation";
 import { results } from "../db/schema";
 import { getUser, getTags } from "./user";
 import { type DBResult, replaceLegacyValues } from "../utils/result";
-import type { StoredId } from "../utils/id";
 function unpack(row: typeof results.$inferSelect): DBResult {
   return replaceLegacyValues({
     ...row.data,
@@ -16,13 +15,13 @@ function unpack(row: typeof results.$inferSelect): DBResult {
 export async function addResult(
   uid: string,
   result: DBResult,
-): Promise<{ insertedId: StoredId }> {
+): Promise<{ insertedId: string }> {
   await getUser(uid, "add result");
   result.uid ??= uid;
   await stage(
     statement(
       "INSERT INTO results(id,uid,timestamp,mode,mode2,language,wpm,acc,submission_hash,data) VALUES(?,?,?,?,?,?,?,?,?,?)",
-      result._id.toString(),
+      result._id,
       uid,
       result.timestamp,
       result.mode,
@@ -51,9 +50,7 @@ export async function updateTags(
   matchedCount: number;
   modifiedCount: number;
 }> {
-  const allowed = new Set(
-    (await getTags(uid)).map((tag) => tag._id.toString()),
-  );
+  const allowed = new Set((await getTags(uid)).map((tag) => tag._id));
   if (tags.some((id) => !allowed.has(id))) {
     throw new MonkeyError(422, "One of the tag id's is not valid");
   }

@@ -4,13 +4,13 @@ import request, { Test as SuperTest } from "supertest";
 import app from "../../../src/app";
 import { mockBearerAuthentication } from "../../__testData__/auth";
 import * as Configuration from "../../../src/init/configuration";
-import { ObjectId } from "mongodb";
+import { newId } from "../../../src/utils/id";
 import * as ConnectionsDal from "../../../src/dal/connections";
 import * as UserDal from "../../../src/dal/user";
 
 const mockApp = request(getRequestListener(app.fetch));
 const configuration = Configuration.getCachedConfiguration();
-const uid = new ObjectId().toString();
+const uid = newId();
 const mockAuth = mockBearerAuthentication(uid);
 
 describe("ConnectionsController", () => {
@@ -31,11 +31,11 @@ describe("ConnectionsController", () => {
     it("should get for the current user", async () => {
       //GIVEN
       const friend: ConnectionsDal.DBConnection = {
-        _id: new ObjectId(),
+        _id: newId(),
         lastModified: 42,
-        initiatorUid: new ObjectId().toString(),
+        initiatorUid: newId(),
         initiatorName: "Bob",
-        receiverUid: new ObjectId().toString(),
+        receiverUid: newId(),
         receiverName: "Kevin",
         status: "pending",
         key: "key",
@@ -51,7 +51,7 @@ describe("ConnectionsController", () => {
 
       //THEN
       expect(body.data).toEqual([
-        { ...friend, _id: friend._id.toString(), key: undefined },
+        { ...friend, _id: friend._id, key: undefined },
       ]);
       expect(getConnectionsMock).toHaveBeenCalledWith({
         initiatorUid: uid,
@@ -185,12 +185,12 @@ describe("ConnectionsController", () => {
     it("should create", async () => {
       //GIVEN
       const me = { uid, name: "Bob" };
-      const myFriend = { uid: new ObjectId().toString(), name: "Kevin" };
+      const myFriend = { uid: newId(), name: "Kevin" };
       getUserByNameMock.mockResolvedValue(myFriend as any);
       getPartialUserMock.mockResolvedValue(me as any);
 
       const result: ConnectionsDal.DBConnection = {
-        _id: new ObjectId(),
+        _id: newId(),
         lastModified: 42,
         initiatorUid: me.uid,
         initiatorName: me.name,
@@ -210,7 +210,7 @@ describe("ConnectionsController", () => {
 
       //THEN
       expect(body.data).toEqual({
-        _id: result._id.toString(),
+        _id: result._id,
         lastModified: 42,
         initiatorUid: me.uid,
         initiatorName: me.name,

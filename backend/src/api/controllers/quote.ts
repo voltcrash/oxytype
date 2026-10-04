@@ -23,7 +23,6 @@ import {
   RejectQuoteRequest,
   ReportQuoteRequest,
 } from "@oxytype/contracts/quotes";
-import { replaceObjectId, replaceObjectIds } from "../../utils/misc";
 import { MonkeyRequest } from "../types";
 import { Language } from "@oxytype/schemas/languages";
 
@@ -52,10 +51,7 @@ export async function getQuotes(
   const quoteModLanguage = quoteMod === true ? "all" : (quoteMod as Language);
 
   const data = await NewQuotesDAL.get(quoteModLanguage);
-  return new MonkeyResponse(
-    "Quote submissions retrieved",
-    replaceObjectIds(data),
-  );
+  return new MonkeyResponse("Quote submissions retrieved", data);
 }
 
 export async function isSubmissionEnabled(
@@ -114,7 +110,7 @@ export async function getRating(
 
   const data = await QuoteRatingsDAL.get(quoteId, language);
 
-  return new MonkeyResponse("Rating retrieved", replaceObjectId(data));
+  return new MonkeyResponse("Rating retrieved", data);
 }
 
 export async function submitRating(

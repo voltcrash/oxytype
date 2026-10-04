@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { configs } from "../db/schema";
 import { database, statement } from "../db/client";
-import { newId, type StoredId } from "../utils/id";
+import { newId } from "../utils/id";
 import type { Config, PartialConfig } from "@oxytype/schemas/configs";
 
 type UpdateResult = {
@@ -10,7 +10,7 @@ type UpdateResult = {
   modifiedCount: number;
   upsertedCount: number;
 };
-export type DBConfig = { _id: StoredId; uid: string; config: PartialConfig };
+export type DBConfig = { _id: string; uid: string; config: PartialConfig };
 const legacy = [
   "swapEscAndTab",
   "quickTab",

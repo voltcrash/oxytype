@@ -13,7 +13,7 @@
 
 ## Getting Started
 
-When contributing to Oxytype, it's good to know our best practices, tips, and tricks. First, Oxytype is written in ~~JavaScript~~ TypeScript, HTML, and CSS (in order of language usage within the project); thus, we assume you are comfortable with these languages or have basic knowledge of them. Our backend is in NodeJS and we use MongoDB to store our user data. Better Auth supports Google/GitHub sign-in and stores linked provider accounts and sessions in MongoDB. Redis is used to store ephemeral data (daily leaderboards, jobs via BullMQ, OAuth state parameters). Furthermore, we use Oxc (Oxfmt and Oxlint) to format and lint our code.
+When contributing to Oxytype, it's good to know our best practices, tips, and tricks. First, Oxytype is written in ~~JavaScript~~ TypeScript, HTML, and CSS (in order of language usage within the project); thus, we assume you are comfortable with these languages or have basic knowledge of them. Our backend runs Hono on Cloudflare Workers and stores user data in D1. Better Auth supports Google/GitHub sign-in and stores linked provider accounts and sessions in D1 through Drizzle. D1 also stores daily/weekly leaderboards and scheduled jobs; Cloudflare Queues and Cron deliver background work. Furthermore, we use Oxc (Oxfmt and Oxlint) to format and lint our code.
 
 ## How to Contribute
 

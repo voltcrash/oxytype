@@ -2,11 +2,10 @@ import { stage } from "../db/mutation";
 import { and, eq } from "drizzle-orm";
 import type { QuoteRating } from "@oxytype/schemas/quotes";
 import type { Language } from "@oxytype/schemas/languages";
-import type { WithObjectId } from "../utils/misc";
 import { database, statement } from "../db/client";
 import { quoteRatings } from "../db/schema";
 import { newId } from "../utils/id";
-type DBQuoteRating = WithObjectId<QuoteRating>;
+type DBQuoteRating = QuoteRating;
 export async function submit(
   quoteId: number,
   language: Language,

@@ -13,7 +13,7 @@ import * as UserDal from "../../../src/dal/user";
 import * as PublicDal from "../../../src/dal/public";
 import * as LogsDal from "../../../src/dal/logs";
 import { WeeklyXpLeaderboard } from "../../../src/services/weekly-xp-leaderboard";
-import { ObjectId } from "mongodb";
+import { newId } from "../../../src/utils/id";
 import { mockAuthenticateWithApeKey } from "../../__testData__/auth";
 import { enableRateLimitExpects } from "../../__testData__/rate-limit";
 import { DBResult } from "../../../src/utils/result";
@@ -64,8 +64,8 @@ describe("result controller test", () => {
 
       expect(body.message).toEqual("Results retrieved");
       expect(body.data).toEqual([
-        { ...resultOne, _id: resultOne._id.toString() },
-        { ...resultTwo, _id: resultTwo._id.toString() },
+        { ...resultOne, _id: resultOne._id },
+        { ...resultTwo, _id: resultTwo._id },
       ]);
     });
     it("should get results with ape key", async () => {
@@ -326,7 +326,7 @@ describe("result controller test", () => {
 
       //THEN
       expect(body.message).toEqual("Result retrieved");
-      expect(body.data).toEqual({ ...result, _id: result._id.toString() });
+      expect(body.data).toEqual({ ...result, _id: result._id });
     });
     it("should get last result with ape key", async () => {
       //GIVEN
@@ -382,7 +382,7 @@ describe("result controller test", () => {
 
       //THEN
       expect(body.message).toEqual("Result retrieved");
-      expect(body.data).toEqual({ ...result, _id: result._id.toString() });
+      expect(body.data).toEqual({ ...result, _id: result._id });
     });
     it("should get last result with ape key", async () => {
       //GIVEN
@@ -433,8 +433,8 @@ describe("result controller test", () => {
     it("should update tags", async () => {
       //GIVEN
       const result = givenDbResult(uid);
-      const resultIdString = result._id.toString();
-      const tagIds = [new ObjectId().toString(), new ObjectId().toString()];
+      const resultIdString = result._id;
+      const tagIds = [newId(), newId()];
       const partialUser = { tags: [] };
       getResultMock.mockResolvedValue(result);
       updateTagsMock.mockResolvedValue({} as any);
@@ -473,8 +473,8 @@ describe("result controller test", () => {
         "numbers",
       ]);
 
-      const resultIdString = result._id.toString();
-      const tagIds = [new ObjectId().toString(), new ObjectId().toString()];
+      const resultIdString = result._id;
+      const tagIds = [newId(), newId()];
       const partialUser = { tags: [] };
       getResultMock.mockResolvedValue(partialResult);
       updateTagsMock.mockResolvedValue({} as any);
@@ -549,7 +549,7 @@ describe("result controller test", () => {
   });
   describe("addResult", () => {
     //TODO improve test coverage for addResult
-    const insertedId = new ObjectId();
+    const insertedId = newId();
     const userGetMock = vi.spyOn(UserDal, "getUser");
     const userUpdateStreakMock = vi.spyOn(UserDal, "updateStreak");
     const userCheckIfTagPbMock = vi.spyOn(UserDal, "checkIfTagPb");
@@ -628,7 +628,7 @@ describe("result controller test", () => {
           daily: 100,
         },
         streak: 0,
-        insertedId: insertedId.toString(),
+        insertedId: insertedId,
       });
 
       expect(resultAddMock).toHaveBeenCalledWith(
@@ -847,7 +847,7 @@ async function enablePremiumFeatures(enabled: boolean): Promise<void> {
 }
 function givenDbResult(uid: string, customize?: Partial<DBResult>): DBResult {
   return {
-    _id: new ObjectId(),
+    _id: newId(),
     wpm: Math.random() * 100,
     rawWpm: Math.random() * 100,
     charStats: [

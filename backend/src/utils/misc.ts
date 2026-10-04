@@ -5,7 +5,6 @@ import { roundTo2 } from "@oxytype/util/numbers";
 export { sanitizeString } from "@oxytype/util/strings";
 import { UAParser } from "ua-parser-js";
 import { MonkeyRequest } from "../api/types";
-import type { StoredId } from "./id";
 
 //todo split this file into smaller util files (grouped by functionality)
 
@@ -194,46 +193,6 @@ export function getFrontendUrl(): string {
   }
   return frontendUrl;
 }
-
-/**
- * convert database object into api object
- * @param data  database object with `_id: StoredId`
- * @returns api object with `id: string`
- */
-
-export function replaceObjectId<T extends { _id: StoredId }>(
-  data: T,
-): T & { _id: string };
-export function replaceObjectId<T extends { _id: StoredId }>(
-  data: T | null,
-): (T & { _id: string }) | null;
-export function replaceObjectId<T extends { _id: StoredId }>(
-  data: T | null,
-): (T & { _id: string }) | null {
-  if (data === null) {
-    return null;
-  }
-  const result = {
-    ...data,
-    _id: data._id.toString(),
-  } as T & { _id: string };
-  return result;
-}
-
-/**
- * convert database objects into api objects
- * @param data  database objects with `_id: StoredId`
- * @returns api objects with `id: string`
- */
-export function replaceObjectIds<T extends { _id: StoredId }>(
-  data: T[],
-): (T & { _id: string })[] {
-  if (data === undefined) return data;
-  return data.map((it) => replaceObjectId(it));
-}
-export type WithObjectId<T extends { _id: string }> = Omit<T, "_id"> & {
-  _id: StoredId;
-};
 
 export function omit<T extends object, K extends keyof T>(
   obj: T,

@@ -1,7 +1,7 @@
 import type { Configuration } from "@oxytype/schemas/configuration";
 import type {
-  RedisXpLeaderboardEntry,
-  RedisXpLeaderboardScore,
+  XpLeaderboardProfile,
+  XpLeaderboardScore,
   XpLeaderboardEntry,
 } from "@oxytype/schemas/leaderboards";
 import LaterQueue from "../queues/later-queue";
@@ -11,12 +11,12 @@ import { stage } from "../db/mutation";
 import { rankingPage, rankingUser, type RankingRow } from "../db/ranking";
 import { omit } from "../utils/misc";
 export type AddResultOpts = {
-  entry: RedisXpLeaderboardEntry;
-  xpGained: RedisXpLeaderboardScore;
+  entry: XpLeaderboardProfile;
+  xpGained: XpLeaderboardScore;
 };
 function unpack(row: RankingRow): XpLeaderboardEntry {
   return {
-    ...(JSON.parse(row.data) as RedisXpLeaderboardEntry),
+    ...(JSON.parse(row.data) as XpLeaderboardProfile),
     rank: row.rank,
     friendsRank: row.friendsRank,
     totalXp: row.score,

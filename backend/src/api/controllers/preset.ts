@@ -6,7 +6,6 @@ import {
 } from "@oxytype/contracts/presets";
 import * as PresetDAL from "../../dal/preset";
 import { MonkeyResponse } from "../../utils/monkey-response";
-import { replaceObjectId } from "../../utils/misc";
 import { EditPresetRequest } from "@oxytype/schemas/presets";
 import { MonkeyRequest } from "../types";
 
@@ -15,12 +14,10 @@ export async function getPresets(
 ): Promise<GetPresetResponse> {
   const { uid } = req.ctx.decodedToken;
 
-  const data = (await PresetDAL.getPresets(uid))
-    .map((preset) => ({
-      ...preset,
-      uid: undefined,
-    }))
-    .map((it) => replaceObjectId(it));
+  const data = (await PresetDAL.getPresets(uid)).map((preset) => ({
+    ...preset,
+    uid: undefined,
+  }));
 
   return new MonkeyResponse("Presets retrieved", data);
 }
