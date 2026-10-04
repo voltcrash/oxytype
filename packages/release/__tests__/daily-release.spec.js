@@ -136,7 +136,7 @@ describe("daily production releases", () => {
     for (const text of [
       "old-authored feature",
       "direct main change",
-      "Merge feature (#7)",
+      "Merge feature ([#7]",
     ]) {
       expect(plan.body).toContain(text);
     }

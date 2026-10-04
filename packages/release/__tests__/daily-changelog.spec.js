@@ -47,6 +47,16 @@ describe("buildDailyChangelog", () => {
     expect(notes).not.toContain("### Features");
   });
 
+  it("links squash merged pull requests", () => {
+    const notes = buildDailyChangelog(
+      [{ hash: hash(1), subject: "ci(production): add daily releases (#28)" }],
+      repoUrl,
+    );
+    expect(notes).toContain(
+      `- **ci(production):** add daily releases ([#28](${repoUrl}/pull/28)) ([1111111](${repoUrl}/commit/${hash(1)}))`,
+    );
+  });
+
   it("omits github merge commits", () => {
     const notes = buildDailyChangelog(
       [

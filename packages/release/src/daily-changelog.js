@@ -6,6 +6,7 @@ const sections = [
 
 const conventionalSubject = /^(\w+)(?:\(([^)]+)\))?!?:\s+(.+)$/;
 // GitHub merge commits only repeat the branch name; their commits are listed.
+const pullRequestSuffix = /\s+\(#(\d+)\)$/;
 const mergeSubject = /^Merge (?:pull request|branch|remote-tracking branch) /;
 
 export function escapeMarkdown(value) {
@@ -13,12 +14,14 @@ export function escapeMarkdown(value) {
 }
 
 function parseCommit({ hash, subject }) {
-  const match = conventionalSubject.exec(subject);
+  const pr = pullRequestSuffix.exec(subject)?.[1];
+  const title = subject.replace(pullRequestSuffix, "");
+  const match = conventionalSubject.exec(title);
   if (match === null) {
-    return { hash, type: undefined, scope: undefined, message: subject };
+    return { hash, pr, type: undefined, scope: undefined, message: title };
   }
   const [, type, scope, message] = match;
-  return { hash, type: type.toLowerCase(), scope, message };
+  return { hash, pr, type: type.toLowerCase(), scope, message };
 }
 
 function formatCommit(commit, repoUrl, includeType) {
@@ -26,7 +29,10 @@ function formatCommit(commit, repoUrl, includeType) {
     ? `${commit.type}${commit.scope ? `(${commit.scope})` : ""}`
     : commit.scope;
   const prefix = label ? `**${escapeMarkdown(label)}:** ` : "";
-  return `- ${prefix}${escapeMarkdown(commit.message)} ([${commit.hash.slice(0, 7)}](${repoUrl}/commit/${commit.hash}))`;
+  const pr = commit.pr
+    ? ` ([#${commit.pr}](${repoUrl}/pull/${commit.pr}))`
+    : "";
+  return `- ${prefix}${escapeMarkdown(commit.message)}${pr} ([${commit.hash.slice(0, 7)}](${repoUrl}/commit/${commit.hash}))`;
 }
 
 /**
