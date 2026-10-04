@@ -19,6 +19,24 @@ afterEach(() => {
 describe("settings sections", () => {
   const accountSections = ["account"] as const;
 
+  it.each(["blockedUsers", "apeKeys"] as const)(
+    "omits %s and returns stale links to general settings",
+    (tab) => {
+      const params = safeParse({
+        schema: SettingsUrlParamsSchema,
+        input: new URLSearchParams({ tab }),
+      });
+      if (!params.success) throw params.error;
+      for (const userId of [null, "settings-user"]) {
+        setUserId(userId);
+        expect(getAvailableSettingsSections()).not.toHaveProperty(tab);
+        setCurrentSettingsSection("account");
+        readSettingsGetParameters(params.data);
+        expect(getCurrentSettingsSection()).toBe("behavior");
+      }
+    },
+  );
+
   it("reads legacy authentication query strings and writes canonical account links", () => {
     expect(
       safeParse({
