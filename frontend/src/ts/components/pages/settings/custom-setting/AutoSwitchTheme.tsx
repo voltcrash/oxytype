@@ -14,6 +14,7 @@ export function AutoSwitchTheme(): JSXElement {
   return (
     <SearchableSetting
       key="autoSwitchTheme"
+      resetKeys={["themeLight", "themeDark", "autoSwitchTheme"]}
       title={
         configMetadata.autoSwitchTheme.displayString ?? "auto switch theme"
       }

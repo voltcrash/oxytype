@@ -55,6 +55,13 @@ export const sortedThemes: ThemeWithName[] = [...ThemesList].sort((a, b) => {
 export function Theme(): JSXElement {
   const customThemes = useCustomThemesLiveQuery();
 
+  const resetTheme = async (): Promise<void> => {
+    await clearPreview(false);
+    // Resetting inactive custom colors also applies them. Reapply the preset
+    // through the normal setter even when its name was already the default.
+    setConfig("theme", getConfig.theme);
+  };
+
   // hovering a preset previews it; leaving the presets (or the page) restores
   // the current theme. cleared on the whole list rather than per button so
   // moving between buttons doesn't flash the current theme in between
@@ -264,6 +271,8 @@ export function Theme(): JSXElement {
   return (
     <SearchableSetting
       key="theme"
+      resetKeys={["customThemeColors", "customTheme", "theme"]}
+      onReset={resetTheme}
       title={configMetadata.theme.displayString ?? "theme"}
       fa={configMetadata.theme.fa}
       description={configMetadata.theme.description}

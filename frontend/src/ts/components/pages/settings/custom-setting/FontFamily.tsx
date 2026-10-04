@@ -25,6 +25,12 @@ export function FontFamily(): JSXElement {
     FileStorage.hasFile("LocalFontFamilyFile"),
   );
 
+  const resetFont = async (): Promise<void> => {
+    await FileStorage.deleteFile("LocalFontFamilyFile");
+    await applyFontFamily();
+    await refetch();
+  };
+
   const fontOptions = getOptions(ConfigSchema.shape.fontFamily);
   const isCustomFont = () =>
     fontOptions !== undefined && !fontOptions.includes(getConfig.fontFamily);
@@ -41,6 +47,8 @@ export function FontFamily(): JSXElement {
   return (
     <SearchableSetting
       key="fontFamily"
+      hasCustomChanges={hasLocalFont() === true}
+      onReset={resetFont}
       title={configMetadata.fontFamily.displayString ?? "font family"}
       fa={configMetadata.fontFamily.fa}
       extraSearchKeywords={getOptionSearchKeywords("fontFamily")}

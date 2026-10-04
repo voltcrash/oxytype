@@ -40,6 +40,12 @@ export function CustomBackground(): JSXElement {
     async () => FileStorage.hasFile("LocalBackgroundFile"),
   );
 
+  const resetBackground = async (): Promise<void> => {
+    form.reset({ customBackground: getConfig.customBackground });
+    await FileStorage.deleteFile("LocalBackgroundFile");
+    await applyCustomBackground();
+  };
+
   const readFileAsDataURL = async (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -52,6 +58,9 @@ export function CustomBackground(): JSXElement {
   return (
     <SearchableSetting
       key="customBackground"
+      resetKeys={["customBackgroundSize", "customBackground"]}
+      hasCustomChanges={hasLocalBackground() === true}
+      onReset={resetBackground}
       title={
         configMetadata.customBackground.displayString ?? "custom background"
       }
