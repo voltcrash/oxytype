@@ -1,5 +1,9 @@
 # Cloudflare migration assessment
 
+> Historical migration assessment. The legacy database clients, export/import
+> tools and their fixture suite have since been removed. Current operations use
+> D1, Queues and Cron; see [the runbook](CLOUDFLARE_OPERATIONS.md).
+
 Baseline inspected: `845334802`. Implementation and staging rollout are in one
 PR; [the plan](CLOUDFLARE_MIGRATION.md) tracks phases. Recommendation: one Hono
 Worker + D1/Drizzle + Better Auth + Queues/Cron initially. No KV or application
@@ -121,10 +125,10 @@ Better Auth uses the Drizzle SQLite adapter with interactive transactions off.
   progression and SQL daily/weekly/all-time ranking parity.
 - `queues/*`, `workers/later-worker.ts`, `utils/integration.ts`,
   `dal/new-quotes.ts`: durable delivery, paginated rewards and external bridge.
-- `scripts/*import*`, `scripts/{export-mongo,export-redis,mongo-mapping,redis-mapping,local-d1}.ts`:
-  offline export, integrity checks, SQL generation and real D1 preflight.
+- Offline export/import tools and their D1 preflight suite were implemented
+  during migration, then retired after the fresh production deployment.
 - `wrangler.jsonc`, `.dev.vars.example`, package/release/CI/Docker/docs:
-  Wrangler development/build/deploy; Mongo/Redis clients confined to offline tools.
+  Wrangler development/build/deploy; legacy database clients are removed.
 - `__tests__/d1/*`: workerd-backed SQL regressions; existing HTTP/controller
   suites retained with a D1 transport harness. Shared mail schema accepts old
   token/UUID IDs and new 24-character reward IDs; result/admin UID schemas accept
