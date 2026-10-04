@@ -1,6 +1,8 @@
 # October 2026 stack upgrade
 
-> Historical migration notes. Current backend: [Cloudflare operations](CLOUDFLARE_OPERATIONS.md).
+> Historical migration notes. Database versions and container checks below
+> describe the pre-Cloudflare stack; those clients and services are removed.
+> Current backend: [Cloudflare operations](CLOUDFLARE_OPERATIONS.md).
 
 Versions checked against stable npm releases on 1 October 2026. Node is pinned to the latest LTS, 24.21.0; Node typings stay on the matching 24 series (24.19.0).
 
