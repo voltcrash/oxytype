@@ -200,6 +200,7 @@ export const commands: CommandsSubgroup = {
     ...buildCommands(
       "showKeyTips",
       "showOutOfFocusWarning",
+      "showTestModesNotice",
       "capsLockWarning",
       "showAverage",
       "showPb",
