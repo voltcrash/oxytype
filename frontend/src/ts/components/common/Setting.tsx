@@ -24,6 +24,7 @@ export type SettingProps = {
   description: string | JSXElement;
   inputs?: JSXElement;
   fullWidthInputs?: JSXElement;
+  titleActions?: JSXElement;
   breakpoints?: "none" | "normal" | "narrow";
   class?: string;
   // called when a deep link targets this setting, before it is scrolled to
@@ -87,8 +88,9 @@ export function Setting(props: SettingProps): JSXElement {
         ? { "data-setting-key": props.key }
         : {})}
     >
-      <div class="flex gap-2">
+      <div class="flex items-center gap-2">
         <H3 text={props.title} fa={props.fa} class="pb-0" />
+        {props.titleActions}
         <Show when={props.showDeepLink !== false}>
           <DeepLinkButton key={(props as { key: string }).key} />
         </Show>
