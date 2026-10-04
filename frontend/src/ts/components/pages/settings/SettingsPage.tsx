@@ -84,25 +84,14 @@ export function SettingsPage(): JSXElement {
         header={<SettingsSearch />}
         counts={isSettingsSearchActive() ? getSearchMatchCounts() : undefined}
         footer={
-          isAuthenticated() || getConfig.showKeyTips ? (
+          getConfig.showKeyTips ? (
             <>
-              <Show when={isAuthenticated()}>
-                <Button
-                  text="account settings"
-                  variant="text"
-                  fa={{ icon: "fa-user-cog" }}
-                  href="/account-settings"
-                  router-link
-                />
-              </Show>
-              <Show when={getConfig.showKeyTips}>
-                {/* padded like the buttons: inset to line up with the item icons,
+              {/* padded like the buttons: inset to line up with the item icons,
                     and space below to match the gap above the tip */}
-                <div class="px-2 pb-2 text-em-xs text-sub">
-                  tip: you can also change all these settings quickly via the
-                  command palette (<CommandlineHotkey />)
-                </div>
-              </Show>
+              <div class="px-2 pb-2 text-em-xs text-sub">
+                tip: you can also change all these settings quickly via the
+                command palette (<CommandlineHotkey />)
+              </div>
             </>
           ) : undefined
         }

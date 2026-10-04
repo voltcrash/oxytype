@@ -69,7 +69,7 @@ export function AccountMenu(props: Props): JSXElement {
             icon: "fa-cog",
             fixedWidth: true,
           }}
-          href="/account-settings"
+          href="/settings?tab=account"
           router-link
         />
         <Button
