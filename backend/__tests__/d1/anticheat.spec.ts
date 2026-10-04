@@ -27,10 +27,7 @@ describe("production anticheat with D1", () => {
     await withRuntime(test.env, async () => {
       await patchConfiguration({
         results: { savingEnabled: true, objectHashCheckEnabled: true },
-        users: {
-          xp: { enabled: true, gainMultiplier: 1 },
-          inbox: { enabled: true, maxMail: 10 },
-        },
+        users: { inbox: { enabled: true, maxMail: 10 } },
       });
     });
   });
