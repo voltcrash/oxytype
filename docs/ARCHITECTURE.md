@@ -61,8 +61,9 @@ flowchart LR
 ## Development and delivery
 
 Node 24/pnpm 12 build workspace packages and API docs. Wrangler runs local workerd
-and D1 on port 5005; Solid/Vite runs on port 3000. MongoDB/Redis clients remain only
-in offline export tools. Vitest covers existing controllers and real D1 behavior.
+and D1 on port 5005; Solid/Vite runs on port 3000. Application and test IDs are
+strings; no legacy database clients or import tools remain. Vitest covers existing
+controllers and real D1 behavior.
 Backend build performs a Wrangler dry-run; deployment applies migrations then
 uses Wrangler. Docker publishes the static frontend only.
 
@@ -73,7 +74,7 @@ credentials. Production starts fresh; no legacy/staging data is imported.
 See [production setup](PRODUCTION_SETUP.md) for explicit build/deploy commands.
 Built-in [anticheat](ANTICHEAT.md) checks scores and telemetry in all modes;
 review its client-trust limits before cutover. See [operations](CLOUDFLARE_OPERATIONS.md)
-for setup, recovery, cutover gates and the preserving importer.
+for setup, recovery and deployment checks.
 
 ## Oxytype ownership boundaries
 
