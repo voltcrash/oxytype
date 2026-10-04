@@ -1,4 +1,6 @@
 import { afterEach, describe, expect, it } from "vite-plus/test";
+// Browser entry shares the schema's ESM Zod constructors.
+import { safeParse, serialize } from "zod-urlsearchparams/dist/index.mjs";
 
 import { setUserId } from "../../src/ts/states/core";
 import {
@@ -15,12 +17,39 @@ afterEach(() => {
 });
 
 describe("settings sections", () => {
-  const accountSections = [
-    "account",
-    "authentication",
-    "blockedUsers",
-    "apeKeys",
-  ] as const;
+  const accountSections = ["account", "blockedUsers", "apeKeys"] as const;
+
+  it("reads legacy authentication query strings and writes canonical account links", () => {
+    expect(
+      safeParse({
+        schema: SettingsUrlParamsSchema,
+        input: new URLSearchParams("tab=authentication"),
+      }),
+    ).toMatchObject({ success: true, data: { tab: "authentication" } });
+    expect(
+      serialize({
+        schema: SettingsUrlParamsSchema,
+        data: { tab: "account" },
+      }).toString(),
+    ).toBe("tab=account");
+  });
+
+  it("opens account for legacy authentication links without a separate sidebar item", () => {
+    setUserId("settings-user");
+    const params = SettingsUrlParamsSchema.parse({ tab: "authentication" });
+    expect(params).toEqual({ tab: "authentication" });
+    readSettingsGetParameters(params);
+    expect(getCurrentSettingsSection()).toBe("account");
+    expect(getAvailableSettingsSections()).not.toHaveProperty("authentication");
+  });
+
+  it("keeps legacy authentication links gated while signed out", () => {
+    setUserId(null);
+    readSettingsGetParameters(
+      SettingsUrlParamsSchema.parse({ tab: "authentication" }),
+    );
+    expect(getCurrentSettingsSection()).toBe("behavior");
+  });
 
   it.each(accountSections)("accepts signed-in %s section links", (tab) => {
     setUserId("settings-user");

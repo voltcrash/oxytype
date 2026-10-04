@@ -271,10 +271,6 @@ export function SettingsPage(): JSXElement {
               <SettingsGroup title="account preferences">
                 <AccountTab />
               </SettingsGroup>
-            </Section>
-          </Show>
-          <Show when={isAuthenticated()}>
-            <Section section="authentication">
               <SettingsGroup title="sign-in methods">
                 <AuthenticationTab />
               </SettingsGroup>
