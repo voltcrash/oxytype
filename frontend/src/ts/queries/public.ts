@@ -50,7 +50,8 @@ export const getVersionHistoryQueryOptions = () =>
   infiniteQueryOptions({
     queryKey: queryKeys.versionHistory(),
     queryFn: fetchVersionHistory,
-    staleTime,
+    // Releases ship daily, so reopening the modal should pick up new ones.
+    staleTime: 1000 * 60 * 5,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     initialPageParam: 1,
   });
