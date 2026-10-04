@@ -3,6 +3,7 @@ import { useInfiniteQuery } from "@tanstack/solid-query";
 import { For, JSXElement, Show } from "solid-js";
 
 import { createEffectOn } from "../../hooks/effects";
+import { useRef } from "../../hooks/useRef";
 import { getVersionHistoryQueryOptions } from "../../queries/public";
 import { getVersion } from "../../states/core";
 import { isModalOpen } from "../../states/modals";
@@ -41,25 +42,39 @@ export function VersionHistoryModal(): JSXElement {
     { wait: 150 },
   );
 
+  const fetchMoreIfAtBottom = (element: HTMLElement): void => {
+    if (
+      element.scrollHeight - element.scrollTop - element.clientHeight < 10 &&
+      releases.hasNextPage &&
+      !releases.isFetching
+    ) {
+      void releases.fetchNextPage();
+    }
+  };
+
   const fetchMoreVersions = (e: Event): void => {
     const element = e.target as HTMLElement;
+    debouncedFetch.maybeExecute(() => fetchMoreIfAtBottom(element));
+  };
 
-    debouncedFetch.maybeExecute(() => {
-      if (
-        element.scrollHeight - element.scrollTop - element.clientHeight < 10 &&
-        releases.hasNextPage &&
-        !releases.isLoading
-      ) {
-        void releases.fetchNextPage();
-      }
+  // Short release lists never scroll, so keep loading until the modal fills.
+  const [listRef, listEl] = useRef<HTMLDivElement>();
+  const fillModal = (): void => {
+    requestAnimationFrame(() => {
+      const modal = listEl()?.closest<HTMLElement>(".modal");
+      // A hidden modal measures as empty, which would load every page.
+      if (!isOpen() || !modal || modal.clientHeight === 0) return;
+      fetchMoreIfAtBottom(modal);
     });
   };
+  createEffectOn(() => [listEl(), releases.data] as const, fillModal);
 
   return (
     <AnimatedModal
       id="VersionHistory"
       modalClass="max-w-6xl"
       onScroll={fetchMoreVersions}
+      afterShow={fillModal}
     >
       <AsyncContent
         queries={{ releases }}
@@ -67,7 +82,7 @@ export function VersionHistoryModal(): JSXElement {
       >
         {({ releasesData }) => (
           <>
-            <div class="releases">
+            <div class="releases" ref={listRef}>
               <For each={mergeReleasePages(releasesData().pages)}>
                 {(release) => <ReleaseItem {...release} />}
               </For>
