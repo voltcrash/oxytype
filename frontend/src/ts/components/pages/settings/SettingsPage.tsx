@@ -114,39 +114,55 @@ export function SettingsPage(): JSXElement {
         <div class="grid gap-16">
           <Section section="behavior">
             <Show when={isAuthenticated()}>
-              <Tags />
-              <Presets />
-              <SearchableAutoSetting key="resultSaving" />
+              <SettingsGroup title="saved tests">
+                <Tags />
+                <Presets />
+                <SearchableAutoSetting key="resultSaving" />
+              </SettingsGroup>
             </Show>
-            <SearchableAutoSetting key="difficulty" />
-            <SearchableAutoSetting key="quickRestart" />
-            <SearchableAutoSetting key="repeatQuotes" />
-            <SearchableAutoSetting key="blindMode" />
-            <SearchableAutoSetting key="alwaysShowWordsHistory" />
-            <SearchableAutoSetting key="singleListCommandLine" />
-            <MinSpeed />
-            <MinAcc />
-            <MinBurst />
-            <SearchableAutoSetting key="britishEnglish" />
-            <Language />
-            <Funbox />
-            <CustomLayoutfluid />
-            <CustomPolyglot />
+            <SettingsGroup title="test behavior">
+              <SearchableAutoSetting key="difficulty" />
+              <SearchableAutoSetting key="quickRestart" />
+              <SearchableAutoSetting key="repeatQuotes" />
+              <SearchableAutoSetting key="blindMode" />
+              <SearchableAutoSetting key="alwaysShowWordsHistory" />
+              <SearchableAutoSetting key="singleListCommandLine" />
+            </SettingsGroup>
+            <SettingsGroup title="speed & accuracy">
+              <MinSpeed />
+              <MinAcc />
+              <MinBurst />
+            </SettingsGroup>
+            <SettingsGroup title="language">
+              <Language />
+              <SearchableAutoSetting key="britishEnglish" />
+            </SettingsGroup>
+            <SettingsGroup title="funbox">
+              <Funbox />
+              <CustomLayoutfluid />
+              <CustomPolyglot />
+            </SettingsGroup>
           </Section>
           <Section section="input">
-            <SearchableAutoSetting key="freedomMode" />
-            <SearchableAutoSetting key="strictSpace" />
-            <SearchableAutoSetting key="oppositeShiftMode" />
-            <SearchableAutoSetting key="stopOnError" />
-            <SearchableAutoSetting key="deleteOnError" />
-            <SearchableAutoSetting key="confidenceMode" />
-            <SearchableAutoSetting key="quickEnd" />
-            <SearchableAutoSetting key="indicateTypos" />
-            <SearchableAutoSetting key="hideExtraLetters" />
-            <SearchableAutoSetting key="compositionDisplay" />
-            <SearchableAutoSetting key="lazyMode" />
-            <Layout />
-            <SearchableAutoSetting key="codeUnindentOnBackspace" />
+            <SettingsGroup title="editing">
+              <SearchableAutoSetting key="freedomMode" />
+              <SearchableAutoSetting key="strictSpace" />
+              <SearchableAutoSetting key="confidenceMode" />
+              <SearchableAutoSetting key="codeUnindentOnBackspace" />
+            </SettingsGroup>
+            <SettingsGroup title="errors & corrections">
+              <SearchableAutoSetting key="stopOnError" />
+              <SearchableAutoSetting key="deleteOnError" />
+              <SearchableAutoSetting key="quickEnd" />
+              <SearchableAutoSetting key="indicateTypos" />
+              <SearchableAutoSetting key="hideExtraLetters" />
+            </SettingsGroup>
+            <SettingsGroup title="keyboard & composition">
+              <Layout />
+              <SearchableAutoSetting key="oppositeShiftMode" />
+              <SearchableAutoSetting key="compositionDisplay" />
+              <SearchableAutoSetting key="lazyMode" />
+            </SettingsGroup>
           </Section>
           <Section section="sound">
             <SoundVolume />
