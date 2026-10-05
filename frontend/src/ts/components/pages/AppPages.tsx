@@ -1,25 +1,30 @@
 import { typedKeys } from "@oxytype/util/objects";
 import { animate } from "animejs";
-import { For, JSXElement, onCleanup, Show } from "solid-js";
+import {
+  createSignal,
+  For,
+  JSXElement,
+  onCleanup,
+  Show,
+  Suspense,
+} from "solid-js";
 
 import { createEffectOn } from "../../hooks/effects";
 import { PageName } from "../../pages/page";
 import { getPageView } from "../../states/page-transition";
 import { cn } from "../../utils/cn";
-import { NotFoundPage } from "./404Page";
-import { AboutPage } from "./AboutPage";
-import { AccountPage } from "./account/AccountPage";
-import { FriendsPage } from "./connections/FriendsPage";
-import { LeaderboardPage } from "./leaderboard/LeaderboardPage";
+import { lazyPages } from "./lazy-pages";
 import { LoadingPage } from "./LoadingPage";
-import { LoginPage } from "./login/LoginPage";
-import { ProfilePage } from "./profile/ProfilePage";
-import { ProfileSearchPage } from "./profile/ProfileSearchPage";
-import { SettingsPage } from "./settings/SettingsPage";
 import { TestPage } from "./test/TestPage";
 
 export function AppPages(): JSXElement {
   const refs = new Map<PageName, HTMLElement>();
+  const [visited, setVisited] = createSignal(new Set<PageName>());
+  createEffectOn(getPageView, ({ id }) => {
+    if (id !== null && !visited().has(id)) {
+      setVisited((previous) => new Set([...previous, id]));
+    }
+  });
   const view = (id: PageName) =>
     getPageView().id === id ? getPageView() : undefined;
 
@@ -44,6 +49,22 @@ export function AppPages(): JSXElement {
     );
   };
 
+  const deferredPage = (
+    id: keyof typeof lazyPages,
+    className?: string,
+  ): JSXElement => {
+    const Component = lazyPages[id];
+    return shell(
+      id,
+      <Show when={visited().has(id)}>
+        <Suspense fallback={<LoadingPage />}>
+          <Component />
+        </Suspense>
+      </Show>,
+      className,
+    );
+  };
+
   // Keep the component owners and cached test refs alive, like the old Skeleton.
   // Show attaches/detaches their nodes; existing Page gates own page content.
   const pages: Record<PageName, JSXElement> = {
@@ -52,16 +73,16 @@ export function AppPages(): JSXElement {
       <LoadingPage />,
       "grid h-full w-full place-self-center content-center items-center",
     ),
-    about: shell("about", <AboutPage />, "full-width"),
-    settings: shell("settings", <SettingsPage />),
-    account: shell("account", <AccountPage />),
-    login: shell("login", <LoginPage />),
-    profile: shell("profile", <ProfilePage />),
-    profileSearch: shell("profileSearch", <ProfileSearchPage />),
+    about: deferredPage("about", "full-width"),
+    settings: deferredPage("settings"),
+    account: deferredPage("account"),
+    login: deferredPage("login"),
+    profile: deferredPage("profile"),
+    profileSearch: deferredPage("profileSearch"),
     test: <TestPage ref={(el) => refs.set("test", el)} />,
-    "404": shell("404", <NotFoundPage />),
-    friends: shell("friends", <FriendsPage />),
-    leaderboards: shell("leaderboards", <LeaderboardPage />),
+    "404": deferredPage("404"),
+    friends: deferredPage("friends"),
+    leaderboards: deferredPage("leaderboards"),
   };
 
   createEffectOn(getPageView, (state) => {

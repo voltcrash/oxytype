@@ -11,6 +11,7 @@ import {
 import * as PageTest from "../pages/test";
 import * as PageLoading from "../pages/loading";
 import * as PageTransition from "../states/page-transition";
+import { preloadPage } from "../components/pages/lazy-pages";
 import * as Focus from "../test/focus";
 import Page, {
   PageName,
@@ -271,6 +272,9 @@ export async function change(
 
   //start
   PageTransition.set(true);
+  // Fetch the destination while the outgoing page fades and user data loads.
+  const pageReady = preloadPage(pageName);
+  void pageReady.catch(() => undefined);
 
   //previous page
   await previousPage?.beforeHide?.();
@@ -300,6 +304,7 @@ export async function change(
         totalDuration,
       });
     }
+    await pageReady;
 
     // Clean up abort controller after successful loading
     if (keyframeAbortController) {

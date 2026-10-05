@@ -1,9 +1,10 @@
-import { cleanup, render } from "@solidjs/testing-library";
+import { cleanup, render, waitFor } from "@solidjs/testing-library";
 import { AnimationParams } from "animejs";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { animations } = vi.hoisted(() => ({
+const { animations, mounts } = vi.hoisted(() => ({
   animations: [] as { element: HTMLElement; params: AnimationParams }[],
+  mounts: { settings: vi.fn(), about: vi.fn() },
 }));
 vi.mock("animejs", () => ({
   animate: (element: HTMLElement, params: AnimationParams) => {
@@ -15,7 +16,10 @@ vi.mock("../../../src/ts/components/pages/404Page", () => ({
   NotFoundPage: () => <div />,
 }));
 vi.mock("../../../src/ts/components/pages/AboutPage", () => ({
-  AboutPage: () => <div />,
+  AboutPage: () => {
+    mounts.about();
+    return <div />;
+  },
 }));
 vi.mock("../../../src/ts/components/pages/account/AccountPage", () => ({
   AccountPage: () => <div />,
@@ -39,7 +43,10 @@ vi.mock("../../../src/ts/components/pages/profile/ProfileSearchPage", () => ({
   ProfileSearchPage: () => <div />,
 }));
 vi.mock("../../../src/ts/components/pages/settings/SettingsPage", () => ({
-  SettingsPage: () => <div />,
+  SettingsPage: () => {
+    mounts.settings();
+    return <input aria-label="setting" />;
+  },
 }));
 vi.mock("../../../src/ts/components/pages/test/TestPage", () => ({
   TestPage: (props: { ref: (el: HTMLDivElement) => void }) => (
@@ -60,6 +67,7 @@ import {
 afterEach(() => {
   cleanup();
   animations.length = 0;
+  vi.clearAllMocks();
   activatePage("loading");
 });
 
@@ -69,6 +77,20 @@ function completeAnimation(): void {
 }
 
 describe("AppPages", () => {
+  it("mounts optional pages on first visit and retains their owners", async () => {
+    activatePage("loading");
+    const { container } = render(() => <AppPages />);
+    expect(mounts.settings).not.toHaveBeenCalled();
+    expect(mounts.about).not.toHaveBeenCalled();
+    activatePage("settings");
+    await waitFor(() => expect(mounts.settings).toHaveBeenCalledOnce());
+    const input = container.querySelector("input");
+    activatePage("test");
+    activatePage("settings");
+    expect(container.querySelector("input")).toBe(input);
+    expect(mounts.settings).toHaveBeenCalledOnce();
+    expect(mounts.about).not.toHaveBeenCalled();
+  });
   it("retains the outgoing page until its fade completes", async () => {
     activatePage("settings");
     const { container } = render(() => <AppPages />);
