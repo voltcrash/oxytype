@@ -93,7 +93,7 @@ function CommandDisplay(props: { command: CommandlineSuggestion }): JSXElement {
                   when={props.command.isActive}
                   fallback={<span class="mr-2 inline-block w-[1.25em]"></span>}
                 >
-                  <Fa icon="fa-check" fixedWidth />
+                  <Fa icon="fa-check" fixedWidth class="mr-2" />
                 </Show>
               </Show>
             </Show>
@@ -261,7 +261,10 @@ export function Commandline(): JSXElement {
         </div>
       </Show>
       <div
-        class="suggestions ffscroll grid max-h-[calc(100vh-15rem)] cursor-pointer overflow-y-scroll select-none"
+        class={cn(
+          "suggestions ffscroll grid max-h-[calc(100vh-15rem)] cursor-pointer overflow-y-scroll select-none",
+          commandlineState.suggestions.length > 0 && "pb-2",
+        )}
         ref={(el) => {
           suggestionsEl = el;
         }}
