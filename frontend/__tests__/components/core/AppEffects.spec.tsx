@@ -41,6 +41,7 @@ const { deferred, lifecycle, guards, ui, services } = vi.hoisted(() => {
       unregister: vi.fn(),
       cancel: vi.fn(),
       animate: vi.fn(),
+      register: vi.fn(async () => ({ scope: "/" })),
     },
   };
 });
@@ -167,6 +168,7 @@ beforeEach(() => {
     configurable: true,
     value: {
       getRegistrations: async () => [{ unregister: services.unregister }],
+      register: services.register,
     },
   });
 });
@@ -226,15 +228,15 @@ describe("App effects", () => {
     noscript.remove();
   });
 
-  it("waits for config and auth before revealing the shell", async () => {
+  it("reveals the loading shell while authentication is still pending", async () => {
     mount();
     expect(element).toHaveClass("hidden", "focus");
     expect(element.querySelector("input")).not.toBeNull();
     expect(services.animate).not.toHaveBeenCalled();
+    expect(services.sync).toHaveBeenCalledOnce();
     lifecycle.config.resolve();
     await Promise.resolve();
-    expect(element).toHaveClass("hidden");
-    await ready();
+    await Promise.resolve();
     expect(element).not.toHaveClass("hidden");
     expect(document.body.style.transition).toBe(
       "background .25s, transform .05s",
@@ -245,6 +247,15 @@ describe("App effects", () => {
     });
     expect(services.sync).toHaveBeenCalledOnce();
     expect(services.unregister).toHaveBeenCalledOnce();
+  });
+
+  it("registers the service worker when startup finishes after window load", async () => {
+    guards.dev = false;
+    vi.spyOn(document, "readyState", "get").mockReturnValue("complete");
+    mount();
+    await ready();
+    expect(services.register).toHaveBeenCalledWith("/sw.js", { scope: "/" });
+    vi.restoreAllMocks();
   });
 
   it("binds owned classes, padding and fonts while preserving legacy changes", () => {
@@ -340,6 +351,6 @@ describe("App effects", () => {
     expect(ui.applyFont).toHaveBeenCalledTimes(2);
     await ready();
     expect(services.animate).not.toHaveBeenCalled();
-    expect(services.sync).not.toHaveBeenCalled();
+    expect(services.sync).toHaveBeenCalledOnce();
   });
 });
