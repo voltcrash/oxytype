@@ -58,7 +58,6 @@ import { getLiveCachedAccuracy } from "../../../test/events/live-cache";
 import * as Focus from "../../../test/focus";
 import * as LayoutfluidFunboxTimer from "../../../test/funbox/layoutfluid-funbox-timer";
 import { findSingleActiveFunboxWithFunction } from "../../../test/funbox/list";
-import * as MemoryFunboxTimer from "../../../test/funbox/memory-funbox-timer";
 import * as PaceCaret from "../../../test/pace-caret";
 import * as TestWords from "../../../test/test-words";
 import {
@@ -1416,7 +1415,6 @@ export function onTestRestart(source: "testPage" | "resultPage"): void {
   LayoutfluidFunboxTimer.instantHide();
   focusWords(true);
   MonkeyPower.reset();
-  MemoryFunboxTimer.reset();
   Caret.resetPosition();
   setTestInitError(null);
 
