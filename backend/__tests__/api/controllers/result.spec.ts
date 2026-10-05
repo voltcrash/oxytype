@@ -13,6 +13,7 @@ import * as UserDal from "../../../src/dal/user";
 import * as PublicDal from "../../../src/dal/public";
 import * as LogsDal from "../../../src/dal/logs";
 import { WeeklyXpLeaderboard } from "../../../src/services/weekly-xp-leaderboard";
+import { DailyLeaderboard } from "../../../src/utils/daily-leaderboards";
 import { newId } from "../../../src/utils/id";
 import { mockAuthenticateWithApeKey } from "../../__testData__/auth";
 import { enableRateLimitExpects } from "../../__testData__/rate-limit";
@@ -731,6 +732,48 @@ describe("result controller test", () => {
       );
       resolveUser({ name: "bob" });
       expect((await request).status).toBe(200);
+    });
+    it("looks up daily and weekly ranks together after saving", async () => {
+      const mockConfig = await configuration;
+      const dailyLeaderboards = mockConfig.dailyLeaderboards;
+      mockConfig.dailyLeaderboards = {
+        ...dailyLeaderboards,
+        enabled: true,
+        validModeRules: [{ language: "english", mode: "time", mode2: "15" }],
+      };
+      vi.spyOn(Configuration, "getCachedConfiguration").mockResolvedValue(
+        mockConfig,
+      );
+      vi.spyOn(DailyLeaderboard.prototype, "addResult").mockResolvedValue(3);
+      let resolveDaily: (entry: any) => void = () => undefined;
+      const dailyRank = vi
+        .spyOn(DailyLeaderboard.prototype, "getRank")
+        .mockReturnValue(new Promise((resolve) => (resolveDaily = resolve)));
+      const weeklyRank = vi
+        .spyOn(WeeklyXpLeaderboard.prototype, "getRank")
+        .mockResolvedValue({ rank: 7 } as any);
+
+      try {
+        const request = mockApp
+          .post("/results")
+          .set("Authorization", `Bearer ${uid}`)
+          .send({ result: buildCompletedEvent({ language: "english" }) })
+          .then((response) => response);
+        await vi.waitFor(() => expect(dailyRank).toHaveBeenCalled());
+        expect(weeklyRank).toHaveBeenCalled();
+        resolveDaily({ rank: 2 });
+
+        const { body } = await request;
+        expect(body.data).toMatchObject({
+          dailyLeaderboardRank: 2,
+          weeklyXpLeaderboardRank: 7,
+        });
+      } finally {
+        mockConfig.dailyLeaderboards = dailyLeaderboards;
+        vi.mocked(DailyLeaderboard.prototype.addResult).mockRestore();
+        dailyRank.mockRestore();
+        weeklyRank.mockRestore();
+      }
     });
     it("should fail without mandatory properties", async () => {
       //GIVEN
