@@ -43,8 +43,8 @@ async function generateCanvas(): Promise<HTMLCanvasElement | null> {
   }
 
   // --- UI Preparation ---
-  // result components hide buttons, login tip, replay, highlights and the
-  // result ad and show the watermark while screenshotting
+  // Result components hide buttons, login tip, replay and highlights,
+  // and show the watermark while screenshotting.
   const dateNow = new Date(Date.now());
   const snapshot = DB.getSnapshot();
   setScreenshotWatermark({
