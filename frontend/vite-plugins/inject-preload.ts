@@ -6,16 +6,8 @@ export function injectPreload(): Plugin {
   const base = UnpluginInjectPreload({
     files: [
       {
-        outputMatch: /css\/.*\.css$/,
-        attributes: {
-          as: "style",
-          type: "text/css",
-          rel: "preload",
-          crossorigin: true,
-        },
-      },
-      {
-        outputMatch: /.*\.woff2$/,
+        // Vite already links entry CSS. Only prioritize the startup icon font.
+        outputMatch: /webfonts\/fa-solid-900-.*\.woff2$/,
         attributes: {
           as: "font",
           type: "font/woff2",
