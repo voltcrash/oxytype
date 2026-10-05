@@ -156,6 +156,18 @@ function getPlugins({
             },
           },
           {
+            // Language URLs carry their content hash, see getLanguageUrl.
+            urlPattern: ({ url, sameOrigin }) =>
+              sameOrigin &&
+              url.pathname.startsWith("/languages/") &&
+              url.searchParams.has("v"),
+            handler: "CacheFirst",
+            options: {
+              cacheName: "oxytype-languages",
+              expiration: { maxEntries: 8, maxAgeSeconds: 30 * 24 * 60 * 60 },
+            },
+          },
+          {
             urlPattern: (options) => {
               const isApi =
                 options.url.pathname === "/api" ||
