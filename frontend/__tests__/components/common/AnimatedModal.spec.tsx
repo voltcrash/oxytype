@@ -1,4 +1,4 @@
-import { cleanup, render, waitFor } from "@solidjs/testing-library";
+import { cleanup, fireEvent, render, waitFor } from "@solidjs/testing-library";
 import { AnimationParams } from "animejs";
 import { createSignal } from "solid-js";
 import {
@@ -43,6 +43,7 @@ describe("AnimatedModal", () => {
 
   beforeEach(() => {
     hideModalAndClearChain("Support");
+    hideModalAndClearChain("Contact");
     showModal("Support");
     vi.clearAllMocks();
     animations.length = 0;
@@ -78,6 +79,7 @@ describe("AnimatedModal", () => {
   afterEach(() => {
     cleanup();
     hideModalAndClearChain("Support");
+    hideModalAndClearChain("Contact");
     displayStyles.remove();
   });
 
@@ -90,6 +92,7 @@ describe("AnimatedModal", () => {
     beforeHide?: () => void | Promise<void>;
     afterHide?: () => void | Promise<void>;
     animationMode?: "none" | "both" | "modalOnly";
+    mode?: "modal" | "dialog";
   }): {
     container: HTMLElement;
     dialog: HTMLDialogElement;
@@ -258,4 +261,97 @@ describe("AnimatedModal", () => {
       expect(getComputedStyle(dialog).display).toBe("flex");
     },
   );
+
+  it.each(["escape", "backdrop"] as const)(
+    "releases the overlay after %s dismissal and repeated opens",
+    async (dismissal) => {
+      const afterHide = vi.fn();
+      const { dialog } = renderModal({ afterHide });
+
+      for (let cycle = 0; cycle < 3; cycle++) {
+        await waitFor(() => expect(dialog.open).toBe(true));
+        await completeAnimation();
+        animations.length = 0;
+
+        if (dismissal === "escape") {
+          fireEvent.keyDown(dialog, { key: "Escape" });
+        } else {
+          fireEvent.mouseDown(dialog);
+        }
+        await waitFor(() => expect(animations).toHaveLength(2));
+        await completeAnimation();
+
+        expect(dialog.open).toBe(false);
+        expect(isAnyPopupVisible()).toBe(false);
+        expect(afterHide).toHaveBeenCalledTimes(cycle + 1);
+        if (cycle < 2) showModal("Support");
+      }
+    },
+  );
+
+  it("hides non-modal dialogs after reactive wrapper updates", async () => {
+    const [wrapperClass, setWrapperClass] = createSignal("items-end");
+    const { dialog } = renderModal({
+      mode: "dialog",
+      animationMode: "none",
+      get wrapperClass() {
+        return wrapperClass();
+      },
+      afterHide: () => {
+        setWrapperClass("items-center");
+      },
+    });
+    await waitFor(() => expect(dialog.open).toBe(true));
+    expect(HTMLDialogElement.prototype.show).toHaveBeenCalledOnce();
+    expect(HTMLDialogElement.prototype.showModal).not.toHaveBeenCalled();
+
+    hideModal("Support");
+    await waitFor(() => expect(dialog.open).toBe(false));
+
+    expect(getComputedStyle(dialog).display).toBe("none");
+    expect(isAnyPopupVisible()).toBe(false);
+  });
+
+  it("closes and restores chained dialogs without leaving visible wrappers", async () => {
+    const { container } = render(() => (
+      <>
+        <AnimatedModal id="Support">Support content</AnimatedModal>
+        <AnimatedModal id="Contact">Contact content</AnimatedModal>
+      </>
+    ));
+    const support = container.querySelector(
+      "#SupportModal",
+    ) as HTMLDialogElement;
+    const contact = container.querySelector(
+      "#ContactModal",
+    ) as HTMLDialogElement;
+    await waitFor(() => expect(support.open).toBe(true));
+    await completeAnimation();
+    animations.length = 0;
+
+    showModal("Contact");
+    await waitFor(() => expect(animations).toHaveLength(1));
+    await completeAnimation();
+    await waitFor(() => expect(contact.open).toBe(true));
+    expect(support.open).toBe(false);
+    expect(getComputedStyle(support).display).toBe("none");
+    await completeAnimation();
+    animations.length = 0;
+
+    hideModal("Contact");
+    await waitFor(() => expect(animations).toHaveLength(1));
+    await completeAnimation();
+    await waitFor(() => expect(support.open).toBe(true));
+    expect(contact.open).toBe(false);
+    expect(getComputedStyle(contact).display).toBe("none");
+    await completeAnimation();
+    animations.length = 0;
+
+    hideModal("Support");
+    await waitFor(() => expect(animations).toHaveLength(2));
+    await completeAnimation();
+    expect(support.open).toBe(false);
+    expect(getComputedStyle(support).display).toBe("none");
+    expect(getComputedStyle(contact).display).toBe("none");
+  });
 });
