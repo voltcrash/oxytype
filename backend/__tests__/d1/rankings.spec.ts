@@ -41,11 +41,13 @@ describe("SQL ranking parity", () => {
         timestamp,
       };
       await atomicUser("a", async () => {
-        await board.addResult(entry, config);
+        expect(await board.addResult(entry, config)).toBe(1);
       });
-      await board.addResult({ ...entry, uid: "b" }, config);
+      expect(await board.addResult({ ...entry, uid: "b" }, config)).toBe(1);
       expect(await board.addResult({ ...entry, wpm: 90 }, config)).toBe(-1);
-      await board.addResult({ ...entry, uid: "c", wpm: 80 }, config);
+      expect(
+        await board.addResult({ ...entry, uid: "c", wpm: 80 }, config),
+      ).toBe(-1);
       const results = await board.getResults(0, 10, config, false);
       expect(results?.entries.map((row) => row.uid)).toEqual(["b", "a"]);
       const friends = await board.getResults(0, 10, config, false, ["a"]);

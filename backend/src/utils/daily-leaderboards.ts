@@ -39,12 +39,24 @@ export class DailyLeaderboard {
     if (!config.enabled) return -1;
     const period = this.period(),
       score = kogascore(entry.wpm, entry.acc, entry.timestamp);
-    const previous = await statement(
-      "SELECT score FROM daily_entries WHERE board=? AND period=? AND uid=?",
-      this.board,
-      period,
-      entry.uid,
-    ).first<number>("score");
+    // Both reads are independent of this entry's writes; run them together.
+    const [previous, ahead] = await Promise.all([
+      statement(
+        "SELECT score FROM daily_entries WHERE board=? AND period=? AND uid=?",
+        this.board,
+        period,
+        entry.uid,
+      ).first<number>("score"),
+      statement(
+        "SELECT count(*) AS count FROM daily_entries WHERE board=? AND period=? AND uid<>? AND (score>? OR (score=? AND uid>?))",
+        this.board,
+        period,
+        entry.uid,
+        score,
+        score,
+        entry.uid,
+      ).first<number>("count"),
+    ]);
     await stage(
       statement(
         "INSERT INTO daily_entries(board,period,uid,score,expires_at,data) VALUES(?,?,?,?,?,?) ON CONFLICT(board,period,uid) DO UPDATE SET score=excluded.score,data=excluded.data WHERE excluded.score>daily_entries.score",
@@ -74,16 +86,7 @@ export class DailyLeaderboard {
       );
     }
     if (previous !== null && previous >= score) return -1;
-    const rank =
-      ((await statement(
-        "SELECT count(*) AS count FROM daily_entries WHERE board=? AND period=? AND uid<>? AND (score>? OR (score=? AND uid>?))",
-        this.board,
-        period,
-        entry.uid,
-        score,
-        score,
-        entry.uid,
-      ).first<number>("count")) ?? 0) + 1;
+    const rank = (ahead ?? 0) + 1;
     return rank > config.maxResults ? -1 : rank;
   }
   public async getResults(
