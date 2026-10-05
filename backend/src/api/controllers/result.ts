@@ -209,6 +209,10 @@ async function addResultAtomic(
 ): Promise<AddResultResponse | MonkeyError> {
   const { uid } = req.ctx.decodedToken;
 
+  // Independent of the user row; read both in one round trip.
+  const lastResultTimestampRead = tryCatch(
+    ResultDAL.getLastResultTimestamp(uid),
+  );
   const user = await UserDAL.getUser(uid, "add result");
 
   if (user.needsToChangeName) {
@@ -330,9 +334,8 @@ async function addResultAtomic(
   //   );
   //   return res.status(400).json({ message: "Time traveler detected" });
 
-  const { data: lastResultTimestamp, error: lastResultError } = await tryCatch(
-    ResultDAL.getLastResultTimestamp(uid),
-  );
+  const { data: lastResultTimestamp, error: lastResultError } =
+    await lastResultTimestampRead;
   // An unavailable database must not be interpreted as an empty result history.
   if (
     lastResultError &&

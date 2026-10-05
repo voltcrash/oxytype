@@ -716,6 +716,22 @@ describe("result controller test", () => {
         .expect(200);
       expect(userUpdateTypingStatsMock).toHaveBeenCalledWith(uid, 4, 10.1);
     });
+    it("reads the last result timestamp while loading the user", async () => {
+      let resolveUser: (user: any) => void = () => undefined;
+      userGetMock.mockReturnValueOnce(
+        new Promise((resolve) => (resolveUser = resolve)),
+      );
+      const request = mockApp
+        .post("/results")
+        .set("Authorization", `Bearer ${uid}`)
+        .send({ result: buildCompletedEvent() })
+        .then((response) => response);
+      await vi.waitFor(() =>
+        expect(resultGetLastTimestampMock).toHaveBeenCalledWith(uid),
+      );
+      resolveUser({ name: "bob" });
+      expect((await request).status).toBe(200);
+    });
     it("should fail without mandatory properties", async () => {
       //GIVEN
 
