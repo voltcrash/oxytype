@@ -48,6 +48,7 @@ import {
   getMemoryTimerVisibility,
 } from "../../../src/ts/states/funbox-timers";
 import { setResultElements } from "../../../src/ts/states/result";
+import * as Funbox from "../../../src/ts/test/funbox/funbox";
 import { getActiveFunboxesWithFunction } from "../../../src/ts/test/funbox/list";
 import * as MemoryTimer from "../../../src/ts/test/funbox/memory-funbox-timer";
 import * as TestUI from "../../../src/ts/test/test-ui";
@@ -134,5 +135,18 @@ describe("memory funbox lifecycle", () => {
     vi.advanceTimersByTime(10000);
     expect(isWordsWrapperVisible()).toBe(true);
     expect(areWordsVisible()).toBe(false);
+  });
+
+  it("cancels memorisation when funboxes are cleared", async () => {
+    restart();
+    vi.advanceTimersByTime(1000);
+
+    await Funbox.clear();
+    expect(getMemoryTimerVisibility()).toBe("hidden");
+    expect(isWordsWrapperVisible()).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
+
+    vi.advanceTimersByTime(10000);
+    expect(isWordsWrapperVisible()).toBe(true);
   });
 });
