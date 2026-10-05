@@ -70,7 +70,6 @@ import * as WordsGenerator from "./words-generator";
 import * as PageTransition from "../states/page-transition";
 import { configEvent } from "../events/config";
 import { timerEvent } from "../events/timer";
-import objectHash from "object-hash";
 import * as AnalyticsController from "../controllers/analytics-controller";
 import { getAuthenticatedUser } from "../auth-client";
 import { highlight } from "../events/keymap";
@@ -1117,6 +1116,7 @@ async function saveResult(
   }
   //@ts-expect-error just in case this is repeated and already has a hash
   delete result.hash;
+  const { default: objectHash } = await import("object-hash");
   result.hash = objectHash(result);
 
   setAccountButtonSpinner(true);
