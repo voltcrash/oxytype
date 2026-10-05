@@ -82,12 +82,11 @@ export async function init(callback: ReadyCallback): Promise<void> {
   try {
     available = true;
     const user = await refreshSession(false);
-    setUserState(user);
     if (user !== null) {
       // A social sign-in can return before the username/captcha onboarding is complete.
       try {
         // Share the onboarding check with snapshot/config initialization.
-        await fetchUserFromApi();
+        await fetchUserFromApi(user.uid);
       } catch (error) {
         if (
           !(error instanceof SnapshotInitError) ||
@@ -100,6 +99,7 @@ export async function init(callback: ReadyCallback): Promise<void> {
         return;
       }
     }
+    setUserState(user);
     await callback(true, user);
   } catch (error) {
     available = false;

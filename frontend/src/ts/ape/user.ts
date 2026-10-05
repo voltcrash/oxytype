@@ -38,6 +38,6 @@ export async function fetchUserFromApi(
 }
 
 // clear cache + reset promise on logout
-createEffectOn(getUserId, () => {
-  cache = undefined;
+createEffectOn(getUserId, (userId) => {
+  if (cache?.userId !== userId) cache = undefined;
 });

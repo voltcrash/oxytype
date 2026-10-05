@@ -8,8 +8,8 @@ const state = vi.hoisted(() => ({
 vi.mock("../../src/ts/ape", () => ({ default: { users: { get: state.get } } }));
 vi.mock("../../src/ts/states/core", () => ({ getUserId: () => state.userId }));
 vi.mock("../../src/ts/hooks/effects", () => ({
-  createEffectOn: (_get: unknown, reset: () => void) => {
-    state.reset = vi.fn(reset);
+  createEffectOn: (_get: unknown, reset: (userId: string | null) => void) => {
+    state.reset = vi.fn(() => reset(state.userId));
   },
 }));
 
@@ -27,6 +27,8 @@ it("shares the onboarding request with snapshot and collection consumers", async
   const { fetchUserFromApi } = await import("../../src/ts/ape/user");
   const results = await Promise.all([fetchUserFromApi(), fetchUserFromApi()]);
   expect(results).toEqual([{ name: "first" }, { name: "first" }]);
+  await fetchUserFromApi();
+  state.reset();
   await fetchUserFromApi();
   expect(state.get).toHaveBeenCalledOnce();
 });
