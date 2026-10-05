@@ -1,13 +1,6 @@
 import { typedKeys } from "@oxytype/util/objects";
 import { animate } from "animejs";
-import {
-  createSignal,
-  For,
-  JSXElement,
-  onCleanup,
-  Show,
-  Suspense,
-} from "solid-js";
+import { createSignal, For, JSXElement, onCleanup, Show } from "solid-js";
 
 import { createEffectOn } from "../../hooks/effects";
 import { PageName } from "../../pages/page";
@@ -57,9 +50,7 @@ export function AppPages(): JSXElement {
     return shell(
       id,
       <Show when={visited().has(id)}>
-        <Suspense fallback={<LoadingPage />}>
-          <Component />
-        </Suspense>
+        <Component />
       </Show>,
       className,
     );
