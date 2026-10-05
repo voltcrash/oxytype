@@ -10,7 +10,7 @@ import {
   hideModal as storeHideModal,
 } from "../../states/modals";
 import { registerOverlayVisibility } from "../../states/overlay-visibility";
-import { cn, updateClassNames } from "../../utils/cn";
+import { cn } from "../../utils/cn";
 import { applyReducedMotion } from "../../utils/misc";
 
 type AnimationParams = {
@@ -50,12 +50,6 @@ type AnimatedModalProps = ParentProps<{
   modalClass?: string;
   wrapperClass?: string;
 }>;
-
-function setHidden(element: HTMLElement | undefined, hidden: boolean): void {
-  if (element) {
-    element.className = updateClassNames(element.className, "hidden", hidden);
-  }
-}
 
 function setStyle(
   element: HTMLElement | undefined,
@@ -112,7 +106,6 @@ export function AnimatedModal(props: AnimatedModalProps): JSXElement {
     if (!dialogEl()?.isConnected) return;
 
     // Open the dialog
-    setHidden(dialogEl(), false);
     const dialog = dialogEl();
     if (dialog) dialog.style.cssText = "";
     if (props.mode === "dialog") {
@@ -265,13 +258,11 @@ export function AnimatedModal(props: AnimatedModalProps): JSXElement {
           duration: wrapperDuration,
           onComplete: async () => {
             dialogEl()?.close();
-            setHidden(dialogEl(), true);
             await handleAfterHide();
           },
         });
       } else {
         dialogEl()?.close();
-        setHidden(dialogEl(), true);
         await handleAfterHide();
       }
     } else if (animMode === "modalOnly") {
@@ -281,7 +272,6 @@ export function AnimatedModal(props: AnimatedModalProps): JSXElement {
         duration: modalAnimDuration,
         onComplete: async () => {
           dialogEl()?.close();
-          setHidden(dialogEl(), true);
           await handleAfterHide();
         },
       });
@@ -349,12 +339,10 @@ export function AnimatedModal(props: AnimatedModalProps): JSXElement {
       ref={dialogRef}
       class={cn(
         "fixed top-0 left-0 z-1000 m-0 hidden h-screen max-h-screen w-screen max-w-screen border-none bg-[rgba(0,0,0,0.5)] p-8 backdrop:bg-transparent",
-        "flex h-full w-full items-center justify-center",
+        // Native open state survives reactive wrapperClass updates after hide.
+        "h-full w-full items-center justify-center open:flex",
         props.wrapperClass,
       )}
-      style={{
-        display: "none",
-      }}
       onKeyDown={handleKeyDown}
       onMouseDown={handleBackdropClick}
     >

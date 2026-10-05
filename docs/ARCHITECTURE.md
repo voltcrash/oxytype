@@ -26,6 +26,8 @@ Tailwind CSS 4 supplies utility classes and semantic theme colors; compatibility
 
 Internal anchors use `Link` (or `Button` with `router-link`), which marks them for Solid Router's native anchor handling. Modified clicks, downloads, and external links retain browser behavior. Imperative callers use `navigation/navigation.ts`: `navigate()` awaits page transitions; `replaceUrl()` updates filters/deep links without a page transition or history entry. Forced navigation bypasses busy-page guards, but cannot leave an active `no_quit` test. Auth redirects replace the requested URL rather than adding a redirect history entry.
 
+`AnimatedModal` uses `hidden open:flex`: the native dialog's `open` attribute controls wrapper visibility, including exit animations. Imperatively adding `hidden` to its class string is unsafe because reactive wrapper updates can erase it, leaving a transparent, closed dialog intercepting clicks. Overlay detection reads component-owned rectangles, so such a wrapper also blocks restart and command-line shortcuts. Regression coverage includes theme and saved-custom-theme preview dismissal, font selection, repeated opens, chained modals, and non-modal dialogs.
+
 Useful entry points: `frontend/src/index.html`, `frontend/src/ts/index.ts`, `frontend/src/ts/components/`, and `frontend/vite.config.ts`. `frontend/src/ts/ape/` is the API client layer. `frontend/src/ts/test/` contains the typing test engine, not only automated tests.
 
 ## Backend and data
