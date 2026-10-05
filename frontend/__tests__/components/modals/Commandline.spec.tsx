@@ -83,6 +83,7 @@ vi.mock("../../../src/ts/input/hotkeys/utils", () => ({
 }));
 vi.mock("../../../src/ts/navigation/navigation", () => ({ navigate: vi.fn() }));
 
+import { show } from "../../../src/ts/commandline/commandline";
 import { ThemeIndicator } from "../../../src/ts/components/layout/footer/ThemeIndicator";
 import { Commandline } from "../../../src/ts/components/modals/Commandline";
 import { Config } from "../../../src/ts/config/store";
@@ -108,6 +109,7 @@ describe("theme picker lifecycle", () => {
     commandlineState.noBackground = false;
     Config.customTheme = false;
     command.id = "changeThemeAether";
+    command.display = "aether";
     vi.clearAllMocks();
 
     HTMLDialogElement.prototype.showModal = vi.fn(function (
@@ -147,9 +149,17 @@ describe("theme picker lifecycle", () => {
     vi.restoreAllMocks();
   });
 
-  it.each(["selection", "escape", "backdrop"] as const)(
-    "restores restart and command-line shortcuts after %s",
-    async (dismissal) => {
+  it.each([
+    [false, "selection"],
+    [false, "escape"],
+    [false, "backdrop"],
+    [true, "selection"],
+    [true, "escape"],
+    [true, "backdrop"],
+  ] as const)(
+    "restores shortcuts after closing savedCustomTheme=%s via %s",
+    async (savedCustomTheme, dismissal) => {
+      if (savedCustomTheme) command.id = "setCustomThemeIdAether";
       const view = render(() => (
         <>
           <ThemeIndicator />
@@ -162,11 +172,22 @@ describe("theme picker lifecycle", () => {
       const restart = vi.fn();
       const unsubscribe = restartTestEvent.subscribe(restart);
       try {
-        fireEvent.click(
-          view.getByRole("button", {
-            name: "Shift-click to toggle custom theme",
-          }),
-        );
+        if (savedCustomTheme) {
+          // Saved themes are a command-line subgroup; the custom footer opens
+          // the separate on/off setting instead.
+          show({
+            subgroupOverride: {
+              title: "Custom themes list...",
+              list: [command],
+            },
+          });
+        } else {
+          fireEvent.click(
+            view.getByRole("button", {
+              name: "Shift-click to toggle custom theme",
+            }),
+          );
+        }
         await waitFor(() => expect(dialog.open).toBe(true));
         expect(commandlineState.noBackground).toBe(true);
         expect(command.hover).toHaveBeenCalled();
@@ -208,4 +229,29 @@ describe("theme picker lifecycle", () => {
       }
     },
   );
+
+  it("keeps normal command pickers usable after font preview and selection", async () => {
+    command.id = "setFontFamilyRobotoMono";
+    command.display = "Roboto Mono";
+    const view = render(() => <Commandline />);
+    const dialog = view.container.querySelector("dialog") as HTMLDialogElement;
+    const settings = {
+      subgroupOverride: { title: "Font family...", list: [command] },
+    };
+
+    for (let cycle = 0; cycle < 2; cycle++) {
+      show(settings);
+      await waitFor(() => expect(dialog.open).toBe(true));
+      expect(commandlineState.noBackground).toBe(false);
+      expect(command.hover).toHaveBeenCalledTimes(cycle + 1);
+      fireEvent.click(
+        view.getByText("Roboto Mono").closest(".command") as HTMLElement,
+      );
+      await waitFor(() => expect(commandlineState.open).toBe(false));
+
+      expect(dialog.open).toBe(false);
+      expect(isAnyPopupVisible()).toBe(false);
+      expect(command.exec).toHaveBeenCalledTimes(cycle + 1);
+    }
+  });
 });
