@@ -81,7 +81,6 @@ const obj: Config = {
   highlightMode: "letter",
   typedEffect: "keep",
   typingSpeedUnit: "wpm",
-  ads: "off",
   hideExtraLetters: false,
   strictSpace: false,
   minAcc: "off",

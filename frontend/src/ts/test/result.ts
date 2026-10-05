@@ -4,7 +4,6 @@ import { Chart, type PluginChartOptions } from "chart.js";
 
 import { Config } from "../config/store";
 import { setConfig } from "../config/setters";
-import * as AdController from "../controllers/ad-controller";
 import QuotesController, { Quote } from "../controllers/quotes-controller";
 import * as DB from "../db";
 
@@ -755,13 +754,11 @@ export async function update(
   if (Config.alwaysShowWordsHistory && canQuickRestart && !noStress) {
     toggleResultWords(true);
   }
-  AdController.updateFooterAndVerticalAds(true);
   void Funbox.clear();
 
   setResultLoading(false);
   await showResultScreen(Misc.applyReducedMotion(125));
 
-  void AdController.renderResult();
   setResultCalculating(false);
   clearWords();
   getResultChart().resize();

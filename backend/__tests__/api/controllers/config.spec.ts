@@ -65,6 +65,20 @@ describe("ConfigController", () => {
         language: "english",
       });
     });
+    it.each(["off", "result", "on", "sellout"])(
+      "rejects removed ads setting %s without saving config",
+      async (ads) => {
+        await mockApp
+          .patch("/configs")
+          .set("Authorization", `Bearer ${uid}`)
+          .accept("application/json")
+          .send({ language: "english", ads })
+          .expect(422);
+
+        expect(saveConfigMock).not.toHaveBeenCalled();
+      },
+    );
+
     it("should fail with unknown config", async () => {
       //WHEN
       const { body } = await mockApp

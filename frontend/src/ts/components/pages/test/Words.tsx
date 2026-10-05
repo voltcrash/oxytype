@@ -4,7 +4,6 @@ import { createEffect, JSXElement, onCleanup, onMount } from "solid-js";
 
 import { animateAsync } from "../../../anim";
 import { Config } from "../../../config/store";
-import * as AdController from "../../../controllers/ad-controller";
 import * as SoundController from "../../../controllers/sound-controller";
 import * as ThemeController from "../../../controllers/theme-controller";
 import { configEvent } from "../../../events/config";
@@ -1430,10 +1429,6 @@ export function onTestRestart(source: "testPage" | "resultPage"): void {
   }
 
   currentTestLine = 0;
-  if (getActivePage() === "test") {
-    AdController.updateFooterAndVerticalAds(false);
-  }
-  AdController.destroyResult();
   if (Config.compositionDisplay === "below") {
     setCompositionText(" ");
   }

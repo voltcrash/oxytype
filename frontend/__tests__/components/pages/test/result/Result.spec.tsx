@@ -44,9 +44,6 @@ vi.mock(
     ResultWatermark: stub("watermark"),
   }),
 );
-vi.mock("../../../../../src/ts/components/common/Advertisement", () => ({
-  Advertisement: stub("ad"),
-}));
 
 import { Result } from "../../../../../src/ts/components/pages/test/result/Result";
 import {
@@ -80,7 +77,6 @@ describe("Result", () => {
       "buttons",
       "logintip",
       "watermark",
-      "ad",
     ]);
     expect(
       container.querySelector(".bottom [data-stub=history]"),

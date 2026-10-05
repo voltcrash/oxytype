@@ -26,7 +26,6 @@ vi.mock("../../src/ts/utils/debounced-animation-frame", () => ({
 // side-effectful modules unrelated to markup
 vi.mock("../../src/ts/controllers/theme-controller", () => ({}));
 vi.mock("../../src/ts/controllers/sound-controller", () => ({}));
-vi.mock("../../src/ts/controllers/ad-controller", () => ({}));
 
 const testState = vi.hoisted(() => ({ activeWordIndex: 0 }));
 vi.mock("../../src/ts/states/test", async (importOriginal) => ({

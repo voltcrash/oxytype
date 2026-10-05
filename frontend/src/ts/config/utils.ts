@@ -14,7 +14,6 @@ const supportedCaretStyleSchema = ConfigSchemas.CaretStyleSchema.refine(
   (style) => !["banana", "carrot", "monkey"].includes(style),
 );
 const supportedConfigSchema = ConfigSchemas.ConfigSchema.omit({
-  ads: true,
   monkey: true,
 })
   .extend({

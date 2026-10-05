@@ -3,8 +3,6 @@ import * as Config from "../../src/ts/config/setters";
 import * as Lifecycle from "../../src/ts/config/lifecycle";
 import * as ConfigUtils from "../../src/ts/config/utils";
 import { __testing } from "../../src/ts/config/testing";
-import * as Misc from "../../src/ts/utils/misc";
-import * as Env from "../../src/ts/utils/env";
 import {
   ConfigKey,
   Config as ConfigType,
@@ -21,9 +19,7 @@ import { getConfig as getConfigStore } from "../../src/ts/config/store";
 const { replaceConfig, getConfig } = __testing;
 
 describe("Config", () => {
-  const isDevEnvironmentMock = vi.spyOn(Env, "isDevEnvironment");
   beforeEach(() => {
-    isDevEnvironmentMock.mockClear();
     replaceConfig({});
   });
 
@@ -42,7 +38,6 @@ describe("Config", () => {
       Notifications,
       "showNoticeNotification",
     );
-    const miscReloadAfterMock = vi.spyOn(Misc, "reloadAfter");
     const miscTriggerResizeMock = vi.spyOn(window, "dispatchEvent");
     const stateIsTestActiveMock = vi.spyOn(TestState, "isTestActive");
 
@@ -52,7 +47,6 @@ describe("Config", () => {
       dispatchConfigEventMock,
       dbSaveConfigMock,
       notificationAddMock,
-      miscReloadAfterMock,
       miscTriggerResizeMock,
       stateIsTestActiveMock,
     ];
@@ -73,8 +67,6 @@ describe("Config", () => {
       mocks.forEach((it) => it.mockRestore());
       vi.useRealTimers();
     });
-
-    beforeEach(() => isDevEnvironmentMock.mockClear());
 
     it("should throw if config key in not found in metadata", () => {
       expect(() => {
@@ -307,19 +299,6 @@ describe("Config", () => {
 
       expect(miscTriggerResizeMock).not.toHaveBeenCalled();
     });
-
-    it("changes ad settings without enabling upstream reload behavior", () => {
-      //GIVEN
-      isDevEnvironmentMock.mockReturnValue(false);
-      replaceConfig({ ads: "off" });
-
-      //WHEN
-      Config.setConfig("ads", "sellout");
-
-      //THEN
-      expect(notificationAddMock).not.toHaveBeenCalled();
-      expect(miscReloadAfterMock).not.toHaveBeenCalled();
-    });
   });
 
   describe("apply", () => {
@@ -389,9 +368,10 @@ describe("Config", () => {
         };
         expect(getConfig()).toMatchObject({
           ...supportedSettings,
-          ads: "off",
           monkey: false,
         });
+        expect(getConfig()).not.toHaveProperty("ads");
+        expect(getConfigStore).not.toHaveProperty("ads");
         expect(getConfigStore).toMatchObject(supportedSettings);
         expect(saveConfigMock).toHaveBeenCalledWith(getConfig());
         expect(errorMock).not.toHaveBeenCalled();

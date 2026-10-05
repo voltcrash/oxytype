@@ -100,22 +100,6 @@
   grid-column: full-width-padding;
 }
 
-#ad-vertical-left-wrapper,
-#ad-vertical-right-wrapper {
-  grid-row: content;
-  @apply mr-[2rem] fixed;
-}
-
-#ad-vertical-left-wrapper {
-  grid-column: full-width-start/content-start;
-  @apply left-0;
-}
-
-#ad-vertical-right-wrapper {
-  grid-column: content-end/full-width-end;
-  @apply right-[-2rem];
-}
-
 #nocss {
   display: none !important;
   @apply pointer-events-none;

@@ -1,7 +1,26 @@
 import { describe, it, expect } from "vite-plus/test";
-import { CustomBackgroundSchema } from "@oxytype/schemas/configs";
+import {
+  ConfigGroupNameSchema,
+  ConfigKeySchema,
+  CustomBackgroundSchema,
+  PartialConfigSchema,
+} from "@oxytype/schemas/configs";
 
 describe("config schema", () => {
+  it.for(["off", "result", "on", "sellout"])(
+    "rejects the removed ads setting with value %s",
+    (ads) => {
+      expect(
+        PartialConfigSchema.safeParse({ theme: "nord", ads }).success,
+      ).toBe(false);
+    },
+  );
+
+  it("rejects ads as a config key and preset group", () => {
+    expect(ConfigKeySchema.safeParse("ads").success).toBe(false);
+    expect(ConfigGroupNameSchema.safeParse("ads").success).toBe(false);
+  });
+
   describe("CustomBackgroundSchema", () => {
     it.for([
       {

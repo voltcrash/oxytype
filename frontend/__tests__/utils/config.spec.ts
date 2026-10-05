@@ -7,6 +7,15 @@ const defaultConfig = getDefaultConfig();
 
 describe("config.ts", () => {
   describe("migrateConfig", () => {
+    it.for(["off", "result", "on", "sellout"])(
+      "drops legacy ads value %s while preserving supported settings",
+      (ads) => {
+        const result = migrateConfig({ ads, theme: "nord", time: 60 });
+        expect(result).not.toHaveProperty("ads");
+        expect(result).toMatchObject({ theme: "nord", time: 60 });
+      },
+    );
+
     it("should carry over properties from the default config", () => {
       const partialConfig = {} as PartialConfig;
 
@@ -49,12 +58,12 @@ describe("config.ts", () => {
       });
 
       expect(result).toMatchObject({
-        ads: "off",
         monkey: false,
         monkeyPowerLevel: "3",
         liveSpeedStyle: "text",
         liveAccStyle: "text",
       });
+      expect(result).not.toHaveProperty("ads");
     });
     it.for(["banana", "carrot", "monkey"] as const)(
       "resets removed %s caret styles",

@@ -7,7 +7,6 @@ import "solid-devtools";
 import { init } from "./auth-client";
 import * as Logger from "./utils/logger";
 import * as DB from "./db";
-import "./controllers/ad-controller";
 import { Config } from "./config/store";
 import * as TestTimer from "./test/test-timer";
 import * as Result from "./test/result";
