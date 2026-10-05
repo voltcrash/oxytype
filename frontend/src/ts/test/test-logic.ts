@@ -1193,7 +1193,7 @@ async function saveResult(
     );
 
     if (localPb !== undefined) {
-      Result.showConfetti();
+      void Result.showConfetti();
     }
     Result.showCrown("normal");
 

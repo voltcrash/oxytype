@@ -24,7 +24,6 @@ import { configEvent } from "../events/config";
 import * as Focus from "./focus";
 import * as CustomText from "./custom-text";
 import * as Funbox from "./funbox/funbox";
-import confetti from "canvas-confetti";
 import type {
   AnnotationOptions,
   LabelPosition,
@@ -441,8 +440,9 @@ async function resultCanGetPb(): Promise<CanGetPb> {
   }
 }
 
-export function showConfetti(): void {
+export async function showConfetti(): Promise<void> {
   if (SlowTimer.get()) return;
+  const { default: confetti } = await import("canvas-confetti");
   const style = getComputedStyle(document.body);
   const colors = [
     style.getPropertyValue("--main-color"),
@@ -738,7 +738,7 @@ export async function update(
       `You typed nothing for ${roundedTime} seconds. And in that moment, you became legend.`,
     ];
 
-    showConfetti();
+    void showConfetti();
     showNoticeNotification(Arrays.randomElementFromArray(messages), {
       customTitle: "Nice",
       durationMs: 15000,
