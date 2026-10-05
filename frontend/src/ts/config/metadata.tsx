@@ -1305,17 +1305,6 @@ export const configMetadata: ConfigMetadataObject = {
     changeRequiresRestart: false,
     group: "hidden",
   },
-
-  // ads
-  ads: {
-    key: "ads",
-    fa: { icon: "fa-ad" },
-    changeRequiresRestart: false,
-    description: "Ads are currently unavailable in Oxytype.",
-    group: "ads",
-    overrideValue: () => "off",
-    isBlocked: ({ value }) => value !== "off",
-  },
 };
 
 // typed accessor for a single option's metadata, avoiding per-callsite casts
