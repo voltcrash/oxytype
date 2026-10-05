@@ -49,4 +49,18 @@ describe("memory funbox timer", () => {
     expect(isWordsWrapperVisible()).toBe(false);
     expect(vi.getTimerCount()).toBe(0);
   });
+
+  it("resets safely without hiding words later", () => {
+    MemoryTimer.start(3);
+    vi.advanceTimersByTime(1000);
+
+    MemoryTimer.reset();
+    MemoryTimer.reset();
+    expect(getMemoryTimerVisibility()).toBe("hidden");
+    expect(vi.getTimerCount()).toBe(0);
+
+    vi.advanceTimersByTime(10000);
+    expect(getMemoryTimerText()).toBe("Timer left to memorise all words: 2s");
+    expect(isWordsWrapperVisible()).toBe(true);
+  });
 });
