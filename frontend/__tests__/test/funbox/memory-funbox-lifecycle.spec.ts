@@ -118,4 +118,21 @@ describe("memory funbox lifecycle", () => {
     expect(isWordsWrapperVisible()).toBe(false);
     expect(vi.getTimerCount()).toBe(0);
   });
+
+  it("ends memorisation when typing starts before the countdown expires", () => {
+    restart();
+    vi.advanceTimersByTime(1000);
+
+    for (const funbox of getActiveFunboxesWithFunction("start")) {
+      funbox.functions.start();
+    }
+
+    expect(getMemoryTimerVisibility()).toBe("hidden");
+    expect(areWordsVisible()).toBe(false);
+    expect(vi.getTimerCount()).toBe(0);
+
+    vi.advanceTimersByTime(10000);
+    expect(isWordsWrapperVisible()).toBe(true);
+    expect(areWordsVisible()).toBe(false);
+  });
 });
