@@ -11,7 +11,6 @@ import {
 import * as PageTest from "../pages/test";
 import * as PageLoading from "../pages/loading";
 import * as PageTransition from "../states/page-transition";
-import * as AdController from "../controllers/ad-controller";
 import * as Focus from "../test/focus";
 import Page, {
   PageName,
@@ -355,7 +354,6 @@ export async function change(
 
   //wrapup
   PageTransition.set(false);
-  void AdController.reinstate();
   return true;
 }
 
