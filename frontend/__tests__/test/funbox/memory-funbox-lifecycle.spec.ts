@@ -100,4 +100,22 @@ describe("memory funbox lifecycle", () => {
       expect(vi.getTimerCount()).toBe(0);
     },
   );
+
+  it("restarts memorisation without keeping the previous countdown", () => {
+    restart();
+    vi.advanceTimersByTime(3000);
+
+    restart();
+    expect(getMemoryTimerText()).toBe("Timer left to memorise all words: 4s");
+    expect(getMemoryTimerVisibility()).toBe("shown");
+
+    vi.advanceTimersByTime(1000);
+    expect(getMemoryTimerText()).toBe("Timer left to memorise all words: 3s");
+    expect(isWordsWrapperVisible()).toBe(true);
+
+    vi.advanceTimersByTime(3000);
+    expect(getMemoryTimerVisibility()).toBe("hidden");
+    expect(isWordsWrapperVisible()).toBe(false);
+    expect(vi.getTimerCount()).toBe(0);
+  });
 });
