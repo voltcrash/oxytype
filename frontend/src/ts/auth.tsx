@@ -106,20 +106,26 @@ const authenticationMemos = Object.fromEntries(
 async function getDataAndInit(): Promise<boolean> {
   try {
     console.log("getting account data");
-    const snapshot = await DB.initSnapshot();
     //TODO: preload collections for now, remove when __nonReactive is removed from collections
-    await waitForPresetsReady();
-    await waitForTagsReady();
-
-    if (snapshot === false) {
-      throw new Error(
-        "Snapshot didn't initialize due to lacking authentication even though user is authenticated",
-      );
-    }
+    const accountReady = Promise.all([
+      DB.initSnapshot(),
+      waitForPresetsReady(),
+      waitForTagsReady(),
+    ]).then(([snapshot]) => {
+      if (snapshot === false) {
+        throw new Error(
+          "Snapshot didn't initialize due to lacking authentication even though user is authenticated",
+        );
+      }
+      return snapshot;
+    });
+    const [snapshot] = await Promise.all([
+      accountReady,
+      updateConfigFromServer(accountReady),
+    ]);
 
     void Sentry.setUser(snapshot.uid, snapshot.name);
 
-    await updateConfigFromServer();
     return true;
   } catch (error) {
     console.error(error);

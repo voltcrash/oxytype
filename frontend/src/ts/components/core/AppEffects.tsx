@@ -12,7 +12,6 @@ import { spread } from "solid-js/web";
 import { debounce, throttle } from "throttle-debounce";
 
 import * as ServerConfiguration from "../../ape/server-configuration";
-import { authPromise } from "../../auth-client";
 import { configLoadPromise } from "../../config/lifecycle";
 import { Config } from "../../config/store";
 import { configEvent } from "../../events/config";
@@ -138,6 +137,8 @@ export function AppEffects(props: AppElements): JSXElement {
   });
 
   onMount(() => {
+    // Solid render appends to the host; remove the build-time loading markup.
+    element.querySelector("#startupScreen")?.remove();
     const noscript = body.querySelector<HTMLElement>("noscript");
     createEffect(() => {
       const screenshotting = getIsScreenshotting();
@@ -218,8 +219,9 @@ export function AppEffects(props: AppElements): JSXElement {
         });
     };
     onDOMReady(async () => {
+      // Server configuration and authentication are independent startup requests.
+      void ServerConfiguration.sync();
       await configLoadPromise;
-      await authPromise;
       if (disposed) return;
 
       setReady(true);
@@ -227,7 +229,6 @@ export function AppEffects(props: AppElements): JSXElement {
         opacity: [0, 1],
         duration: applyReducedMotion(250),
       });
-      void ServerConfiguration.sync();
 
       if (isDevEnvironment()) {
         void navigator.serviceWorker
@@ -238,7 +239,13 @@ export function AppEffects(props: AppElements): JSXElement {
             }
           });
       } else if ("serviceWorker" in navigator) {
-        window.addEventListener("load", registerServiceWorker);
+        if (document.readyState === "complete") {
+          registerServiceWorker();
+        } else {
+          window.addEventListener("load", registerServiceWorker, {
+            once: true,
+          });
+        }
       }
     });
     onCleanup(() => {

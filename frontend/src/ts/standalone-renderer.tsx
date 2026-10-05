@@ -1,5 +1,6 @@
 import { generateHydrationScript, renderToString } from "solid-js/web";
 
+import { StartupScreen } from "./components/core/StartupScreen";
 import { LegalPage } from "./components/standalone/LegalPage";
 import { StandaloneNotFound } from "./components/standalone/NotFound";
 import { OAuthCallback } from "./components/standalone/OAuthCallback";
@@ -9,8 +10,9 @@ export function renderStandalone(path: string): {
   hydrationScript: string;
 } {
   return {
-    hydrationScript: generateHydrationScript(),
+    hydrationScript: path === "/index.html" ? "" : generateHydrationScript(),
     html: renderToString(() => {
+      if (path === "/index.html") return <StartupScreen />;
       if (path === "/oauth-callback.html") {
         return <OAuthCallback />;
       }

@@ -1,6 +1,6 @@
 import { clearWords, clearWordsBlur } from "./test-ui";
 import { showResultScreen } from "../components/pages/test/result/useResultScreen";
-import { Chart, type PluginChartOptions } from "chart.js";
+import type { PluginChartOptions } from "chart.js";
 
 import { Config } from "../config/store";
 import { setConfig } from "../config/setters";
@@ -65,6 +65,7 @@ import * as TestWords from "./test-words";
 import { buildWordsHistory } from "./word-markup";
 import {
   getResultChart,
+  prepareResultChart,
   getResultChartDataset,
   getResultChartScale,
   resultState,
@@ -110,6 +111,7 @@ export function toggleUserFakeChartData(): void {
 let resultAnnotation: AnnotationOptions<"line">[] = [];
 
 async function updateChartData(): Promise<void> {
+  const { Chart } = await import("chart.js");
   const eventLog = getLastEventLog();
   if (result.chartData === "toolong" || eventLog === null) {
     getResultChartDataset("wpm").data = [];
@@ -287,6 +289,7 @@ function applyFakeChartData(): void {
 }
 
 export async function updateChartPBLine(): Promise<void> {
+  const { Chart } = await import("chart.js");
   const themecolors = getTheme();
   const localPb = DB.getLocalPB(
     result.mode,
@@ -475,6 +478,7 @@ export function updateSavedResultId(resultId: string): void {
 }
 
 async function updateTags(dontSave: boolean): Promise<void> {
+  const { Chart } = await import("chart.js");
   const activeTags: TagItem[] = __nonReactive.getActiveTags();
   const userTagsCount = __nonReactive.getTags().length;
   const items: ResultTag[] = [];
@@ -645,6 +649,7 @@ export async function update(
   randomQuote: Quote | null,
   dontSave: boolean,
 ): Promise<void> {
+  await prepareResultChart();
   resultAnnotation = [];
   result = structuredClone(res);
   hideCrown();

@@ -1,9 +1,14 @@
-import { cleanup, render } from "@solidjs/testing-library";
+import { cleanup, render, waitFor } from "@solidjs/testing-library";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 const { stub } = vi.hoisted(() => ({
   stub: (name: string) => () => <div data-stub={name} />,
 }));
+vi.mock("../../../../../src/ts/states/test", async () => {
+  const { createSignal } = await import("solid-js");
+  const [isTestActive, setTestActive] = createSignal(false);
+  return { isTestActive, setTestActive };
+});
 vi.mock(
   "../../../../../src/ts/components/pages/test/result/ResultStats",
   () => ({
@@ -12,9 +17,19 @@ vi.mock(
 );
 vi.mock(
   "../../../../../src/ts/components/pages/test/result/ResultChart",
-  () => ({
-    ResultChart: stub("chart"),
-  }),
+  async () => {
+    const { onMount } = await import("solid-js");
+    const { setResultChart } =
+      await import("../../../../../src/ts/states/result");
+    return {
+      ResultChart: () => {
+        onMount(() =>
+          setResultChart({} as Parameters<typeof setResultChart>[0]),
+        );
+        return stub("chart")();
+      },
+    };
+  },
 );
 vi.mock(
   "../../../../../src/ts/components/pages/test/result/ResultWordsHistory",
@@ -50,12 +65,17 @@ import {
   getResultElement,
   getResultWrapperElement,
   setResultState,
+  setResultChart,
+  prepareResultChart,
 } from "../../../../../src/ts/states/result";
+import { setTestActive } from "../../../../../src/ts/states/test";
 
 describe("Result", () => {
   afterEach(() => {
     cleanup();
     setResultState("noStress", false);
+    setTestActive(false);
+    setResultChart(undefined);
   });
 
   it("renders the result layout and exposes its elements", () => {
@@ -71,7 +91,6 @@ describe("Result", () => {
       ),
     ).toEqual([
       "stats",
-      "chart",
       "history",
       "replay",
       "buttons",
@@ -81,6 +100,25 @@ describe("Result", () => {
     expect(
       container.querySelector(".bottom [data-stub=history]"),
     ).not.toBeNull();
+  });
+
+  it("loads the chart during the first test and keeps it mounted afterward", async () => {
+    const { container } = render(() => <Result />);
+    expect(container.querySelector("[data-stub=chart]")).toBeNull();
+    setTestActive(true);
+    await waitFor(() =>
+      expect(container.querySelector("[data-stub=chart]")).not.toBeNull(),
+    );
+    await prepareResultChart();
+    const chart = container.querySelector("[data-stub=chart]");
+    setTestActive(false);
+    expect(container.querySelector("[data-stub=chart]")).toBe(chart);
+  });
+
+  it("waits for chart mounting even when a result is requested immediately", async () => {
+    const { container } = render(() => <Result />);
+    await prepareResultChart();
+    expect(container.querySelector("[data-stub=chart]")).not.toBeNull();
   });
 
   it("shows the glarses mode check mark", () => {

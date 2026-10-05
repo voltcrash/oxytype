@@ -1,54 +1,43 @@
 import { GetUserResponse } from "@oxytype/contracts/users";
 import Ape from ".";
 import { createEffectOn } from "../hooks/effects";
-import { isAuthenticated } from "../states/core";
+import { getUserId } from "../states/core";
 import { SnapshotInitError } from "../utils/snapshot-init-error";
 
 type CacheType = GetUserResponse["data"];
 
-let fetchPromise: Promise<void> | null = null;
-let cache: CacheType | undefined = undefined;
+let cache: { userId: string; promise: Promise<CacheType> } | undefined;
 
-export async function fetchUserFromApi(): Promise<CacheType | undefined> {
-  await sync();
-  return cache;
-}
-
-async function sync(): Promise<void> {
-  if (!isAuthenticated()) {
-    return;
+export async function fetchUserFromApi(
+  userId = getUserId(),
+): Promise<CacheType | undefined> {
+  if (userId === null) return undefined;
+  if (cache?.userId !== userId) {
+    cache = {
+      userId,
+      promise: (async () => {
+        const response = await Ape.users.get();
+        if (response.status !== 200) {
+          throw new SnapshotInitError(
+            `${response.body.message} (user)`,
+            response.status,
+          );
+        }
+        return response.body.data;
+      })(),
+    };
   }
-
-  if (cache !== undefined) return;
-
-  fetchPromise ??= (async () => {
-    const response = await Ape.users.get();
-
-    if (response.status !== 200) {
-      throw new SnapshotInitError(
-        `${response.body.message} (user)`,
-        response.status,
-      );
-    }
-
-    cache = response.body.data;
-  })();
-
+  const request = cache;
   try {
-    await fetchPromise;
-  } finally {
-    fetchPromise = null;
+    return await request.promise;
+  } catch (error) {
+    // Failed or superseded requests must not poison another user's cache.
+    if (cache === request) cache = undefined;
+    throw error;
   }
-}
-
-function reset(): void {
-  cache = undefined;
-  fetchPromise = null;
 }
 
 // clear cache + reset promise on logout
-createEffectOn(isAuthenticated, (isAuthenticated) => {
-  if (!isAuthenticated) {
-    reset();
-  }
+createEffectOn(getUserId, (userId) => {
+  if (cache?.userId !== userId) cache = undefined;
 });

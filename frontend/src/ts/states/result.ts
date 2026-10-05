@@ -178,9 +178,31 @@ export type ResultChartDatasetId = "wpm" | "raw" | "error" | "burst";
 
 // set by ResultChart once the canvas is mounted
 let resultChart: ResultChartType | undefined;
+let chartLoader: (() => Promise<void>) | undefined;
+const chartWaiters = new Set<() => void>();
+
+export function bindResultChartLoader(loader: () => Promise<void>): () => void {
+  chartLoader = loader;
+  return () => {
+    if (chartLoader === loader) chartLoader = undefined;
+  };
+}
+
+export async function prepareResultChart(): Promise<void> {
+  await chartLoader?.();
+}
+
+export async function waitForResultChart(): Promise<void> {
+  if (resultChart !== undefined) return;
+  await new Promise<void>((resolve) => chartWaiters.add(resolve));
+}
 
 export function setResultChart(chart: ResultChartType | undefined): void {
   resultChart = chart;
+  if (chart !== undefined) {
+    for (const resolve of chartWaiters) resolve();
+    chartWaiters.clear();
+  }
 }
 
 export function getResultChart(): ResultChartType {
