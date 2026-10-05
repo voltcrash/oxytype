@@ -24,6 +24,7 @@ import { StreakHourOffsetModal } from "./StreakHourOffsetModal";
 import { SupportModal } from "./SupportModal";
 import { UserReportModal } from "./UserReportModal";
 import { VersionHistoryModal } from "./VersionHistoryModal";
+import "./modal-triggers";
 
 export function Modals(): JSXElement {
   return (

@@ -5,15 +5,17 @@ import Ape from "../../ape";
 import { loadUser, signOut } from "../../auth";
 import {
   updateProfile,
-  type UserCredential,
   deleteUnfinishedUser,
   resetIgnoreAuthCallback,
   setUserState,
 } from "../../auth-client";
 import { authEvent } from "../../events/auth";
-import { googleSignUpEvent } from "../../events/google-sign-up";
+import {
+  getPendingGoogleSignUpUser,
+  setPendingGoogleSignUpUser,
+} from "../../states/google-sign-up";
 import { hideLoaderBar, showLoaderBar } from "../../states/loader-bar";
-import { hideModal, ModalId, showModal } from "../../states/modals";
+import { hideModal, ModalId } from "../../states/modals";
 import {
   showErrorNotification,
   showNoticeNotification,
@@ -27,7 +29,6 @@ import { SubmitButton } from "../ui/form/SubmitButton";
 import { allFieldsMandatory, fromSchema } from "../ui/form/utils";
 
 const modalId: ModalId = "GoogleSignup";
-let signedInUser: UserCredential | undefined = undefined;
 
 export function GoogleSignupModal() {
   const form = createForm(() => ({
@@ -100,7 +101,7 @@ export function GoogleSignupModal() {
 
 async function afterHide(): Promise<void> {
   resetIgnoreAuthCallback();
-  if (signedInUser !== undefined) {
+  if (getPendingGoogleSignUpUser() !== undefined) {
     showNoticeNotification("Sign up process cancelled", {
       durationMs: 5000,
     });
@@ -108,7 +109,7 @@ async function afterHide(): Promise<void> {
       showErrorNotification("Failed to cancel sign up", { error });
     });
     signOut();
-    signedInUser = undefined;
+    setPendingGoogleSignUpUser(undefined);
   }
 }
 async function apply(options: {
@@ -116,6 +117,7 @@ async function apply(options: {
   captcha: string;
 }): Promise<void> {
   const { username: name, captcha } = options;
+  const signedInUser = getPendingGoogleSignUpUser();
   if (!signedInUser) {
     showErrorNotification(
       "Missing user credential. Please close the popup and try again.",
@@ -152,26 +154,19 @@ async function apply(options: {
       type: "authStateChanged",
       data: { isUserSignedIn: true, loadPromise: Promise.resolve() },
     });
-    signedInUser = undefined;
+    setPendingGoogleSignUpUser(undefined);
   } catch (e) {
     console.log(e);
     showErrorNotification("Failed to create account", { error: e });
-    if (signedInUser !== undefined) {
+    if (getPendingGoogleSignUpUser() !== undefined) {
       await deleteUnfinishedUser().catch(() => {
         //user might be deleted already by the server
       });
     }
     signOut();
-    signedInUser = undefined;
+    setPendingGoogleSignUpUser(undefined);
   } finally {
     hideLoaderBar();
     if (closeModal) hideModal(modalId);
   }
 }
-
-googleSignUpEvent.subscribe((data) => {
-  if (data.signedInUser !== undefined && data.isNewUser) {
-    signedInUser = data.signedInUser;
-    showModal(modalId);
-  }
-});
