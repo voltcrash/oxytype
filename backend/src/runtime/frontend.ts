@@ -1,5 +1,9 @@
 import type { WorkerEnv } from "./env";
 
+// Build output names content-hashed files `name.<8 char hash>.ext`.
+const HASHED_ASSET =
+  /^\/(?:js|css|webfonts)\/[^/]+\.[\w-]{8}\.(?:js|css|woff2)$/;
+
 /** Keep public frontend files separate from backend-only deployment assets. */
 export async function serveFrontend(
   request: Request,
@@ -40,6 +44,12 @@ export async function serveFrontend(
   if (response.headers.get("content-type")?.includes("text/html")) {
     response = new Response(response.body, response);
     response.headers.set("Cache-Control", "no-store");
+  } else if (response.ok && HASHED_ASSET.test(path)) {
+    response = new Response(response.body, response);
+    response.headers.set(
+      "Cache-Control",
+      "public, max-age=31536000, immutable",
+    );
   }
   return response;
 }

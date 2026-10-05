@@ -21,6 +21,8 @@ const files = new Map([
   ["/site/index.html", "app"],
   ["/site/oauth-callback.html", "callback"],
   ["/site/js/app.js", "script"],
+  ["/site/js/app.B1hq0Fcs.js", "hashed script"],
+  ["/site/webfonts/Geist-Medium.woff2", "font"],
   ["/configure/private.json", "private"],
 ]);
 beforeEach(() => {
@@ -105,6 +107,18 @@ it("serves HEAD without a body and rejects mutations", async () => {
   const response = await request("/login", { method: "POST" });
   expect(response.status).toBe(405);
   expect(response.headers.get("allow")).toBe("GET, HEAD");
+});
+it("caches content-hashed build assets as immutable", async () => {
+  const hashed = await request("/js/app.B1hq0Fcs.js");
+  expect(await hashed.text()).toBe("hashed script");
+  expect(hashed.headers.get("cache-control")).toBe(
+    "public, max-age=31536000, immutable",
+  );
+  for (const path of ["/js/app.js", "/webfonts/Geist-Medium.woff2"]) {
+    expect((await request(path)).headers.get("cache-control")).toBeNull();
+  }
+  const missing = await request("/js/missing.B1hq0Fcs.js");
+  expect(missing.headers.get("cache-control")).toBeNull();
 });
 it("fails clearly when the assets binding is absent", async () => {
   const response = await worker.fetch(
