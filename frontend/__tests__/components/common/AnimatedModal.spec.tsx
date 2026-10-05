@@ -1,5 +1,6 @@
 import { cleanup, render, waitFor } from "@solidjs/testing-library";
 import { AnimationParams } from "animejs";
+import { createSignal } from "solid-js";
 import {
   describe,
   it,
@@ -30,6 +31,7 @@ import {
   hideModalAndClearChain,
   showModal,
 } from "../../../src/ts/states/modals";
+import { isAnyPopupVisible } from "../../../src/ts/states/overlay-visibility";
 
 async function completeAnimation(): Promise<void> {
   // @ts-expect-error callback arguments unused by modal lifecycle
@@ -37,11 +39,23 @@ async function completeAnimation(): Promise<void> {
 }
 
 describe("AnimatedModal", () => {
+  let displayStyles: HTMLStyleElement;
+
   beforeEach(() => {
     hideModalAndClearChain("Support");
     showModal("Support");
     vi.clearAllMocks();
     animations.length = 0;
+    // jsdom has no Tailwind stylesheet or layout. Model its display utilities
+    // so overlay checks observe the same native open/closed state as browsers.
+    displayStyles = document.createElement("style");
+    displayStyles.textContent = `
+      dialog { display: none; }
+      dialog.flex { display: flex; }
+      dialog.hidden { display: none; }
+      dialog.open\\:flex[open] { display: flex; }
+    `;
+    document.head.append(displayStyles);
 
     // Mock dialog methods that don't exist in jsdom
     HTMLDialogElement.prototype.showModal = vi.fn(function (
@@ -64,6 +78,7 @@ describe("AnimatedModal", () => {
   afterEach(() => {
     cleanup();
     hideModalAndClearChain("Support");
+    displayStyles.remove();
   });
 
   function renderModal(props: {
@@ -81,16 +96,23 @@ describe("AnimatedModal", () => {
     modalDiv: HTMLDivElement;
   } {
     const { container } = render(() => (
-      <AnimatedModal id="Support" {...props}>
+      <AnimatedModal id="Support" {...props} wrapperClass={props.wrapperClass}>
         <div data-testid="modal-content">Test Content</div>
       </AnimatedModal>
     ));
 
+    const dialog = container.querySelector("dialog") as HTMLDialogElement;
+    vi.spyOn(dialog, "getClientRects").mockImplementation(
+      () =>
+        ({
+          length: getComputedStyle(dialog).display === "none" ? 0 : 1,
+        }) as DOMRectList,
+    );
+
     return {
       // oxlint-disable-next-line no-non-null-assertion
       container: container.children[0]! as HTMLElement,
-      // oxlint-disable-next-line no-non-null-assertion
-      dialog: container.querySelector("dialog")!,
+      dialog,
       // oxlint-disable-next-line no-non-null-assertion
       modalDiv: container.querySelector(".modal")!,
     };
@@ -192,4 +214,48 @@ describe("AnimatedModal", () => {
 
     expect(dialog.open).toBe(false);
   });
+
+  it("keeps an unopened dialog out of overlay detection", () => {
+    hideModal("Support");
+    const { dialog } = renderModal({});
+
+    expect(getComputedStyle(dialog).display).toBe("none");
+    expect(isAnyPopupVisible()).toBe(false);
+  });
+
+  it.each(["both", "modalOnly", "none"] as const)(
+    "stays hidden after reactive afterHide updates (%s)",
+    async (animationMode) => {
+      const [wrapperClass, setWrapperClass] = createSignal("bg-transparent");
+      const { dialog } = renderModal({
+        animationMode,
+        get wrapperClass() {
+          return wrapperClass();
+        },
+        afterHide: () => {
+          setWrapperClass("");
+        },
+      });
+      await waitFor(() => expect(dialog.open).toBe(true));
+      if (animationMode !== "none") await completeAnimation();
+      expect(isAnyPopupVisible()).toBe(true);
+      animations.length = 0;
+
+      hideModal("Support");
+      if (animationMode !== "none") {
+        await waitFor(() => expect(animations.length).toBeGreaterThan(0));
+        await completeAnimation();
+      }
+      await waitFor(() => expect(dialog.open).toBe(false));
+
+      expect(getComputedStyle(dialog).display).toBe("none");
+      expect(isAnyPopupVisible()).toBe(false);
+      setWrapperClass("bg-transparent");
+      expect(isAnyPopupVisible()).toBe(false);
+
+      showModal("Support");
+      await waitFor(() => expect(dialog.open).toBe(true));
+      expect(getComputedStyle(dialog).display).toBe("flex");
+    },
+  );
 });
