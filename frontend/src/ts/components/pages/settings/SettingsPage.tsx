@@ -282,7 +282,6 @@ export function SettingsPage(): JSXElement {
               </SettingsGroup>
             </Show>
             <SettingsGroup title="privacy">
-              <SearchableAutoSetting key="ads" />
               <SearchableSetting
                 key="cookies"
                 title="update cookie preferences"
