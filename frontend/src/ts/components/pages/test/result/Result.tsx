@@ -5,7 +5,6 @@ import {
   resultWordHighlightEvent,
   setResultElements,
 } from "../../../../states/result";
-import { Advertisement } from "../../../common/Advertisement";
 import { Fa } from "../../../common/Fa";
 import { ResultButtons } from "./ResultButtons";
 import { ResultChart } from "./ResultChart";
@@ -66,15 +65,6 @@ export function Result(): JSXElement {
         </div>
         <ResultLoginTip />
         <ResultWatermark />
-      </div>
-      <div class="full-width mt-4">
-        <Advertisement
-          id="ad-result"
-          visible={["result", "on", "sellout"]}
-          staticVisibility
-          withText
-          hideWhileScreenshotting
-        />
       </div>
     </div>
   );
