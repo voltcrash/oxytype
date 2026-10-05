@@ -146,7 +146,7 @@ function getPlugins({
             // Content hashes change on deploy, so cached build assets stay valid.
             urlPattern: ({ url, sameOrigin }) =>
               sameOrigin &&
-              /^\/(?:js|css|webfonts)\/.*[.-][\w-]{8,}\.(?:js|css|woff2)$/.test(
+              /^\/(?:js|css|webfonts)\/[^/]+\.[\w-]{8}\.(?:js|css|woff2)$/.test(
                 url.pathname,
               ),
             handler: "CacheFirst",
@@ -223,7 +223,7 @@ function getBuildOptions({
           if (
             /\.(woff|woff2|eot|ttf|otf)$/.test(assetInfo.names[0] as string)
           ) {
-            return `webfonts/[name]-[hash].${extType}`;
+            return `webfonts/[name].[hash].${extType}`;
           }
           // oxlint-disable-next-line no-deprecated
           if (assetInfo.name === "misc.css") {

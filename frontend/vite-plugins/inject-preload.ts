@@ -7,7 +7,7 @@ export function injectPreload(): Plugin {
     files: [
       {
         // Vite already links entry CSS. Only prioritize the startup icon font.
-        outputMatch: /webfonts\/fa-solid-900-.*\.woff2$/,
+        outputMatch: /webfonts\/fa-solid-900\..*\.woff2$/,
         attributes: {
           as: "font",
           type: "font/woff2",
