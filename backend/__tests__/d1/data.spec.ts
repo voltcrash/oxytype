@@ -39,6 +39,23 @@ describe("D1 data contracts", () => {
       });
     });
   });
+  it("removes saved ad settings when updating a legacy config", async () => {
+    await withRuntime(test.env, async () => {
+      await statement(
+        "INSERT INTO configs(uid,id,data) VALUES(?,?,?)",
+        "dedupe",
+        newId(),
+        JSON.stringify({ ads: "on", enableAds: true, theme: "nord" }),
+      ).run();
+
+      await Configs.saveConfig("dedupe", { time: 60 });
+
+      expect((await Configs.getConfig("dedupe"))?.config).toEqual({
+        theme: "nord",
+        time: 60,
+      });
+    });
+  });
   it("caps concurrent preset creation and enforces ownership", async () => {
     await withRuntime(test.env, async () => {
       const attempts = await Promise.allSettled(

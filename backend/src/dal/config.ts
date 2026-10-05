@@ -29,6 +29,7 @@ const legacy = [
   "capsLockBackspace",
   "showAvg",
   "enableAds",
+  "ads",
 ];
 export async function saveConfig(
   uid: string,
