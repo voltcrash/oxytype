@@ -8,10 +8,12 @@ import { SnapshotInitError } from "../utils/snapshot-init-error";
 import { getDefaultConfig } from "../constants/default-config";
 import { Config } from "./store";
 
-export async function updateFromServer(): Promise<void> {
+export async function updateFromServer(
+  accountReady?: Promise<unknown>,
+): Promise<void> {
   const remoteConfig = await getRemoteConfig();
   // Fetch remotely in parallel, but local settings must finish applying first.
-  await configLoadPromise;
+  await Promise.all([configLoadPromise, accountReady]);
 
   const areConfigsEqual =
     JSON.stringify(Config) === JSON.stringify(remoteConfig);

@@ -107,18 +107,22 @@ async function getDataAndInit(): Promise<boolean> {
   try {
     console.log("getting account data");
     //TODO: preload collections for now, remove when __nonReactive is removed from collections
-    const [snapshot] = await Promise.all([
+    const accountReady = Promise.all([
       DB.initSnapshot(),
       waitForPresetsReady(),
       waitForTagsReady(),
-      updateConfigFromServer(),
+    ]).then(([snapshot]) => {
+      if (snapshot === false) {
+        throw new Error(
+          "Snapshot didn't initialize due to lacking authentication even though user is authenticated",
+        );
+      }
+      return snapshot;
+    });
+    const [snapshot] = await Promise.all([
+      accountReady,
+      updateConfigFromServer(accountReady),
     ]);
-
-    if (snapshot === false) {
-      throw new Error(
-        "Snapshot didn't initialize due to lacking authentication even though user is authenticated",
-      );
-    }
 
     void Sentry.setUser(snapshot.uid, snapshot.name);
 
