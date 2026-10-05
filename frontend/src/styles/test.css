@@ -32,7 +32,7 @@
 }
 #words .word letter.tabChar i,
 #words .word letter.nlChar i {
-  @apply leading-0;
+  line-height: 0;
 }
 #words .word letter.debugCaret {
   @apply outline outline-[1px] outline-sub;
@@ -277,7 +277,8 @@
 }
 
 .word {
-  @apply relative text-[1em] leading-[1em] my-[0.25em] mx-[0.3em] [font-variant:no-common-ligatures] border-b-[2px] [border-bottom-style:solid] border-b-transparent;
+  @apply relative text-[1em] my-[0.25em] mx-[0.3em] [font-variant:no-common-ligatures] border-b-[2px] [border-bottom-style:solid] border-b-transparent;
+  line-height: 1em;
 }
 .word letter {
   @apply inline-block;
