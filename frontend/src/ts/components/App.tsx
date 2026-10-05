@@ -7,7 +7,6 @@ import { getActivePage } from "../states/core";
 import { isFixingSkillIssue } from "../states/skill-issue";
 import { getFocus } from "../states/test";
 import { cn } from "../utils/cn";
-import { Advertisement } from "./common/Advertisement";
 import { Download } from "./common/Download";
 import { FilePicker } from "./common/FilePicker";
 import { AppEffects, AppElements } from "./core/AppEffects";
@@ -66,33 +65,11 @@ export function App(props: AppElements): JSXElement {
           <main
             class={cn("full-width content-grid h-full", getFocus() && "focus")}
           >
-            <Advertisement
-              id="ad-vertical-left"
-              visible={["on", "sellout"]}
-              staticVisibility
-              vertical
-              focus
-            />
-            <Advertisement
-              id="ad-vertical-right"
-              visible={["on", "sellout"]}
-              staticVisibility
-              vertical
-              focus
-            />
             <AppPages />
           </main>
           <Show when={getActivePage() !== "settings"}>
             <Footer />
           </Show>
-          <Advertisement
-            id="ad-footer"
-            visible="sellout"
-            staticVisibility
-            focus
-            class="col-[full-width]"
-            smallClass="col-[content]"
-          />
         </PageScroller>
       </Show>
     </QueryClientProvider>
