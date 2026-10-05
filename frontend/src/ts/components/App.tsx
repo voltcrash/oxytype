@@ -12,6 +12,7 @@ import { FilePicker } from "./common/FilePicker";
 import { AppEffects, AppElements } from "./core/AppEffects";
 import { CustomBackground } from "./core/CustomBackground";
 import { FunboxEffects } from "./core/FunboxEffects";
+import { LinkPrefetch } from "./core/LinkPrefetch";
 import { PageHead } from "./core/PageHead";
 import { SkillIssue } from "./core/SkillIssue";
 import { Theme } from "./core/Theme";
@@ -35,6 +36,7 @@ export function App(props: AppElements): JSXElement {
         <AppEffects {...props} />
         <Theme />
         <ThirdPartyEffects />
+        <LinkPrefetch />
       </Portal>
       <Show
         when={!isFixingSkillIssue()}
