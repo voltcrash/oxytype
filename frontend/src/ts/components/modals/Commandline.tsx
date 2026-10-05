@@ -220,7 +220,7 @@ export function Commandline(): JSXElement {
         commandlineState.noBackground && "bg-transparent",
       )}
       modalClass={cn(
-        "block max-w-[600px] gap-0 overflow-hidden rounded-[var(--roundness)] p-0 ring-0 transition-[box-shadow] duration-125",
+        "block max-w-[600px] gap-0 overflow-hidden rounded-[var(--roundness)] p-0 ring-0 sm:p-0 transition-[box-shadow] duration-125",
         commandlineState.noBackground && "ring-[0.2em] ring-sub-alt",
         commandlineState.hasError &&
           "animate-[shake_0.1s_ease-in-out_infinite]",
