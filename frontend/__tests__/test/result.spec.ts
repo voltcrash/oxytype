@@ -37,10 +37,6 @@ vi.mock("../../src/ts/states/result", async (importOriginal) => {
     },
   };
 });
-vi.mock("../../src/ts/controllers/ad-controller", () => ({
-  updateFooterAndVerticalAds: vi.fn(),
-  renderResult: vi.fn(),
-}));
 vi.mock("../../src/ts/controllers/quotes-controller", () => ({
   default: { isQuoteFavorite: () => false },
 }));
