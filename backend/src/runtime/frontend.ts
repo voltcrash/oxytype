@@ -3,6 +3,8 @@ import type { WorkerEnv } from "./env";
 // Build output names content-hashed files `name.<8 char hash>.ext`.
 const HASHED_ASSET =
   /^\/(?:js|css|webfonts)\/[^/]+\.[\w-]{8}\.(?:js|css|woff2)$/;
+// Language lists are requested as `/languages/name.json?v=<content hash>`.
+const VERSIONED_LANGUAGE = /^\/languages\/[^/]+\.json$/;
 
 /** Keep public frontend files separate from backend-only deployment assets. */
 export async function serveFrontend(
@@ -44,7 +46,11 @@ export async function serveFrontend(
   if (response.headers.get("content-type")?.includes("text/html")) {
     response = new Response(response.body, response);
     response.headers.set("Cache-Control", "no-store");
-  } else if (response.ok && HASHED_ASSET.test(path)) {
+  } else if (
+    response.ok &&
+    (HASHED_ASSET.test(path) ||
+      (VERSIONED_LANGUAGE.test(path) && url.searchParams.has("v")))
+  ) {
     response = new Response(response.body, response);
     response.headers.set(
       "Cache-Control",

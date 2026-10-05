@@ -23,6 +23,7 @@ const files = new Map([
   ["/site/js/app.js", "script"],
   ["/site/js/app.B1hq0Fcs.js", "hashed script"],
   ["/site/webfonts/Geist-Medium.woff2", "font"],
+  ["/site/languages/english.json", "words"],
   ["/configure/private.json", "private"],
 ]);
 beforeEach(() => {
@@ -117,6 +118,14 @@ it("caches content-hashed build assets as immutable", async () => {
   for (const path of ["/js/app.js", "/webfonts/Geist-Medium.woff2"]) {
     expect((await request(path)).headers.get("cache-control")).toBeNull();
   }
+  expect(
+    (await request("/languages/english.json?v=0123456789abcdef")).headers.get(
+      "cache-control",
+    ),
+  ).toBe("public, max-age=31536000, immutable");
+  expect(
+    (await request("/languages/english.json")).headers.get("cache-control"),
+  ).toBeNull();
   const missing = await request("/js/missing.B1hq0Fcs.js");
   expect(missing.headers.get("cache-control")).toBeNull();
 });
