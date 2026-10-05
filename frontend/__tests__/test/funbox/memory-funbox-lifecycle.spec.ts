@@ -53,6 +53,7 @@ import { getActiveFunboxesWithFunction } from "../../../src/ts/test/funbox/list"
 import * as MemoryTimer from "../../../src/ts/test/funbox/memory-funbox-timer";
 import * as TestUI from "../../../src/ts/test/test-ui";
 import { words } from "../../../src/ts/test/test-words";
+import * as JSONData from "../../../src/ts/utils/json-data";
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -71,6 +72,7 @@ beforeEach(() => {
 afterEach(() => {
   MemoryTimer.reset();
   words.reset();
+  vi.restoreAllMocks();
   vi.useRealTimers();
 });
 
@@ -148,5 +150,24 @@ describe("memory funbox lifecycle", () => {
 
     vi.advanceTimersByTime(10000);
     expect(isWordsWrapperVisible()).toBe(true);
+  });
+
+  it("cancels the old countdown when activating without memory", async () => {
+    vi.spyOn(JSONData, "getCurrentLanguage").mockResolvedValue({
+      name: "english",
+      words: ["one", "two", "three"],
+    });
+    restart();
+    vi.advanceTimersByTime(1000);
+
+    await Funbox.activate([]);
+    expect(getMemoryTimerVisibility()).toBe("hidden");
+    expect(isWordsWrapperVisible()).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
+
+    TestUI.onTestRestart("testPage");
+    vi.advanceTimersByTime(10000);
+    expect(isWordsWrapperVisible()).toBe(true);
+    expect(getMemoryTimerVisibility()).toBe("hidden");
   });
 });
