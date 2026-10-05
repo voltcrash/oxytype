@@ -70,8 +70,8 @@ import * as WordsGenerator from "./words-generator";
 import * as PageTransition from "../states/page-transition";
 import { configEvent } from "../events/config";
 import { timerEvent } from "../events/timer";
-import objectHash from "object-hash";
 import * as AnalyticsController from "../controllers/analytics-controller";
+import { hashResult, preloadResultHasher } from "../utils/result-hash";
 import { getAuthenticatedUser } from "../auth-client";
 import { highlight } from "../events/keymap";
 import * as LazyModeState from "../states/remember-lazy-mode";
@@ -143,6 +143,8 @@ export function startTest(now: number): boolean {
 
   if (isAuthenticated()) {
     void AnalyticsController.log("testStarted");
+    // warm the hasher so saving the result only waits on the request
+    void preloadResultHasher().catch(() => undefined);
   } else {
     void AnalyticsController.log("testStartedNoLogin");
   }
@@ -1117,7 +1119,7 @@ async function saveResult(
   }
   //@ts-expect-error just in case this is repeated and already has a hash
   delete result.hash;
-  result.hash = objectHash(result);
+  result.hash = await hashResult(result);
 
   setAccountButtonSpinner(true);
 
@@ -1193,7 +1195,7 @@ async function saveResult(
     );
 
     if (localPb !== undefined) {
-      Result.showConfetti();
+      void Result.showConfetti();
     }
     Result.showCrown("normal");
 

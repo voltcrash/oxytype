@@ -8,8 +8,7 @@ import { getAuthenticatedUser } from "../../auth-client";
 import { getConfig } from "../../config/store";
 import { SnapshotResult } from "../../constants/default-snapshot";
 import { saveLocalResult, SaveLocalResultData } from "../../db";
-import { authEvent } from "../../events/auth";
-import { hideModal, showModal } from "../../states/modals";
+import { hideModal } from "../../states/modals";
 import {
   showErrorNotification,
   showNoticeNotification,
@@ -200,11 +199,3 @@ export function updateUidAndHash(
   notSignedInLastResult.hash = objectHash(notSignedInLastResult);
   return notSignedInLastResult;
 }
-
-authEvent.subscribe((event) => {
-  if (event.type === "snapshotUpdated" && event.data.isInitial) {
-    if (getLastSignedOutResult() !== null) {
-      showModal(modalId);
-    }
-  }
-});

@@ -38,6 +38,25 @@
       --nav-focus-opacity: 0;
     }
   </style>
+  <script>
+    // Paint the last used theme before the app loads (saved by Theme.tsx).
+    try {
+      var themeColors = JSON.parse(localStorage.getItem("themeColors"));
+      var themeCss = "";
+      for (var name in themeColors) {
+        var value = themeColors[name];
+        if (/^[a-z-]+$/.test(name) && /^[\w#(),.%\s-]+$/.test(value)) {
+          themeCss += "--" + name + ":" + value + ";";
+        }
+      }
+      if (themeCss !== "") {
+        var themeStyle = document.createElement("style");
+        themeStyle.id = "themeBootstrap";
+        themeStyle.textContent = ":root:root{" + themeCss + "}";
+        document.head.appendChild(themeStyle);
+      }
+    } catch (e) {}
+  </script>
   <link rel="icon" type="image/svg+xml" href="/images/favicon/oxytype.svg" />
   <meta
     name="name"

@@ -3,7 +3,7 @@ import MonkeyError from "../utils/error";
 import { database, encode, statement } from "../db/client";
 import { stage } from "../db/mutation";
 import { results } from "../db/schema";
-import { getUser, getTags } from "./user";
+import { exists, getTags } from "./user";
 import { type DBResult, replaceLegacyValues } from "../utils/result";
 function unpack(row: typeof results.$inferSelect): DBResult {
   return replaceLegacyValues({
@@ -16,7 +16,10 @@ export async function addResult(
   uid: string,
   result: DBResult,
 ): Promise<{ insertedId: string }> {
-  await getUser(uid, "add result");
+  // Existence only; the full user (with inbox) is already loaded by callers.
+  if (!(await exists(uid))) {
+    throw new MonkeyError(404, "User not found", "add result");
+  }
   result.uid ??= uid;
   await stage(
     statement(

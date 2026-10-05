@@ -4,7 +4,7 @@ import { expect, it } from "vite-plus/test";
 import type { ResolvedConfig } from "vite";
 
 import { Fonts } from "../../src/ts/constants/fonts";
-import { fontStyles } from "../../vite-plugins/font-styles";
+import { fontStyles, pruneIconRules } from "../../vite-plugins/font-styles";
 
 async function generate(isDevelopment: boolean): Promise<{
   css: Map<string, string>;
@@ -94,4 +94,36 @@ it("keeps development and production CSS separate", async () => {
     production.every((file) => file.includes("/generated/production/")),
   ).toBe(true);
   expect(production.some((file) => development.includes(file))).toBe(false);
+});
+
+it("keeps only icon rules for icons in the subset font", () => {
+  const css = `.fa-solid { --fa-family: "Font Awesome 7 Free"; }
+.fa-keyboard {
+  --fa: "\\f11c";
+}
+
+.fa-unused {
+  --fa: "\\f000";
+}
+
+.fa-close,
+.fa-xmark {
+  --fa: "\\f00d";
+}
+.fa-spin { animation-name: fa-spin; }
+`;
+  const pruned = pruneIconRules(css, new Set(["keyboard", "xmark"]));
+  expect(pruned).toContain(".fa-keyboard");
+  expect(pruned).toContain(".fa-close,\n.fa-xmark");
+  expect(pruned).not.toContain(".fa-unused");
+  expect(pruned).toContain(".fa-solid {");
+  expect(pruned).toContain(".fa-spin {");
+});
+
+it("prunes unused icon rules in production only", async () => {
+  const development = (await generate(true)).css.get("fontawesome.css") ?? "";
+  const production = (await generate(false)).css.get("fontawesome.css") ?? "";
+  expect(development).toContain(".fa-arrow-up-from-water-pump");
+  expect(production).not.toContain(".fa-arrow-up-from-water-pump");
+  expect(production).toContain(".fa-keyboard");
 });

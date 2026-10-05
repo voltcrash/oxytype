@@ -176,31 +176,36 @@ export async function addResult(
   // Rejections before progression may commit their audit/strike writes. Throw
   // only after that batch succeeds; thrown errors inside atomicUser roll back.
   if (response instanceof MonkeyError) throw response;
-  if (response.data.dailyLeaderboardRank !== undefined) {
-    const daily = getDailyLeaderboard(
-      req.body.result.language,
-      req.body.result.mode,
-      req.body.result.mode2,
-      req.ctx.configuration.dailyLeaderboards,
-    );
-    const entry = await daily?.getRank(
-      uid,
-      req.ctx.configuration.dailyLeaderboards,
-    );
-    if (entry) response.data.dailyLeaderboardRank = entry.rank;
-    else delete response.data.dailyLeaderboardRank;
-  }
-  if (response.data.weeklyXpLeaderboardRank !== undefined) {
-    const weekly = WeeklyXpLeaderboard.get(
-      req.ctx.configuration.leaderboards.weeklyXp,
-    );
-    const entry = await weekly?.getRank(
-      uid,
-      req.ctx.configuration.leaderboards.weeklyXp,
-    );
-    if (entry) response.data.weeklyXpLeaderboardRank = entry.rank;
-    else delete response.data.weeklyXpLeaderboardRank;
-  }
+  // Both ranks are read from committed data, so look them up together.
+  await Promise.all([
+    (async () => {
+      if (response.data.dailyLeaderboardRank === undefined) return;
+      const daily = getDailyLeaderboard(
+        req.body.result.language,
+        req.body.result.mode,
+        req.body.result.mode2,
+        req.ctx.configuration.dailyLeaderboards,
+      );
+      const entry = await daily?.getRank(
+        uid,
+        req.ctx.configuration.dailyLeaderboards,
+      );
+      if (entry) response.data.dailyLeaderboardRank = entry.rank;
+      else delete response.data.dailyLeaderboardRank;
+    })(),
+    (async () => {
+      if (response.data.weeklyXpLeaderboardRank === undefined) return;
+      const weekly = WeeklyXpLeaderboard.get(
+        req.ctx.configuration.leaderboards.weeklyXp,
+      );
+      const entry = await weekly?.getRank(
+        uid,
+        req.ctx.configuration.leaderboards.weeklyXp,
+      );
+      if (entry) response.data.weeklyXpLeaderboardRank = entry.rank;
+      else delete response.data.weeklyXpLeaderboardRank;
+    })(),
+  ]);
   return response;
 }
 
@@ -209,6 +214,10 @@ async function addResultAtomic(
 ): Promise<AddResultResponse | MonkeyError> {
   const { uid } = req.ctx.decodedToken;
 
+  // Independent of the user row; read both in one round trip.
+  const lastResultTimestampRead = tryCatch(
+    ResultDAL.getLastResultTimestamp(uid),
+  );
   const user = await UserDAL.getUser(uid, "add result");
 
   if (user.needsToChangeName) {
@@ -330,9 +339,8 @@ async function addResultAtomic(
   //   );
   //   return res.status(400).json({ message: "Time traveler detected" });
 
-  const { data: lastResultTimestamp, error: lastResultError } = await tryCatch(
-    ResultDAL.getLastResultTimestamp(uid),
-  );
+  const { data: lastResultTimestamp, error: lastResultError } =
+    await lastResultTimestampRead;
   // An unavailable database must not be interpreted as an empty result history.
   if (
     lastResultError &&

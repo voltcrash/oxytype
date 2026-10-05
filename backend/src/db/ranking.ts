@@ -41,16 +41,19 @@ export async function rankingPage(
     userIds,
     includeExpired,
   );
-  const rows = await statement(
-    `${query} SELECT * FROM filtered ORDER BY rank LIMIT ? OFFSET ?`,
-    ...values,
-    Math.min(pageSize, 1000),
-    page * pageSize,
-  ).all<RankingRow>();
-  const summary = await statement(
-    `${query} SELECT count(*) AS count,coalesce(min(json_extract(data,'$.wpm')),0) AS minWpm FROM filtered`,
-    ...values,
-  ).first<{ count: number; minWpm: number }>();
+  // Totals need filtering only; avoid ranking every row a second time.
+  const [rows, summary] = await Promise.all([
+    statement(
+      `${query} SELECT * FROM filtered ORDER BY rank LIMIT ? OFFSET ?`,
+      ...values,
+      Math.min(pageSize, 1000),
+      page * pageSize,
+    ).all<RankingRow>(),
+    statement(
+      `SELECT count(*) AS count,coalesce(min(json_extract(data,'$.wpm')),0) AS minWpm FROM ${table} WHERE period=? AND expires_at>? ${board === undefined ? "" : "AND board=?"} ${userIds === undefined ? "" : "AND uid IN (SELECT value FROM json_each(?))"}`,
+      ...values,
+    ).first<{ count: number; minWpm: number }>(),
+  ]);
   return {
     rows: rows.results,
     count: summary?.count ?? 0,
@@ -64,10 +67,21 @@ export async function rankingUser(
   board?: string,
   userIds?: string[],
 ): Promise<RankingRow | null> {
-  const { query, values } = rankingQuery(table, period, board, userIds);
+  const score = table === "daily_entries" ? "score" : "xp";
+  const scope = `period=? AND expires_at>? ${board === undefined ? "" : "AND board=?"}`;
+  const scopeValues: (string | number)[] = [period, Date.now()];
+  if (board !== undefined) scopeValues.push(board);
+  const friends =
+    userIds === undefined ? "" : "AND uid IN (SELECT value FROM json_each(?))";
+  const friendValues = userIds === undefined ? [] : [encode(userIds)];
+  // Read one profile, then count higher scores using the ranking index.
+  const ahead = `SELECT count(*) FROM ${table} WHERE ${scope} AND (${score},uid)>(me.score,me.uid)`;
   return await statement(
-    `${query} SELECT * FROM filtered WHERE uid=?`,
-    ...values,
+    `WITH me AS (SELECT uid,data,${score} AS score${table === "weekly_entries" ? ",time_typed_seconds AS timeTypedSeconds" : ""} FROM ${table} WHERE ${scope} AND uid=? ${friends}) SELECT me.*,(1+(${ahead})) AS rank${userIds === undefined ? "" : `,(1+(${ahead} ${friends})) AS friendsRank`} FROM me`,
+    ...scopeValues,
     uid,
+    ...friendValues,
+    ...scopeValues,
+    ...(userIds === undefined ? [] : [...scopeValues, ...friendValues]),
   ).first<RankingRow>();
 }

@@ -86,9 +86,19 @@ export type LanguageProperties = Pick<
 
 let currentLanguage: LanguageObject;
 
+/**
+ * Content-addressed in production so the service worker can serve repeat
+ * visits from cache without a network round trip.
+ */
+export function getLanguageUrl(lang: Language): string {
+  const hash = languageHashes[lang] as string | undefined;
+  const url = `/languages/${lang}.json`;
+  return hash === undefined ? url : `${url}?v=${hash.slice(0, 16)}`;
+}
+
 const cachedFetchLanguage = memoizeAsync(
   async (lang: Language): Promise<LanguageObject> => {
-    const loaded = await fetchJson<LanguageObject>(`/languages/${lang}.json`);
+    const loaded = await fetchJson<LanguageObject>(getLanguageUrl(lang));
 
     if (!isDevEnvironment()) {
       //check the content to make it less easy to manipulate

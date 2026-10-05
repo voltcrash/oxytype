@@ -41,11 +41,13 @@ describe("SQL ranking parity", () => {
         timestamp,
       };
       await atomicUser("a", async () => {
-        await board.addResult(entry, config);
+        expect(await board.addResult(entry, config)).toBe(1);
       });
-      await board.addResult({ ...entry, uid: "b" }, config);
+      expect(await board.addResult({ ...entry, uid: "b" }, config)).toBe(1);
       expect(await board.addResult({ ...entry, wpm: 90 }, config)).toBe(-1);
-      await board.addResult({ ...entry, uid: "c", wpm: 80 }, config);
+      expect(
+        await board.addResult({ ...entry, uid: "c", wpm: 80 }, config),
+      ).toBe(-1);
       const results = await board.getResults(0, 10, config, false);
       expect(results?.entries.map((row) => row.uid)).toEqual(["b", "a"]);
       const friends = await board.getResults(0, 10, config, false, ["a"]);
@@ -79,6 +81,44 @@ describe("SQL ranking parity", () => {
         totalXp: 30,
         timeTypedSeconds: 20,
         rank: 1,
+      });
+    });
+  });
+  it("ranks weekly XP gains against the updated total", async () => {
+    await withRuntime(test.env, async () => {
+      const board = new WeeklyXpLeaderboard(Date.UTC(2020, 0, 6));
+      const config = {
+        ...BASE_CONFIGURATION.leaderboards.weeklyXp,
+        enabled: true,
+        expirationTimeInDays: 14,
+      };
+      const entry = (
+        uid: string,
+      ): {
+        uid: string;
+        name: string;
+        lastActivityTimestamp: number;
+        timeTypedSeconds: number;
+      } => ({
+        uid,
+        name: uid,
+        lastActivityTimestamp: Date.now(),
+        timeTypedSeconds: 10,
+      });
+      expect(
+        await board.addResult(config, { entry: entry("b"), xpGained: 50 }),
+      ).toBe(1);
+      expect(
+        await board.addResult(config, { entry: entry("a"), xpGained: 30 }),
+      ).toBe(2);
+      // 30 + 20 ties b at 50; reverse lexical order keeps b ahead
+      expect(
+        await board.addResult(config, { entry: entry("a"), xpGained: 20 }),
+      ).toBe(2);
+      await atomicUser("c", async () => {
+        expect(
+          await board.addResult(config, { entry: entry("c"), xpGained: 60 }),
+        ).toBe(1);
       });
     });
   });

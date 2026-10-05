@@ -15,6 +15,19 @@ describe("D1 user mutations", () => {
   afterAll(async () => {
     await test?.dispose();
   });
+  it("checks existence inside and outside a user's atomic draft", async () => {
+    await withRuntime(test.env, async () => {
+      await UserDAL.addUser("Exists", "exists@example.com", "exists");
+      await UserDAL.addUser("Other", "other@example.com", "other");
+      expect(await UserDAL.exists("exists")).toBe(true);
+      expect(await UserDAL.exists("missing")).toBe(false);
+      await atomicUser("exists", async () => {
+        expect(await UserDAL.exists("exists")).toBe(true);
+        expect(await UserDAL.exists("other")).toBe(true);
+        expect(await UserDAL.exists("missing")).toBe(false);
+      });
+    });
+  });
   it("serializes concurrent increments without lost updates", async () => {
     await withRuntime(test.env, async () => {
       await UserDAL.addUser(

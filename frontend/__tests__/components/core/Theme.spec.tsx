@@ -1,6 +1,13 @@
-import { render, fireEvent } from "@solidjs/testing-library";
+import { cleanup, render, fireEvent } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
-import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
+import {
+  afterEach,
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+} from "vite-plus/test";
 
 import { Theme } from "../../../src/ts/components/core/Theme";
 import { ThemeWithName } from "../../../src/ts/constants/themes";
@@ -25,6 +32,10 @@ describe("Theme component", () => {
   const loaderShowMock = vi.spyOn(Loader, "showLoaderBar");
   const loaderHideMock = vi.spyOn(Loader, "hideLoaderBar");
   const notificationAddMock = vi.spyOn(Notifications, "showNoticeNotification");
+
+  afterEach(() => {
+    cleanup();
+  });
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -102,6 +113,41 @@ describe("Theme component", () => {
     fireEvent.error(css);
     expect(loaderHideMock).toHaveBeenCalledOnce();
     expect(notificationAddMock).toHaveBeenCalledWith("Failed to load theme");
+  });
+
+  it("applies theme switches without waiting for the debounce", () => {
+    const { style } = renderComponent();
+    setThemeSignal({ ...themeSignal(), name: "serika_dark", bg: "#123" });
+
+    expect(style.innerHTML).toContain("--bg-color: #123;");
+  });
+
+  it("debounces colour edits within the same theme", () => {
+    const { style } = renderComponent();
+    setThemeSignal({ ...themeSignal(), bg: "#456" });
+
+    expect(style.innerHTML).toContain("--bg-color: #000;");
+    vi.runAllTimers();
+    expect(style.innerHTML).toContain("--bg-color: #456;");
+  });
+
+  it("saves applied colours and replaces the startup palette", () => {
+    localStorage.removeItem("themeColors");
+    const bootstrap = document.createElement("style");
+    bootstrap.id = "themeBootstrap";
+    document.head.append(bootstrap);
+
+    renderComponent();
+    // the initial default theme must not replace the saved palette
+    expect(localStorage.getItem("themeColors")).toBeNull();
+    expect(bootstrap.isConnected).toBe(true);
+
+    setThemeSignal({ ...themeSignal(), name: "serika_dark", bg: "#789" });
+
+    expect(bootstrap.isConnected).toBe(false);
+    expect(JSON.parse(localStorage.getItem("themeColors") ?? "{}")).toEqual(
+      expect.objectContaining({ "bg-color": "#789", "main-color": "#fff" }),
+    );
   });
 
   it("renders favicon", () => {

@@ -160,6 +160,20 @@ describe("D1 data contracts", () => {
       );
     });
   });
+  it("rejects results for missing users", async () => {
+    await withRuntime(test.env, async () => {
+      await expect(
+        Results.addResult("missing", {
+          _id: newId(),
+          timestamp: 10,
+          mode: "time",
+          mode2: "15",
+          wpm: 80,
+          acc: 100,
+        } as unknown as DBResult),
+      ).rejects.toThrow("User not found");
+    });
+  });
   it("deletes application and auth data together, retaining banned identity hashes", async () => {
     await withRuntime(test.env, async () => {
       await mutateUser("delete", (user) => {
