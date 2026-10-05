@@ -1,9 +1,15 @@
-import { afterEach, expect, it, vi } from "vite-plus/test";
+import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
 
 const config = vi.hoisted(() => ({ backendUrl: "/api", clientVersion: "7" }));
+const preloadUser = vi.hoisted(() => vi.fn());
 vi.unmock("../src/ts/auth-client");
 vi.mock("virtual:env-config", () => ({ envConfig: config }));
 vi.mock("../src/ts/states/core", () => ({ setUserId: vi.fn() }));
+vi.mock("../src/ts/ape/user", () => ({ fetchUserFromApi: preloadUser }));
+beforeEach(() => {
+  preloadUser.mockReset();
+  config.backendUrl = "/api";
+});
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.resetModules();
@@ -40,3 +46,62 @@ it.each([
     expect(fetch.mock.calls[0]?.[1]?.credentials).toBe("include");
   },
 );
+
+it("reuses the account check when initializing an existing session", async () => {
+  const fetch = vi
+    .fn<typeof globalThis.fetch>()
+    .mockImplementation(async (input) =>
+      Response.json(
+        (input instanceof Request ? input.url : input.toString()).includes(
+          "list-accounts",
+        )
+          ? []
+          : {
+              user: { id: "user", name: "User", email: "user@example.test" },
+              session: { id: "session" },
+            },
+      ),
+    );
+  vi.stubGlobal("fetch", fetch);
+  preloadUser.mockResolvedValue({ name: "User" });
+  const { init } = await import("../src/ts/auth-client");
+  const callback = vi.fn(async () => undefined);
+  await init(callback);
+  expect(preloadUser).toHaveBeenCalledOnce();
+  expect(callback).toHaveBeenCalledWith(
+    true,
+    expect.objectContaining({ uid: "user" }),
+  );
+  expect(fetch).toHaveBeenCalledTimes(2);
+});
+
+it("preserves onboarding for sessions without an Oxytype account", async () => {
+  const fetch = vi
+    .fn<typeof globalThis.fetch>()
+    .mockImplementation(async (input) =>
+      Response.json(
+        (input instanceof Request ? input.url : input.toString()).includes(
+          "list-accounts",
+        )
+          ? []
+          : {
+              user: { id: "new", name: "New", email: "new@example.test" },
+              session: { id: "session" },
+            },
+      ),
+    );
+  vi.stubGlobal("fetch", fetch);
+  const { SnapshotInitError } =
+    await import("../src/ts/utils/snapshot-init-error");
+  preloadUser.mockRejectedValue(new SnapshotInitError("Not found", 404));
+  const { init, authPromise } = await import("../src/ts/auth-client");
+  const { googleSignUpEvent } = await import("../src/ts/events/google-sign-up");
+  const dispatch = vi.spyOn(googleSignUpEvent, "dispatch");
+  const callback = vi.fn(async () => undefined);
+  await init(callback);
+  await authPromise;
+  expect(callback).not.toHaveBeenCalled();
+  expect(dispatch).toHaveBeenCalledWith(
+    expect.objectContaining({ isNewUser: true }),
+  );
+});

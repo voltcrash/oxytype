@@ -6,6 +6,8 @@ import { promiseWithResolvers } from "./utils/misc";
 import { setUserId } from "./states/core";
 import { googleSignUpEvent } from "./events/google-sign-up";
 import { createEvent } from "./hooks/createEvent";
+import { fetchUserFromApi } from "./ape/user";
+import { SnapshotInitError } from "./utils/snapshot-init-error";
 
 const authURL = new URL(
   `${envConfig.backendUrl.replace(/\/$/, "")}/auth`,
@@ -80,19 +82,24 @@ export async function init(callback: ReadyCallback): Promise<void> {
   try {
     available = true;
     const user = await refreshSession(false);
+    setUserState(user);
     if (user !== null) {
       // A social sign-in can return before the username/captcha onboarding is complete.
-      const response = await fetch(`${envConfig.backendUrl}/users`, {
-        credentials: "include",
-        headers: { "X-Client-Version": envConfig.clientVersion },
-      });
-      if (response.status === 404) {
+      try {
+        // Share the onboarding check with snapshot/config initialization.
+        await fetchUserFromApi();
+      } catch (error) {
+        if (
+          !(error instanceof SnapshotInitError) ||
+          error.responseCode !== 404
+        ) {
+          throw error;
+        }
         ignoreAuthCallback = true;
         googleSignUpEvent.dispatch({ signedInUser: { user }, isNewUser: true });
         return;
       }
     }
-    setUserState(user);
     await callback(true, user);
   } catch (error) {
     available = false;
