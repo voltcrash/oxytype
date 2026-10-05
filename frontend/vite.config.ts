@@ -236,24 +236,8 @@ function getBuildOptions({
               test: /node_modules\/(?:@better-auth|better-auth|better-call|@better-fetch)\//,
             },
             {
-              name: "vendor-tanstack",
-              test: /node_modules\/@tanstack\//,
-            },
-            {
-              name: "oxytype-packages",
-              test: /\/packages\//,
-            },
-            {
               name: "vendor-chart",
               test: /node_modules\/chart/,
-            },
-            {
-              name: "oxytype-utils",
-              test: /src\/ts\/utils\//,
-            },
-            {
-              name: "vendor",
-              test: /node_modules\//,
             },
           ],
         },
