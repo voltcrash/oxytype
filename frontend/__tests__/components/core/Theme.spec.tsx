@@ -131,6 +131,25 @@ describe("Theme component", () => {
     expect(style.innerHTML).toContain("--bg-color: #456;");
   });
 
+  it("saves applied colours and replaces the startup palette", () => {
+    localStorage.removeItem("themeColors");
+    const bootstrap = document.createElement("style");
+    bootstrap.id = "themeBootstrap";
+    document.head.append(bootstrap);
+
+    renderComponent();
+    // the initial default theme must not replace the saved palette
+    expect(localStorage.getItem("themeColors")).toBeNull();
+    expect(bootstrap.isConnected).toBe(true);
+
+    setThemeSignal({ ...themeSignal(), name: "serika_dark", bg: "#789" });
+
+    expect(bootstrap.isConnected).toBe(false);
+    expect(JSON.parse(localStorage.getItem("themeColors") ?? "{}")).toEqual(
+      expect.objectContaining({ "bg-color": "#789", "main-color": "#fff" }),
+    );
+  });
+
   it("renders favicon", () => {
     const { favIcon } = renderComponent();
 

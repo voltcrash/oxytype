@@ -16,6 +16,10 @@ import { showNoticeNotification } from "../../states/notifications";
 import { getTheme } from "../../states/theme";
 import { FavIcon } from "./FavIcon";
 
+// Read by the inline script in html/head.html to paint the last theme early.
+const THEME_COLORS_KEY = "themeColors";
+const BOOTSTRAP_STYLE_ID = "themeBootstrap";
+
 function toVars(colors: ThemeColors): Record<string, string> {
   return {
     "bg-color": colors.bg,
@@ -65,9 +69,17 @@ export function Theme(): JSXElement {
     showNoticeNotification("Failed to load theme");
   };
 
-  const applyColors = (colors: ThemeColors) => {
+  const applyColors = (colors: ThemeColors, persist: boolean) => {
     const style = styleEl();
     if (style) style.textContent = toCss(colors);
+    if (!persist) return;
+    // The startup palette loses to the real theme once config has applied it.
+    document.getElementById(BOOTSTRAP_STYLE_ID)?.remove();
+    try {
+      localStorage.setItem(THEME_COLORS_KEY, JSON.stringify(toVars(colors)));
+    } catch {
+      // storage may be full or unavailable
+    }
   };
   const debouncedApply = debounce(125, applyColors);
   onCleanup(() => debouncedApply.cancel());
@@ -76,9 +88,9 @@ export function Theme(): JSXElement {
     // Theme switches apply immediately; rapid colour edits are debounced.
     if (previous === undefined || previous.name !== colors.name) {
       debouncedApply.cancel({ upcomingOnly: true });
-      applyColors(colors);
+      applyColors(colors, previous !== undefined);
     } else {
-      debouncedApply(colors);
+      debouncedApply(colors, true);
     }
   });
 
