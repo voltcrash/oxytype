@@ -30,7 +30,7 @@ export function fontStyles(options: { isDevelopment: boolean }): Plugin {
   font-family: ${JSON.stringify(family)};
   font-style: normal;
   font-weight: ${weight};
-  font-display: block;
+  font-display: swap;
   src: url(${JSON.stringify(file)}) format("woff2");
 }`;
       const faces = [face("Vazirharf", "/webfonts/Vazirharf-NL-Regular.woff2")];
