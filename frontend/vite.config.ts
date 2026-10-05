@@ -139,6 +139,23 @@ function getPlugins({
         navigateFallback: "",
         runtimeCaching: [
           {
+            urlPattern: ({ url }) => url.pathname === "/version.json",
+            handler: "NetworkOnly",
+          },
+          {
+            // Content hashes change on deploy, so cached build assets stay valid.
+            urlPattern: ({ url, sameOrigin }) =>
+              sameOrigin &&
+              /^\/(?:js|css|webfonts)\/.*[.-][\w-]{8,}\.(?:js|css|woff2)$/.test(
+                url.pathname,
+              ),
+            handler: "CacheFirst",
+            options: {
+              cacheName: "oxytype-build-assets",
+              expiration: { maxEntries: 128, maxAgeSeconds: 30 * 24 * 60 * 60 },
+            },
+          },
+          {
             urlPattern: (options) => {
               const isApi =
                 options.url.pathname === "/api" ||
@@ -146,14 +163,6 @@ function getPlugins({
               return options.sameOrigin && !isApi;
             },
             handler: "NetworkFirst",
-            options: {},
-          },
-          {
-            urlPattern: (options) => {
-              //disable caching for version.json
-              return options.url.pathname === "/version.json";
-            },
-            handler: "NetworkOnly",
             options: {},
           },
         ],
