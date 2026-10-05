@@ -13,7 +13,7 @@ import {
   isUniqueViolation,
   chunks,
 } from "../db/client";
-import { mutateUser, readUser, stage } from "../db/mutation";
+import { currentUserDraft, mutateUser, readUser, stage } from "../db/mutation";
 import { users, inbox, rewardGrants, connections } from "../db/schema";
 import { getCachedConfiguration } from "../init/configuration";
 import { getDayOfYear } from "date-fns";
@@ -118,7 +118,13 @@ export async function addUser(
   }
 }
 export async function exists(uid: string): Promise<boolean> {
-  return (await readUser(uid)) !== undefined;
+  if (currentUserDraft(uid) !== undefined) return true;
+  return (
+    (await statement(
+      "SELECT 1 AS found FROM users WHERE uid=?",
+      uid,
+    ).first()) !== null
+  );
 }
 export async function deleteUser(uid: string): Promise<void> {
   await database().delete(users).where(eq(users.uid, uid));
