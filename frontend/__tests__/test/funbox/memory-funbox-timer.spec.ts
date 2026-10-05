@@ -63,4 +63,23 @@ describe("memory funbox timer", () => {
     expect(getMemoryTimerText()).toBe("Timer left to memorise all words: 2s");
     expect(isWordsWrapperVisible()).toBe(true);
   });
+
+  it("replaces the previous interval when a new countdown starts", () => {
+    MemoryTimer.start(3);
+    vi.advanceTimersByTime(1000);
+
+    MemoryTimer.start(5);
+    expect(getMemoryTimerText()).toBe("Timer left to memorise all words: 5s");
+    expect(vi.getTimerCount()).toBe(1);
+
+    vi.advanceTimersByTime(2000);
+    expect(getMemoryTimerText()).toBe("Timer left to memorise all words: 3s");
+    expect(getMemoryTimerVisibility()).toBe("shown");
+    expect(isWordsWrapperVisible()).toBe(true);
+
+    vi.advanceTimersByTime(3000);
+    expect(getMemoryTimerVisibility()).toBe("hidden");
+    expect(isWordsWrapperVisible()).toBe(false);
+    expect(vi.getTimerCount()).toBe(0);
+  });
 });
