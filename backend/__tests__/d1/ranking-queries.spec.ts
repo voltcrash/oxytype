@@ -3,6 +3,7 @@ import { createTestRuntime, seedUser } from "./helpers";
 import { withRuntime } from "../../src/runtime/env";
 import { statement } from "../../src/db/client";
 import {
+  rankingPage,
   rankingQuery,
   rankingUser,
   type RankingRow,
@@ -60,6 +61,53 @@ describe("individual leaderboard ranks", () => {
   afterAll(async () => await test?.dispose());
 
   for (const table of ["daily_entries", "weekly_entries"] as const) {
+    it(`keeps ${table} totals independent of pagination and preserves expiry filters`, async () => {
+      await withRuntime(test.env, async () => {
+        const selectedBoard = table === "daily_entries" ? board : undefined;
+        for (const includeExpired of [false, true]) {
+          for (const userIds of [undefined, [], ["a", "c", "expired", "c"]]) {
+            const { query, values } = rankingQuery(
+              table,
+              period,
+              selectedBoard,
+              userIds,
+              includeExpired,
+            );
+            const expected = await statement(
+              `${query} SELECT count(*) AS count,coalesce(min(json_extract(data,'$.wpm')),0) AS minWpm FROM filtered`,
+              ...values,
+            ).first<{ count: number; minWpm: number }>();
+            for (const page of [0, 1, 10]) {
+              const result = await rankingPage(
+                table,
+                period,
+                page,
+                2,
+                selectedBoard,
+                userIds,
+                includeExpired,
+              );
+              expect(result).toMatchObject(expected ?? {});
+              const rows = await statement(
+                `${query} SELECT * FROM filtered ORDER BY rank LIMIT 2 OFFSET ?`,
+                ...values,
+                page * 2,
+              ).all<RankingRow>();
+              expect(result.rows).toEqual(rows.results);
+            }
+          }
+        }
+        expect(
+          await rankingPage(table, period, 0, 2, selectedBoard),
+        ).toMatchObject({
+          count: 4,
+          minWpm: 60,
+        });
+        expect(
+          await rankingPage(table, period, 0, 2, selectedBoard, []),
+        ).toEqual({ rows: [], count: 0, minWpm: 0 });
+      });
+    });
     it(`matches page ranks for ${table}, including ties, expiry and friend filters`, async () => {
       await withRuntime(test.env, async () => {
         const selectedBoard = table === "daily_entries" ? board : undefined;

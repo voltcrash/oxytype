@@ -41,16 +41,19 @@ export async function rankingPage(
     userIds,
     includeExpired,
   );
-  const rows = await statement(
-    `${query} SELECT * FROM filtered ORDER BY rank LIMIT ? OFFSET ?`,
-    ...values,
-    Math.min(pageSize, 1000),
-    page * pageSize,
-  ).all<RankingRow>();
-  const summary = await statement(
-    `${query} SELECT count(*) AS count,coalesce(min(json_extract(data,'$.wpm')),0) AS minWpm FROM filtered`,
-    ...values,
-  ).first<{ count: number; minWpm: number }>();
+  // Totals need filtering only; avoid ranking every row a second time.
+  const [rows, summary] = await Promise.all([
+    statement(
+      `${query} SELECT * FROM filtered ORDER BY rank LIMIT ? OFFSET ?`,
+      ...values,
+      Math.min(pageSize, 1000),
+      page * pageSize,
+    ).all<RankingRow>(),
+    statement(
+      `SELECT count(*) AS count,coalesce(min(json_extract(data,'$.wpm')),0) AS minWpm FROM ${table} WHERE period=? AND expires_at>? ${board === undefined ? "" : "AND board=?"} ${userIds === undefined ? "" : "AND uid IN (SELECT value FROM json_each(?))"}`,
+      ...values,
+    ).first<{ count: number; minWpm: number }>(),
+  ]);
   return {
     rows: rows.results,
     count: summary?.count ?? 0,
