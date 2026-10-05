@@ -3,7 +3,7 @@ import { JSXElement } from "solid-js";
 // Rendered into index.html at build time, before the application bundle runs.
 export function StartupScreen(): JSXElement {
   return (
-    <>
+    <div id="startupScreen" class="contents">
       <header class="text-[2rem] text-main [font-family:'Lexend_Deca',sans-serif]">
         oxytype
       </header>
@@ -21,6 +21,6 @@ export function StartupScreen(): JSXElement {
         <p>Loading Oxytype...</p>
       </main>
       <div aria-hidden="true"></div>
-    </>
+    </div>
   );
 }

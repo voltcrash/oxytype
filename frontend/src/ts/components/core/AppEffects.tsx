@@ -137,6 +137,8 @@ export function AppEffects(props: AppElements): JSXElement {
   });
 
   onMount(() => {
+    // Solid render appends to the host; remove the build-time loading markup.
+    element.querySelector("#startupScreen")?.remove();
     const noscript = body.querySelector<HTMLElement>("noscript");
     createEffect(() => {
       const screenshotting = getIsScreenshotting();

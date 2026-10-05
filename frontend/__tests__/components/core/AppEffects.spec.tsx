@@ -201,6 +201,14 @@ async function ready(): Promise<void> {
 }
 
 describe("App effects", () => {
+  it("replaces startup feedback without removing application content", () => {
+    const startup = document.createElement("div");
+    startup.id = "startupScreen";
+    element.prepend(startup);
+    mount();
+    expect(startup.isConnected).toBe(false);
+    expect(element.querySelector("input")).not.toBeNull();
+  });
   it("hides owned fallbacks during screenshots and stops reacting on disposal", () => {
     const noscript = document.createElement("noscript");
     noscript.className = "fallback";
