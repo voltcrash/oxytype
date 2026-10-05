@@ -38,12 +38,16 @@ export class WeeklyXpLeaderboard {
     if (!config.enabled) return -1;
     const { entry, xpGained } = opts,
       period = this.period();
-    const previous =
-      (await statement(
-        "SELECT xp FROM weekly_entries WHERE period=? AND uid=?",
-        period,
-        entry.uid,
-      ).first<number>("xp")) ?? 0;
+    // Rank against this user's total after the gain, in a single read.
+    const ahead = await statement(
+      "WITH me AS (SELECT COALESCE((SELECT xp FROM weekly_entries WHERE period=? AND uid=?),0)+? AS xp) SELECT count(*) AS count FROM weekly_entries,me WHERE period=? AND uid<>? AND (weekly_entries.xp>me.xp OR (weekly_entries.xp=me.xp AND uid>?))",
+      period,
+      entry.uid,
+      xpGained,
+      period,
+      entry.uid,
+      entry.uid,
+    ).first<number>("count");
     await stage(
       statement(
         "INSERT INTO weekly_entries(period,uid,xp,time_typed_seconds,expires_at,data) VALUES(?,?,?,?,?,?) ON CONFLICT(period,uid) DO UPDATE SET xp=xp+excluded.xp,time_typed_seconds=time_typed_seconds+excluded.time_typed_seconds,data=excluded.data",
@@ -59,16 +63,7 @@ export class WeeklyXpLeaderboard {
       "weekly-xp-leaderboard-results",
       "weekly",
     );
-    return (
-      ((await statement(
-        "SELECT count(*) AS count FROM weekly_entries WHERE period=? AND uid<>? AND (xp>? OR (xp=? AND uid>?))",
-        period,
-        entry.uid,
-        previous + xpGained,
-        previous + xpGained,
-        entry.uid,
-      ).first<number>("count")) ?? 0) + 1
-    );
+    return (ahead ?? 0) + 1;
   }
   public async getResults(
     page: number,

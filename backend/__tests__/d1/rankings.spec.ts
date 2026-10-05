@@ -84,6 +84,44 @@ describe("SQL ranking parity", () => {
       });
     });
   });
+  it("ranks weekly XP gains against the updated total", async () => {
+    await withRuntime(test.env, async () => {
+      const board = new WeeklyXpLeaderboard(Date.UTC(2020, 0, 6));
+      const config = {
+        ...BASE_CONFIGURATION.leaderboards.weeklyXp,
+        enabled: true,
+        expirationTimeInDays: 14,
+      };
+      const entry = (
+        uid: string,
+      ): {
+        uid: string;
+        name: string;
+        lastActivityTimestamp: number;
+        timeTypedSeconds: number;
+      } => ({
+        uid,
+        name: uid,
+        lastActivityTimestamp: Date.now(),
+        timeTypedSeconds: 10,
+      });
+      expect(
+        await board.addResult(config, { entry: entry("b"), xpGained: 50 }),
+      ).toBe(1);
+      expect(
+        await board.addResult(config, { entry: entry("a"), xpGained: 30 }),
+      ).toBe(2);
+      // 30 + 20 ties b at 50; reverse lexical order keeps b ahead
+      expect(
+        await board.addResult(config, { entry: entry("a"), xpGained: 20 }),
+      ).toBe(2);
+      await atomicUser("c", async () => {
+        expect(
+          await board.addResult(config, { entry: entry("c"), xpGained: 60 }),
+        ).toBe(1);
+      });
+    });
+  });
   it("publishes complete all-time generations and hides ineligible users", async () => {
     await withRuntime(test.env, async () => {
       await statement(
