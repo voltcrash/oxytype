@@ -42,8 +42,7 @@ footer button:hover > .relative > i,
 #restartTestButtonWithSameWordset:hover > i,
 #nextTestButton:hover > i,
 #practiseWordsButton:hover > i,
-#watchReplayButton:hover > i,
-#watchVideoAdButton:hover > i {
+#watchReplayButton:hover > i {
   background: linear-gradient(
     90deg,
     #60b6ce,
