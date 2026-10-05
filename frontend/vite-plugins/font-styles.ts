@@ -5,6 +5,23 @@ import { fileURLToPath, URL as NodeURL } from "node:url";
 import type { Plugin } from "vite";
 
 import { Fonts } from "../src/ts/constants/fonts";
+import { getFontawesomeConfig } from "./fontawesome-subset";
+
+/**
+ * Drops `.fa-name { --fa: "..." }` rules for icons missing from the subset
+ * font; they could never render a glyph anyway.
+ */
+export function pruneIconRules(css: string, used: Set<string>): string {
+  return css.replace(
+    /((?:\.fa-[a-z0-9-]+,\s*)*\.fa-[a-z0-9-]+)\s*\{\s*--fa:\s*"[^"]*";\s*\}\s*/g,
+    (rule, selectors: string) =>
+      selectors
+        .split(",")
+        .some((selector) => used.has(selector.trim().slice(".fa-".length)))
+        ? rule
+        : "",
+  );
+}
 
 // Real CSS files let Tailwind resolve these imports without a Sass preprocessor.
 // Separate directories keep development and production servers independent.
@@ -62,7 +79,15 @@ export function fontStyles(options: { isDevelopment: boolean }): Plugin {
           return readFileSync(file, "utf8").replaceAll("../webfonts/", fonts);
         },
       );
-      writeFileSync(imports["oxytype-fontawesome.css"], styles.join("\n"));
+      let fontawesome = styles.join("\n");
+      if (!options.isDevelopment) {
+        const { solid, regular, brands } = getFontawesomeConfig();
+        fontawesome = pruneIconRules(
+          fontawesome,
+          new Set([...solid, ...regular, ...brands]),
+        );
+      }
+      writeFileSync(imports["oxytype-fontawesome.css"], fontawesome);
     },
   };
 }
