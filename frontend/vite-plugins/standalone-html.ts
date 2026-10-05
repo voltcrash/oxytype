@@ -5,6 +5,7 @@ import path from "node:path";
 
 type Renderer = typeof import("../src/ts/standalone-renderer").renderStandalone;
 const pages = new Set([
+  "/index.html",
   "/oauth-callback.html",
   "/404.html",
   "/privacy-policy.html",
@@ -45,7 +46,8 @@ export function standaloneHtml(): Plugin {
     transformIndexHtml: {
       order: "pre",
       async handler(html, context) {
-        if (!pages.has(context.path)) return html;
+        const page = context.path === "/" ? "/index.html" : context.path;
+        if (!pages.has(page)) return html;
         let render = renderer;
         if (server !== undefined) {
           const module = (await server.ssrLoadModule(
@@ -56,10 +58,13 @@ export function standaloneHtml(): Plugin {
         if (render === undefined) {
           throw new Error("Standalone renderer is not ready");
         }
-        const rendered = render(context.path);
+        const rendered = render(page);
         return html
           .replace("</head>", `${rendered.hydrationScript}</head>`)
-          .replace(/(<div id="app"[^>]*>)(<\/div>)/, `$1${rendered.html}$2`);
+          .replace(
+            /(<div\s+id="app"[^>]*>)(\s*<\/div>)/,
+            `$1${rendered.html}$2`,
+          );
       },
     },
   };
