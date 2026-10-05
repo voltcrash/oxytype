@@ -1,13 +1,25 @@
-import { JSXElement, onMount, Show } from "solid-js";
+import {
+  createEffect,
+  createSignal,
+  JSXElement,
+  lazy,
+  onCleanup,
+  onMount,
+  Show,
+  Suspense,
+} from "solid-js";
 
+import { showErrorNotification } from "../../../../states/notifications";
 import {
   resultState,
   resultWordHighlightEvent,
   setResultElements,
+  bindResultChartLoader,
+  waitForResultChart,
 } from "../../../../states/result";
+import { isTestActive } from "../../../../states/test";
 import { Fa } from "../../../common/Fa";
 import { ResultButtons } from "./ResultButtons";
-import { ResultChart } from "./ResultChart";
 import { ResultLoginTip } from "./ResultLoginTip";
 import { ResultReplay } from "./ResultReplay";
 import { ResultStats } from "./ResultStats";
@@ -16,9 +28,28 @@ import { ResultWordsHistory } from "./ResultWordsHistory";
 import { useResultScreen } from "./useResultScreen";
 import { useScreenshotCanvas } from "./useScreenshotCanvas";
 
+const ResultChart = lazy(async () =>
+  import("./ResultChart").then((m) => ({ default: m.ResultChart })),
+);
+
 export function Result(): JSXElement {
   let resultEl: HTMLDivElement | undefined;
   let wrapperEl: HTMLDivElement | undefined;
+  const [chartRequested, setChartRequested] = createSignal(false);
+  const prepareChart = async (): Promise<void> => {
+    await ResultChart.preload();
+    setChartRequested(true);
+    await waitForResultChart();
+  };
+  onCleanup(bindResultChartLoader(prepareChart));
+  createEffect(() => {
+    // Warm the chart while typing; completing a short test still awaits mounting.
+    if (isTestActive()) {
+      void prepareChart().catch((error: unknown) =>
+        showErrorNotification("Could not load result chart", { error }),
+      );
+    }
+  });
 
   useScreenshotCanvas();
   useResultScreen(() => resultEl);
@@ -46,18 +77,25 @@ export function Result(): JSXElement {
         class="wrapper grid grid-cols-[auto_1fr] items-center gap-4 [grid-template-areas:'stats_chart'_'morestats_morestats'] max-md:grid-cols-[1fr] max-md:[grid-template-areas:'stats'_'chart'_'morestats'] [:where(&)_button]:p-[1em_2em]"
       >
         <ResultStats />
-        <ResultChart
-          onHighlightWords={(firstWordIndex, lastWordIndex) =>
-            resultWordHighlightEvent.dispatch({
-              type: "highlight",
-              firstWordIndex,
-              lastWordIndex,
-            })
-          }
-          onHoverChange={(hovering) =>
-            resultWordHighlightEvent.dispatch({ type: "hoverChart", hovering })
-          }
-        />
+        <Show when={chartRequested()}>
+          <Suspense>
+            <ResultChart
+              onHighlightWords={(firstWordIndex, lastWordIndex) =>
+                resultWordHighlightEvent.dispatch({
+                  type: "highlight",
+                  firstWordIndex,
+                  lastWordIndex,
+                })
+              }
+              onHoverChange={(hovering) =>
+                resultWordHighlightEvent.dispatch({
+                  type: "hoverChart",
+                  hovering,
+                })
+              }
+            />
+          </Suspense>
+        </Show>
         <div class="bottom col-[1/-1]">
           <ResultWordsHistory />
           <ResultReplay />

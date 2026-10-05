@@ -235,10 +235,6 @@ function getBuildOptions({
               name: "vendor-auth",
               test: /node_modules\/(?:@better-auth|better-auth|better-call|@better-fetch)\//,
             },
-            {
-              name: "vendor-chart",
-              test: /node_modules\/chart/,
-            },
           ],
         },
       },
