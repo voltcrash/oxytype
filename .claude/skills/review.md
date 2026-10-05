@@ -14,7 +14,7 @@ Trigger: user asks to review changes, review code, or uses /review
    - **Bugs**: null/undefined access, race conditions, off-by-one errors, missing error handling at system boundaries
    - **Dead code**: unused imports, variables, functions, or parameters introduced or left behind by the changes
    - **Redundancy**: code that duplicates existing logic or can be simplified
-   - **Consistency**: does the change follow patterns established in surrounding code and project conventions (see CLAUDE.md)
+   - **Consistency**: does the change follow patterns established in surrounding code and project conventions (see AGENTS.md)
    - **Tailwind**: non-canonical classes, inline styles that should be Tailwind, missing responsive variants if siblings have them
    - **Solid-specific**: broken reactivity, missing cleanup, doing things not the "Solid way"
    - **Improvements**: any other changes that would make the code more robust, readable, maintainable, better
