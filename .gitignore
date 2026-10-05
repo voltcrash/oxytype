@@ -103,13 +103,11 @@ vite-build/
 .cloudflareKey.txt
 .cloudflareKey_copy.txt
 
-frontend/static/adtest.html
 backend/lastId.txt
 backend/log_success.txt
 backend/credentials/*.json
 backend/.env
 
-static/adtest.html
 backend/migrationStats.txt
 
 # Madge
@@ -125,7 +123,6 @@ updateContributors.js
 removeDupes.js
 content-validation.js
 
-ads.txt
 updateContributors.mjs
 copyAnticheatToDev.sh
 
