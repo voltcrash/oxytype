@@ -64,10 +64,21 @@ export async function rankingUser(
   board?: string,
   userIds?: string[],
 ): Promise<RankingRow | null> {
-  const { query, values } = rankingQuery(table, period, board, userIds);
+  const score = table === "daily_entries" ? "score" : "xp";
+  const scope = `period=? AND expires_at>? ${board === undefined ? "" : "AND board=?"}`;
+  const scopeValues: (string | number)[] = [period, Date.now()];
+  if (board !== undefined) scopeValues.push(board);
+  const friends =
+    userIds === undefined ? "" : "AND uid IN (SELECT value FROM json_each(?))";
+  const friendValues = userIds === undefined ? [] : [encode(userIds)];
+  // Read one profile, then count higher scores using the ranking index.
+  const ahead = `SELECT count(*) FROM ${table} WHERE ${scope} AND (${score},uid)>(me.score,me.uid)`;
   return await statement(
-    `${query} SELECT * FROM filtered WHERE uid=?`,
-    ...values,
+    `WITH me AS (SELECT uid,data,${score} AS score${table === "weekly_entries" ? ",time_typed_seconds AS timeTypedSeconds" : ""} FROM ${table} WHERE ${scope} AND uid=? ${friends}) SELECT me.*,(1+(${ahead})) AS rank${userIds === undefined ? "" : `,(1+(${ahead} ${friends})) AS friendsRank`} FROM me`,
+    ...scopeValues,
     uid,
+    ...friendValues,
+    ...scopeValues,
+    ...(userIds === undefined ? [] : [...scopeValues, ...friendValues]),
   ).first<RankingRow>();
 }
