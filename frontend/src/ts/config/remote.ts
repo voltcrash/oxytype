@@ -1,7 +1,7 @@
 import * as ConfigSchemas from "@oxytype/schemas/configs";
 
 import { migrateConfig } from "./utils";
-import { applyConfig } from "./lifecycle";
+import { applyConfig, configLoadPromise } from "./lifecycle";
 import { saveFullConfigToLocalStorage } from "./persistence";
 import Ape from "../ape";
 import { SnapshotInitError } from "../utils/snapshot-init-error";
@@ -10,6 +10,8 @@ import { Config } from "./store";
 
 export async function updateFromServer(): Promise<void> {
   const remoteConfig = await getRemoteConfig();
+  // Fetch remotely in parallel, but local settings must finish applying first.
+  await configLoadPromise;
 
   const areConfigsEqual =
     JSON.stringify(Config) === JSON.stringify(remoteConfig);

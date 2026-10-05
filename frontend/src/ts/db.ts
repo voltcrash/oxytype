@@ -79,12 +79,14 @@ export function setSnapshot(
 export async function initSnapshot(): Promise<Snapshot | false> {
   //send api request with token that returns tags, presets, and data needed for snap
   const snap = getDefaultSnapshot();
-  await configurationPromise;
 
   try {
     if (!isAuthenticated()) return false;
 
-    const [userData] = await Promise.all([fetchUserFromApi()]);
+    const [userData] = await Promise.all([
+      fetchUserFromApi(),
+      configurationPromise,
+    ]);
 
     if (userData === null || userData === undefined) {
       throw new SnapshotInitError(

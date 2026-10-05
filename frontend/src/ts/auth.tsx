@@ -106,10 +106,13 @@ const authenticationMemos = Object.fromEntries(
 async function getDataAndInit(): Promise<boolean> {
   try {
     console.log("getting account data");
-    const snapshot = await DB.initSnapshot();
     //TODO: preload collections for now, remove when __nonReactive is removed from collections
-    await waitForPresetsReady();
-    await waitForTagsReady();
+    const [snapshot] = await Promise.all([
+      DB.initSnapshot(),
+      waitForPresetsReady(),
+      waitForTagsReady(),
+      updateConfigFromServer(),
+    ]);
 
     if (snapshot === false) {
       throw new Error(
@@ -119,7 +122,6 @@ async function getDataAndInit(): Promise<boolean> {
 
     void Sentry.setUser(snapshot.uid, snapshot.name);
 
-    await updateConfigFromServer();
     return true;
   } catch (error) {
     console.error(error);
