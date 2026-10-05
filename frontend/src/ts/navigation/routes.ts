@@ -29,3 +29,18 @@ export const appRoutes = [
   { path: "/friends", info: { page: "friends", access: "user" } },
   { path: "*notFound", info: { page: "404" } },
 ] satisfies (RouteDefinition & { info: AppRouteInfo })[];
+
+/** Resolves the page a same-origin path renders, mirroring `appRoutes`. */
+export function getPageForPath(pathname: string): PageName {
+  const segments = pathname.split("/").filter((s) => s !== "");
+  for (const route of appRoutes) {
+    const pattern = route.path.split("/").filter((s) => s !== "");
+    if (pattern[0]?.startsWith("*")) return route.info.page;
+    if (pattern.length !== segments.length) continue;
+    const matches = pattern.every(
+      (part, i) => part.startsWith(":") || part === segments[i],
+    );
+    if (matches) return route.info.page;
+  }
+  return "404";
+}
