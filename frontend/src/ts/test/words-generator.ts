@@ -6,7 +6,6 @@ import QuotesController, {
   Quote,
   QuoteWithTextSplit,
 } from "../controllers/quotes-controller";
-import * as BritishEnglish from "./british-english";
 import * as LazyMode from "./lazy-mode";
 import * as EnglishPunctuation from "./english-punctuation";
 import * as PractiseWords from "./practise-words";
@@ -391,6 +390,7 @@ async function applyBritishEnglishToWord(
     return word;
   }
 
+  const BritishEnglish = await import("./british-english");
   return await BritishEnglish.replace(word, previousWord);
 }
 
