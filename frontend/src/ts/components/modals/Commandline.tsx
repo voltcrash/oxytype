@@ -93,7 +93,7 @@ function CommandDisplay(props: { command: CommandlineSuggestion }): JSXElement {
                   when={props.command.isActive}
                   fallback={<span class="mr-2 inline-block w-[1.25em]"></span>}
                 >
-                  <Fa icon="fa-check" fixedWidth />
+                  <Fa icon="fa-check" fixedWidth class="mr-2" />
                 </Show>
               </Show>
             </Show>
@@ -220,7 +220,7 @@ export function Commandline(): JSXElement {
         commandlineState.noBackground && "bg-transparent",
       )}
       modalClass={cn(
-        "block max-w-[600px] gap-0 overflow-hidden rounded-[var(--roundness)] p-0 ring-0 transition-[box-shadow] duration-125",
+        "block max-w-[600px] gap-0 overflow-hidden rounded-[var(--roundness)] p-0 ring-0 sm:p-0 transition-[box-shadow] duration-125",
         commandlineState.noBackground && "ring-[0.2em] ring-sub-alt",
         commandlineState.hasError &&
           "animate-[shake_0.1s_ease-in-out_infinite]",
@@ -261,7 +261,10 @@ export function Commandline(): JSXElement {
         </div>
       </Show>
       <div
-        class="suggestions ffscroll grid max-h-[calc(100vh-15rem)] cursor-pointer overflow-y-scroll select-none"
+        class={cn(
+          "suggestions ffscroll grid max-h-[calc(100vh-15rem)] cursor-pointer overflow-y-scroll select-none",
+          commandlineState.suggestions.length > 0 && "pb-2",
+        )}
         ref={(el) => {
           suggestionsEl = el;
         }}

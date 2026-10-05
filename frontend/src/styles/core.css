@@ -116,7 +116,8 @@ html {
 }
 
 html {
-  @apply overflow-y-scroll scroll-smooth leading-[1.25];
+  @apply overflow-y-scroll scroll-smooth;
+  line-height: 1.25;
 }
 
 a {

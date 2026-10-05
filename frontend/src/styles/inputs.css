@@ -1,6 +1,7 @@
 input,
 textarea {
-  @apply outline-none border-none rounded bg-sub-alt text-text p-[0.5em] text-[1em] font-(family-name:--font) caret-main leading-[1.25em];
+  @apply outline-none border-none rounded bg-sub-alt text-text p-[0.5em] text-[1em] font-(family-name:--font) caret-main;
+  line-height: 1.25em;
   &:focus-visible {
     @apply shadow-control-focus;
   }

@@ -1,5 +1,16 @@
+/* Slim Select 4 enlarged its default spacing; keep the 2.x sizing. */
+:root {
+  --ss-main-height: 30px;
+  --ss-search-height: 0px;
+  --ss-option-height: 0px;
+  --ss-spacing-l: 7px;
+  --ss-spacing-m: 5px;
+  --ss-spacing-s: 3px;
+}
+
 .ss-main {
-  @apply outline-none border-none rounded bg-sub-alt text-text p-[0.5em] text-[1em] font-(family-name:--font) caret-main leading-[1.25] min-h-[2.25em];
+  @apply outline-none border-none rounded bg-sub-alt text-text p-[0.5em] text-[1em] font-(family-name:--font) caret-main min-h-[2.25em];
+  line-height: 1.25;
   &:focus {
     box-shadow: inherit;
   }
@@ -14,11 +25,14 @@
     @apply opacity-[0.33] pointer-events-none bg-sub-alt cursor-pointer;
   }
   .ss-values {
+    @apply p-0;
     .ss-placeholder {
       @apply p-0 m-0 text-sub;
+      line-height: 1em;
     }
     .ss-single {
-      @apply m-0;
+      @apply p-0 m-0;
+      line-height: inherit;
     }
     .ss-value {
       animation: unset !important;
@@ -53,9 +67,9 @@
   @apply transition-none;
   @apply border-none bg-sub-alt text-text;
   .ss-search {
-    @apply p-[0.5em] border-t-[0.1em] [border-top-style:solid] border-t-bg border-b-[0.1em] [border-bottom-style:solid] border-b-bg;
+    @apply shrink-0 p-[0.5em] border-t-[0.1em] [border-top-style:solid] border-t-bg border-b-[0.1em] [border-bottom-style:solid] border-b-bg;
     input {
-      @apply border-none bg-bg text-[1em] p-[0.5em];
+      @apply border-none bg-bg text-[1em] h-auto p-[0.5em];
       &:focus-visible {
         @apply shadow-control-focus;
       }
@@ -83,7 +97,7 @@
     .ss-optgroup .ss-option:not(.ss-disabled),
     .ss-option,
     .ss-option:not(.ss-disabled) {
-      @apply p-[0.5em] pl-[0.5em] text-text;
+      @apply p-[0.5em] pl-[0.5em] text-text [content-visibility:visible];
       &.ss-selected {
         @apply bg-main text-bg;
       }

@@ -10,7 +10,8 @@ button,
   .far,
   .fab,
   .icon {
-    @apply leading-[1.25] pointer-events-none justify-self-center;
+    @apply pointer-events-none justify-self-center;
+    line-height: 1.25;
   }
   &.fullWidth {
     @apply w-full;
@@ -29,7 +30,8 @@ input[type="submit"] {
   @apply transition-[background,color,opacity] duration-125 ease-[ease];
   @apply p-[0.5em] rounded bg-sub-alt;
   @apply text-center;
-  @apply select-none content-center items-center h-min leading-[1.25] appearance-none border-none font-[inherit] text-[1em] inline-flex gap-[0.5em] justify-center justify-items-center;
+  @apply select-none content-center items-center h-min appearance-none border-none font-[inherit] text-[1em] inline-flex gap-[0.5em] justify-center justify-items-center;
+  line-height: 1.25;
 
   &.danger {
     @apply bg-error text-bg;
@@ -75,7 +77,8 @@ button.text,
   @apply transition-[background,color,opacity] duration-125 ease-[ease];
   @apply p-[0.5em] rounded bg-none bg-transparent;
   @apply text-center;
-  @apply select-none content-center h-min leading-[1.25] appearance-none border-none font-[inherit] text-[1em] inline-flex gap-[0.5em] items-baseline justify-center;
+  @apply select-none content-center h-min appearance-none border-none font-[inherit] text-[1em] inline-flex gap-[0.5em] items-baseline justify-center;
+  line-height: 1.25;
 
   &.danger {
     @apply text-error bg-none bg-transparent;
