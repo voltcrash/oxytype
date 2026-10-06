@@ -570,6 +570,10 @@ describe("result controller test", () => {
       WeeklyXpLeaderboard.prototype,
       "addResult",
     );
+    const dailyAddResultMock = vi.spyOn(
+      DailyLeaderboard.prototype,
+      "addResult",
+    );
 
     beforeEach(async () => {
       await enableResultsSaving(true);
@@ -586,6 +590,7 @@ describe("result controller test", () => {
         resultGetLastTimestampMock,
         publicUpdateStatsMock,
         weeklyXpAddResultMock,
+        dailyAddResultMock,
       ].forEach((it) => it.mockClear());
 
       userGetMock.mockResolvedValue({ name: "bob" } as any);
@@ -598,6 +603,7 @@ describe("result controller test", () => {
       userIncrementXpMock.mockResolvedValue();
       userUpdateTypingStatsMock.mockResolvedValue();
       weeklyXpAddResultMock.mockResolvedValue(1);
+      dailyAddResultMock.mockResolvedValue(-1);
     });
 
     it("should add result", async () => {
@@ -717,6 +723,27 @@ describe("result controller test", () => {
         .expect(200);
       expect(userUpdateTypingStatsMock).toHaveBeenCalledWith(uid, 4, 10.1);
     });
+    it("adds english time 15 results to the daily leaderboard by default", async () => {
+      await mockApp
+        .post("/results")
+        .set("Authorization", `Bearer ${uid}`)
+        .send({ result: buildCompletedEvent() })
+        .expect(200);
+      expect(dailyAddResultMock).toHaveBeenCalledWith(
+        expect.objectContaining({ uid, wpm: 79.47 }),
+        expect.objectContaining({ enabled: true }),
+      );
+    });
+    it("keeps other modes off the daily leaderboard", async () => {
+      await mockApp
+        .post("/results")
+        .set("Authorization", `Bearer ${uid}`)
+        .send({
+          result: buildCompletedEvent({ mode: "words", mode2: "10" }),
+        })
+        .expect(200);
+      expect(dailyAddResultMock).not.toHaveBeenCalled();
+    });
     it("reads the last result timestamp while loading the user", async () => {
       let resolveUser: (user: any) => void = () => undefined;
       userGetMock.mockReturnValueOnce(
@@ -734,17 +761,7 @@ describe("result controller test", () => {
       expect((await request).status).toBe(200);
     });
     it("looks up daily and weekly ranks together after saving", async () => {
-      const mockConfig = await configuration;
-      const dailyLeaderboards = mockConfig.dailyLeaderboards;
-      mockConfig.dailyLeaderboards = {
-        ...dailyLeaderboards,
-        enabled: true,
-        validModeRules: [{ language: "english", mode: "time", mode2: "15" }],
-      };
-      vi.spyOn(Configuration, "getCachedConfiguration").mockResolvedValue(
-        mockConfig,
-      );
-      vi.spyOn(DailyLeaderboard.prototype, "addResult").mockResolvedValue(3);
+      dailyAddResultMock.mockResolvedValue(3);
       let resolveDaily: (entry: any) => void = () => undefined;
       const dailyRank = vi
         .spyOn(DailyLeaderboard.prototype, "getRank")
@@ -769,8 +786,6 @@ describe("result controller test", () => {
           weeklyXpLeaderboardRank: 7,
         });
       } finally {
-        mockConfig.dailyLeaderboards = dailyLeaderboards;
-        vi.mocked(DailyLeaderboard.prototype.addResult).mockRestore();
         dailyRank.mockRestore();
         weeklyRank.mockRestore();
       }

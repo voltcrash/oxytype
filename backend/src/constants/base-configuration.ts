@@ -84,10 +84,10 @@ export const BASE_CONFIGURATION: Configuration = {
     },
   },
   dailyLeaderboards: {
-    enabled: false,
-    maxResults: 0,
-    leaderboardExpirationTimeInDays: 0,
-    validModeRules: [],
+    enabled: true,
+    maxResults: 1000,
+    leaderboardExpirationTimeInDays: 2, // This should atleast be 2
+    validModeRules: [{ language: "english", mode: "time", mode2: "(15|60)" }],
     scheduleRewardsModeRules: [],
     xpRewardBrackets: [],
   },
