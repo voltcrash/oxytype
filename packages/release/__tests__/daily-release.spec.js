@@ -246,7 +246,7 @@ it("wires scheduled/manual production deployment before publication and always c
     ),
   );
   const workflow = parse(readFileSync(path, "utf8"));
-  expect(workflow.on.schedule).toEqual([{ cron: "0 0 * * *" }]);
+  expect(workflow.on.schedule).toEqual([{ cron: "17 0 * * *" }]);
   expect(workflow.on).toHaveProperty("workflow_dispatch");
   expect(workflow.concurrency["cancel-in-progress"]).toBe(false);
   const job = workflow.jobs.release;

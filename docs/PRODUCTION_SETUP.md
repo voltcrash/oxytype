@@ -111,7 +111,7 @@ under the Worker's public site prefix. Preserve other private values when editin
 
 ## Daily production releases
 
-The **Daily production release** Actions workflow runs at `00:00 UTC` each day.
+The **Daily production release** Actions workflow runs at `00:17 UTC` each day.
 It also supports **Run workflow** on `main`. It deploys the complete frontend/API
 site with the production Wrangler config, applies pending production D1 migrations,
 and publishes a GitHub release only after deployment succeeds.
@@ -130,7 +130,7 @@ The account ID and isolated resource IDs come from `backend/wrangler.production.
 The workflow writes credential files with mode `0600` for the validated production
 commands, then removes them even on failure. It never bootstraps or resets the database.
 
-A midnight run on October 5 creates release `2026.10.05` and tag `v2026.10.05`
+A 00:17 UTC run on October 5 creates release `2026.10.05` and tag `v2026.10.05`
 at the exact deployed `main` commit. It sets the Worker `VERSION` and the build
 checkout's package version to `2026.10.05`, without pushing a version commit to `main`.
 The release notes list all commits added since the previous successful production
@@ -146,7 +146,7 @@ retrying a failed run keeps its original date and `main` snapshot. An older fail
 run cannot deploy over a newer production release. A date tag belonging to another
 commit or a conflicting manual release stops the workflow before deployment.
 
-GitHub's scheduler can run late or drop jobs under load; midnight is the requested
+GitHub's scheduler can run late or drop jobs under load; 00:17 UTC is the requested
 trigger time, not an exact-time guarantee. See [GitHub scheduling behavior](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).
 Scheduled execution starts after this workflow is merged into the default branch.
 GitHub releases use the workflow's `GITHUB_TOKEN`, so they do not trigger the
