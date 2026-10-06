@@ -13,7 +13,6 @@ SELECT 'main', CASE WHEN
   OR EXISTS (SELECT 1 FROM auth_verifications)
   OR EXISTS (SELECT 1 FROM blocklist)
   OR EXISTS (SELECT 1 FROM configs)
-  OR EXISTS (SELECT 1 FROM connections)
   OR EXISTS (SELECT 1 FROM daily_entries)
   OR EXISTS (SELECT 1 FROM inbox)
   OR EXISTS (SELECT 1 FROM leaderboard_bests)
