@@ -8,6 +8,7 @@ import { getAuth } from "../../src/init/auth";
 import { patchConfiguration } from "../../src/init/configuration";
 import * as Users from "../../src/dal/user";
 import * as Public from "../../src/dal/public";
+import * as Logs from "../../src/dal/logs";
 import { mutateUser } from "../../src/db/mutation";
 import Worker from "../../src/worker";
 import { completedEvent } from "../__testData__/completed-event";
@@ -380,6 +381,46 @@ describe("production anticheat with D1", () => {
         },
       );
     }
+  });
+  it("pages and summarises anticheat audits for admin review", async () => {
+    const since = Date.now() - 1000;
+    const user = await account();
+    expect((await submit(user, { wpm: 120 })).status).toBe(463);
+    expect((await submit(user, uniformBot())).status).toBe(200);
+    await withRuntime(test.env, async () => {
+      const [flag] = await Logs.getLogs({
+        event: "anticheat_flagged",
+        uid: user.uid,
+        limit: 10,
+      });
+      expect(flag?.message["signals"]).toContain("uniform-gaps");
+      expect(
+        await Logs.getLogs({
+          event: "anticheat_flagged",
+          uid: user.uid,
+          before: flag?.timestamp ?? 0,
+          limit: 10,
+        }),
+      ).toEqual([]);
+      const rejected = await Logs.countLogs(
+        "anticheat_rejected",
+        since,
+        "$.message.reason",
+      );
+      // other tests in this file also write audits within the window
+      const mismatches = rejected.find((row) => row.key === "score-mismatch");
+      expect(mismatches?.count).toBeGreaterThanOrEqual(1);
+      expect(mismatches?.users).toBeLessThanOrEqual(mismatches?.count ?? 0);
+      const flagged = await Logs.countLogs(
+        "anticheat_flagged",
+        since,
+        "$.message.signals",
+        true,
+      );
+      expect(flagged.map((row) => row.key)).toEqual(
+        expect.arrayContaining(["uniform-gaps", "uniform-holds"]),
+      );
+    });
   });
   it("rejects a replayed key timeline with changed metadata", async () => {
     const user = await account();
