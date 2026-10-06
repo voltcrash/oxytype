@@ -628,6 +628,54 @@ describe("AdminController", () => {
     });
   });
 
+  describe("clear suspicious", () => {
+    const clearSuspiciousMock = vi.spyOn(UserDal, "clearSuspicious");
+
+    beforeEach(() => {
+      clearSuspiciousMock.mockClear().mockResolvedValue();
+    });
+
+    it("should clear the flag", async () => {
+      //GIVEN
+      const victimUid = newId();
+
+      //WHEN
+      const { body } = await mockApp
+        .post("/admin/clearSuspicious")
+        .send({ uid: victimUid })
+        .set("Authorization", `Bearer ${uid}`)
+        .expect(200);
+
+      //THEN
+      expect(body).toEqual({
+        message: "Suspicious flag cleared",
+        data: null,
+      });
+      expect(clearSuspiciousMock).toHaveBeenCalledWith(victimUid);
+      expect(logsAddImportantLog).toHaveBeenCalledWith(
+        "admin_suspicious_cleared_by",
+        {},
+        victimUid,
+      );
+    });
+    it("should fail without uid", async () => {
+      const { body } = await mockApp
+        .post("/admin/clearSuspicious")
+        .send({})
+        .set("Authorization", `Bearer ${uid}`)
+        .expect(422);
+      expect(body.validationErrors).toEqual(['"uid" Required']);
+    });
+    it("should fail for non admin", async () => {
+      await expectFailForNonAdmin(
+        mockApp
+          .post("/admin/clearSuspicious")
+          .send({ uid: newId() })
+          .set("Authorization", `Bearer ${uid}`),
+      );
+    });
+  });
+
   describe("anticheat audits", () => {
     const getLogsMock = vi.spyOn(LogsDal, "getLogs");
 
