@@ -34,9 +34,6 @@ vi.mock("../../../src/ts/components/pages/AboutPage", async () => {
 vi.mock("../../../src/ts/components/pages/account/AccountPage", () => ({
   AccountPage: () => <div />,
 }));
-vi.mock("../../../src/ts/components/pages/connections/FriendsPage", () => ({
-  FriendsPage: () => <div />,
-}));
 vi.mock("../../../src/ts/components/pages/leaderboard/LeaderboardPage", () => ({
   LeaderboardPage: () => <div />,
 }));
