@@ -7,6 +7,7 @@ import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import { getRepository } from "./repository.js";
 import { assertReleaseTagAvailable, getReleaseVersion } from "./version.js";
+import { buildReleaseHistory } from "./release-history.js";
 
 const FILENAME = fileURLToPath(import.meta.url);
 const DIRNAME = dirname(FILENAME);
@@ -232,6 +233,27 @@ const generateContributors = () => {
   }
 };
 
+const generateReleaseHistory = async (pendingRelease) => {
+  console.log("Generating the latest ten release notes...");
+  if (isDryRun) {
+    console.log("[Dry Run] Updated frontend/static/release.json");
+    return;
+  }
+  const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+  const releases = await octokit.paginate(octokit.rest.repos.listReleases, {
+    ...getRepository(),
+    per_page: 100,
+  });
+  const history = buildReleaseHistory(
+    pendingRelease === undefined ? releases : [pendingRelease, ...releases],
+  );
+  fs.writeFileSync(
+    `${PROJECT_ROOT}/frontend/static/release.json`,
+    `${JSON.stringify(history, null, 2)}\n`,
+    "utf8",
+  );
+};
+
 const createCommitAndTag = (version) => {
   console.log("Creating commit and tag... Pushing to Github...");
   runCommand(`git add .`);
@@ -264,6 +286,7 @@ const main = async () => {
     getFirebaseProjectId();
     console.log(`Starting frontend preview deployment process...`);
     installDependencies();
+    await generateReleaseHistory();
     runProjectRootCommand(
       "NODE_ENV=production npx turbo lint test check-assets build --filter @oxytype/frontend --force",
     );
@@ -335,6 +358,20 @@ const main = async () => {
       console.log("Exiting.");
       process.exit(1);
     }
+  }
+  if (isFrontend || !isBackend) {
+    await generateReleaseHistory(
+      hotfix
+        ? undefined
+        : {
+            tag_name: newVersion,
+            name: newVersion,
+            published_at: new Date().toISOString(),
+            body: changelogContent,
+            draft: false,
+            prerelease: false,
+          },
+    );
   }
   buildProject();
 

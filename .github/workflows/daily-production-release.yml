@@ -44,6 +44,7 @@ jobs:
             for (const key of ['version', 'tag', 'sha', 'shouldDeploy']) core.setOutput(key, plan[key]);
             if (plan.shouldDeploy) {
               require('node:fs').writeFileSync(`${process.env.RUNNER_TEMP}/daily-release-notes.md`, plan.body);
+              require('node:fs').writeFileSync(`${process.env.GITHUB_WORKSPACE}/frontend/static/release.json`, `${JSON.stringify(plan.releaseHistory, null, 2)}\n`);
             } else {
               await core.summary.addRaw(`Release ${plan.tag} already deployed; skipping this run.`).write();
             }
