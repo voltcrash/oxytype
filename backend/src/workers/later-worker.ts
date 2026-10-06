@@ -41,7 +41,6 @@ async function handleDailyLeaderboardResults(
     20,
     dailyLeaderboardsConfig,
     false,
-    undefined,
     true,
   );
 
@@ -130,7 +129,6 @@ async function handleWeeklyXpLeaderboardResults(
     20,
     weeklyXpConfig,
     false,
-    undefined,
     true,
   );
 
