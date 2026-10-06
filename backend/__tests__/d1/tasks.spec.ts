@@ -199,4 +199,66 @@ describe("durable queue delivery", () => {
       ).toBe(1);
     });
   });
+  it("pays the default daily rewards only once the inbox is enabled", async () => {
+    const period = Date.now() - 86400000;
+    await withRuntime(test.env, async () => {
+      const configuration = structuredClone(BASE_CONFIGURATION);
+      runtime().configuration = configuration;
+      const modeRule = {
+        language: "english",
+        mode: "time",
+        mode2: "60",
+      } as const;
+      for (let i = 0; i < 3; i++) {
+        const uid = `default${i}`;
+        await seedUser(test.env, uid);
+        await statement(
+          "INSERT INTO daily_entries(board,period,uid,score,expires_at,data) VALUES('english:time:60',?,?,?,?,?)",
+          period,
+          uid,
+          100 - i,
+          period + 2 * 86400000,
+          JSON.stringify({
+            uid,
+            name: uid,
+            wpm: 100 - i,
+            raw: 100,
+            acc: 100,
+            consistency: 100,
+            timestamp: period,
+          }),
+        ).run();
+      }
+      const task = {
+        taskName: "daily-leaderboard-results",
+        ctx: { yesterdayTimestamp: period, modeRule },
+      } as const;
+      const rewards = async (): Promise<Record<string, number>> => {
+        const rows = await statement(
+          "SELECT uid,data FROM outbox WHERE type='reward' AND uid LIKE 'default%'",
+        ).all<{ uid: string; data: string }>();
+        return Object.fromEntries(
+          rows.results.map(({ uid, data }) => [
+            uid,
+            (
+              JSON.parse(data) as {
+                mail: { rewards: { item: number }[] }[];
+              }
+            ).mail[0]?.rewards[0]?.item ?? 0,
+          ]),
+        );
+      };
+
+      await jobHandler(task);
+      expect(await rewards()).toEqual({});
+
+      configuration.users.inbox = { enabled: true, maxMail: 10 };
+      await jobHandler(task);
+      expect(await rewards()).toEqual({
+        default0: 5000,
+        default1: 2500,
+        default2: 2313,
+      });
+    });
+  });
 });
