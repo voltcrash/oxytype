@@ -28,8 +28,10 @@ Use `.dev.vars` for Worker settings, not Node `.env`.
 Google/GitHub social sign-in needs a provider's backend-only client ID/secret.
 Register `BETTER_AUTH_URL/callback/google` or `/github`; local URL is
 `http://localhost:5005/api/auth`. Email/password/reset flows stay disabled.
-Signup, inbox and leaderboard features default disabled in BASE_CONFIGURATION;
-enable deliberately through the admin configuration contract/D1, not by weakening guards.
+Signup and inbox default disabled in BASE_CONFIGURATION; enable deliberately
+through the admin configuration contract/D1, not by weakening guards. XP, the
+weekly XP leaderboard and daily leaderboards (English time 15/60) default
+enabled. Daily XP rewards for the top 100 are mailed only once the inbox is on.
 
 Verification:
 
