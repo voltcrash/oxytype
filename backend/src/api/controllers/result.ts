@@ -30,7 +30,7 @@ import * as WeeklyXpLeaderboard from "../../services/weekly-xp-leaderboard";
 import { canFunboxGetPb } from "../../utils/pb";
 import { buildDbResult } from "../../utils/result";
 import { Configuration } from "@oxytype/schemas/configuration";
-import { addImportantLog, addLog } from "../../dal/logs";
+import { addImportantLog, addLog, countUserLogs } from "../../dal/logs";
 import {
   AddResultRequest,
   AddResultResponse,
@@ -716,6 +716,7 @@ async function addResultAtomic(
       submissionHash: resulthash,
       verified: user.verified === true,
       lbOptOut: user.lbOptOut === true,
+      suspicious: user.suspicious === true,
     },
     req.ctx.configuration.anticheat,
   );
@@ -775,6 +776,7 @@ async function reviewKeyTiming(
     submissionHash: string;
     verified: boolean;
     lbOptOut: boolean;
+    suspicious: boolean;
   },
   { review, samples }: Configuration["anticheat"],
 ): Promise<void> {
@@ -797,6 +799,7 @@ async function reviewKeyTiming(
       { ...summary, features: timing.features },
       completedEvent.uid,
     );
+    await escalateRepeatedFlags(completedEvent.uid, context.suspicious, review);
   }
   if (
     (flagged && samples.captureFlagged) ||
@@ -812,6 +815,24 @@ async function reviewKeyTiming(
       completedEvent.uid,
     );
   }
+}
+
+/**
+ * Repeated flags only raise review: suspicious users get every short result
+ * logged. It never limits the account; admins decide from the evidence.
+ */
+async function escalateRepeatedFlags(
+  uid: string,
+  suspicious: boolean,
+  review: Configuration["anticheat"]["review"],
+): Promise<void> {
+  if (suspicious || review.suspiciousAfterFlags === 0) return;
+  const since = Date.now() - review.suspiciousWindowHours * 60 * 60 * 1000;
+  // the flag just staged is not visible until the batch commits
+  const flags = (await countUserLogs(uid, "anticheat_flagged", since)) + 1;
+  if (flags < review.suspiciousAfterFlags) return;
+  await UserDAL.setSuspicious(uid);
+  await addImportantLog("anticheat_marked_suspicious", { flags }, uid);
 }
 
 async function calculateXp(
