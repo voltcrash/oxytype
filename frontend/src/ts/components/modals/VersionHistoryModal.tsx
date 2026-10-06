@@ -6,6 +6,7 @@ import { isModalOpen } from "../../states/modals";
 import { cn } from "../../utils/cn";
 import { AnimatedModal } from "../common/AnimatedModal";
 import AsyncContent from "../common/AsyncContent";
+import { Button } from "../common/Button";
 
 export function VersionHistoryModal(): JSXElement {
   const isOpen = (): boolean => isModalOpen("VersionHistory");
@@ -34,6 +35,14 @@ export function VersionHistoryModal(): JSXElement {
           </div>
         )}
       </AsyncContent>
+      <div class="text-center">
+        <Button
+          variant="text"
+          href="https://github.com/voltcrash/oxytype/releases"
+          text="Older releases on GitHub"
+          fa={{ icon: "fa-arrow-up-right-from-square" }}
+        />
+      </div>
     </AnimatedModal>
   );
 }
