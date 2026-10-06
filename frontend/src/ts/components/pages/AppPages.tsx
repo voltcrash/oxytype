@@ -72,7 +72,6 @@ export function AppPages(): JSXElement {
     profileSearch: deferredPage("profileSearch"),
     test: <TestPage ref={(el) => refs.set("test", el)} />,
     "404": deferredPage("404"),
-    friends: deferredPage("friends"),
     leaderboards: deferredPage("leaderboards"),
   };
 

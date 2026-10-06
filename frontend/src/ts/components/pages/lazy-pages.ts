@@ -27,11 +27,6 @@ export const lazyPages = {
   "404": lazy(async () =>
     import("./404Page").then((m) => ({ default: m.NotFoundPage })),
   ),
-  friends: lazy(async () =>
-    import("./connections/FriendsPage").then((m) => ({
-      default: m.FriendsPage,
-    })),
-  ),
   leaderboards: lazy(async () =>
     import("./leaderboard/LeaderboardPage").then((m) => ({
       default: m.LeaderboardPage,
