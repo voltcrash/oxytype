@@ -49,10 +49,6 @@ export const ConfigurationSchema = z.object({
   }),
   users: z.object({
     signUp: z.boolean(),
-    lastHashesCheck: z.object({
-      enabled: z.boolean(),
-      maxHashes: z.number().int().nonnegative(),
-    }),
     autoBan: z.object({
       enabled: z.boolean(),
       maxCount: z.number().int().nonnegative(),

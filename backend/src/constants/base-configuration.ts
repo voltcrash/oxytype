@@ -44,10 +44,6 @@ export const BASE_CONFIGURATION: Configuration = {
   },
   users: {
     signUp: false,
-    lastHashesCheck: {
-      enabled: false,
-      maxHashes: 0,
-    },
     autoBan: {
       enabled: false,
       maxCount: 5,
@@ -328,14 +324,6 @@ export const CONFIGURATION_FORM_SCHEMA: ObjectSchema<Configuration> = {
         signUp: {
           type: "boolean",
           label: "Sign Up Enabled",
-        },
-        lastHashesCheck: {
-          type: "object",
-          label: "Last Hashes Check",
-          fields: {
-            enabled: { type: "boolean", label: "Enabled" },
-            maxHashes: { type: "number", label: "Hashes to store" },
-          },
         },
         xp: {
           type: "object",
