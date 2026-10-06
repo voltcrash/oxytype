@@ -53,7 +53,7 @@ verification, deployment, and any external blockers throughout implementation.
 4. Convert legacy result fields during import and on compatible reads. Preserve
    missing/default values, premium lifetime `-1`, BSON dates/Longs, and activity.
 5. Preserve PB matching dimensions; daily rounded kogascore and top-N behavior;
-   weekly cumulative XP/time; global/friend rank distinction; all-time eligibility
+   weekly cumulative XP/time; global ranks; all-time eligibility
    and ordering. Generation-based snapshots avoid half-built leaderboards.
 6. Critical result writes complete before success. Use idempotency and optimistic
    guards to prevent duplicate XP, lost PBs/streaks, and stale JSON overwrites.
@@ -86,8 +86,8 @@ verification, deployment, and any external blockers throughout implementation.
 ### Part 2 — schema, migrations, and identifiers
 
 - Add generated Better Auth tables including disabled users and database limits.
-- Add application users/results/config/presets/keys/connections/quotes/reports,
-  blocklist/admin/PSA/public tables with owner/time/pair/expiry indexes.
+- Add application users/results/config/presets/keys/quotes/reports,
+  blocklist/admin/PSA/public tables with owner/time/expiry indexes.
 - Add personal/leaderboard bests, period entries, snapshot generations, activity,
   reward/mail state, job ledger, rate counters, and outbox.
 - Add identifier/legacy serialization helpers and D1 transactional batch helpers.
@@ -95,14 +95,14 @@ verification, deployment, and any external blockers throughout implementation.
 
 ### Part 3 — basic DAL and configuration
 
-- Port configs/presets/API keys/connections/admin/blocklist/PSAs/public/quotes/
+- Port configs/presets/API keys/admin/blocklist/PSAs/public/quotes/
   reports/logs to Drizzle/D1. Replace direct collection callers with DAL methods.
 - Port live configuration to D1; remove boot-time file writes and stale global
   authority. Retain defaults, patch semantics, and development configuration UI.
 - Port user profile/settings/collections with ownership and concurrent-update
   guards. Keep API serialization stable.
 - Verify targeted DAL behavior against local D1, including concurrent limits,
-  duplicate connections, normalized names, and configuration patch preservation.
+  normalized names, and configuration patch preservation.
 
 ### Part 4 — Better Auth and request middleware
 
@@ -129,11 +129,11 @@ verification, deployment, and any external blockers throughout implementation.
 ### Part 6 — SQL rankings
 
 - Replace Redis daily/weekly services and Lua with conditional SQL UPSERTs,
-  atomic increments, top-N pruning, deterministic ordering, friend joins, and
+  atomic increments, top-N pruning, deterministic ordering, and
   scheduled expiry. Preserve response behavior for non-improving daily results.
 - Replace Mongo all-time aggregation with indexed leaderboard bests and ranked
   snapshots; build a generation before atomically publishing it.
-- Replace histogram aggregation with SQL buckets; preserve global/friend ranks.
+- Replace histogram aggregation with SQL buckets; preserve global ranks.
 - Verify ties, pruning, purge/ban/opt-out, period boundaries, snapshot publication,
   incremental XP/time, and eligibility with existing fixture expectations.
 
