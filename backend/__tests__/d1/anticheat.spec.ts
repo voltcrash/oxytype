@@ -212,6 +212,24 @@ describe("production anticheat with D1", () => {
       expect((await Users.getUser(user.uid, "test")).banned).not.toBe(true),
     );
   });
+  it("applies the bot gate only above the configured speed", async () => {
+    const user = await account();
+    await withRuntime(
+      test.env,
+      async () =>
+        await patchConfiguration({ anticheat: { botCheckMinWpm: 200 } }),
+    );
+    try {
+      const response = await submit(user, fixedResult());
+      expect(response.status, await response.clone().text()).toBe(200);
+    } finally {
+      await withRuntime(
+        test.env,
+        async () =>
+          await patchConfiguration({ anticheat: { botCheckMinWpm: 130 } }),
+      );
+    }
+  });
   it("commits configured strikes and a ban/inbox message despite rejecting the result", async () => {
     const user = await account();
     await withRuntime(

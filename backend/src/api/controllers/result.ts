@@ -393,7 +393,7 @@ async function addResultAtomic(
   //check keyspacing and duration here for bots
   if (
     completedEvent.mode === "time" &&
-    completedEvent.wpm > 130 &&
+    completedEvent.wpm > req.ctx.configuration.anticheat.botCheckMinWpm &&
     completedEvent.testDuration < 122 &&
     (user.verified === false || user.verified === undefined) &&
     user.lbOptOut !== true
