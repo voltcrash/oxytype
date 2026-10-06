@@ -22,7 +22,6 @@ export function prefetchLeaderboardPage(): void {
         mode: "time",
         mode2: "15",
         language: "english",
-        friendsOnly: false,
         page: 0,
         previous: false,
       }),
