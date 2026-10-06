@@ -17,7 +17,6 @@ function unpack(row: RankingRow): LeaderboardEntry {
   return {
     ...(JSON.parse(row.data) as DailyLeaderboardEntry),
     rank: row.rank,
-    friendsRank: row.friendsRank,
   };
 }
 export class DailyLeaderboard {
@@ -94,7 +93,6 @@ export class DailyLeaderboard {
     pageSize: number,
     config: Configuration["dailyLeaderboards"],
     premium: boolean,
-    userIds?: string[],
     includeExpired = false,
   ): Promise<{
     entries: LeaderboardEntry[];
@@ -108,7 +106,6 @@ export class DailyLeaderboard {
       page,
       pageSize,
       this.board,
-      userIds,
       includeExpired,
     );
     return {
@@ -122,7 +119,6 @@ export class DailyLeaderboard {
   public async getRank(
     uid: string,
     config: Configuration["dailyLeaderboards"],
-    userIds?: string[],
   ): Promise<LeaderboardEntry | null> {
     if (!config.enabled) return null;
     const row = await rankingUser(
@@ -130,7 +126,6 @@ export class DailyLeaderboard {
       this.period(),
       uid,
       this.board,
-      userIds,
     );
     return row ? unpack(row) : null;
   }
