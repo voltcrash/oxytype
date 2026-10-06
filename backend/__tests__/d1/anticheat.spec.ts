@@ -11,6 +11,12 @@ import * as Public from "../../src/dal/public";
 import { mutateUser } from "../../src/db/mutation";
 import Worker from "../../src/worker";
 import { completedEvent } from "../__testData__/completed-event";
+import {
+  generatedTimings,
+  humanTimings,
+  type KeyTimings,
+} from "../__testData__/key-timings";
+import { consistency } from "../../src/anticheat/result";
 
 describe("production anticheat with D1", () => {
   let test: Awaited<ReturnType<typeof createTestRuntime>>;
@@ -128,6 +134,70 @@ describe("production anticheat with D1", () => {
     };
   }
 
+  /** A consistent 240 WPM, 30-second result around the given key timings. */
+  function timedResult({
+    keySpacing,
+    keyDuration,
+  }: KeyTimings): Partial<CompletedEvent> {
+    const total = keySpacing.reduce((sum, value) => sum + value, 0);
+    const scale = Math.min(1, 29_000 / total);
+    const spacing = keySpacing.map((value) => value * scale);
+    return {
+      wpm: 240,
+      rawWpm: 240,
+      acc: 100,
+      charStats: [600, 0, 0, 0],
+      charTotal: 600,
+      keySpacing: spacing,
+      keyDuration,
+      keyConsistency: consistency(spacing.slice(0, -1)),
+      lastKeyToEnd: 30_000 - spacing.reduce((sum, value) => sum + value, 0),
+      keyOverlap: 0,
+    };
+  }
+  const uniformBot = (): Partial<CompletedEvent> =>
+    timedResult(
+      generatedTimings(600, (random, channel) =>
+        channel === "gap" ? 30 + random() * 20 : 20 + random() * 20,
+      ),
+    );
+  async function auditLogs(
+    uid: string,
+    event: string,
+  ): Promise<{ message: Record<string, unknown> }[]> {
+    const { results } = await test.env.DB.prepare(
+      "SELECT data FROM audit_logs WHERE uid=? AND event=?",
+    )
+      .bind(uid, event)
+      .all<{ data: string }>();
+    return results.map(
+      (row) => JSON.parse(row.data) as { message: Record<string, unknown> },
+    );
+  }
+  async function withAnticheat(
+    anticheat: Parameters<typeof patchConfiguration>[0]["anticheat"],
+    run: () => Promise<void>,
+  ): Promise<void> {
+    await withRuntime(
+      test.env,
+      async () => await patchConfiguration({ anticheat }),
+    );
+    try {
+      await run();
+    } finally {
+      await withRuntime(
+        test.env,
+        async () =>
+          await patchConfiguration({
+            anticheat: {
+              review: { enabled: true, minWpm: 100 },
+              samples: { captureFlagged: false, randomRate: 0 },
+            },
+          }),
+      );
+    }
+  }
+
   it("saves valid production results without a bypass and updates progression", async () => {
     const user = await account();
     const response = await submit(user);
@@ -227,6 +297,78 @@ describe("production anticheat with D1", () => {
         test.env,
         async () =>
           await patchConfiguration({ anticheat: { botCheckMinWpm: 130 } }),
+      );
+    }
+  });
+  it("logs review signals for a saved result without rejecting it or storing timings", async () => {
+    const user = await account();
+    const response = await submit(user, uniformBot());
+    expect(response.status, await response.clone().text()).toBe(200);
+    const [flag] = await auditLogs(user.uid, "anticheat_flagged");
+    expect(flag?.message).toMatchObject({
+      resultId: ((await response.json()) as { data: { insertedId: string } })
+        .data.insertedId,
+      wpm: 240,
+      verified: false,
+      signals: expect.arrayContaining(["uniform-gaps", "uniform-holds"]),
+    });
+    expect(flag?.message["features"]).toBeDefined();
+    expect(flag?.message["keySpacing"]).toBeUndefined();
+    expect(await auditLogs(user.uid, "anticheat_sample")).toHaveLength(0);
+    await withRuntime(test.env, async () => {
+      const profile = await Users.getUser(user.uid, "test");
+      expect(profile.completedTests).toBe(1);
+      expect(profile.autoBanTimestamps).toBeUndefined();
+    });
+  });
+  it("raises no review signal for modelled human timing", async () => {
+    const user = await account();
+    const response = await submit(user, timedResult(humanTimings(600, 2, 45)));
+    expect(response.status, await response.clone().text()).toBe(200);
+    expect(await auditLogs(user.uid, "anticheat_flagged")).toHaveLength(0);
+  });
+  it("captures raw timings of flagged results only when configured", async () => {
+    await withAnticheat(
+      { samples: { captureFlagged: true, randomRate: 0 } },
+      async () => {
+        const user = await account();
+        expect((await submit(user, uniformBot())).status).toBe(200);
+        const [sample] = await auditLogs(user.uid, "anticheat_sample");
+        expect(sample?.message["keySpacing"]).toHaveLength(599);
+        expect(sample?.message["keyDuration"]).toHaveLength(600);
+        expect(sample?.message["signals"]).toContain("uniform-gaps");
+      },
+    );
+  });
+  it("captures unflagged baseline samples at the configured rate", async () => {
+    await withAnticheat(
+      { samples: { captureFlagged: false, randomRate: 1 } },
+      async () => {
+        const user = await account();
+        expect(
+          (await submit(user, timedResult(humanTimings(600, 2, 45)))).status,
+        ).toBe(200);
+        const [sample] = await auditLogs(user.uid, "anticheat_sample");
+        expect(sample?.message["signals"]).toEqual([]);
+        expect(await auditLogs(user.uid, "anticheat_flagged")).toHaveLength(0);
+      },
+    );
+  });
+  it("skips review below the configured speed or when disabled", async () => {
+    for (const review of [
+      { enabled: true, minWpm: 300 },
+      { enabled: false, minWpm: 0 },
+    ]) {
+      await withAnticheat(
+        { review, samples: { captureFlagged: true, randomRate: 1 } },
+        async () => {
+          const user = await account();
+          expect((await submit(user, uniformBot())).status).toBe(200);
+          expect(await auditLogs(user.uid, "anticheat_flagged")).toHaveLength(
+            0,
+          );
+          expect(await auditLogs(user.uid, "anticheat_sample")).toHaveLength(0);
+        },
       );
     }
   });
