@@ -1,7 +1,7 @@
-import { infiniteQueryOptions, queryOptions } from "@tanstack/solid-query";
+import { queryOptions } from "@tanstack/solid-query";
 import { intervalToDuration } from "date-fns";
 import Ape from "../ape";
-import { getContributorsList, getReleasesFromGitHub } from "../utils/json-data";
+import { getContributorsList, getReleaseHistory } from "../utils/json-data";
 import { getNumberWithMagnitude, numberWithSpaces } from "../utils/numbers";
 import {
   releaseNotesToHtml,
@@ -47,13 +47,11 @@ export const getSpeedHistogramQueryOptions = () =>
 
 // oxlint-disable-next-line typescript/explicit-function-return-type
 export const getVersionHistoryQueryOptions = () =>
-  infiniteQueryOptions({
+  queryOptions({
     queryKey: queryKeys.versionHistory(),
     queryFn: fetchVersionHistory,
     // Releases ship daily, so reopening the modal should pick up new ones.
     staleTime: 1000 * 60 * 5,
-    getNextPageParam: (lastPage) => lastPage.nextCursor,
-    initialPageParam: 1,
   });
 
 async function fetchSpeedHistogram(): Promise<
@@ -162,27 +160,16 @@ async function fetchTypingStats(): Promise<{
   return result;
 }
 
-async function fetchVersionHistory(options: { pageParam: number }): Promise<{
-  nextCursor: number | undefined;
-  releases: VersionHistoryRelease[];
-}> {
-  const releases = await getReleasesFromGitHub({ page: options.pageParam });
-  const data: VersionHistoryRelease[] = [];
-  for (const release of releases) {
-    if (release.draft || release.prerelease) continue;
-
+async function fetchVersionHistory(): Promise<VersionHistoryRelease[]> {
+  const releases = await getReleaseHistory();
+  return releases.slice(0, 10).map((release) => {
     const publishedAt = new Date(release.published_at);
-    data.push({
+    return {
       tag: release.tag_name,
       name: release.name,
       publishedAt: dateFormat(publishedAt, "dd MMM yyyy"),
       timestamp: publishedAt.getTime(),
       bodyHTML: releaseNotesToHtml(release.body),
-    });
-  }
-  return {
-    // Drafts are skipped, so an emptied page does not mean the end.
-    nextCursor: releases.length > 0 ? options.pageParam + 1 : undefined,
-    releases: data,
-  };
+    };
+  });
 }
