@@ -12,6 +12,7 @@ import {
   getResultFailure,
   getKeyDataFailure,
   getBotFailure,
+  getTimingReview,
 } from "../../anticheat/index";
 import MonkeyStatusCodes from "../../constants/monkey-status-codes";
 import {
@@ -681,6 +682,16 @@ async function addResultAtomic(
   }
 
   const addedResult = await ResultDAL.addResult(uid, dbresult);
+  await reviewKeyTiming(
+    completedEvent,
+    {
+      resultId: addedResult.insertedId,
+      submissionHash: resulthash,
+      verified: user.verified === true,
+      lbOptOut: user.lbOptOut === true,
+    },
+    req.ctx.configuration.anticheat,
+  );
 
   await UserDAL.incrementXp(uid, xpGained.xp);
   await UserDAL.incrementTestActivity(user, completedEvent.timestamp);
@@ -725,6 +736,56 @@ type XpResult = {
   dailyBonus?: boolean;
   breakdown?: XpBreakdown;
 };
+
+/**
+ * Log-only review of a saved result. Signals are uncalibrated, so they are
+ * written for review and calibration and never reject, strike or ban.
+ */
+async function reviewKeyTiming(
+  completedEvent: CompletedEvent,
+  context: {
+    resultId: string;
+    submissionHash: string;
+    verified: boolean;
+    lbOptOut: boolean;
+  },
+  { review, samples }: Configuration["anticheat"],
+): Promise<void> {
+  if (!review.enabled || completedEvent.wpm < review.minWpm) return;
+  const timing = getTimingReview(completedEvent);
+  if (timing === undefined) return;
+
+  const summary = {
+    ...context,
+    mode: completedEvent.mode,
+    mode2: completedEvent.mode2,
+    wpm: completedEvent.wpm,
+    testDuration: completedEvent.testDuration,
+    signals: timing.signals,
+  };
+  const flagged = timing.signals.length > 0;
+  if (flagged) {
+    await addImportantLog(
+      "anticheat_flagged",
+      { ...summary, features: timing.features },
+      completedEvent.uid,
+    );
+  }
+  if (
+    (flagged && samples.captureFlagged) ||
+    Math.random() < samples.randomRate
+  ) {
+    await addLog(
+      "anticheat_sample",
+      {
+        ...summary,
+        keySpacing: completedEvent.keySpacing,
+        keyDuration: completedEvent.keyDuration,
+      },
+      completedEvent.uid,
+    );
+  }
+}
 
 async function calculateXp(
   result: CompletedEvent,
