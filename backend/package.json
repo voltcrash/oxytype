@@ -15,6 +15,7 @@
     "integration-test": "vp test run --project=d1",
     "test-coverage": "vp test run --coverage",
     "dev": "pnpm gen-docs && tsx scripts/build-assets.ts && wrangler dev --port 5005",
+    "anticheat:calibrate": "tsx scripts/anticheat-calibrate.ts",
     "gen-docs": "tsx scripts/openapi.ts dist/static/api/openapi.json && redocly build-docs -o dist/static/api/internal.html internal@v2 && redocly bundle -o dist/static/api/public.json public-filter && redocly build-docs -o dist/static/api/public.html public@v2",
     "build:worker": "wrangler deploy --dry-run --outdir dist/worker",
     "deploy:worker": "wrangler deploy",

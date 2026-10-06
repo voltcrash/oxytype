@@ -12,6 +12,8 @@ import {
   getResultFailure,
   getKeyDataFailure,
   getBotFailure,
+  getTimingReview,
+  getTimingFingerprint,
 } from "../../anticheat/index";
 import MonkeyStatusCodes from "../../constants/monkey-status-codes";
 import {
@@ -28,7 +30,7 @@ import * as WeeklyXpLeaderboard from "../../services/weekly-xp-leaderboard";
 import { canFunboxGetPb } from "../../utils/pb";
 import { buildDbResult } from "../../utils/result";
 import { Configuration } from "@oxytype/schemas/configuration";
-import { addImportantLog, addLog } from "../../dal/logs";
+import { addImportantLog, addLog, countUserLogs } from "../../dal/logs";
 import {
   AddResultRequest,
   AddResultResponse,
@@ -393,7 +395,7 @@ async function addResultAtomic(
   //check keyspacing and duration here for bots
   if (
     completedEvent.mode === "time" &&
-    completedEvent.wpm > 130 &&
+    completedEvent.wpm > req.ctx.configuration.anticheat.botCheckMinWpm &&
     completedEvent.testDuration < 122 &&
     (user.verified === false || user.verified === undefined) &&
     user.lbOptOut !== true
@@ -477,6 +479,32 @@ async function addResultAtomic(
       }
       await UserDAL.updateLastHashes(uid, lastHashes);
     }
+  }
+
+  const replayCheck = req.ctx.configuration.anticheat.replayCheck;
+  const timingHash = replayCheck.enabled
+    ? getTimingFingerprint(completedEvent)
+    : undefined;
+  if (timingHash !== undefined) {
+    const lastTimingHashes = user.lastTimingHashes ?? [];
+    if (lastTimingHashes.includes(timingHash)) {
+      await addImportantLog(
+        "anticheat_rejected",
+        {
+          reason: "replayed-key-timing",
+          submissionHash: resulthash,
+          mode: completedEvent.mode,
+          mode2: completedEvent.mode2,
+        },
+        uid,
+      );
+      const status = MonkeyStatusCodes.DUPLICATE_RESULT;
+      return new MonkeyError(status.code, "Duplicate result");
+    }
+    await UserDAL.updateLastTimingHashes(
+      uid,
+      [timingHash, ...lastTimingHashes].slice(0, replayCheck.maxFingerprints),
+    );
   }
 
   if (keyDurationStats) {
@@ -681,6 +709,17 @@ async function addResultAtomic(
   }
 
   const addedResult = await ResultDAL.addResult(uid, dbresult);
+  await reviewKeyTiming(
+    completedEvent,
+    {
+      resultId: addedResult.insertedId,
+      submissionHash: resulthash,
+      verified: user.verified === true,
+      lbOptOut: user.lbOptOut === true,
+      suspicious: user.suspicious === true,
+    },
+    req.ctx.configuration.anticheat,
+  );
 
   await UserDAL.incrementXp(uid, xpGained.xp);
   await UserDAL.incrementTestActivity(user, completedEvent.timestamp);
@@ -725,6 +764,76 @@ type XpResult = {
   dailyBonus?: boolean;
   breakdown?: XpBreakdown;
 };
+
+/**
+ * Log-only review of a saved result. Signals are uncalibrated, so they are
+ * written for review and calibration and never reject, strike or ban.
+ */
+async function reviewKeyTiming(
+  completedEvent: CompletedEvent,
+  context: {
+    resultId: string;
+    submissionHash: string;
+    verified: boolean;
+    lbOptOut: boolean;
+    suspicious: boolean;
+  },
+  { review, samples }: Configuration["anticheat"],
+): Promise<void> {
+  if (!review.enabled || completedEvent.wpm < review.minWpm) return;
+  const timing = getTimingReview(completedEvent);
+  if (timing === undefined) return;
+
+  const summary = {
+    ...context,
+    mode: completedEvent.mode,
+    mode2: completedEvent.mode2,
+    wpm: completedEvent.wpm,
+    testDuration: completedEvent.testDuration,
+    signals: timing.signals,
+  };
+  const flagged = timing.signals.length > 0;
+  if (flagged) {
+    await addImportantLog(
+      "anticheat_flagged",
+      { ...summary, features: timing.features },
+      completedEvent.uid,
+    );
+    await escalateRepeatedFlags(completedEvent.uid, context.suspicious, review);
+  }
+  if (
+    (flagged && samples.captureFlagged) ||
+    Math.random() < samples.randomRate
+  ) {
+    await addLog(
+      "anticheat_sample",
+      {
+        ...summary,
+        keySpacing: completedEvent.keySpacing,
+        keyDuration: completedEvent.keyDuration,
+      },
+      completedEvent.uid,
+    );
+  }
+}
+
+/**
+ * Repeated flags only raise review: suspicious users get every short result
+ * logged. It never limits the account; admins decide from the evidence.
+ */
+async function escalateRepeatedFlags(
+  uid: string,
+  suspicious: boolean,
+  review: Configuration["anticheat"]["review"],
+): Promise<void> {
+  if (suspicious || review.suspiciousAfterFlags === 0) return;
+  const since = Date.now() - review.suspiciousWindowHours * 60 * 60 * 1000;
+  // the flag just staged is not visible until the batch commits
+  const flags = (await countUserLogs(uid, "anticheat_flagged", since)) + 1;
+  if (flags < review.suspiciousAfterFlags) return;
+  await UserDAL.setSuspicious(uid);
+  await addImportantLog("anticheat_marked_suspicious", { flags }, uid);
+}
 
 async function calculateXp(
   result: CompletedEvent,

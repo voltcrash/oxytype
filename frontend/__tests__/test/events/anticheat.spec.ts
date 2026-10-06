@@ -2,10 +2,13 @@ import { describe, expect, it, vi } from "vite-plus/test";
 import type { CompletedEvent } from "@oxytype/schemas/results";
 import { kogasa, mean, roundTo2, stdDev } from "@oxytype/util/numbers";
 import { completedEvent } from "../../../../backend/__tests__/__testData__/completed-event";
+import { humanTimings } from "../../../../backend/__tests__/__testData__/key-timings";
 import {
   getResultFailure,
   getKeyDataFailure,
   getBotFailure,
+  getTimingFingerprint,
+  getTimingReview,
 } from "../../../../backend/src/anticheat";
 import { calculateWpm } from "../../../src/ts/utils/numbers";
 import type {
@@ -101,6 +104,63 @@ function eventLog(
   };
 }
 
+/** A log replaying the given gaps and holds, rolling over where holds overlap. */
+function timedEventLog(gaps: number[], holds: number[]): EventLog {
+  const events: TestEventNoMs[] = [
+    { type: "timer", testMs: 0, data: { event: "start", timer: 0, date: 0 } },
+  ];
+  const text = "a".repeat(holds.length);
+  let time = 0;
+  for (let i = 0; i < holds.length; i++) {
+    // alternate codes so a hold outlasting the next gap is real rollover
+    const code = i % 2 === 0 ? "KeyA" : "KeyS";
+    events.push({ type: "keydown", testMs: time, data: { code } });
+    events.push({
+      type: "keyup",
+      testMs: time + (holds[i] ?? 0),
+      data: { code },
+    });
+    events.push({
+      type: "input",
+      testMs: time,
+      data: {
+        inputType: "insertText",
+        data: "a",
+        correct: true,
+        wordIndex: 0,
+        charIndex: i,
+        inputValue: text.slice(0, i + 1),
+      },
+    });
+    time += gaps[i] ?? 0;
+  }
+  const end = Math.ceil((time + 500) / 1000) * 1000;
+  for (let tick = 1; tick * 1000 < end; tick++) {
+    events.push({
+      type: "timer",
+      testMs: tick * 1000,
+      data: { event: "step", timer: tick },
+    });
+  }
+  events.push({
+    type: "timer",
+    testMs: end,
+    data: { event: "end", timer: end / 1000, date: end },
+  });
+  events.sort((a, b) => a.testMs - b.testMs);
+  return {
+    version: 1,
+    context: {
+      targetWords: [text],
+      mode: "time",
+      mode2: String(end / 1000),
+      bailedOut: false,
+      koreanStatus: false,
+    },
+    events,
+  };
+}
+
 /** Build from the real client event reducers, not backend validator helpers. */
 function payload(log: EventLog): CompletedEvent {
   const chars = getChars(log);
@@ -153,6 +213,19 @@ describe("client events satisfy server anticheat", () => {
       expect(getBotFailure(result)).toBeUndefined();
     },
   );
+  it("raises no review signal for modelled human timing from client reducers", () => {
+    const { keySpacing, keyDuration } = humanTimings(300, 11);
+    const result = payload(timedEventLog(keySpacing, keyDuration));
+    expect(getResultFailure(result)).toBeUndefined();
+    expect(getKeyDataFailure(result)).toBeUndefined();
+    expect(getTimingReview(result)?.signals).toEqual([]);
+    expect(getTimingFingerprint(result)).toBeDefined();
+  });
+  it("leaves IME results without keyboard telemetry unreviewed", () => {
+    const result = payload(eventLog({ ime: true }));
+    expect(getTimingReview(result)).toBeUndefined();
+    expect(getTimingFingerprint(result)).toBeUndefined();
+  });
   it("detects score tampering after a genuine client payload is built", () => {
     const result = payload(eventLog());
     expect(getResultFailure({ ...result, wpm: result.wpm + 10 })).toBe(

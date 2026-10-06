@@ -173,6 +173,7 @@ sign out/sign in and confirm the result remains. The popup returns to the
 standalone `/oauth-callback.html` page; frontend and API cookies share one HTTPS origin.
 
 Monitor Workers logs, D1 size/query latency and queue backlog/DLQ. Review rejected
+and flagged results (`/admin/anticheat/summary`) and calibrate on captured
 typing samples before enabling automatic bans; see [anticheat](ANTICHEAT.md).
 Cron recovers durable jobs/outbox deliveries; see [operations](CLOUDFLARE_OPERATIONS.md).
 Before future schema changes, capture a D1 backup and check code/schema rollback

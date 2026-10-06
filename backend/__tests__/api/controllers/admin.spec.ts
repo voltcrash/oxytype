@@ -628,6 +628,184 @@ describe("AdminController", () => {
     });
   });
 
+  describe("clear suspicious", () => {
+    const clearSuspiciousMock = vi.spyOn(UserDal, "clearSuspicious");
+
+    beforeEach(() => {
+      clearSuspiciousMock.mockClear().mockResolvedValue();
+    });
+
+    it("should clear the flag", async () => {
+      //GIVEN
+      const victimUid = newId();
+
+      //WHEN
+      const { body } = await mockApp
+        .post("/admin/clearSuspicious")
+        .send({ uid: victimUid })
+        .set("Authorization", `Bearer ${uid}`)
+        .expect(200);
+
+      //THEN
+      expect(body).toEqual({
+        message: "Suspicious flag cleared",
+        data: null,
+      });
+      expect(clearSuspiciousMock).toHaveBeenCalledWith(victimUid);
+      expect(logsAddImportantLog).toHaveBeenCalledWith(
+        "admin_suspicious_cleared_by",
+        {},
+        victimUid,
+      );
+    });
+    it("should fail without uid", async () => {
+      const { body } = await mockApp
+        .post("/admin/clearSuspicious")
+        .send({})
+        .set("Authorization", `Bearer ${uid}`)
+        .expect(422);
+      expect(body.validationErrors).toEqual(['"uid" Required']);
+    });
+    it("should fail for non admin", async () => {
+      await expectFailForNonAdmin(
+        mockApp
+          .post("/admin/clearSuspicious")
+          .send({ uid: newId() })
+          .set("Authorization", `Bearer ${uid}`),
+      );
+    });
+  });
+
+  describe("anticheat audits", () => {
+    const getLogsMock = vi.spyOn(LogsDal, "getLogs");
+
+    beforeEach(() => {
+      getLogsMock.mockClear().mockResolvedValue([
+        {
+          id: "log",
+          uid: "flagged",
+          event: "anticheat_flagged",
+          timestamp: 1000,
+          message: { signals: ["uniform-gaps"] },
+        },
+      ]);
+    });
+
+    it("should list audits of one event", async () => {
+      //WHEN
+      const { body } = await mockApp
+        .get("/admin/anticheat/audits")
+        .query({ event: "anticheat_flagged", uid: "flagged", before: 2000 })
+        .set("Authorization", `Bearer ${uid}`)
+        .expect(200);
+
+      //THEN
+      expect(body.data).toEqual([
+        {
+          id: "log",
+          uid: "flagged",
+          event: "anticheat_flagged",
+          timestamp: 1000,
+          message: { signals: ["uniform-gaps"] },
+        },
+      ]);
+      expect(getLogsMock).toHaveBeenCalledWith({
+        event: "anticheat_flagged",
+        uid: "flagged",
+        before: 2000,
+        limit: 50,
+      });
+    });
+    it("should only list anticheat events", async () => {
+      //WHEN
+      const { body } = await mockApp
+        .get("/admin/anticheat/audits")
+        .query({ event: "user_ban_toggled" })
+        .set("Authorization", `Bearer ${uid}`)
+        .expect(422);
+
+      //THEN
+      expect(body.message).toEqual("Invalid query schema");
+      expect(getLogsMock).not.toHaveBeenCalled();
+    });
+    it("should cap the page size", async () => {
+      await mockApp
+        .get("/admin/anticheat/audits")
+        .query({ event: "anticheat_sample", limit: 101 })
+        .set("Authorization", `Bearer ${uid}`)
+        .expect(422);
+    });
+    it("should fail for non admin", async () => {
+      await expectFailForNonAdmin(
+        mockApp
+          .get("/admin/anticheat/audits")
+          .query({ event: "anticheat_flagged" })
+          .set("Authorization", `Bearer ${uid}`),
+      );
+    });
+    it("should fail if admin endpoints are disabled", async () => {
+      await expectFailForDisabledEndpoint(
+        mockApp
+          .get("/admin/anticheat/audits")
+          .query({ event: "anticheat_flagged" })
+          .set("Authorization", `Bearer ${uid}`),
+      );
+    });
+  });
+
+  describe("anticheat summary", () => {
+    const countLogsMock = vi.spyOn(LogsDal, "countLogs");
+
+    beforeEach(() => {
+      countLogsMock.mockClear().mockImplementation(async (event) => {
+        if (event === "anticheat_rejected") {
+          return [{ key: "score-mismatch", count: 3, users: 2 }];
+        }
+        if (event === "anticheat_flagged") {
+          return [{ key: "uniform-gaps", count: 2, users: 1 }];
+        }
+        return [
+          { key: "time", count: 4, users: 4 },
+          { key: "words", count: 1, users: 1 },
+        ];
+      });
+    });
+
+    it("should count rejections by reason and flags by signal", async () => {
+      //GIVEN
+      const now = Date.now();
+
+      //WHEN
+      const { body } = await mockApp
+        .get("/admin/anticheat/summary")
+        .query({ hours: 2 })
+        .set("Authorization", `Bearer ${uid}`)
+        .expect(200);
+
+      //THEN
+      expect(body.data).toMatchObject({
+        rejected: [{ key: "score-mismatch", count: 3, users: 2 }],
+        flagged: [{ key: "uniform-gaps", count: 2, users: 1 }],
+        samples: 5,
+      });
+      expect(body.data.since).toBeGreaterThanOrEqual(now - 2 * 3600_000);
+      expect(body.data.since).toBeLessThanOrEqual(Date.now() - 2 * 3600_000);
+      expect(countLogsMock).toHaveBeenCalledWith(
+        "anticheat_flagged",
+        body.data.since,
+        "$.message.signals",
+        true,
+      );
+    });
+    it("should fail for non admin", async () => {
+      await expectFailForNonAdmin(
+        mockApp
+          .get("/admin/anticheat/summary")
+          .set("Authorization", `Bearer ${uid}`),
+      );
+    });
+  });
+
   async function expectFailForNonAdmin(call: Test): Promise<void> {
     isAdminMock.mockResolvedValue(false);
     const { body } = await call.expect(403);

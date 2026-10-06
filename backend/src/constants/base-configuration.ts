@@ -105,6 +105,27 @@ export const BASE_CONFIGURATION: Configuration = {
       xpRewardBrackets: [],
     },
   },
+  anticheat: {
+    botCheckMinWpm: 130,
+    // Review signals only write audit logs; they never reject a result.
+    review: {
+      enabled: true,
+      minWpm: 100,
+      // suspicious only adds review logs for the user's later results
+      suspiciousAfterFlags: 5,
+      suspiciousWindowHours: 7 * 24,
+    },
+    // Raw key timings are behavioural data. Keep capture off unless reviewing.
+    samples: {
+      captureFlagged: false,
+      randomRate: 0,
+    },
+    // A long, varied key timeline cannot repeat by chance.
+    replayCheck: {
+      enabled: true,
+      maxFingerprints: 50,
+    },
+  },
 };
 
 type BaseSchema = {
@@ -585,6 +606,78 @@ export const CONFIGURATION_FORM_SCHEMA: ObjectSchema<Configuration> = {
                   },
                 },
               },
+            },
+          },
+        },
+      },
+    },
+    anticheat: {
+      type: "object",
+      label: "Anticheat",
+      fields: {
+        botCheckMinWpm: {
+          type: "number",
+          label: "Bot Check Min WPM",
+          min: 0,
+          hint: "Time tests above this speed need key timings and are checked for a fixed timing signature.",
+        },
+        review: {
+          type: "object",
+          label: "Review Signals",
+          fields: {
+            enabled: {
+              type: "boolean",
+              label: "Enabled",
+              hint: "Log statistical timing signals for review. Never rejects results.",
+            },
+            minWpm: {
+              type: "number",
+              label: "Min WPM",
+              min: 0,
+            },
+            suspiciousAfterFlags: {
+              type: "number",
+              label: "Suspicious After Flags",
+              min: 0,
+              hint: "Mark users suspicious (extra review logs, no penalty) after this many flagged results. 0 disables.",
+            },
+            suspiciousWindowHours: {
+              type: "number",
+              label: "Suspicious Window (hours)",
+              min: 0,
+            },
+          },
+        },
+        samples: {
+          type: "object",
+          label: "Timing Samples",
+          fields: {
+            captureFlagged: {
+              type: "boolean",
+              label: "Capture Flagged",
+              hint: "Store raw key timings of flagged results in audit logs.",
+            },
+            randomRate: {
+              type: "number",
+              label: "Random Capture Rate",
+              min: 0,
+              hint: "Fraction (0-1) of reviewed results whose raw key timings are stored as a baseline.",
+            },
+          },
+        },
+        replayCheck: {
+          type: "object",
+          label: "Replay Check",
+          fields: {
+            enabled: {
+              type: "boolean",
+              label: "Enabled",
+              hint: "Reject results that resubmit one of the user's recent key timelines.",
+            },
+            maxFingerprints: {
+              type: "number",
+              label: "Max Fingerprints",
+              min: 0,
             },
           },
         },

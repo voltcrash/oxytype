@@ -4,15 +4,21 @@ import * as UserDAL from "../../dal/user";
 import * as ReportDAL from "../../dal/report";
 import {
   AcceptReportsRequest,
+  AnticheatAuditEvent,
   ClearStreakHourOffsetRequest,
+  ClearSuspiciousRequest,
   DeleteUserRequest,
+  GetAnticheatAuditsQuery,
+  GetAnticheatAuditsResponse,
+  GetAnticheatSummaryQuery,
+  GetAnticheatSummaryResponse,
   RejectReportsRequest,
   ToggleBanRequest,
   ToggleBanResponse,
 } from "@oxytype/contracts/admin";
 import MonkeyError, { getErrorMessage } from "../../utils/error";
 import { Configuration } from "@oxytype/schemas/configuration";
-import { addImportantLog } from "../../dal/logs";
+import { addImportantLog, countLogs, getLogs } from "../../dal/logs";
 import { MonkeyRequest } from "../types";
 import { purgeUserFromDailyLeaderboards } from "../../utils/daily-leaderboards";
 import { purgeUserFromXpLeaderboards } from "../../services/weekly-xp-leaderboard";
@@ -170,4 +176,45 @@ export async function handleReports(
       }
     }
   }
+}
+
+export async function clearSuspicious(
+  req: MonkeyRequest<undefined, ClearSuspiciousRequest>,
+): Promise<MonkeyResponse> {
+  const { uid } = req.body;
+
+  await UserDAL.clearSuspicious(uid);
+  void addImportantLog("admin_suspicious_cleared_by", {}, uid);
+
+  return new MonkeyResponse("Suspicious flag cleared", null);
+}
+
+export async function getAnticheatAudits(
+  req: MonkeyRequest<GetAnticheatAuditsQuery>,
+): Promise<GetAnticheatAuditsResponse> {
+  const audits = await getLogs(req.query);
+  return new MonkeyResponse(
+    "Anticheat audits retrieved",
+    audits.map((audit) => ({
+      ...audit,
+      event: audit.event as AnticheatAuditEvent,
+    })),
+  );
+}
+
+export async function getAnticheatSummary(
+  req: MonkeyRequest<GetAnticheatSummaryQuery>,
+): Promise<GetAnticheatSummaryResponse> {
+  const since = Date.now() - req.query.hours * 60 * 60 * 1000;
+  const [rejected, flagged, samples] = await Promise.all([
+    countLogs("anticheat_rejected", since, "$.message.reason"),
+    countLogs("anticheat_flagged", since, "$.message.signals", true),
+    countLogs("anticheat_sample", since, "$.message.mode"),
+  ]);
+  return new MonkeyResponse("Anticheat summary retrieved", {
+    since,
+    rejected,
+    flagged,
+    samples: samples.reduce((sum, row) => sum + row.count, 0),
+  });
 }

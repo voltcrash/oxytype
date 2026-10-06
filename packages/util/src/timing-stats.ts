@@ -1,11 +1,10 @@
 /**
  * Key timing statistics derived from an event log.
  *
- * Pure math with no ui or dom dependencies, so the same functions back both the
- * event log viewer and the offline report script that measures them across a
- * labelled corpus. Anything that only makes sense as a chart stays in the
- * viewer - what lives here is what an anticheat could eventually run on the two
- * arrays it receives.
+ * Pure math with no ui or dom dependencies, so the same functions back the
+ * event log viewer, the backend review signals and the offline calibration
+ * script. Anything that only makes sense as a chart stays in the viewer - what
+ * lives here runs on the two arrays a result submits.
  */
 
 export type Significant = { r: number; sigmas: number };

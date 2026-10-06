@@ -1,0 +1,1 @@
+CREATE INDEX `audit_logs_event_idx` ON `audit_logs` (`event`,`timestamp`);
