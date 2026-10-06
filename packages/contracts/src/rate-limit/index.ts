@@ -316,11 +316,6 @@ export const limits = {
     max: 60,
   },
 
-  userFriendGet: {
-    window: "hour",
-    max: 60,
-  },
-
   // ApeKeys Routing
   apeKeysGet: {
     window: "hour",
@@ -330,26 +325,6 @@ export const limits = {
   apeKeysGenerate: {
     window: "hour",
     max: 15,
-  },
-
-  connectionGet: {
-    window: "hour",
-    max: 60,
-  },
-
-  connectionCreate: {
-    window: "hour",
-    max: 60,
-  },
-
-  connectionDelete: {
-    window: "hour",
-    max: 60,
-  },
-
-  connectionUpdate: {
-    window: "hour",
-    max: 60,
   },
 } satisfies Record<string, RateLimitOptions>;
 
