@@ -168,7 +168,6 @@ async function fetchVersionHistory(): Promise<VersionHistoryRelease[]> {
       tag: release.tag_name,
       name: release.name,
       publishedAt: dateFormat(publishedAt, "dd MMM yyyy"),
-      timestamp: publishedAt.getTime(),
       bodyHTML: releaseNotesToHtml(release.body),
     };
   });
