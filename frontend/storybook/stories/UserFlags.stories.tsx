@@ -23,16 +23,12 @@ export const LbOptOut = meta.story({
   render: () => <UserFlags lbOptOut />,
 });
 
-export const Friend = meta.story({
-  render: () => <UserFlags isFriend />,
-});
-
 export const AllFlags = meta.story({
-  render: () => <UserFlags isPremium banned lbOptOut isFriend />,
+  render: () => <UserFlags isPremium banned lbOptOut />,
 });
 
 export const AllFlagsIconsOnly = meta.story({
-  render: () => <UserFlags isPremium banned lbOptOut isFriend iconsOnly />,
+  render: () => <UserFlags isPremium banned lbOptOut iconsOnly />,
 });
 
 export const AllVariants = meta.story({
@@ -69,15 +65,9 @@ export const AllVariants = meta.story({
       <UserFlags lbOptOut />
       <UserFlags lbOptOut iconsOnly />
 
-      <div style={{ "font-size": "12px", color: "var(--sub-color)" }}>
-        Friend
-      </div>
-      <UserFlags isFriend />
-      <UserFlags isFriend iconsOnly />
-
       <div style={{ "font-size": "12px", color: "var(--sub-color)" }}>All</div>
-      <UserFlags isPremium banned lbOptOut isFriend />
-      <UserFlags isPremium banned lbOptOut isFriend iconsOnly />
+      <UserFlags isPremium banned lbOptOut />
+      <UserFlags isPremium banned lbOptOut iconsOnly />
     </div>
   ),
 });
