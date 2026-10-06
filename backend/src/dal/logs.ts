@@ -1,4 +1,4 @@
-import { and, desc, eq, lt } from "drizzle-orm";
+import { and, count, desc, eq, gte, lt } from "drizzle-orm";
 import { database, encode, statement } from "../db/client";
 import { logs } from "../db/schema";
 import { stage } from "../db/mutation";
@@ -40,6 +40,20 @@ export async function deleteUserLogs(uid: string): Promise<void> {
   await database().delete(logs).where(eq(logs.uid, uid));
 }
 
+export async function countUserLogs(
+  uid: string,
+  event: string,
+  since: number,
+): Promise<number> {
+  const row = await database()
+    .select({ count: count() })
+    .from(logs)
+    .where(
+      and(eq(logs.uid, uid), eq(logs.event, event), gte(logs.timestamp, since)),
+    )
+    .get();
+  return row?.count ?? 0;
+}
 export type AuditLog = {
   id: string;
   uid: string;

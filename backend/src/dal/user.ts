@@ -431,6 +431,11 @@ export async function updateLastHashes(
     user.lastReultHashes = lastHashes;
   });
 }
+export async function setSuspicious(uid: string): Promise<void> {
+  await mutateUser(uid, (user) => {
+    user.suspicious = true;
+  });
+}
 export async function updateLastTimingHashes(
   uid: string,
   lastTimingHashes: string[],
