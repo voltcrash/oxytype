@@ -174,6 +174,14 @@ describe("production anticheat with D1", () => {
       (row) => JSON.parse(row.data) as { message: Record<string, unknown> },
     );
   }
+  // results must be spaced by their duration; age earlier saves instead of waiting
+  async function ageResults(uid: string): Promise<void> {
+    await test.env.DB.prepare(
+      "UPDATE results SET timestamp=timestamp-120000 WHERE uid=?",
+    )
+      .bind(uid)
+      .run();
+  }
   async function withAnticheat(
     anticheat: Parameters<typeof patchConfiguration>[0]["anticheat"],
     run: () => Promise<void>,
@@ -192,6 +200,7 @@ describe("production anticheat with D1", () => {
             anticheat: {
               review: { enabled: true, minWpm: 100 },
               samples: { captureFlagged: false, randomRate: 0 },
+              replayCheck: { enabled: true, maxFingerprints: 50 },
             },
           }),
       );
@@ -371,6 +380,39 @@ describe("production anticheat with D1", () => {
         },
       );
     }
+  });
+  it("rejects a replayed key timeline with changed metadata", async () => {
+    const user = await account();
+    const timings = timedResult(humanTimings(600, 3, 45));
+    expect((await submit(user, timings)).status).toBe(200);
+    await ageResults(user.uid);
+    expect(
+      (await submit(user, { ...timings, timestamp: 2, punctuation: true }))
+        .status,
+    ).toBe(466);
+    const [rejection] = await auditLogs(user.uid, "anticheat_rejected");
+    expect(rejection?.message["reason"]).toBe("replayed-key-timing");
+    const fresh = timedResult(humanTimings(600, 4, 45));
+    expect((await submit(user, fresh)).status).toBe(200);
+    await withRuntime(test.env, async () => {
+      const profile = await Users.getUser(user.uid, "test");
+      expect(profile.completedTests).toBe(2);
+      expect(profile.lastTimingHashes).toHaveLength(2);
+    });
+  });
+  it("saves replayed timelines when the replay check is disabled", async () => {
+    await withAnticheat(
+      { replayCheck: { enabled: false, maxFingerprints: 50 } },
+      async () => {
+        const user = await account();
+        const timings = timedResult(humanTimings(600, 5, 45));
+        expect((await submit(user, timings)).status).toBe(200);
+        await ageResults(user.uid);
+        expect((await submit(user, { ...timings, timestamp: 2 })).status).toBe(
+          200,
+        );
+      },
+    );
   });
   it("commits configured strikes and a ban/inbox message despite rejecting the result", async () => {
     const user = await account();
