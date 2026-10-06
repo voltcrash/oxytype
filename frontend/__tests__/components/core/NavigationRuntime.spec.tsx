@@ -146,7 +146,7 @@ describe("Solid Router page integration", () => {
     });
   });
 
-  it.each(["/account", "/account-settings", "/friends"])(
+  it.each(["/account", "/account-settings"])(
     "redirects signed-out %s visits to login without an extra history entry",
     async (path) => {
       mount();
@@ -169,9 +169,21 @@ describe("Solid Router page integration", () => {
       "/settings?tab=account",
     );
     expect(state.change).toHaveBeenLastCalledWith("settings", {});
-    await navigate("/friends");
-    expect(state.change).toHaveBeenLastCalledWith("friends", {});
   });
+
+  it.each([false, true])(
+    "returns 404 for /friends with authenticated=%s",
+    async (authenticated) => {
+      state.authenticated = authenticated;
+      mount("/friends");
+      await ready();
+      expect(state.change).toHaveBeenLastCalledWith(
+        "404",
+        expect.objectContaining({ force: true }),
+      );
+      expect(window.location.pathname).toBe("/friends");
+    },
+  );
 
   it("returns auth routes to the test when authentication is unavailable", async () => {
     state.authAvailable = false;
