@@ -134,6 +134,10 @@ export const ConfigurationSchema = z.object({
       captureFlagged: z.boolean(),
       randomRate: z.number().min(0).max(1),
     }),
+    replayCheck: z.object({
+      enabled: z.boolean(),
+      maxFingerprints: z.number().int().nonnegative(),
+    }),
   }),
 });
 export type Configuration = z.infer<typeof ConfigurationSchema>;

@@ -117,6 +117,11 @@ export const BASE_CONFIGURATION: Configuration = {
       captureFlagged: false,
       randomRate: 0,
     },
+    // A long, varied key timeline cannot repeat by chance.
+    replayCheck: {
+      enabled: true,
+      maxFingerprints: 50,
+    },
   },
 };
 
@@ -643,6 +648,22 @@ export const CONFIGURATION_FORM_SCHEMA: ObjectSchema<Configuration> = {
               label: "Random Capture Rate",
               min: 0,
               hint: "Fraction (0-1) of reviewed results whose raw key timings are stored as a baseline.",
+            },
+          },
+        },
+        replayCheck: {
+          type: "object",
+          label: "Replay Check",
+          fields: {
+            enabled: {
+              type: "boolean",
+              label: "Enabled",
+              hint: "Reject results that resubmit one of the user's recent key timelines.",
+            },
+            maxFingerprints: {
+              type: "number",
+              label: "Max Fingerprints",
+              min: 0,
             },
           },
         },
