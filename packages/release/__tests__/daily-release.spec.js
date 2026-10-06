@@ -48,7 +48,14 @@ describe("daily production releases", () => {
   function previousRelease(tag = "v2026.10.04") {
     git("tag", tag);
     github.paginate.mockResolvedValue([
-      { tag_name: tag, body: marker, draft: false, prerelease: false },
+      {
+        tag_name: tag,
+        name: tag.slice(1),
+        published_at: `${tag.slice(1).replaceAll(".", "-")}T00:17:00Z`,
+        body: marker,
+        draft: false,
+        prerelease: false,
+      },
     ]);
   }
 
@@ -158,6 +165,50 @@ describe("daily production releases", () => {
     const plan = await prepareDailyRelease({ github, context, cwd });
     expect(plan.shouldDeploy).toBe(true);
     expect(plan.body).toContain("No new changes merged to main");
+  });
+
+  it("bundles the new release's exact notes before GitHub publication", async () => {
+    previousRelease();
+    commit("fix: repair version history", "2026-10-04T22:00:00Z");
+    const plan = await prepareDailyRelease({ github, context, cwd });
+    expect(plan.releaseHistory).toEqual([
+      {
+        tag_name: plan.tag,
+        name: plan.version,
+        published_at: "2026-10-05T00:02:00.000Z",
+        body: plan.body,
+      },
+      {
+        tag_name: "v2026.10.04",
+        name: "2026.10.04",
+        published_at: "2026-10-04T00:17:00Z",
+        body: marker,
+      },
+    ]);
+    expect(github.rest.repos.createRelease).not.toHaveBeenCalled();
+  });
+
+  it("keeps the new release and only nine older public releases", async () => {
+    const older = Array.from({ length: 15 }, (_, i) => ({
+      tag_name: `v2026.09.${String(i + 1).padStart(2, "0")}`,
+      published_at: new Date(Date.UTC(2026, 8, i + 1)).toISOString(),
+      body: "Older notes",
+      draft: false,
+      prerelease: false,
+    }));
+    github.paginate.mockResolvedValue([
+      { ...older[0], tag_name: "draft", draft: true },
+      { ...older[0], tag_name: "preview", prerelease: true },
+      ...older,
+    ]);
+    const plan = await prepareDailyRelease({ github, context, cwd });
+    expect(plan.releaseHistory.map((release) => release.tag_name)).toEqual([
+      plan.tag,
+      ...older
+        .slice(-9)
+        .reverse()
+        .map((release) => release.tag_name),
+    ]);
   });
 
   it("skips an already published production release on same-day retries", async () => {
