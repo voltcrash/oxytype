@@ -40,8 +40,15 @@
     {
       "idx": 5,
       "version": "6",
-      "when": 1791244800000,
-      "tag": "0005_remove_friends",
+      "when": 1791280000000,
+      "tag": "0005_enable_daily_leaderboards",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1791280000001,
+      "tag": "0006_remove_friends",
       "breakpoints": true
     }
   ]

@@ -10,7 +10,7 @@ it("removes requests, friendships, blocks, and configuration while retaining use
   };
   const test = await createTestRuntime({
     beforeMigration: async (db, file) => {
-      if (file !== "0005_remove_friends.sql") return;
+      if (file !== "0006_remove_friends.sql") return;
       await db.batch([
         ...["owner", "pending", "accepted", "blocked"].map((uid) =>
           db
@@ -94,7 +94,7 @@ it("removes requests, friendships, blocks, and configuration while retaining use
     };
     await verify();
     const migration = await readFile(
-      resolve(__dirname, "../../migrations/0005_remove_friends.sql"),
+      resolve(__dirname, "../../migrations/0006_remove_friends.sql"),
       "utf8",
     );
     await test.env.DB.batch(

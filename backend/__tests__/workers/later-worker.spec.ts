@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vite-plus/test";
 import * as LaterWorker from "../../src/workers/later-worker";
+import { BASE_CONFIGURATION } from "../../src/constants/base-configuration";
 const calculateXpReward = LaterWorker.__testing.calculateXpReward;
 
 describe("later-worker", () => {
@@ -28,6 +29,18 @@ describe("later-worker", () => {
 
       //THEN
       expect(reward).toBe(900);
+    });
+
+    it.each([
+      [1, 5000],
+      [2, 2500],
+      [10, 1000],
+      [11, 900],
+      [100, 100],
+      [101, undefined],
+    ])("rewards daily rank %i with %s xp by default", (rank, xp) => {
+      const { xpRewardBrackets } = BASE_CONFIGURATION.dailyLeaderboards;
+      expect(calculateXpReward(xpRewardBrackets, rank)).toBe(xp);
     });
   });
 });
