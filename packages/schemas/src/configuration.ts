@@ -119,5 +119,21 @@ export const ConfigurationSchema = z.object({
       xpRewardBrackets: z.array(RewardBracketSchema),
     }),
   }),
+  anticheat: z.object({
+    botCheckMinWpm: z
+      .number()
+      .nonnegative()
+      .describe(
+        "Time tests above this WPM must include key timings and pass the fixed timing check",
+      ),
+    review: z.object({
+      enabled: z.boolean(),
+      minWpm: z.number().nonnegative(),
+    }),
+    samples: z.object({
+      captureFlagged: z.boolean(),
+      randomRate: z.number().min(0).max(1),
+    }),
+  }),
 });
 export type Configuration = z.infer<typeof ConfigurationSchema>;
