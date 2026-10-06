@@ -13,6 +13,7 @@ import {
   getKeyDataFailure,
   getBotFailure,
   getTimingReview,
+  getTimingFingerprint,
 } from "../../anticheat/index";
 import MonkeyStatusCodes from "../../constants/monkey-status-codes";
 import {
@@ -478,6 +479,32 @@ async function addResultAtomic(
       }
       await UserDAL.updateLastHashes(uid, lastHashes);
     }
+  }
+
+  const replayCheck = req.ctx.configuration.anticheat.replayCheck;
+  const timingHash = replayCheck.enabled
+    ? getTimingFingerprint(completedEvent)
+    : undefined;
+  if (timingHash !== undefined) {
+    const lastTimingHashes = user.lastTimingHashes ?? [];
+    if (lastTimingHashes.includes(timingHash)) {
+      await addImportantLog(
+        "anticheat_rejected",
+        {
+          reason: "replayed-key-timing",
+          submissionHash: resulthash,
+          mode: completedEvent.mode,
+          mode2: completedEvent.mode2,
+        },
+        uid,
+      );
+      const status = MonkeyStatusCodes.DUPLICATE_RESULT;
+      return new MonkeyError(status.code, "Duplicate result");
+    }
+    await UserDAL.updateLastTimingHashes(
+      uid,
+      [timingHash, ...lastTimingHashes].slice(0, replayCheck.maxFingerprints),
+    );
   }
 
   if (keyDurationStats) {

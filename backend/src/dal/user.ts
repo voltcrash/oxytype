@@ -59,6 +59,7 @@ export type DBUser = Omit<
   lbPersonalBests?: LbPersonalBests;
   customThemes?: CustomTheme[];
   autoBanTimestamps?: number[];
+  lastTimingHashes?: string[];
   inbox?: MonkeyMail[];
   ips?: string[];
   canReport?: boolean;
@@ -428,6 +429,14 @@ export async function updateLastHashes(
 ): Promise<void> {
   await mutateUser(uid, (user) => {
     user.lastReultHashes = lastHashes;
+  });
+}
+export async function updateLastTimingHashes(
+  uid: string,
+  lastTimingHashes: string[],
+): Promise<void> {
+  await mutateUser(uid, (user) => {
+    user.lastTimingHashes = lastTimingHashes;
   });
 }
 export async function updateTypingStats(
