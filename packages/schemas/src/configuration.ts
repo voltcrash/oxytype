@@ -129,6 +129,14 @@ export const ConfigurationSchema = z.object({
     review: z.object({
       enabled: z.boolean(),
       minWpm: z.number().nonnegative(),
+      suspiciousAfterFlags: z
+        .number()
+        .int()
+        .nonnegative()
+        .describe(
+          "Mark a user suspicious after this many flagged results in the window. 0 disables.",
+        ),
+      suspiciousWindowHours: z.number().int().nonnegative(),
     }),
     samples: z.object({
       captureFlagged: z.boolean(),

@@ -111,6 +111,9 @@ export const BASE_CONFIGURATION: Configuration = {
     review: {
       enabled: true,
       minWpm: 100,
+      // suspicious only adds review logs for the user's later results
+      suspiciousAfterFlags: 5,
+      suspiciousWindowHours: 7 * 24,
     },
     // Raw key timings are behavioural data. Keep capture off unless reviewing.
     samples: {
@@ -630,6 +633,17 @@ export const CONFIGURATION_FORM_SCHEMA: ObjectSchema<Configuration> = {
             minWpm: {
               type: "number",
               label: "Min WPM",
+              min: 0,
+            },
+            suspiciousAfterFlags: {
+              type: "number",
+              label: "Suspicious After Flags",
+              min: 0,
+              hint: "Mark users suspicious (extra review logs, no penalty) after this many flagged results. 0 disables.",
+            },
+            suspiciousWindowHours: {
+              type: "number",
+              label: "Suspicious Window (hours)",
               min: 0,
             },
           },
