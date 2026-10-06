@@ -60,9 +60,9 @@ The client hash cannot catch this because a replay can change any field it
 covers. Timelines under 50 keys, with fewer than three distinct gaps, or with
 long-test sentinels are not fingerprinted: they can repeat by chance on
 coarsened clocks. Repeats return 466 with an `anticheat_rejected` audit
-(`replayed-key-timing`) and no strike. This check is independent of
-`users.lastHashesCheck`, which production leaves off. Fingerprints are per
-user and are omitted from user responses.
+(`replayed-key-timing`) and no strike. Fingerprints are per user and are omitted
+from user responses. Exact duplicate submissions are also rejected by the
+database's per-user submission-hash constraint.
 
 ## Review signals (log only)
 
@@ -148,10 +148,12 @@ removed. Real-user OAuth/captcha and browser typing remain pending. Follow
 save, refresh and sign-out/sign-in checks. Monitor `anticheat_rejected` audits
 by reason, `anticheat_flagged` audits by signal and important-audit growth.
 
-Rollout: apply migration `0007_audit_log_event_index`, watch the summary
-endpoint, enable `samples.randomRate` briefly (for example 0.05) to build a
-human baseline, review flagged results, then run the calibration command before
-changing thresholds or considering enforcement.
+Rollout: apply migrations `0007_audit_log_event_index` and
+`0008_remove_legacy_result_hashes` before deploying. The latter removes retired
+payload-hash settings and user history while preserving replay fingerprints.
+Watch the summary endpoint, enable `samples.randomRate` briefly (for example
+0.05) to build a human baseline, review flagged results, then run the calibration
+command before changing thresholds or considering enforcement.
 
 ```sh
 cd backend
