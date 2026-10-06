@@ -455,6 +455,7 @@ export const CONFIGURATION_FORM_SCHEMA: ObjectSchema<Configuration> = {
           type: "number",
           label: "Leaderboard Expiration Time In Days",
           min: 0,
+          hint: "This should atleast be 2, to allow for previous day queries.",
         },
         validModeRules: {
           type: "array",
