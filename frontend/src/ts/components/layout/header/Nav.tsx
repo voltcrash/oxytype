@@ -7,7 +7,6 @@ import {
   Show,
 } from "solid-js";
 
-import { usePendingConnectionsQuery } from "../../../collections/connections";
 import { restartTestEvent } from "../../../events/test";
 import { createEffectOn } from "../../../hooks/effects";
 import { useRef } from "../../../hooks/useRef";
@@ -40,8 +39,6 @@ export function Nav(): JSXElement {
   const isCoarse = () => window.matchMedia("(pointer: coarse)").matches;
   const [accountMenuRef, accountMenuEl] = useRef<HTMLDivElement>();
 
-  const pendingConnections = usePendingConnectionsQuery();
-
   const handleClickOutside = (e: MouseEvent) => {
     const el = accountMenuEl();
     if (getAccountMenuOpen() && el && !el.contains(e.target as Node)) {
@@ -62,10 +59,6 @@ export function Nav(): JSXElement {
       return;
     }
     setAnimatedLevel(getLevelFromTotalXp(snapshot.xp ?? 0));
-  });
-
-  const showFriendsNotificationBubble = createMemo((): boolean => {
-    return pendingConnections().length > 0;
   });
 
   const showAlertsNotificationBubble = createMemo((): boolean => {
@@ -239,13 +232,10 @@ export function Nav(): JSXElement {
                     hideNameOnSmallScreens={true}
                     level={getAnimatedLevel()}
                     showSpinner={getAccountButtonSpinner()}
-                    showNotificationBubble={showFriendsNotificationBubble()}
                     fontClass="text-em-xs"
                   />
                 </Button>
-                <AccountMenu
-                  showFriendsNotificationBubble={showFriendsNotificationBubble()}
-                />
+                <AccountMenu />
               </div>
               <div class="relative">
                 <AccountXpBar />
