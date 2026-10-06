@@ -294,15 +294,29 @@ describe("Hono HTTP application", () => {
       .send("{}")
       .expect(415);
   });
+  it.each([
+    { method: "get", path: "/connections" },
+    { method: "post", path: "/connections" },
+    { method: "patch", path: "/connections/removed" },
+    { method: "delete", path: "/connections/removed" },
+    { method: "get", path: "/users/friends" },
+  ] as const)(
+    "returns 404 for removed $method $path",
+    async ({ method, path }) => {
+      await createClient()[method](path).expect(404);
+      await createClient()
+        [method](path)
+        .set("Authorization", "Bearer retired-client")
+        .expect(404);
+    },
+  );
+
   it("checks authentication before schema validation", async () => {
-    await createClient()
-      .post("/connections")
-      .send({ invalid: true })
-      .expect(401);
+    await createClient().post("/presets").send({ invalid: true }).expect(401);
   });
   it("accepts trailing slashes on contract routes", async () => {
     await createClient().get("/configuration/").expect(200);
-    await createClient().post("/connections/").expect(401);
+    await createClient().post("/presets/").expect(401);
   });
   it("keeps static route matching case-insensitive and preserves parameter case", async () => {
     const client = createClient();
