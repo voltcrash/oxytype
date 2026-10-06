@@ -199,7 +199,12 @@ describe("production anticheat with D1", () => {
         async () =>
           await patchConfiguration({
             anticheat: {
-              review: { enabled: true, minWpm: 100 },
+              review: {
+                enabled: true,
+                minWpm: 100,
+                suspiciousAfterFlags: 5,
+                suspiciousWindowHours: 168,
+              },
               samples: { captureFlagged: false, randomRate: 0 },
               replayCheck: { enabled: true, maxFingerprints: 50 },
             },
@@ -381,6 +386,56 @@ describe("production anticheat with D1", () => {
         },
       );
     }
+  });
+  it("marks repeatedly flagged users suspicious without limiting them", async () => {
+    await withAnticheat(
+      { review: { suspiciousAfterFlags: 2, suspiciousWindowHours: 1 } },
+      async () => {
+        const user = await account();
+        expect((await submit(user, uniformBot())).status).toBe(200);
+        await withRuntime(test.env, async () =>
+          expect((await Users.getUser(user.uid, "test")).suspicious).toBe(
+            undefined,
+          ),
+        );
+        await ageResults(user.uid);
+        const second = timedResult(
+          generatedTimings(
+            600,
+            (random, channel) =>
+              channel === "gap" ? 30 + random() * 20 : 20 + random() * 20,
+            2,
+          ),
+        );
+        expect((await submit(user, second)).status).toBe(200);
+        await withRuntime(test.env, async () => {
+          const profile = await Users.getUser(user.uid, "test");
+          expect(profile.suspicious).toBe(true);
+          expect(profile.banned).not.toBe(true);
+          expect(profile.completedTests).toBe(2);
+        });
+        const [marked] = await auditLogs(
+          user.uid,
+          "anticheat_marked_suspicious",
+        );
+        expect(marked?.message).toEqual({ flags: 2 });
+      },
+    );
+  });
+  it("leaves flagged users unmarked when escalation is disabled", async () => {
+    await withAnticheat(
+      { review: { suspiciousAfterFlags: 0, suspiciousWindowHours: 1 } },
+      async () => {
+        const user = await account();
+        expect((await submit(user, uniformBot())).status).toBe(200);
+        await withRuntime(test.env, async () =>
+          expect((await Users.getUser(user.uid, "test")).suspicious).toBe(
+            undefined,
+          ),
+        );
+        expect(await auditLogs(user.uid, "anticheat_flagged")).toHaveLength(1);
+      },
+    );
   });
   it("pages and summarises anticheat audits for admin review", async () => {
     const since = Date.now() - 1000;
