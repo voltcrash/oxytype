@@ -91,7 +91,11 @@ export const BASE_CONFIGURATION: Configuration = {
     scheduleRewardsModeRules: [
       { language: "english", mode: "time", mode2: "(15|60)" },
     ],
-    xpRewardBrackets: [],
+    xpRewardBrackets: [
+      { minRank: 1, maxRank: 1, minReward: 5000, maxReward: 5000 },
+      { minRank: 2, maxRank: 10, minReward: 1000, maxReward: 2500 },
+      { minRank: 11, maxRank: 100, minReward: 100, maxReward: 900 },
+    ],
   },
   leaderboards: {
     minTimeTyping: 2 * 60 * 60,
