@@ -88,7 +88,9 @@ export const BASE_CONFIGURATION: Configuration = {
     maxResults: 1000,
     leaderboardExpirationTimeInDays: 2, // This should atleast be 2
     validModeRules: [{ language: "english", mode: "time", mode2: "(15|60)" }],
-    scheduleRewardsModeRules: [],
+    scheduleRewardsModeRules: [
+      { language: "english", mode: "time", mode2: "(15|60)" },
+    ],
     xpRewardBrackets: [],
   },
   leaderboards: {
