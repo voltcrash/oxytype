@@ -141,6 +141,18 @@ included in the next successful release. The first scheduled release covers the
 preceding UTC day; the first manual run covers its current UTC day. Days without
 changes still deploy and publish a release with an empty-change notice.
 
+Before the frontend build, the workflow writes `frontend/static/release.json`
+with the planned release's notes and the nine newest earlier public releases.
+Drafts and prereleases are excluded. This includes the release being deployed
+even though GitHub publication happens afterward. The generated snapshot is
+bundled into the deployment; it does not create a commit on `main`.
+
+The footer version and version-history modal read `/release.json` from the site,
+without browser requests to GitHub's API. The modal shows at most ten releases
+and links to [GitHub releases](https://github.com/voltcrash/oxytype/releases)
+for older history. Hosting and the service worker avoid persistently caching the
+snapshot so the next deployment can update it.
+
 Runs are serialized. Rerunning a completed date skips deployment and publication;
 retrying a failed run keeps its original date and `main` snapshot. An older failed
 run cannot deploy over a newer production release. A date tag belonging to another

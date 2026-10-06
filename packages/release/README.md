@@ -12,4 +12,14 @@ Only one tagged release is allowed per UTC day. Normal releases and dry runs che
 
 Frontend build IDs remain separate timestamp-and-commit identifiers for cache invalidation and diagnostics.
 
+Frontend releases, hotfixes and preview deployments refresh
+`frontend/static/release.json` before building. The snapshot contains only the ten
+newest public releases, with names, tags, publication dates and Markdown notes;
+drafts and prereleases are excluded. A normal release includes its pending notes
+so the deployed history is current when its GitHub release is published. Set
+`GITHUB_TOKEN` to authenticate this build-time fetch. Dry runs leave the file
+unchanged; ordinary frontend development/build commands use the checked-in
+snapshot without accessing GitHub. The footer and history modal fetch the
+site-hosted file, and older history is linked to GitHub.
+
 The **Daily production release** GitHub workflow deploys the complete production Worker site at 00:17 UTC, or manually from `main`, then publishes a date-named release with all changes since the previous production release. It keeps retries tied to the original date and deployed commit. See [production automation setup](../../docs/PRODUCTION_SETUP.md#daily-production-releases) for required Actions inputs and first-release behavior. The interactive CLI above remains a separate staging/Firebase release flow.
