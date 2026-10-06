@@ -277,6 +277,7 @@ export const logs = sqliteTable(
   (t) => [
     index("audit_logs_owner_idx").on(t.uid, t.timestamp),
     index("audit_logs_retention_idx").on(t.important, t.timestamp),
+    index("audit_logs_event_idx").on(t.event, t.timestamp),
   ],
 );
 
