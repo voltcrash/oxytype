@@ -120,9 +120,7 @@ export function LeaderboardPage(): JSXElement {
    * the page that contains the user
    */
   const userPage = () => {
-    const userRank = getSelection().friendsOnly
-      ? rankQuery.data?.friendsRank
-      : rankQuery.data?.rank;
+    const userRank = rankQuery.data?.rank;
     if (userRank === undefined) return undefined;
     const page = Math.ceil(userRank / pageSize) - 1;
     return page;
@@ -157,7 +155,6 @@ export function LeaderboardPage(): JSXElement {
       selection.type !== "allTime" ||
       selection.mode !== "time" ||
       selection.language !== "english" ||
-      selection.friendsOnly ||
       currentRank === undefined
     ) {
       return undefined;
@@ -181,9 +178,6 @@ export function LeaderboardPage(): JSXElement {
                 validModeRules={
                   serverConfigurationQueryData().dailyLeaderboards
                     .validModeRules ?? []
-                }
-                connectionsEnabled={
-                  serverConfigurationQueryData().connections.enabled
                 }
               />
             )}
@@ -225,7 +219,6 @@ export function LeaderboardPage(): JSXElement {
                   <UserRank
                     type={getSelection().type === "weekly" ? "xp" : "speed"}
                     data={rankQueryData()}
-                    friendsOnly={getSelection().friendsOnly}
                     total={entriesQueryData()?.count}
                     minWpm={minWpm()}
                     memoryDifference={getLbMemoryDifference(
@@ -282,7 +275,6 @@ export function LeaderboardPage(): JSXElement {
                   <Table
                     type={getSelection().type === "weekly" ? "xp" : "speed"}
                     entries={entriesQueryData()?.entries ?? []}
-                    friendsOnly={getSelection().friendsOnly}
                     scrollToUser={scrollToUser}
                     onScrolledToUser={() => setScrollToUser(false)}
                   />
