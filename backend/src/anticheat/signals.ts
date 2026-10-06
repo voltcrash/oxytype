@@ -150,7 +150,14 @@ export function getTimingReview(
   const { keySpacing, keyDuration } = result;
   if (keySpacing === "toolong" || keyDuration === "toolong") return undefined;
   if (keyDuration.length < result.charTotal) return undefined;
+  return reviewKeyTimings(keySpacing, keyDuration);
+}
 
+/** The review on bare arrays, as stored in timing samples. */
+export function reviewKeyTimings(
+  keySpacing: number[],
+  keyDuration: number[],
+): TimingReview | undefined {
   // endpoints may predate the start or be estimated, as in the bot check;
   // zero holds are placeholders for releases that were never observed
   const gaps = keySpacing.slice(1, -1).filter((value) => value > 0);
