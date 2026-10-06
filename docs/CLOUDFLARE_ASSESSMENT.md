@@ -27,8 +27,7 @@ are strings. Dates and activity counters include BSON Date/Long values.
 | `results` — `dal/result.ts` | owner, timestamp, test dimensions, speed/accuracy, chart/telemetry payload, tags; legacy result conversions |
 | `configs`, `presets` — matching DALs | user settings JSON; named presets and setting groups |
 | `ape-keys` — `dal/ape-keys.ts` | owner, bcrypt hash, enablement, creation/use timestamps, counters |
-| `connections` — `dal/connections.ts` | initiator/receiver IDs/names, pending/accepted/blocked status, modification time |
-| `leaderboards.<language>.<mode>.<mode2>` — `dal/leaderboards.ts` | materialized rank/profile/result snapshots; user aggregation and friend joins |
+| `leaderboards.<language>.<mode>.<mode2>` — `dal/leaderboards.ts` | materialized rank/profile/result snapshots; user aggregation |
 | `blocklist`, `admin-uids` — matching DALs | hashed banned identities; authorized admin UIDs |
 | `configuration` — `init/configuration.ts` | live application feature flags and limits merged with defaults |
 | `psa`, `public` — matching DALs | announcements; aggregate typing counters and speed histograms |
@@ -90,7 +89,6 @@ Implemented source: `backend/src/db/schema.ts`; migrations `0000` + `0001`.
 | `users` | uid PK, original application id unique, normalized name unique; scalar counters/eligibility/version + compatibility JSON |
 | `results` | original id PK; owner/time/id and owner/mode/duration/language indexes; unique owner/submission hash for new writes; payload JSON |
 | `configs`, `presets`, `ape_keys` | owner FKs; owner/time or owner indexes; settings JSON, explicit key hash/use columns |
-| `connections` | unique canonical unordered pair; participant/status indexes; explicit FK participants/status CHECK |
 | `leaderboard_bests`, `leaderboard_generations`, `leaderboard_snapshots` | board+uid PK; board/score index; generation+board+uid PK and unique generation+board+rank; atomic snapshot publication |
 | `daily_entries`, `weekly_entries` | board/period/uid or period/uid PK; rank, expiry and owner indexes |
 | `user_activity`, `inbox`, `reward_grants` | uid/day, uid/mail PKs; unique reward origin+uid; read/deleted/claimed flags; owner indexes |
