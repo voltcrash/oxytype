@@ -28,7 +28,6 @@ import {
   UserTagSchema,
   UserEmailSchema,
   UserNameSchema,
-  FriendSchema,
 } from "@oxytype/schemas/users";
 import {
   Mode2Schema,
@@ -291,9 +290,6 @@ export type GetCurrentTestActivityResponse = z.infer<
 export const GetStreakResponseSchema =
   responseWithNullableData(UserStreakSchema);
 export type GetStreakResponse = z.infer<typeof GetStreakResponseSchema>;
-
-export const GetFriendsResponseSchema = responseWithData(z.array(FriendSchema));
-export type GetFriendsResponse = z.infer<typeof GetFriendsResponseSchema>;
 
 const c = initContract();
 
@@ -797,22 +793,6 @@ export const usersContract = c.router(
       metadata: meta({
         authenticationOptions: { acceptApeKeys: true },
         rateLimit: "userStreak",
-      }),
-    },
-    getFriends: {
-      summary: "get friends",
-      description: "get friends list",
-      method: "GET",
-      path: "/friends",
-      responses: {
-        200: GetFriendsResponseSchema,
-      },
-      metadata: meta({
-        rateLimit: "userFriendGet",
-        requireConfiguration: {
-          path: "connections.enabled",
-          invalidMessage: "Connections are not available at this time.",
-        },
       }),
     },
   },

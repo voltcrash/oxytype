@@ -1,16 +1,9 @@
-import { JSXElement, Show } from "solid-js";
+import { JSXElement } from "solid-js";
 
-import { get as getServerConfiguration } from "../../../ape/server-configuration";
 import { signOut } from "../../../auth";
 import { getSnapshot } from "../../../states/snapshot";
 import { Button } from "../../common/Button";
-import { NotificationBubble } from "../../common/NotificationBubble";
-
-type Props = {
-  showFriendsNotificationBubble?: boolean;
-};
-
-export function AccountMenu(props: Props): JSXElement {
+export function AccountMenu(): JSXElement {
   const buttonClass =
     "w-full justify-start px-3 py-2 whitespace-nowrap gap-2 bg-transparent";
 
@@ -34,24 +27,6 @@ export function AccountMenu(props: Props): JSXElement {
           href="/account"
           router-link
         />
-        <Show when={getServerConfiguration()?.connections.enabled}>
-          <Button
-            text="Friends"
-            class={`${buttonClass} relative`}
-            fa={{
-              icon: "fa-user-friends",
-              fixedWidth: true,
-            }}
-            href="/friends"
-            router-link
-          >
-            <NotificationBubble
-              show={props.showFriendsNotificationBubble ?? false}
-              variant="center"
-              class="right-2 left-auto"
-            />
-          </Button>
-        </Show>
         <Button
           text="Public profile"
           class={buttonClass}

@@ -93,18 +93,6 @@ export const Premium = meta.story({
   ),
 });
 
-export const Friend = meta.story({
-  render: () => (
-    <User
-      user={{
-        uid: "user123",
-        name: "oxytyper",
-      }}
-      isFriend
-    />
-  ),
-});
-
 export const Banned = meta.story({
   render: () => (
     <User
@@ -140,7 +128,6 @@ export const FullyLoaded = meta.story({
         badgeId: 1,
         isPremium: true,
       }}
-      isFriend
     />
   ),
 });

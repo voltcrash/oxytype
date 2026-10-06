@@ -14,7 +14,7 @@ const inertDailyLeaderboards = {
 };
 
 describe("daily leaderboards enable migration", () => {
-  it("enables daily leaderboards left at the old inert defaults and keeps admin choices", async () => {
+  it("enables inert daily leaderboards, removes friendship configuration, and keeps admin choices", async () => {
     const disabled = {
       dailyLeaderboards: { ...inertDailyLeaderboards, maxResults: 50 },
     };
@@ -28,11 +28,17 @@ describe("daily leaderboards enable migration", () => {
               JSON.stringify({
                 users: { signUp: true },
                 dailyLeaderboards: inertDailyLeaderboards,
+                connections: { enabled: true, maxPerUser: 100 },
               }),
             ),
           db
             .prepare("INSERT INTO configuration(id,data) VALUES('custom',?)")
-            .bind(JSON.stringify(disabled)),
+            .bind(
+              JSON.stringify({
+                ...disabled,
+                connections: { enabled: false, maxPerUser: 50 },
+              }),
+            ),
           db
             .prepare("INSERT INTO configuration(id,data) VALUES('partial',?)")
             .bind(JSON.stringify({ users: { signUp: true } })),
@@ -44,13 +50,13 @@ describe("daily leaderboards enable migration", () => {
         "SELECT id,version,data FROM configuration ORDER BY id",
       ).all<{ id: string; version: number; data: string }>();
       const [custom, main, partial] = rows.results;
-      expect(custom?.version).toBe(0);
+      expect(custom?.version).toBe(1);
       expect(JSON.parse(custom?.data ?? "null")).toEqual(disabled);
       expect(partial?.version).toBe(0);
       expect(JSON.parse(partial?.data ?? "null")).toEqual({
         users: { signUp: true },
       });
-      expect(main?.version).toBe(1);
+      expect(main?.version).toBe(2);
       expect(JSON.parse(main?.data ?? "null")).toEqual({
         users: { signUp: true },
         dailyLeaderboards: BASE_CONFIGURATION.dailyLeaderboards,

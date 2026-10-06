@@ -26,7 +26,6 @@ export const appRoutes = [
   },
   { path: "/profile", info: { page: "profileSearch" } },
   { path: "/profile/:uidOrName", info: { page: "profile" } },
-  { path: "/friends", info: { page: "friends", access: "user" } },
   { path: "*notFound", info: { page: "404" } },
 ] satisfies (RouteDefinition & { info: AppRouteInfo })[];
 

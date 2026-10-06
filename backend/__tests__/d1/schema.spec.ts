@@ -15,6 +15,7 @@ describe("D1 schema on workerd", () => {
     const tables = await test.env.DB.prepare(
       "SELECT name FROM sqlite_master WHERE type='table'",
     ).all<{ name: string }>();
+    expect(tables.results.map((row) => row.name)).not.toContain("connections");
     expect(tables.results.map((row) => row.name)).toEqual(
       expect.arrayContaining([
         "auth_users",

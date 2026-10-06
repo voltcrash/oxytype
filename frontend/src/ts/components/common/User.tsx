@@ -134,12 +134,7 @@ export function User(props: Props): JSXElement {
         </Show>
       </div>
 
-      <Show
-        when={
-          getMatchingFlags({ ...props.user, isFriend: props.isFriend }).length >
-          0
-        }
-      >
+      <Show when={getMatchingFlags(props.user).length > 0}>
         <div
           class={cn(
             "flex items-center justify-center gap-[0.5em]",
@@ -149,11 +144,7 @@ export function User(props: Props): JSXElement {
             ),
           )}
         >
-          <UserFlags
-            {...props.user}
-            isFriend={props.isFriend}
-            iconsOnly={props.iconsOnly}
-          />
+          <UserFlags {...props.user} iconsOnly={props.iconsOnly} />
         </div>
       </Show>
       <Show when={props.user.badgeId !== undefined}>

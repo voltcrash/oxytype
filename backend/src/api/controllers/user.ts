@@ -43,7 +43,6 @@ import {
   GetCurrentTestActivityResponse,
   GetCustomThemesResponse,
   GetFavoriteQuotesResponse,
-  GetFriendsResponse,
   GetPersonalBestsQuery,
   GetPersonalBestsResponse,
   GetProfilePathParams,
@@ -69,7 +68,6 @@ import {
 import { MILLISECONDS_IN_DAY } from "@oxytype/util/date-and-time";
 import { MonkeyRequest } from "../types";
 import { tryCatch } from "@oxytype/util/trycatch";
-import * as ConnectionsDal from "../../dal/connections";
 import { PersonalBest } from "@oxytype/schemas/shared";
 
 async function verifyCaptcha(
@@ -191,7 +189,6 @@ export async function updateName(
 
   await UserDAL.updateName(uid, name, user.name);
 
-  await ConnectionsDal.updateName(uid, name);
   void addImportantLog(
     "user_name_updated",
     `changed name from ${user.name} to ${name}`,
@@ -891,20 +888,4 @@ export async function getStreak(
   const user = await UserDAL.getPartialUser(uid, "streak", ["streak"]);
 
   return new MonkeyResponse("Streak data retrieved", user.streak ?? null);
-}
-
-export async function getFriends(
-  req: MonkeyRequest,
-): Promise<GetFriendsResponse> {
-  const { uid } = req.ctx.decodedToken;
-  const premiumEnabled = req.ctx.configuration.users.premium.enabled;
-  const data = await UserDAL.getFriends(uid);
-
-  if (!premiumEnabled) {
-    for (const friend of data) {
-      delete friend.isPremium;
-    }
-  }
-
-  return new MonkeyResponse("Friends retrieved", data);
 }

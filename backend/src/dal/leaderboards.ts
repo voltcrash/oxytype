@@ -6,8 +6,6 @@ import { isDevEnvironment, omit } from "../utils/misc";
 export type DBLeaderboardEntry = Omit<LeaderboardEntry, "_id"> & {
   _id: string;
 };
-const friendsFilter =
-  "(s.uid=? OR s.uid IN (SELECT CASE WHEN initiator_uid=? THEN receiver_uid ELSE initiator_uid END FROM connections WHERE status='accepted' AND (initiator_uid=? OR receiver_uid=?)))";
 function board(mode: string, mode2: string, language: string): string {
   return `${language}_${mode}_${mode2}`;
 }
@@ -15,13 +13,11 @@ function unpack(row: {
   uid: string;
   rank: number;
   data: string;
-  friendsRank?: number;
 }): DBLeaderboardEntry {
   return {
     ...(JSON.parse(row.data) as Omit<LeaderboardEntry, "_id">),
     _id: row.uid,
     rank: row.rank,
-    ...(row.friendsRank === undefined ? {} : { friendsRank: row.friendsRank }),
   };
 }
 const snapshot =
@@ -33,19 +29,14 @@ export async function get(
   page: number,
   pageSize: number,
   premium = false,
-  uid?: string,
 ): Promise<DBLeaderboardEntry[]> {
   if (page < 0 || pageSize < 0) throw new Error("Invalid page or pageSize");
-  const values =
-    uid === undefined
-      ? [board(mode, mode2, language)]
-      : [board(mode, mode2, language), uid, uid, uid, uid];
   const rows = await statement(
-    `SELECT s.uid,s.rank,s.data${uid === undefined ? "" : ",row_number() OVER(ORDER BY s.rank) AS friendsRank"} ${snapshot} ${uid === undefined ? "" : `AND ${friendsFilter}`} ORDER BY s.rank LIMIT ? OFFSET ?`,
-    ...values,
+    `SELECT s.uid,s.rank,s.data ${snapshot} ORDER BY s.rank LIMIT ? OFFSET ?`,
+    board(mode, mode2, language),
     Math.min(pageSize, 1000),
     page * pageSize,
-  ).all<{ uid: string; rank: number; data: string; friendsRank?: number }>();
+  ).all<{ uid: string; rank: number; data: string }>();
   return rows.results
     .map(unpack)
     .map((entry) => (premium ? entry : omit(entry, ["isPremium"])));
@@ -54,16 +45,11 @@ export async function getCount(
   mode: string,
   mode2: string,
   language: string,
-  uid?: string,
 ): Promise<number> {
-  const values =
-    uid === undefined
-      ? [board(mode, mode2, language)]
-      : [board(mode, mode2, language), uid, uid, uid, uid];
   return (
     (await statement(
-      `SELECT count(*) AS count ${snapshot} ${uid === undefined ? "" : `AND ${friendsFilter}`}`,
-      ...values,
+      `SELECT count(*) AS count ${snapshot}`,
+      board(mode, mode2, language),
     ).first<number>("count")) ?? 0
   );
 }
@@ -72,15 +58,12 @@ export async function getRank(
   mode2: string,
   language: string,
   uid: string,
-  friendsOnly = false,
 ): Promise<DBLeaderboardEntry | null> {
-  const values = friendsOnly
-    ? [board(mode, mode2, language), uid, uid, uid, uid, uid]
-    : [board(mode, mode2, language), uid];
   const row = await statement(
-    `SELECT * FROM (SELECT s.uid,s.rank,s.data${friendsOnly ? ",row_number() OVER(ORDER BY s.rank) AS friendsRank" : ""} ${snapshot} ${friendsOnly ? `AND ${friendsFilter}` : ""}) WHERE uid=?`,
-    ...values,
-  ).first<{ uid: string; rank: number; data: string; friendsRank?: number }>();
+    `SELECT s.uid,s.rank,s.data ${snapshot} AND s.uid=?`,
+    board(mode, mode2, language),
+    uid,
+  ).first<{ uid: string; rank: number; data: string }>();
   return row ? unpack(row) : null;
 }
 export async function update(

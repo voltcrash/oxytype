@@ -25,9 +25,7 @@ import { PersonalBest } from "@oxytype/schemas/shared";
 import { mockAuthenticateWithApeKey } from "../../__testData__/auth";
 import { randomUUID } from "node:crypto";
 import { MonkeyMail, UserStreak } from "@oxytype/schemas/users";
-import * as ConnectionsDal from "../../../src/dal/connections";
 import { pb } from "../../__testData__/users";
-import Test from "supertest/lib/test";
 
 const { mockApp, uid, mockAuth } = setup();
 const configuration = Configuration.getCachedConfiguration();
@@ -463,7 +461,6 @@ describe("user controller test", () => {
     const blocklistContainsMock = vi.spyOn(BlocklistDal, "contains");
     const getPartialUserMock = vi.spyOn(UserDal, "getPartialUser");
     const updateNameMock = vi.spyOn(UserDal, "updateName");
-    const connectionsUpdateNameMock = vi.spyOn(ConnectionsDal, "updateName");
     const addImportantLogMock = vi.spyOn(LogDal, "addImportantLog");
 
     beforeEach(() => {
@@ -471,7 +468,6 @@ describe("user controller test", () => {
         blocklistContainsMock,
         getPartialUserMock,
         updateNameMock,
-        connectionsUpdateNameMock,
         addImportantLogMock,
       ].forEach((it) => {
         it.mockClear().mockResolvedValue(null as never);
@@ -503,7 +499,6 @@ describe("user controller test", () => {
         "changed name from Bob to newName",
         uid,
       );
-      expect(connectionsUpdateNameMock).toHaveBeenCalledWith(uid, "newName");
     });
 
     it("should fail if username is blocked", async () => {
@@ -520,7 +515,6 @@ describe("user controller test", () => {
       //THEN
       expect(body.message).toEqual("Username blocked");
       expect(updateNameMock).not.toHaveBeenCalled();
-      expect(connectionsUpdateNameMock).not.toHaveBeenCalled();
     });
 
     it("should fail for banned users", async () => {
@@ -2680,62 +2674,6 @@ describe("user controller test", () => {
       });
     });
   });
-  describe("get friends", () => {
-    const getFriendsMock = vi.spyOn(UserDal, "getFriends");
-
-    beforeEach(async () => {
-      await enableConnectionsEndpoints(true);
-      getFriendsMock.mockClear();
-    });
-
-    it("gets with premium enabled", async () => {
-      //GIVEN
-      await enablePremiumFeatures(true);
-      const friend: UserDal.DBFriend = {
-        name: "Bob",
-        isPremium: true,
-      } as any;
-      getFriendsMock.mockResolvedValue([friend]);
-
-      //WHEN
-      const { body } = await mockApp
-        .get("/users/friends")
-        .set("Authorization", `Bearer ${uid}`)
-        .expect(200);
-
-      //THEN
-      expect(body.data).toEqual([{ name: "Bob", isPremium: true }]);
-    });
-
-    it("gets with premium disabled", async () => {
-      //GIVEN
-      await enablePremiumFeatures(false);
-      const friend: UserDal.DBFriend = {
-        name: "Bob",
-        isPremium: true,
-      } as any;
-      getFriendsMock.mockResolvedValue([friend]);
-
-      //WHEN
-      const { body } = await mockApp
-        .get("/users/friends")
-        .set("Authorization", `Bearer ${uid}`)
-        .expect(200);
-
-      //THEN
-      expect(body.data).toEqual([{ name: "Bob" }]);
-    });
-
-    it("should fail if friends endpoints are disabled", async () => {
-      await expectFailForDisabledEndpoint(
-        mockApp.get("/users/friends").set("Authorization", `Bearer ${uid}`),
-      );
-    });
-
-    it("should fail without authentication", async () => {
-      await mockApp.get("/users/friends").expect(401);
-    });
-  });
 });
 
 function fillYearWithDay(days: number): number[] {
@@ -2809,19 +2747,4 @@ async function enableReporting(enabled: boolean): Promise<void> {
   vi.spyOn(Configuration, "getCachedConfiguration").mockResolvedValue(
     mockConfig,
   );
-}
-
-async function enableConnectionsEndpoints(enabled: boolean): Promise<void> {
-  const mockConfig = await configuration;
-  mockConfig.connections = { ...mockConfig.connections, enabled };
-
-  vi.spyOn(Configuration, "getCachedConfiguration").mockResolvedValue(
-    mockConfig,
-  );
-}
-
-async function expectFailForDisabledEndpoint(call: Test): Promise<void> {
-  await enableConnectionsEndpoints(false);
-  const { body } = await call.expect(503);
-  expect(body.message).toEqual("Connections are not available at this time.");
 }

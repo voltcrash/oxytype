@@ -18,7 +18,7 @@ describe("SQL ranking parity", () => {
   afterAll(async () => {
     await test?.dispose();
   });
-  it("keeps best daily scores, top N, reverse lexical ties, and global/friends ranks", async () => {
+  it("keeps best daily scores, top N, reverse lexical ties, and global ranks", async () => {
     await withRuntime(test.env, async () => {
       const board = new DailyLeaderboard({
         language: "english",
@@ -51,11 +51,9 @@ describe("SQL ranking parity", () => {
       ).toBe(-1);
       const results = await board.getResults(0, 10, config, false);
       expect(results?.entries.map((row) => row.uid)).toEqual(["b", "a"]);
-      const friends = await board.getResults(0, 10, config, false, ["a"]);
-      expect(friends?.entries[0]).toMatchObject({
+      expect(await board.getRank("a", config)).toMatchObject({
         uid: "a",
         rank: 2,
-        friendsRank: 1,
         wpm: 100,
       });
     });

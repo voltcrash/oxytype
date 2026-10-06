@@ -14,7 +14,7 @@ import {
   chunks,
 } from "../db/client";
 import { currentUserDraft, mutateUser, readUser, stage } from "../db/mutation";
-import { users, inbox, rewardGrants, connections } from "../db/schema";
+import { users, inbox, rewardGrants } from "../db/schema";
 import { getCachedConfiguration } from "../init/configuration";
 import { getDayOfYear } from "date-fns";
 import { UTCDate } from "@date-fns/utc";
@@ -30,7 +30,6 @@ import type {
   UserTag,
   User,
   CountByYearAndDay,
-  Friend,
 } from "@oxytype/schemas/users";
 import type {
   Mode,
@@ -73,7 +72,6 @@ export type DBUser = Omit<
 };
 
 type Result = Omit<ResultType<Mode>, "_id" | "name">;
-export type DBFriend = Friend;
 const emptyPb = (): PersonalBests => ({
   time: {},
   words: {},
@@ -834,67 +832,4 @@ export async function logIpAddress(
       ...(user.ips ?? []).filter((existing) => existing !== ip),
     ].slice(0, 10);
   });
-}
-export async function getFriends(uid: string): Promise<DBFriend[]> {
-  const edges = await database()
-    .select()
-    .from(connections)
-    .where(
-      and(
-        eq(connections.status, "accepted"),
-        inArray(
-          connections.id,
-          (
-            await statement(
-              "SELECT id FROM connections WHERE initiator_uid=? OR receiver_uid=?",
-              uid,
-              uid,
-            ).all<{ id: string }>()
-          ).results.map((edge) => edge.id),
-        ),
-      ),
-    );
-  const friends: DBFriend[] = [];
-  for (const friendUid of [
-    ...new Set([
-      uid,
-      ...edges.map((edge) =>
-        edge.initiatorUid === uid ? edge.receiverUid : edge.initiatorUid,
-      ),
-    ]),
-  ]) {
-    const user = await getUser(friendUid, "get friends");
-    const edge = edges.find(
-      (item) =>
-        item.initiatorUid === friendUid || item.receiverUid === friendUid,
-    );
-    const best = (duration: number): PersonalBest | undefined =>
-      user.personalBests.time[duration]?.reduce<PersonalBest | undefined>(
-        (top, pb) => (!top || pb.wpm >= top.wpm ? pb : top),
-        undefined,
-      );
-    friends.push({
-      uid: user.uid,
-      name: user.name,
-      startedTests: user.startedTests,
-      completedTests: user.completedTests,
-      timeTyping: user.timeTyping,
-      xp: user.xp,
-      banned: user.banned,
-      lbOptOut: user.lbOptOut,
-      streak:
-        user.streak === undefined
-          ? undefined
-          : { length: user.streak.length, maxLength: user.streak.maxLength },
-      connectionId: friendUid === uid ? undefined : edge?.id,
-      lastModified: friendUid === uid ? undefined : edge?.lastModified,
-      top15: best(15),
-      top60: best(60),
-      badgeId: user.inventory?.badges?.find((badge) => badge.selected)?.id,
-      isPremium:
-        user.premium?.expirationTimestamp === -1 ||
-        (user.premium?.expirationTimestamp ?? 0) > Date.now(),
-    });
-  }
-  return friends;
 }

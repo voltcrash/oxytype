@@ -2,12 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
 import { createTestRuntime, seedUser } from "./helpers";
 import { withRuntime } from "../../src/runtime/env";
 import { statement } from "../../src/db/client";
-import {
-  rankingPage,
-  rankingQuery,
-  rankingUser,
-  type RankingRow,
-} from "../../src/db/ranking";
+import { rankingPage, rankingUser } from "../../src/db/ranking";
 
 describe("individual leaderboard ranks", () => {
   let test: Awaited<ReturnType<typeof createTestRuntime>>;
@@ -65,84 +60,47 @@ describe("individual leaderboard ranks", () => {
       await withRuntime(test.env, async () => {
         const selectedBoard = table === "daily_entries" ? board : undefined;
         for (const includeExpired of [false, true]) {
-          for (const userIds of [undefined, [], ["a", "c", "expired", "c"]]) {
-            const { query, values } = rankingQuery(
+          const expectedUids = includeExpired
+            ? ["expired", "b", "a", "c", "d"]
+            : ["b", "a", "c", "d"];
+          for (const page of [0, 1, 10]) {
+            const result = await rankingPage(
               table,
               period,
+              page,
+              2,
               selectedBoard,
-              userIds,
               includeExpired,
             );
-            const expected = await statement(
-              `${query} SELECT count(*) AS count,coalesce(min(json_extract(data,'$.wpm')),0) AS minWpm FROM filtered`,
-              ...values,
-            ).first<{ count: number; minWpm: number }>();
-            for (const page of [0, 1, 10]) {
-              const result = await rankingPage(
-                table,
-                period,
-                page,
-                2,
-                selectedBoard,
-                userIds,
-                includeExpired,
-              );
-              expect(result).toMatchObject(expected ?? {});
-              const rows = await statement(
-                `${query} SELECT * FROM filtered ORDER BY rank LIMIT 2 OFFSET ?`,
-                ...values,
-                page * 2,
-              ).all<RankingRow>();
-              expect(result.rows).toEqual(rows.results);
-            }
+            expect(result.count).toBe(expectedUids.length);
+            expect(result.minWpm).toBe(60);
+            expect(result.rows.map((row) => row.uid)).toEqual(
+              expectedUids.slice(page * 2, page * 2 + 2),
+            );
           }
         }
-        expect(
-          await rankingPage(table, period, 0, 2, selectedBoard),
-        ).toMatchObject({
-          count: 4,
-          minWpm: 60,
+        expect(await rankingPage(table, 3, 0, 2, selectedBoard)).toEqual({
+          rows: [],
+          count: 0,
+          minWpm: 0,
         });
-        expect(
-          await rankingPage(table, period, 0, 2, selectedBoard, []),
-        ).toEqual({ rows: [], count: 0, minWpm: 0 });
       });
     });
-    it(`matches page ranks for ${table}, including ties, expiry and friend filters`, async () => {
+    it(`matches page ranks for ${table}, including ties and expiry`, async () => {
       await withRuntime(test.env, async () => {
         const selectedBoard = table === "daily_entries" ? board : undefined;
-        for (const userIds of [
-          undefined,
-          [],
-          ["a", "c"],
-          ["b", "c", "d"],
-          ["c", "c", "missing", "expired"],
-        ]) {
-          const { query, values } = rankingQuery(
-            table,
-            period,
-            selectedBoard,
-            userIds,
+        const { rows } = await rankingPage(table, period, 0, 10, selectedBoard);
+        for (const uid of ["a", "b", "c", "d", "expired", "missing"]) {
+          expect(await rankingUser(table, period, uid, selectedBoard)).toEqual(
+            rows.find((row) => row.uid === uid) ?? null,
           );
-          const expected = await statement(
-            `${query} SELECT * FROM filtered ORDER BY rank`,
-            ...values,
-          ).all<RankingRow>();
-          for (const uid of ["a", "b", "c", "d", "expired", "missing"]) {
-            expect(
-              await rankingUser(table, period, uid, selectedBoard, userIds),
-            ).toEqual(expected.results.find((row) => row.uid === uid) ?? null);
-          }
         }
         expect(
           await rankingUser(table, period, "a", selectedBoard),
-        ).toMatchObject({
-          rank: 2,
-          score: 100,
-        });
+        ).toMatchObject({ rank: 2, score: 100 });
         expect(
-          await rankingUser(table, period, "c", selectedBoard, ["a", "c"]),
-        ).toMatchObject({ rank: 3, friendsRank: 2 });
+          await rankingUser(table, period, "c", selectedBoard),
+        ).toMatchObject({ rank: 3, score: 80 });
       });
     });
   }

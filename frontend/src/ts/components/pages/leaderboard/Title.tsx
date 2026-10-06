@@ -28,15 +28,13 @@ export function Title(props: {
           ? "Weekly XP"
           : "Daily";
 
-    const friend = props.selection.friendsOnly ? "Friends " : "";
-
     const language = capitalizeFirstLetter(props.selection.language ?? "");
 
     const mode =
       props.selection.type !== "weekly"
         ? ` ${capitalizeFirstLetter(props.selection.mode ?? "")} ${props.selection.mode2}`
         : "";
-    return `${type} ${language} ${mode} ${friend}Leaderboard`;
+    return `${type} ${language} ${mode} Leaderboard`;
   });
 
   const subTitle = createMemo(() => {

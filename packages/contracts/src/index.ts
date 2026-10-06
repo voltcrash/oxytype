@@ -11,7 +11,6 @@ import { configurationContract } from "./configuration";
 import { devContract } from "./dev";
 import { usersContract } from "./users";
 import { quotesContract } from "./quotes";
-import { connectionsContract } from "./connections";
 
 const c = initContract();
 
@@ -28,12 +27,11 @@ export const contract = c.router({
   dev: devContract,
   users: usersContract,
   quotes: quotesContract,
-  connections: connectionsContract,
 });
 
 /**
  * Whenever there is a breaking change with old frontend clients increase this number.
  * This will inform the frontend to refresh.
  */
-export const COMPATIBILITY_CHECK = 8;
+export const COMPATIBILITY_CHECK = 9;
 export const COMPATIBILITY_CHECK_HEADER = "X-Compatibility-Check";

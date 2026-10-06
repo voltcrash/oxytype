@@ -14,7 +14,6 @@ import configs from "./configs";
 import configuration from "./configuration";
 import { getVersion } from "../../version";
 import leaderboards from "./leaderboards";
-import connections from "./connections";
 import { Hono } from "hono";
 import { serveStatic } from "../../utils/static";
 import { ApiEnv } from "../http";
@@ -45,7 +44,6 @@ const router = s.router(contract, {
   dev,
   users,
   quotes,
-  connections,
 });
 
 export function addApiRoutes(app: Hono<ApiEnv>, docsRoot?: string): void {

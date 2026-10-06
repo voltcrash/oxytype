@@ -3,7 +3,6 @@ import { Language } from "@oxytype/schemas/languages";
 import { Mode } from "@oxytype/schemas/shared";
 import { Accessor, For, JSXElement, Show } from "solid-js";
 
-import { isAuthenticated } from "../../../states/core";
 import { Selection } from "../../../states/leaderboard-selection";
 import { FaSolidIcon } from "../../../types/font-awesome";
 import { Button } from "../../common/Button";
@@ -24,7 +23,6 @@ export function Sidebar(props: {
   selection: Accessor<Selection>;
   onSelect: (selection: Selection) => void;
   validModeRules: ValidModeRule[];
-  connectionsEnabled: boolean;
 }): JSXElement {
   const updateSelection = (patch: Partial<Selection>) => {
     props.onSelect(
@@ -46,10 +44,6 @@ export function Sidebar(props: {
   const selectLanguage = (language: Language) => {
     updateSelection({ language });
   };
-  const selectFriendsOnly = (friendsOnly: boolean) => {
-    updateSelection({ friendsOnly });
-  };
-
   return (
     <>
       <Group
@@ -65,17 +59,6 @@ export function Sidebar(props: {
           { id: "daily", text: "daily", icon: "fa-sun" },
         ]}
       />
-      <Show when={isAuthenticated() && props.connectionsEnabled}>
-        <Group
-          selected={props.selection().friendsOnly}
-          onSelect={selectFriendsOnly}
-          items={[
-            { id: false, text: "everyone", icon: "fa-users" },
-            { id: true, text: "friends only", icon: "fa-user-friends" },
-          ]}
-        />
-      </Show>
-
       <Show when={props.selection().type !== "weekly"}>
         <Group
           selected={{

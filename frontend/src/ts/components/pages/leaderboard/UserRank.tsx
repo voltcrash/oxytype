@@ -14,7 +14,6 @@ export function UserRank(props: {
   type: "speed" | "xp";
   data?: LeaderboardEntry | XpLeaderboardEntry | null;
   minWpm?: number;
-  friendsOnly: boolean;
   total: number | undefined;
   memoryDifference: number | undefined;
   isLbOptOut: boolean;
@@ -28,9 +27,7 @@ export function UserRank(props: {
     if (props.data === undefined || props.data === null) {
       return "";
     }
-    const rank = props.friendsOnly
-      ? (props.data.friendsRank as number)
-      : props.data.rank;
+    const rank = props.data.rank;
     const percentile = (rank / (props.total ?? 1)) * 100;
 
     let percentileString = `Top ${percentile.toFixed(2)}%`;
@@ -113,7 +110,6 @@ export function UserRank(props: {
           <Table
             type={props.type}
             entries={[props.data as TableEntry]}
-            friendsOnly={props.friendsOnly}
             userOverride={userOverride}
             hideHeader={true}
           />

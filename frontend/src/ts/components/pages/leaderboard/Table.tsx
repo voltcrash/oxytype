@@ -6,7 +6,6 @@ import { format as dateFormat } from "date-fns/format";
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 import { Accessor, createMemo, JSXElement, Show } from "solid-js";
 
-import { hasConnection } from "../../../collections/connections";
 import { createEffectOn } from "../../../hooks/effects";
 import { useRef } from "../../../hooks/useRef";
 import { bp, BreakpointKey } from "../../../states/breakpoints";
@@ -28,7 +27,6 @@ export function Table(
   props: {
     type: "speed" | "xp";
     entries: TableEntry[];
-    friendsOnly: boolean;
     hideHeader?: true;
   } & (
     | {
@@ -70,7 +68,6 @@ export function Table(
 
   const speedColumns = createMemo(() => {
     return getSpeedColumns({
-      friendsOnly: props.friendsOnly,
       format: getFormatting(),
       userOverride: props.userOverride,
       addHeader: props.userOverride !== undefined && bp().xl,
@@ -78,7 +75,6 @@ export function Table(
   });
   const xpColumns = createMemo(() =>
     getXpColumns({
-      friendsOnly: props.friendsOnly,
       userOverride: props.userOverride,
       addHeader: props.userOverride !== undefined && bp().xl,
     }),
@@ -134,23 +130,9 @@ function NoEntriesFound(): JSXElement {
   );
 }
 
-const friendsRankColumn = () =>
-  createColumnHelper<SpeedEntry | XpEntry>().accessor("friendsRank", {
-    header: () => <Fa icon="fa-user-friends" />,
-    cell: (info) =>
-      info.getValue() === 1 ? <Fa icon="fa-crown" /> : info.getValue(),
-    meta: {
-      align: "center",
-      headerMeta: {
-        "aria-label": "Friends rank",
-        "data-balloon-pos": "down",
-      },
-    },
-  });
-
-const rankColumn = (friendsOnly: boolean) =>
+const rankColumn = () =>
   createColumnHelper<SpeedEntry | XpEntry>().accessor("rank", {
-    header: () => <Fa icon={friendsOnly ? "fa-users" : "fa-hashtag"} />,
+    header: () => <Fa icon="fa-hashtag" />,
     cell: (info) =>
       info.getValue() === 1 ? <Fa icon="fa-crown" /> : info.getValue(),
     meta: {
@@ -176,7 +158,6 @@ const userColumn = ({
           avatarColor="sub"
           flagsColor="sub"
           user={info.row.original}
-          isFriend={hasConnection(info.row.original.uid, "accepted")}
           class="w-min text-[1em] **:data-[ui-element='button']:[--themable-button-text:var(--text-color)]"
           linkToProfile={true}
         />
@@ -256,20 +237,17 @@ function defineResponsivePair<T extends object>() {
 }
 
 function getSpeedColumns({
-  friendsOnly,
   format,
   userOverride,
   addHeader,
 }: {
-  friendsOnly: boolean;
   format: Formatting;
   userOverride?: Accessor<JSXElement>;
   addHeader?: boolean;
 }): DataTableColumnDef<SpeedEntry>[] {
   const defineColumn = createColumnHelper<SpeedEntry>().accessor;
   const columns = [
-    friendsRankColumn() as DataTableColumnDef<SpeedEntry>,
-    rankColumn(friendsOnly) as DataTableColumnDef<SpeedEntry>,
+    rankColumn() as DataTableColumnDef<SpeedEntry>,
     userColumn({ userOverride }) as DataTableColumnDef<SpeedEntry>,
     ...defineResponsivePair<SpeedEntry>()({
       columns: [
@@ -329,28 +307,20 @@ function getSpeedColumns({
     }),
   ];
 
-  //remove first column if not friendsOnly
-  if (!friendsOnly) {
-    columns.shift();
-  }
-
   //mark each column non sortable
   return columns.map((it) => ({ ...it, enableSorting: false }));
 }
 
 function getXpColumns({
-  friendsOnly,
   userOverride,
   addHeader,
 }: {
-  friendsOnly: boolean;
   userOverride?: Accessor<JSXElement>;
   addHeader?: boolean;
 }): DataTableColumnDef<XpEntry>[] {
   const defineColumn = createColumnHelper<XpEntry>().accessor;
   const columns = [
-    friendsRankColumn() as DataTableColumnDef<XpEntry>,
-    rankColumn(friendsOnly) as DataTableColumnDef<XpEntry>,
+    rankColumn() as DataTableColumnDef<XpEntry>,
     userColumn({ userOverride }) as DataTableColumnDef<XpEntry>,
     ...defineResponsivePair<XpEntry>()({
       columns: [
@@ -403,11 +373,6 @@ function getXpColumns({
       },
     }),
   ];
-
-  //remove first column if not friendsOnly
-  if (!friendsOnly) {
-    columns.shift();
-  }
 
   //mark each column as non sortable
   return columns.map((it) => ({

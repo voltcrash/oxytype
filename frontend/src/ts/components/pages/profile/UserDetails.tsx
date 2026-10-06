@@ -14,7 +14,6 @@ import { formatDate } from "date-fns/format";
 import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
 import { For, JSXElement, Show } from "solid-js";
 
-import { addConnection, hasConnection } from "../../../collections/connections";
 import { Snapshot } from "../../../constants/default-snapshot";
 import { bp } from "../../../states/breakpoints";
 import { getUserId, isAuthenticated } from "../../../states/core";
@@ -111,52 +110,27 @@ function ActionButtons(props: {
     props.profile.uid !== undefined &&
     props.profile.uid === (getUserId() ?? "");
 
-  const showFriendsButton = () =>
-    isAuthenticated() && !isUsersProfile() && !hasConnection(props.profile.uid);
-
-  const handleAddFriend = () => {
-    void addConnection({
-      receiverName: props.profile.name,
-      receiverUid: props.profile.uid,
-    });
-  };
-
   return (
     <Show
       when={props.isAccountPage === true}
       fallback={
-        <>
-          <Show when={!isUsersProfile()}>
-            <Button
-              balloon={{ text: "Report user", position: "left" }}
-              class={cn(
-                "h-full rounded-none rounded-tr text-sub hover:text-bg",
-                {
-                  "rounded-br": !showFriendsButton(),
-                },
-              )}
-              fa={{ icon: "fa-flag", fixedWidth: true }}
-              onClick={() => {
-                if (!isAuthenticated()) {
-                  showNoticeNotification(
-                    "You must be logged in to submit a report",
-                  );
-                  return;
-                }
-                setUserToReport(props.profile);
-                showModal("UserReport");
-              }}
-            />
-          </Show>
-          <Show when={showFriendsButton()}>
-            <Button
-              balloon={{ text: "Send friend request", position: "left" }}
-              class="h-full rounded-none rounded-br text-sub hover:text-bg"
-              fa={{ icon: "fa-user-plus", fixedWidth: true }}
-              onClick={() => handleAddFriend()}
-            />
-          </Show>
-        </>
+        <Show when={!isUsersProfile()}>
+          <Button
+            balloon={{ text: "Report user", position: "left" }}
+            class="h-full rounded-none rounded-r text-sub hover:text-bg"
+            fa={{ icon: "fa-flag", fixedWidth: true }}
+            onClick={() => {
+              if (!isAuthenticated()) {
+                showNoticeNotification(
+                  "You must be logged in to submit a report",
+                );
+                return;
+              }
+              setUserToReport(props.profile);
+              showModal("UserReport");
+            }}
+          />
+        </Show>
       }
     >
       <Button
@@ -272,10 +246,7 @@ function AvatarAndName(props: {
           {props.profile.name}
 
           <div class="flex flex-row gap-1 pl-1 text-sub">
-            <UserFlags
-              {...props.profile}
-              isFriend={hasConnection(props.profile.uid, "accepted")}
-            />
+            <UserFlags {...props.profile} />
           </div>
         </AutoShrink>
         <div class="flex flex-col gap-1 text-base">

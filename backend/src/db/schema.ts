@@ -174,33 +174,6 @@ export const results = sqliteTable(
     uniqueIndex("results_submission_idx").on(t.uid, t.submissionHash),
   ],
 );
-export const connections = sqliteTable(
-  "connections",
-  {
-    id: id(),
-    key: text("key").notNull().unique(),
-    initiatorUid: text("initiator_uid")
-      .notNull()
-      .references(() => users.uid, { onDelete: "cascade" }),
-    receiverUid: text("receiver_uid")
-      .notNull()
-      .references(() => users.uid, { onDelete: "cascade" }),
-    initiatorName: text("initiator_name").notNull(),
-    receiverName: text("receiver_name").notNull(),
-    status: text("status")
-      .$type<"pending" | "accepted" | "blocked">()
-      .notNull(),
-    lastModified: integer("last_modified").notNull(),
-  },
-  (t) => [
-    index("connections_initiator_idx").on(t.initiatorUid, t.status),
-    index("connections_receiver_idx").on(t.receiverUid, t.status),
-    check(
-      "connections_status",
-      sql`${t.status} IN ('pending','accepted','blocked')`,
-    ),
-  ],
-);
 export const blocklist = sqliteTable(
   "blocklist",
   {

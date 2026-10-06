@@ -2786,7 +2786,6 @@ export type FaSolidIcon =
   | "fa-user-cog"
   | "fa-user-doctor"
   | "fa-user-edit"
-  | "fa-user-friends"
   | "fa-user-gear"
   | "fa-user-graduate"
   | "fa-user-group"

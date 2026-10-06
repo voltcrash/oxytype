@@ -1,20 +1,16 @@
 import { LanguageSchema } from "@oxytype/schemas/languages";
 import { ModeSchema } from "@oxytype/schemas/shared";
-import { Accessor, createEffect, createSignal, Setter } from "solid-js";
+import { Accessor, createSignal, Setter } from "solid-js";
 import { z } from "zod/v3";
 import { serialize as serializeUrlSearchParams } from "zod-urlsearchparams";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { replaceUrl } from "../navigation/navigation";
-
-import { get as getServerConfiguration } from "../ape/server-configuration";
-import { getSnapshot } from "./snapshot";
 
 export const pageSize = 50;
 
 export type LeaderboardType = Selection["type"];
 const XpSelection = z.object({
   type: z.literal("weekly"),
-  friendsOnly: z.boolean(),
   previous: z.boolean(),
   language: z.never().optional(),
   mode: z.never().optional(),
@@ -22,7 +18,6 @@ const XpSelection = z.object({
 });
 const SpeedSelection = z.object({
   type: z.enum(["daily", "allTime"]),
-  friendsOnly: z.boolean(),
   previous: z.boolean(),
   mode: ModeSchema,
   mode2: z.string(),
@@ -40,7 +35,6 @@ export const LeaderboardUrlParamsSchema = z
     language: LanguageSchema.optional(),
     yesterday: z.boolean().optional(),
     lastWeek: z.boolean().optional(),
-    friendsOnly: z.boolean().optional(),
     page: z.number().optional(),
     goToUserPage: z.boolean().optional(),
   })
@@ -50,17 +44,6 @@ export type LeaderboardUrlParams = z.infer<typeof LeaderboardUrlParamsSchema>;
 const [getSelectionLs, setSelection] = lsSelection();
 export const [getPage, setPage] = createSignal(0);
 export const [getGoToUserPage, setGoToUserPage] = createSignal(false);
-
-// Reset friendsOnly when connections are disabled
-createEffect(() => {
-  if (
-    getSelectionLs().friendsOnly &&
-    (getSnapshot() === undefined ||
-      getServerConfiguration()?.connections.enabled === false)
-  ) {
-    setSelection((old) => ({ ...old, friendsOnly: false }));
-  }
-});
 
 export const getSelection = (): Selection => {
   return getSelectionLs();
@@ -75,7 +58,6 @@ export function readLeaderboardGetParameters(
 
   let newSelection: Partial<Selection> = {
     type: params.type,
-    friendsOnly: params.friendsOnly ?? false,
   };
 
   if (params.type === "weekly") {
@@ -115,10 +97,6 @@ export function updateGetParameters(
   if (selection.type === "daily" && selection.previous) {
     params.yesterday = true;
   }
-  if (selection.friendsOnly) {
-    params.friendsOnly = true;
-  }
-
   const urlParams = serializeUrlSearchParams({
     schema: LeaderboardUrlParamsSchema,
     data: params,
@@ -136,7 +114,6 @@ function lsSelection(): [Accessor<Selection>, Setter<Selection>] {
       mode: "time",
       mode2: "15",
       language: "english",
-      friendsOnly: false,
       previous: false,
     },
     migrate: (value) => {
