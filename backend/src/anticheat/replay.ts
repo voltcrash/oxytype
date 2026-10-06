@@ -4,7 +4,7 @@ import objectHash from "object-hash";
 // Short or nearly constant sequences can repeat by chance, especially on
 // coarsened clocks. Long varied ones cannot: no hand reproduces the same
 // whole-millisecond gaps and holds across 50 keys.
-export const MIN_REPLAY_KEYS = 50;
+const MIN_REPLAY_KEYS = 50;
 const MIN_REPLAY_DISTINCT_GAPS = 3;
 
 /**

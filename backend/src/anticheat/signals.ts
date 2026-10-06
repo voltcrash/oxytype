@@ -28,7 +28,7 @@ export type ReviewSignal =
   // values drawn from a small pool that browser clock coarsening cannot explain
   | "small-value-pool";
 
-export const REVIEW_SIGNAL_THRESHOLDS = {
+const REVIEW_SIGNAL_THRESHOLDS = {
   uniformKurtosis: -1,
   minGapCv: 0.1,
   minHoldCv: 0.08,
