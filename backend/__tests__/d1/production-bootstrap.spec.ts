@@ -30,6 +30,8 @@ describe("fresh production bootstrap on D1", () => {
     expect(configuration.users.xp.enabled).toBe(true);
     expect(configuration.users.xp.gainMultiplier).toBe(1);
     expect(configuration.leaderboards.weeklyXp.enabled).toBe(true);
+    expect(configuration.dailyLeaderboards.enabled).toBe(true);
+    expect(configuration.users.inbox.enabled).toBe(false);
     expect(configuration.quotes.submissionsEnabled).toBe(false);
     expect(configuration.admin.endpointsEnabled).toBe(false);
     const counts = await test.env.DB.prepare(

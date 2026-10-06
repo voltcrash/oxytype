@@ -84,12 +84,18 @@ export const BASE_CONFIGURATION: Configuration = {
     },
   },
   dailyLeaderboards: {
-    enabled: false,
-    maxResults: 0,
-    leaderboardExpirationTimeInDays: 0,
-    validModeRules: [],
-    scheduleRewardsModeRules: [],
-    xpRewardBrackets: [],
+    enabled: true,
+    maxResults: 1000,
+    leaderboardExpirationTimeInDays: 2, // This should atleast be 2
+    validModeRules: [{ language: "english", mode: "time", mode2: "(15|60)" }],
+    scheduleRewardsModeRules: [
+      { language: "english", mode: "time", mode2: "(15|60)" },
+    ],
+    xpRewardBrackets: [
+      { minRank: 1, maxRank: 1, minReward: 5000, maxReward: 5000 },
+      { minRank: 2, maxRank: 10, minReward: 1000, maxReward: 2500 },
+      { minRank: 11, maxRank: 100, minReward: 100, maxReward: 900 },
+    ],
   },
   leaderboards: {
     minTimeTyping: 2 * 60 * 60,
@@ -449,6 +455,7 @@ export const CONFIGURATION_FORM_SCHEMA: ObjectSchema<Configuration> = {
           type: "number",
           label: "Leaderboard Expiration Time In Days",
           min: 0,
+          hint: "This should atleast be 2, to allow for previous day queries.",
         },
         validModeRules: {
           type: "array",
