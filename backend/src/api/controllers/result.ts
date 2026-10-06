@@ -457,30 +457,6 @@ async function addResultAtomic(
     }
   }
 
-  if (req.ctx.configuration.users.lastHashesCheck.enabled) {
-    let lastHashes = user.lastReultHashes ?? [];
-    if (lastHashes.includes(resulthash)) {
-      await addLog(
-        "duplicate_result",
-        {
-          lastHashes,
-          resulthash,
-          result: completedEvent,
-        },
-        uid,
-      );
-      const status = MonkeyStatusCodes.DUPLICATE_RESULT;
-      return new MonkeyError(status.code, "Duplicate result");
-    } else {
-      lastHashes.unshift(resulthash);
-      const maxHashes = req.ctx.configuration.users.lastHashesCheck.maxHashes;
-      if (lastHashes.length > maxHashes) {
-        lastHashes = lastHashes.slice(0, maxHashes);
-      }
-      await UserDAL.updateLastHashes(uid, lastHashes);
-    }
-  }
-
   const replayCheck = req.ctx.configuration.anticheat.replayCheck;
   const timingHash = replayCheck.enabled
     ? getTimingFingerprint(completedEvent)

@@ -557,7 +557,6 @@ describe("result controller test", () => {
     const userCheckIfPbMock = vi.spyOn(UserDal, "checkIfPb");
     vi.spyOn(UserDal, "incrementTestActivity").mockResolvedValue();
     vi.spyOn(UserDal, "incrementBananas").mockResolvedValue();
-    vi.spyOn(UserDal, "updateLastHashes").mockResolvedValue();
     const userIncrementXpMock = vi.spyOn(UserDal, "incrementXp");
     const userUpdateTypingStatsMock = vi.spyOn(UserDal, "updateTypingStats");
     const resultAddMock = vi.spyOn(ResultDal, "addResult");

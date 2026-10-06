@@ -477,6 +477,39 @@ describe("production anticheat with D1", () => {
       );
     });
   });
+  it("rejects exact duplicate submissions even with timing replay checks disabled", async () => {
+    await withAnticheat(
+      { replayCheck: { enabled: false, maxFingerprints: 50 } },
+      async () => {
+        const user = await account();
+        expect((await submit(user)).status).toBe(200);
+        const saved = await withRuntime(
+          test.env,
+          async () => await Users.getUser(user.uid, "test"),
+        );
+        await ageResults(user.uid);
+        const response = await submit(user);
+        expect(response.status).toBe(466);
+        expect(await response.json()).toMatchObject({
+          message: "Duplicate result",
+        });
+        await withRuntime(test.env, async () => {
+          const profile = await Users.getUser(user.uid, "test");
+          expect(profile.completedTests).toBe(1);
+          expect(profile.xp).toBe(saved.xp);
+          expect(profile.timeTyping).toBe(saved.timeTyping);
+          expect(profile.personalBests).toEqual(saved.personalBests);
+        });
+        expect(
+          await test.env.DB.prepare(
+            "SELECT count(*) AS count FROM results WHERE uid=?",
+          )
+            .bind(user.uid)
+            .first("count"),
+        ).toBe(1);
+      },
+    );
+  });
   it("rejects a replayed key timeline with changed metadata", async () => {
     const user = await account();
     const timings = timedResult(humanTimings(600, 3, 45));
