@@ -172,6 +172,18 @@ export async function getContributorsList(): Promise<string[]> {
   return data;
 }
 
+export type Release = {
+  tag_name: string;
+  name: string;
+  published_at: string;
+  body: string;
+};
+
+/** Fetches the latest ten public releases bundled with the site. */
+export async function getReleaseHistory(): Promise<Release[]> {
+  return fetchJson<Release[]>("/release.json");
+}
+
 type GithubRelease = {
   url: string;
   assets_url: string;
