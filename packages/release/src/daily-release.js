@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { buildDailyChangelog } from "./daily-changelog.js";
 import { getReleaseVersion } from "./version.js";
+import { buildReleaseHistory } from "./release-history.js";
 
 const productionMarker = "<!-- oxytype-production-release -->";
 const dateTag = /^v\d{4}\.\d{2}\.\d{2}$/;
@@ -112,7 +113,20 @@ export async function prepareDailyRelease({ github, context, cwd }) {
     ? `\n\n**Full changelog:** [${base}...${sha.slice(0, 7)}](${repoUrl}/compare/${base}...${sha})`
     : "";
   const body = `${changes}${comparison}\n\nDeployed to [production](https://oxytype.voltcrash.com) from [${sha.slice(0, 7)}](${repoUrl}/commit/${sha}).\n\n${productionMarker}\n`;
-  return { version, tag, sha, body, shouldDeploy: true };
+  // The new GitHub release is published after deployment, so include its
+  // planned notes in the assets being deployed instead of lagging a day behind.
+  const releaseHistory = buildReleaseHistory([
+    {
+      tag_name: tag,
+      name: version,
+      published_at: date.toISOString(),
+      body,
+      draft: false,
+      prerelease: false,
+    },
+    ...releases,
+  ]);
+  return { version, tag, sha, body, releaseHistory, shouldDeploy: true };
 }
 
 export async function publishDailyRelease({
