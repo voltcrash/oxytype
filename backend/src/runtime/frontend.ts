@@ -43,7 +43,10 @@ export async function serveFrontend(
       response = await fetchAsset("/index.html");
     }
   }
-  if (response.headers.get("content-type")?.includes("text/html")) {
+  if (
+    path === "/release.json" ||
+    response.headers.get("content-type")?.includes("text/html")
+  ) {
     response = new Response(response.body, response);
     response.headers.set("Cache-Control", "no-store");
   } else if (

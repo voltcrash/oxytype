@@ -24,6 +24,7 @@ const files = new Map([
   ["/site/js/app.B1hq0Fcs.js", "hashed script"],
   ["/site/webfonts/Geist-Medium.woff2", "font"],
   ["/site/languages/english.json", "words"],
+  ["/site/release.json", "[]"],
   ["/configure/private.json", "private"],
 ]);
 beforeEach(() => {
@@ -108,6 +109,24 @@ it("serves HEAD without a body and rejects mutations", async () => {
   const response = await request("/login", { method: "POST" });
   expect(response.status).toBe(405);
   expect(response.headers.get("allow")).toBe("GET, HEAD");
+});
+it("serves the release snapshot without retaining an older deployment", async () => {
+  const initial = await request("/release.json");
+  expect(initial.status).toBe(200);
+  expect(await initial.json()).toEqual([]);
+  expect(initial.headers.get("cache-control")).toBe("no-store");
+
+  fetchAsset.mockResolvedValueOnce(
+    Response.json([{ name: "new release" }], {
+      headers: { "Cache-Control": "public, max-age=31536000" },
+    }),
+  );
+  const latest = await request("/release.json");
+  expect(await latest.json()).toEqual([{ name: "new release" }]);
+  expect(latest.headers.get("cache-control")).toBe("no-store");
+  const head = await request("/release.json", { method: "HEAD" });
+  expect(await head.text()).toBe("");
+  expect(head.headers.get("cache-control")).toBe("no-store");
 });
 it("caches content-hashed build assets as immutable", async () => {
   const hashed = await request("/js/app.B1hq0Fcs.js");
