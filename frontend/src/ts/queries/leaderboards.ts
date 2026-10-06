@@ -9,16 +9,13 @@ import { pageSize, Selection, setPage } from "../states/leaderboard-selection";
 const queryKeys = {
   root: (options: Selection & { userSpecific?: true }) => [
     //don't use baseKey, we require the key to have the options at the same position for user and non user specific
-    options.userSpecific === true || options.friendsOnly
-      ? "user"
-      : "leaderboard",
+    options.userSpecific === true ? "user" : "leaderboard",
     "leaderboard",
     options.type,
     {
       mode: options.mode,
       mode2: options.mode2,
       language: options.language,
-      friendsOnly: options.friendsOnly,
       previous: options.previous,
     },
   ],
@@ -39,7 +36,6 @@ export const getLeaderboardQueryOptions = (
     queryKey: queryKeys.data(options),
     queryFn: async () => {
       const baseQuery = {
-        friendsOnly: options.friendsOnly ? true : undefined,
         pageSize,
         page: options.page,
       };
@@ -106,7 +102,6 @@ export const getRankQueryOptions = (options: Selection) =>
       if (options.type === "weekly") {
         request = Ape.leaderboards.getWeeklyXpRank({
           query: {
-            friendsOnly: options.friendsOnly ? true : undefined,
             weeksBefore: options.previous ? 1 : undefined,
           },
         });
@@ -115,7 +110,6 @@ export const getRankQueryOptions = (options: Selection) =>
           mode: options.mode,
           mode2: options.mode2,
           language: options.language,
-          friendsOnly: options.friendsOnly ? true : undefined,
         };
         if (options.type === "allTime") {
           request = Ape.leaderboards.getRank({ query: baseQuery });
