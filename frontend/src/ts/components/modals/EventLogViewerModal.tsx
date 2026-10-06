@@ -1,4 +1,12 @@
 import {
+  computeBellness,
+  computeCrossStats,
+  computeDistStats,
+  probit,
+  type QuantumFit,
+  type Significant,
+} from "@oxytype/util/timing-stats";
+import {
   BarController,
   BarElement,
   CategoryScale,
@@ -72,14 +80,6 @@ import {
   getKeypressDurations,
   getKeypressSpacing,
 } from "../../test/events/stats";
-import {
-  computeBellness,
-  computeCrossStats,
-  computeDistStats,
-  probit,
-  type QuantumFit,
-  type Significant,
-} from "../../test/events/timing-stats";
 import { EVENT_LOG_VERSION } from "../../test/events/types";
 import { cn } from "../../utils/cn";
 import { AnimatedModal } from "../common/AnimatedModal";
