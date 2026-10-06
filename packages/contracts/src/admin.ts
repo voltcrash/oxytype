@@ -24,6 +24,15 @@ export type ClearStreakHourOffsetRequest = z.infer<
   typeof ClearStreakHourOffsetRequestSchema
 >;
 
+export const ClearSuspiciousRequestSchema = z
+  .object({
+    uid: UidSchema,
+  })
+  .strict();
+export type ClearSuspiciousRequest = z.infer<
+  typeof ClearSuspiciousRequestSchema
+>;
+
 export const ToggleBanResponseSchema = responseWithData(
   z.object({
     banned: z.boolean(),
@@ -190,6 +199,17 @@ export const adminContract = c.router(
       method: "POST",
       path: "/report/reject",
       body: RejectReportsRequestSchema,
+      responses: {
+        200: MonkeyResponseSchema,
+      },
+    },
+    clearSuspicious: {
+      summary: "clear suspicious flag",
+      description:
+        "Clear the suspicious flag set by repeated anticheat review flags after reviewing them.",
+      method: "POST",
+      path: "/clearSuspicious",
+      body: ClearSuspiciousRequestSchema,
       responses: {
         200: MonkeyResponseSchema,
       },

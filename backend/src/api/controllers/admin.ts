@@ -6,6 +6,7 @@ import {
   AcceptReportsRequest,
   AnticheatAuditEvent,
   ClearStreakHourOffsetRequest,
+  ClearSuspiciousRequest,
   DeleteUserRequest,
   GetAnticheatAuditsQuery,
   GetAnticheatAuditsResponse,
@@ -175,6 +176,17 @@ export async function handleReports(
       }
     }
   }
+}
+
+export async function clearSuspicious(
+  req: MonkeyRequest<undefined, ClearSuspiciousRequest>,
+): Promise<MonkeyResponse> {
+  const { uid } = req.body;
+
+  await UserDAL.clearSuspicious(uid);
+  void addImportantLog("admin_suspicious_cleared_by", {}, uid);
+
+  return new MonkeyResponse("Suspicious flag cleared", null);
 }
 
 export async function getAnticheatAudits(

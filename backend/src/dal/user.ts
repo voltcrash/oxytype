@@ -436,6 +436,11 @@ export async function setSuspicious(uid: string): Promise<void> {
     user.suspicious = true;
   });
 }
+export async function clearSuspicious(uid: string): Promise<void> {
+  await mutateUser(uid, (user) => {
+    delete user.suspicious;
+  });
+}
 export async function updateLastTimingHashes(
   uid: string,
   lastTimingHashes: string[],

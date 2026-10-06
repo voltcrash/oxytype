@@ -26,6 +26,9 @@ export default s.router(adminContract, {
   rejectReports: {
     handler: async (r) => callController(AdminController.rejectReports)(r),
   },
+  clearSuspicious: {
+    handler: async (r) => callController(AdminController.clearSuspicious)(r),
+  },
   getAnticheatAudits: {
     handler: async (r) => callController(AdminController.getAnticheatAudits)(r),
   },
