@@ -18,7 +18,6 @@ function unpack(row: RankingRow): XpLeaderboardEntry {
   return {
     ...(JSON.parse(row.data) as XpLeaderboardProfile),
     rank: row.rank,
-    friendsRank: row.friendsRank,
     totalXp: row.score,
     timeTypedSeconds: row.timeTypedSeconds ?? 0,
   };
@@ -70,7 +69,6 @@ export class WeeklyXpLeaderboard {
     pageSize: number,
     config: Configuration["leaderboards"]["weeklyXp"],
     premium: boolean,
-    userIds?: string[],
     includeExpired = false,
   ): Promise<{ entries: XpLeaderboardEntry[]; count: number } | null> {
     if (!config.enabled) return null;
@@ -80,7 +78,6 @@ export class WeeklyXpLeaderboard {
       page,
       pageSize,
       undefined,
-      userIds,
       includeExpired,
     );
     return {
@@ -93,7 +90,6 @@ export class WeeklyXpLeaderboard {
   public async getRank(
     uid: string,
     config: Configuration["leaderboards"]["weeklyXp"],
-    userIds?: string[],
   ): Promise<XpLeaderboardEntry | null> {
     if (!config.enabled) return null;
     const row = await rankingUser(
@@ -101,7 +97,6 @@ export class WeeklyXpLeaderboard {
       this.period(),
       uid,
       undefined,
-      userIds,
     );
     return row ? unpack(row) : null;
   }
