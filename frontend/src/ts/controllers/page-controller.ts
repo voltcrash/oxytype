@@ -30,11 +30,6 @@ import { getSnapshot } from "../db";
 import * as TodayTracker from "../test/today-tracker";
 import { isResultsReady, waitForResultsReady } from "../collections/results";
 import {
-  invalidateConnections,
-  isConnectionsReady,
-  waitForConnectionsReady,
-} from "../collections/connections";
-import {
   readSettingsGetParameters,
   SettingsUrlParamsSchema,
 } from "../states/settings-sections";
@@ -95,29 +90,6 @@ const pages = {
   }),
   profileSearch: solidPage("profileSearch"),
   404: solidPage("404"),
-  friends: solidPage("friends", {
-    beforeShow: async () => {
-      await invalidateConnections();
-    },
-    loadingOptions: {
-      loadingMode: () => (isConnectionsReady() ? "none" : "sync"),
-      loadingPromise: async () => {
-        await Promise.all([
-          serverConfigurationPromise,
-          waitForConnectionsReady(),
-        ]);
-      },
-      style: "bar",
-      keyframes: [
-        { percentage: 50, durationMs: 1500, text: "Downloading friends..." },
-        {
-          percentage: 50,
-          durationMs: 1500,
-          text: "Downloading friend requests...",
-        },
-      ],
-    },
-  }),
   leaderboards: solidPage("leaderboards", {
     urlParamsSchema: LeaderboardUrlParamsSchema,
     loadingOptions: {
