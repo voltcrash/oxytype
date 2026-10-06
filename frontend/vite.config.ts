@@ -139,7 +139,9 @@ function getPlugins({
         navigateFallback: "",
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.pathname === "/version.json",
+            urlPattern: ({ url, sameOrigin }) =>
+              sameOrigin &&
+              ["/version.json", "/release.json"].includes(url.pathname),
             handler: "NetworkOnly",
           },
           {
