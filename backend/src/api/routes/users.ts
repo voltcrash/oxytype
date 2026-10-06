@@ -114,7 +114,4 @@ export default s.router(usersContract, {
   getStreak: {
     handler: async (r) => callController(UserController.getStreak)(r),
   },
-  getFriends: {
-    handler: async (r) => callController(UserController.getFriends)(r),
-  },
 });
