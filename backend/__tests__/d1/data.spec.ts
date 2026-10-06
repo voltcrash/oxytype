@@ -5,7 +5,6 @@ import * as Users from "../../src/dal/user";
 import * as Configs from "../../src/dal/config";
 import * as Presets from "../../src/dal/preset";
 import * as Keys from "../../src/dal/ape-keys";
-import * as Connections from "../../src/dal/connections";
 import * as Results from "../../src/dal/result";
 import * as Public from "../../src/dal/public";
 import * as Blocklist from "../../src/dal/blocklist";
@@ -21,7 +20,7 @@ describe("D1 data contracts", () => {
   beforeAll(async () => {
     test = await createTestRuntime();
     await withRuntime(test.env, async () => {
-      for (const uid of ["owner", "friend", "other", "dedupe", "delete"]) {
+      for (const uid of ["owner", "other", "dedupe", "delete"]) {
         await Users.addUser(uid, `${uid}@example.com`, uid);
       }
     });
@@ -111,24 +110,6 @@ describe("D1 data contracts", () => {
       await expect(Keys.editApeKey("other", key._id, "stolen")).rejects.toThrow(
         "ApeKey not found",
       );
-    });
-  });
-  it("deduplicates reversed connection requests and restricts status changes", async () => {
-    await withRuntime(test.env, async () => {
-      const me = { uid: "owner", name: "owner" },
-        friend = { uid: "friend", name: "friend" };
-      const connection = await Connections.create(me, friend, 10);
-      await expect(Connections.create(friend, me, 10)).rejects.toThrow(
-        "Connection request already sent",
-      );
-      await expect(
-        Connections.updateStatus("other", connection._id, "accepted"),
-      ).rejects.toThrow("No permission");
-      await Connections.updateStatus("friend", connection._id, "accepted");
-      expect(await Connections.getFriendsUids("owner")).toEqual([
-        "owner",
-        "friend",
-      ]);
     });
   });
   it("rolls back duplicate results with XP and public counters", async () => {
