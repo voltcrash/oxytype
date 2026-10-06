@@ -14,8 +14,7 @@ export type OpenApiTag =
   | "configuration"
   | "development"
   | "users"
-  | "quotes"
-  | "connections";
+  | "quotes";
 
 export type PermissionId =
   | "quoteMod"
