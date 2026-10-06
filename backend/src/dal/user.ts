@@ -423,14 +423,6 @@ export async function checkIfTagPb(
 export async function resetPb(uid: string): Promise<void> {
   await clearPb(uid);
 }
-export async function updateLastHashes(
-  uid: string,
-  lastHashes: string[],
-): Promise<void> {
-  await mutateUser(uid, (user) => {
-    user.lastReultHashes = lastHashes;
-  });
-}
 export async function setSuspicious(uid: string): Promise<void> {
   await mutateUser(uid, (user) => {
     user.suspicious = true;
