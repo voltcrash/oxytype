@@ -1,5 +1,5 @@
 import { z } from "zod/v3";
-import { getLatestReleaseFromGitHub } from "./json-data";
+import { getLatestRelease } from "./json-data";
 import { LocalStorageWithSchema } from "./local-storage-with-schema";
 import { tryCatch } from "@oxytype/util/trycatch";
 import { isDevEnvironment } from "./env";
@@ -24,15 +24,10 @@ export async function fetchLatestVersion(): Promise<{
 } | null> {
   if (isDevEnvironment()) return null;
 
-  const { data: currentVersion, error } = await tryCatch(
-    getLatestReleaseFromGitHub(),
-  );
+  const { data: currentVersion, error } = await tryCatch(getLatestRelease());
 
   if (error) {
-    const msg = createErrorMessage(
-      error,
-      "Failed to fetch version number from GitHub",
-    );
+    const msg = createErrorMessage(error, "Failed to fetch version number");
     console.error(msg);
     return null;
   }
