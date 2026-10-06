@@ -58,6 +58,79 @@ export const RejectReportsRequestSchema = z
   .strict();
 export type RejectReportsRequest = z.infer<typeof RejectReportsRequestSchema>;
 
+export const AnticheatAuditEventSchema = z.enum([
+  "anticheat_rejected",
+  "anticheat_flagged",
+  "anticheat_sample",
+]);
+export type AnticheatAuditEvent = z.infer<typeof AnticheatAuditEventSchema>;
+
+export const GetAnticheatAuditsQuerySchema = z
+  .object({
+    event: AnticheatAuditEventSchema,
+    uid: UidSchema.optional().describe("Only audits of this user."),
+    before: z
+      .number()
+      .int()
+      .nonnegative()
+      .optional()
+      .describe("Only audits older than this timestamp, for paging."),
+    limit: z.number().int().min(1).max(100).default(50),
+  })
+  .strict();
+export type GetAnticheatAuditsQuery = z.infer<
+  typeof GetAnticheatAuditsQuerySchema
+>;
+
+export const AnticheatAuditSchema = z.object({
+  id: z.string(),
+  uid: z.string(),
+  event: AnticheatAuditEventSchema,
+  timestamp: z.number().int().nonnegative(),
+  message: z.record(z.string(), z.unknown()),
+});
+export type AnticheatAudit = z.infer<typeof AnticheatAuditSchema>;
+
+export const GetAnticheatAuditsResponseSchema = responseWithData(
+  z.array(AnticheatAuditSchema),
+);
+export type GetAnticheatAuditsResponse = z.infer<
+  typeof GetAnticheatAuditsResponseSchema
+>;
+
+export const GetAnticheatSummaryQuerySchema = z
+  .object({
+    hours: z
+      .number()
+      .int()
+      .min(1)
+      .max(24 * 90)
+      .default(24),
+  })
+  .strict();
+export type GetAnticheatSummaryQuery = z.infer<
+  typeof GetAnticheatSummaryQuerySchema
+>;
+
+const AnticheatCountSchema = z.object({
+  key: z.string(),
+  count: z.number().int().nonnegative(),
+  users: z.number().int().nonnegative(),
+});
+export const AnticheatSummarySchema = z.object({
+  since: z.number().int().nonnegative(),
+  rejected: z.array(AnticheatCountSchema).describe("Counts by reason."),
+  flagged: z.array(AnticheatCountSchema).describe("Counts by signal."),
+  samples: z.number().int().nonnegative(),
+});
+export type AnticheatSummary = z.infer<typeof AnticheatSummarySchema>;
+export const GetAnticheatSummaryResponseSchema = responseWithData(
+  AnticheatSummarySchema,
+);
+export type GetAnticheatSummaryResponse = z.infer<
+  typeof GetAnticheatSummaryResponseSchema
+>;
+
 const c = initContract();
 export const adminContract = c.router(
   {
@@ -119,6 +192,28 @@ export const adminContract = c.router(
       body: RejectReportsRequestSchema,
       responses: {
         200: MonkeyResponseSchema,
+      },
+    },
+    getAnticheatAudits: {
+      summary: "list anticheat audits",
+      description:
+        "Recent anticheat rejections, review flags or timing samples, newest first.",
+      method: "GET",
+      path: "/anticheat/audits",
+      query: GetAnticheatAuditsQuerySchema,
+      responses: {
+        200: GetAnticheatAuditsResponseSchema,
+      },
+    },
+    getAnticheatSummary: {
+      summary: "summarise anticheat audits",
+      description:
+        "Rejections by reason and review flags by signal over a recent window.",
+      method: "GET",
+      path: "/anticheat/summary",
+      query: GetAnticheatSummaryQuerySchema,
+      responses: {
+        200: GetAnticheatSummaryResponseSchema,
       },
     },
   },
