@@ -135,11 +135,12 @@ The workflow writes credential files with mode `0600` for the validated producti
 commands, then removes them even on failure. It never bootstraps or resets the database.
 
 A run whose release planning executes on October 8 UTC creates release
-`2026.10.08` and tag `v2026.10.08` at the exact deployed `main` commit, even if
+`26.10.08` and tag `v26.10.08` in `YY.MM.DD` format at the exact deployed
+`main` commit, even if
 it was originally scheduled or created on October 7. Delayed runs and retries
 use the current execution date rather than the original workflow creation date.
 The workflow sets the Worker `VERSION` and the build checkout's package version
-to `2026.10.08`, without pushing a version commit to `main`.
+to `26.10.08`, without pushing a version commit to `main`.
 The release notes list all commits added since the previous successful production
 release, including older branch commits merged during the day. They are grouped
 into Features (`feat`), Improvements (`impr`, `perf`), Fixes (`fix`) and Nerd
