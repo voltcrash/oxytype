@@ -80,37 +80,14 @@ Without OAuth credentials no social login is available. Without a real Turnstile
 secret production signup fails closed. [Turnstile setup](TURNSTILE.md) covers widget
 hostnames, form actions, test keys and token renewal. Built-in [anticheat](ANTICHEAT.md) permits
 valid production result saves and rejects inconsistent telemetry. No bypass is
-supported. Staging now includes the Discord removal, signup fix and anticheat;
-live API checks passed with a temporary seeded identity. GitHub and Turnstile credentials are now deployed; signup, profiles and result
-saving are enabled for browser testing. Follow [staging browser setup](STAGING_SETUP.md)
-for browser verification steps. Real-user GitHub signup and a human result save
-have now been confirmed on hosted staging. Keep automatic
-bans disabled while reviewing real typing samples. The unused isolate-local
-`/stats/*` diagnostics endpoints are retired; use Cloudflare Analytics and Workers
-logs. Old `STATS_USERNAME` and `STATS_PASSWORD` bindings can be removed.
+supported. Follow [staging browser setup](STAGING_SETUP.md) to configure signup,
+profiles and result saving, then verify them in a browser. Keep automatic bans
+disabled while reviewing real typing samples. Use Cloudflare Analytics and
+Workers logs for diagnostics.
 
 Cross-site staging cookies use Secure/SameSite=None and explicit localhost
 origin checks. Some browsers block third-party cookies; a same-site frontend/API
 proxy is preferable for end-to-end OAuth testing.
-
-## Discord removal
-
-Back up D1 and pause API writes/consumers for this update. Apply
-`0002_remove_discord.sql`, deploy the updated Worker, then resume traffic. It drops the
-Discord column/index and OAuth-state table, removes identity/avatar fields from
-user/ranking JSON, deletes Discord blocklist entries and pending bot deliveries,
-and removes obsolete configuration. Accounts, sessions, rankings and rewards
-are retained. Already-published bot delivery IDs acknowledge as missing rows.
-
-The account-linking endpoints, avatar integration, rich presence and Discord
-announcements are removed. Disable the old GitHub release webhook and bot
-consumer; remove obsolete `DISCORD_CLIENT_ID` and `GITHUB_WEBHOOK_SECRET` bindings.
-The quote approval bridge remains optional.
-
-Migration 0002 and the updated Worker are deployed on staging. A private D1 backup
-was captured under maintenance; queue delivery was paused and resumed. A Worker
-rollback to code requiring the old Discord schema also needs a matching D1 restore
-under maintenance; do not point that code at the migrated database.
 
 ## External bridge
 
