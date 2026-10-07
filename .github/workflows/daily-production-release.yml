@@ -46,7 +46,10 @@ jobs:
               require('node:fs').writeFileSync(`${process.env.RUNNER_TEMP}/daily-release-notes.md`, plan.body);
               require('node:fs').writeFileSync(`${process.env.GITHUB_WORKSPACE}/frontend/static/release.json`, `${JSON.stringify(plan.releaseHistory, null, 2)}\n`);
             } else {
-              await core.summary.addRaw(`Release ${plan.tag} already deployed; skipping this run.`).write();
+              const message = plan.skipReason === 'no-new-commits'
+                ? 'No new commits since the previous production release; skipping deployment and publication.'
+                : `Release ${plan.tag} already deployed; skipping this run.`;
+              await core.summary.addRaw(message).write();
             }
 
       - name: Set up Node.js
