@@ -1,5 +1,7 @@
 # Staging browser setup
 
+For Oxytype maintainers testing the official staging site.
+
 Host frontend and API together at `https://oxytype-api-staging.voltcrash.workers.dev`
 to keep OAuth state/session cookies on one origin. The steps below configure
 credentials, deploy the site and enable browser testing.
