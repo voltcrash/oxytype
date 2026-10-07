@@ -37,20 +37,19 @@ Hono runs on a Cloudflare Worker. Shared ts-rest contracts and Zod schemas defin
 request/response shapes. Drizzle describes D1 tables; Better Auth uses the SQLite
 adapter for Google/GitHub accounts and database-backed sessions. `worker.ts`
 exports fetch, queue and scheduled handlers with invocation-scoped bindings.
-ApeKeys use versioned SHA-256 hashes and constant-time comparison; no legacy
-bcrypt verifier remains. See [the hash audit](CLOUDFLARE_OPERATIONS.md#apekey-hash-compatibility)
-before restoring older API-key records.
+ApeKeys use versioned SHA-256 hashes and constant-time comparison. See
+[the hash audit](CLOUDFLARE_OPERATIONS.md#apekey-hash-compatibility) before
+restoring API-key records.
 
 `api/hono-adapter.ts` preserves transport-independent controllers. D1 owns data,
 exact rate windows, result progression and rankings. User
 JSON writes use optimistic version guards inside atomic batches. An outbox and
 scheduled-job ledger feed Cloudflare Queues; Cron recovers missed deliveries.
-Reward grants and inbox claims deduplicate retries. KV/DOs are unnecessary initially.
+Reward grants and inbox claims deduplicate retries.
 
 Docs/config/quote assets use the Worker ASSETS binding. Quote git automation
 requires an external HTTPS bridge. Structured console logs
-feed Workers observability. The isolate-local Prometheus registry and `/stats/*`
-admin endpoints are retired; use Cloudflare Analytics and logs for diagnostics.
+feed Workers observability. Use Cloudflare Analytics and logs for diagnostics.
 Public aggregates and `/users/stats` remain database-backed application features.
 
 ```mermaid
@@ -67,20 +66,19 @@ flowchart LR
 
 ## Development and delivery
 
-Node 24/pnpm 12 build workspace packages and API docs. Wrangler runs local workerd
+Node/pnpm build workspace packages and API docs. Wrangler runs local workerd
 and D1 on port 5005; Solid/Vite runs on port 3000. Application and test IDs are
-strings; no legacy database clients or import tools remain. Vitest covers existing
-controllers and real D1 behavior.
+strings. Vitest covers controllers and real D1 behavior.
 Backend build performs a Wrangler dry-run; deployment applies migrations then
 uses Wrangler. Docker publishes the static frontend only.
 
-The default Wrangler config targets staging; hosted staging has
-real-user signup/results. A separate production config serves frontend and API
+The default Wrangler config targets staging. A separate production config serves
+frontend and API
 on `oxytype.voltcrash.com` with isolated D1, queues, GitHub OAuth and Turnstile
-credentials. Production starts fresh; no legacy/staging data is imported.
+credentials.
 See [production setup](PRODUCTION_SETUP.md) for explicit build/deploy commands.
 Built-in [anticheat](ANTICHEAT.md) checks scores and telemetry in all modes;
-review its client-trust limits before cutover. See [operations](CLOUDFLARE_OPERATIONS.md)
+review its client-trust limits. See [operations](CLOUDFLARE_OPERATIONS.md)
 for setup, recovery and deployment checks.
 
 ## Oxytype ownership boundaries
@@ -88,8 +86,8 @@ for setup, recovery and deployment checks.
 The fork uses its own production auth secret, GitHub OAuth app, Turnstile widget
 and API endpoint at [oxytype.voltcrash.com](https://oxytype.voltcrash.com). Other
 optional integrations need deployment-owned credentials before enabling them.
-The planned mailbox `contact@voltcrash.com` is not active; public contact and
-security reporting use the Oxytype repository and its security policy. The
+Public contact and security reporting use the Oxytype repository and its security
+policy. The
 original GPL license and contributor attribution remain in place.
 
 See [development setup](./CONTRIBUTING_ADVANCED.md), [self-hosting](./SELF_HOSTING.md), and [security reporting](./SECURITY.md) for operational details.
