@@ -57,10 +57,9 @@ Queues: `oxytype-staging-tasks` and `oxytype-staging-dlq`.
 The default API-only config trusts `http://localhost:3000`; hosted staging uses
 the Worker origin. Production routes are isolated in `wrangler.production.json`.
 
-Wrangler uses `backend/wrangler.jsonc`; changing its default deploy target changes
-the release CLI too. Production has a separate reviewed config/resources; use
-its explicit commands. Current backend release script migrates/deploys staging;
-it no longer SSHs into a Node server. Frontend delivery is separate.
+Wrangler uses `backend/wrangler.jsonc` for staging. Production has a separate
+config/resources; use its explicit commands or the daily production workflow.
+Both hosted sites serve frontend and API through the Worker assets binding.
 
 ```sh
 pnpm --filter @oxytype/backend exec wrangler login
