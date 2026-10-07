@@ -1,7 +1,7 @@
 import { tryCatch } from "@oxytype/util/trycatch";
 import type { CaptchaAction } from "@oxytype/contracts/captcha";
 import { atomicUser } from "../../db/mutation";
-import { v4 as uuidv4 } from "uuid";
+import { randomUUID } from "node:crypto";
 import { getPartialUser, updateQuoteRatings } from "../../dal/user";
 import * as ReportDAL from "../../dal/report";
 import * as NewQuotesDAL from "../../dal/new-quotes";
@@ -167,7 +167,7 @@ export async function reportQuote(
 
   const newReport: ReportDAL.DBReport = {
     _id: newId(),
-    id: uuidv4(),
+    id: randomUUID(),
     type: "quote",
     timestamp: new Date().getTime(),
     uid,
