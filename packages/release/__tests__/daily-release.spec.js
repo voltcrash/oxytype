@@ -113,6 +113,46 @@ describe("daily production releases", () => {
     expect(github.rest.repos.createRelease).not.toHaveBeenCalled();
   });
 
+  it.each(["schedule", "workflow_dispatch"])(
+    "dates a delayed %s run from execution and includes missed changes",
+    async (eventName) => {
+      context.eventName = eventName;
+      previousRelease();
+      commit("feat: missed-day change", "2026-10-07T22:00:00Z");
+      vi.setSystemTime(new Date("2026-10-08T00:17:00Z"));
+      const plan = await prepareDailyRelease({ github, context, cwd });
+      expect(plan.shouldDeploy).toBe(true);
+      expect(plan.version).toBe("2026.10.08");
+      expect(plan.body).toContain("missed-day change");
+    },
+  );
+
+  it("skips next-day retries of successfully published snapshots", async () => {
+    previousRelease("v2026.10.05");
+    vi.setSystemTime(new Date("2026-10-06T01:00:00Z"));
+    const plan = await prepareDailyRelease({ github, context, cwd });
+    expect(plan.tag).toBe("v2026.10.06");
+    expect(plan.shouldDeploy).toBe(false);
+    expect(plan.skipReason).toBe("no-new-commits");
+  });
+
+  it("publishes the current date after retrying a failed previous-day publication", async () => {
+    previousRelease();
+    commit("fix: pending deployment", "2026-10-07T22:00:00Z");
+    git("tag", "v2026.10.07");
+    vi.setSystemTime(new Date("2026-10-08T00:17:00Z"));
+    const plan = await prepareDailyRelease({ github, context, cwd });
+    expect(plan.shouldDeploy).toBe(true);
+    await publishDailyRelease({ github, context, ...plan });
+    expect(github.rest.repos.createRelease).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tag_name: "v2026.10.08",
+        name: "2026.10.08",
+        target_commitish: context.sha,
+      }),
+    );
+  });
+
   it("includes the preceding day's midnight boundary in the first scheduled release", async () => {
     commit("merged at midnight", "2026-10-04T00:00:00Z");
     commit("merged before deployment", "2026-10-04T23:59:59Z");
