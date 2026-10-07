@@ -16,7 +16,6 @@ import { LinkPrefetch } from "./core/LinkPrefetch";
 import { PageHead } from "./core/PageHead";
 import { SkillIssue } from "./core/SkillIssue";
 import { Theme } from "./core/Theme";
-import { ThirdPartyEffects } from "./core/ThirdPartyEffects";
 import { DevTools } from "./dev/DevTools";
 import { Footer } from "./layout/footer/Footer";
 import { Header } from "./layout/header/Header";
@@ -35,7 +34,6 @@ export function App(props: AppElements): JSXElement {
         <PageHead />
         <AppEffects {...props} />
         <Theme />
-        <ThirdPartyEffects />
         <LinkPrefetch />
       </Portal>
       <Show
