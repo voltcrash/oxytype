@@ -380,9 +380,6 @@ importers:
       miniflare:
         specifier: 5.20261001.0-alpha
         version: 5.20261001.0-alpha(@types/node@24.19.0)
-      openapi3-ts:
-        specifier: 4.6.1
-        version: 4.6.1
       readline-sync:
         specifier: 1.4.10
         version: 1.4.10
@@ -9242,9 +9239,6 @@ packages:
 
   openapi3-ts@3.2.0:
     resolution: {integrity: sha512-/ykNWRV5Qs0Nwq7Pc0nJ78fgILvOT/60OxEmB3v7yQ8a8Bwcm43D4diaYazG/KBn6czA+52XYy931WFLMCUeSg==}
-
-  openapi3-ts@4.6.1:
-    resolution: {integrity: sha512-XW9MOldkhoICNeXVzzmXzmOW5G73ppOEGmh7fLCqHjgfdEYCGGN+00MlVCeUZgovjjfC56j9tvtDt1zGabNjjA==}
 
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
@@ -19511,10 +19505,6 @@ snapshots:
       yaml: 1.10.2
 
   openapi3-ts@3.2.0:
-    dependencies:
-      yaml: 2.9.1
-
-  openapi3-ts@4.6.1:
     dependencies:
       yaml: 2.9.1
 
