@@ -1,9 +1,30 @@
 name: "Pull Request Labeler"
+
 on:
-  - pull_request_target
+  pull_request_target:
+    types:
+      [
+        opened,
+        reopened,
+        synchronize,
+        review_requested,
+        ready_for_review,
+        review_request_removed,
+        converted_to_draft,
+        edited,
+      ]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  pull_request_review_comment:
+    types: [created, edited]
+  issue_comment:
+    types: [created, edited]
 
 jobs:
   triage:
+    if: >-
+      github.event_name == 'pull_request_target' &&
+      contains(fromJSON('["opened", "synchronize", "reopened"]'), github.event.action)
     permissions:
       contents: read
       pull-requests: write
@@ -13,3 +34,70 @@ jobs:
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           sync-labels: true
+
+  update-labels:
+    # Open/reopen events only need path labels; fork review tokens are read-only.
+    if: >-
+      (github.event_name != 'pull_request_target' ||
+        !contains(fromJSON('["opened", "reopened"]'), github.event.action)) &&
+      ((github.event_name != 'pull_request_review' && github.event_name != 'pull_request_review_comment') ||
+        github.event.pull_request.head.repo.full_name == github.repository)
+    permissions:
+      pull-requests: write
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update waiting labels
+        uses: actions/github-script@v9.0.0
+        with:
+          script: |
+            const { action, pull_request: pr, issue, review, comment } = context.payload;
+            const number = pr?.number ?? issue?.number;
+            if (!number) return;
+
+            const isTarget = context.eventName === 'pull_request_target';
+            const isReview = context.eventName === 'pull_request_review';
+            const isMaintainer = ['OWNER', 'MEMBER', 'COLLABORATOR'].includes(review?.author_association);
+            let waitingForReview = 0;
+            let waitingForUpdate = 0;
+
+            if (isTarget && ['review_requested', 'ready_for_review'].includes(action)) {
+              waitingForReview = 1;
+            }
+            if (
+              (isTarget && ['review_request_removed', 'converted_to_draft'].includes(action)) ||
+              (isReview && ['submitted', 'edited'].includes(action) && isMaintainer)
+            ) {
+              waitingForReview = -1;
+            }
+            if (isReview && review?.state === 'changes_requested' && isMaintainer) {
+              waitingForUpdate = 1;
+            }
+            if (
+              (isTarget && ['synchronize', 'edited', 'review_requested'].includes(action)) ||
+              (isReview && action === 'dismissed') ||
+              (context.eventName === 'pull_request_review_comment' &&
+                ['created', 'edited'].includes(action) && comment?.user.id === pr?.user.id) ||
+              (context.eventName === 'issue_comment' &&
+                ['created', 'edited'].includes(action) && comment?.user.id === issue?.user.id)
+            ) {
+              waitingForUpdate = -1;
+            }
+
+            const changes = [
+              ['waiting for review', waitingForReview],
+              ['waiting for update', waitingForUpdate],
+            ];
+            const params = { ...context.repo, issue_number: number };
+            const labels = changes.filter(([, change]) => change === 1).map(([label]) => label);
+            if (labels.length > 0) {
+              await github.rest.issues.addLabels({ ...params, labels });
+            }
+            for (const [name, change] of changes) {
+              if (change !== -1) continue;
+              try {
+                await github.rest.issues.removeLabel({ ...params, name });
+              } catch (error) {
+                if (error.status !== 404) throw error;
+              }
+            }
