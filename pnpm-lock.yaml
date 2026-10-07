@@ -651,9 +651,6 @@ importers:
       madge:
         specifier: 8.0.0
         version: 8.0.0(supports-color@10.2.2)(typescript@7.0.2)
-      magic-string:
-        specifier: 1.4.2
-        version: 1.4.2
       normalize.css:
         specifier: 8.0.1
         version: 8.0.1
