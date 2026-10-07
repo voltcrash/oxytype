@@ -43,7 +43,6 @@
     "@oxytype/util": "workspace:*",
     "@ts-rest/core": "3.52.1",
     "@ts-rest/open-api": "3.52.1",
-    "bcryptjs": "3.0.3",
     "better-auth": "1.7.7",
     "date-fns": "4.4.0",
     "drizzle-orm": "0.45.3",
