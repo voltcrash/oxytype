@@ -87,9 +87,10 @@ complete a test, refresh, then sign out/sign in and confirm the result remains.
 Verify the browser requests the staging host. Use an ordinary typing sample to
 check real-user anticheat compatibility.
 
-OAuth returns the popup to `/oauth-callback.html?requestId=...`. Static hosts must
-serve this standalone HTML page before the main app's SPA fallback. If the popup
-shows the app's 404 page, close it, fix the frontend server, refresh `/login` and retry.
+OAuth returns the popup to `/oauth-callback.html?requestId=...`. The staging Worker
+serves this standalone HTML page before the main app's SPA fallback. If the popup
+shows the app's 404 page, close it, check the staging site's assets, refresh `/login`
+and retry.
 
 Use the hosted URL for staging auth checks. Localhost calling the remote API can
 lose OAuth cookies under browser privacy protections; `SameSite=None` alone does
