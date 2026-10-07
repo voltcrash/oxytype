@@ -13,6 +13,13 @@ GitHub release titles omit the `v` prefix; CLI release titles retain it.
 The release date is captured when the release starts, independently of the
 previous version. Publication timestamps retain their full ISO year.
 
+The October 4–7, 2026 GitHub releases were migrated in place to `26.10.04`
+through `26.10.07`, with `v`-prefixed tags at their original commits. Release IDs,
+publication dates and notes were preserved; changelog version references were
+shortened. Previous four-digit-year Git tags remain compatibility aliases for
+historical checkouts and comparisons. The checked-in site history includes all
+four migrated releases; deployed site assets adopt it on the next deployment.
+
 Only one tagged release is allowed per UTC day. Normal releases and dry runs check local and origin tags before installing dependencies, building, or deploying. An existing date tag stops the release; use `pnpm hotfix` for additional deployments that day, or make a new release on a later UTC date. Hotfixes keep the current version and do not create a tag or GitHub release.
 
 Frontend build IDs remain separate timestamp-and-commit identifiers for cache invalidation and diagnostics.
