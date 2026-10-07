@@ -130,16 +130,13 @@ Measure DB+indexes against the account tier and projected growth; benchmark
 result saves, exact rate counters and ranking reads/rebuilds. Large
 history may need external SQL, partitioning or R2 archival.
 
-Production starts with a fresh D1 database. For existing D1 deployments, back up
-the database and pause writes/consumers before schema changes. A code rollback
-that requires an older schema also requires a matching database restore.
+Back up the database and pause writes/consumers before schema changes. A code
+rollback that requires an older schema also requires a matching database restore.
 
 ## ApeKey hash compatibility
 
 ApeKeys use `sha256:` followed by 64 lowercase hexadecimal characters. The Worker
-rejects unsupported formats; legacy bcrypt verification and automatic hash
-upgrades are retired. New keys retain their existing random generation and
-constant-time digest comparison.
+rejects unsupported formats and compares digests in constant time.
 
 Before deploying to a retained database or restoring older data, run these
 read-only audits. They include disabled keys and output counts only:
@@ -149,8 +146,6 @@ pnpm --filter @oxytype/backend db:audit-ape-key-hashes
 pnpm --filter @oxytype/backend db:audit-ape-key-hashes:production
 ```
 
-`unsupported_hashes` must be zero. Legacy hashes cannot be converted without the
-original key; replace any affected keys before using SHA-256-only verification.
-The 7 October 2026 audit found zero ApeKey rows in both retained D1 databases,
-`oxytype-staging` and `oxytype-production`; no key rotation or data migration was
-needed. Accounts, passwords and Better Auth sessions use separate authentication.
+`unsupported_hashes` must be zero. Replace affected keys before accepting API-key
+requests; unsupported hashes cannot be converted without the original key.
+Better Auth accounts and sessions use separate authentication.
