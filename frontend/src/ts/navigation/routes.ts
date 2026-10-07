@@ -8,7 +8,6 @@ export type AppRouteInfo = {
   redirect?: string;
 };
 
-// Keep frontend/firebase.json rewrites in sync when adding routes.
 export const appRoutes = [
   { path: "/", info: { page: "test" } },
   { path: "/leaderboards", info: { page: "leaderboards" } },
