@@ -362,9 +362,6 @@ importers:
       '@types/qs':
         specifier: 6.15.1
         version: 6.15.1
-      '@types/readline-sync':
-        specifier: 1.4.8
-        version: 1.4.8
       '@types/string-similarity':
         specifier: 4.0.2
         version: 4.0.2
@@ -380,9 +377,6 @@ importers:
       miniflare:
         specifier: 5.20261001.0-alpha
         version: 5.20261001.0-alpha(@types/node@24.19.0)
-      readline-sync:
-        specifier: 1.4.10
-        version: 1.4.10
       supertest:
         specifier: 7.3.0
         version: 7.3.0(supports-color@10.2.2)
@@ -5358,9 +5352,6 @@ packages:
 
   '@types/react@19.2.14':
     resolution: {integrity: sha512-ilcTH/UniCkMdtexkoCN0bI7pMcJDvmQFPvuPvmEaYA/NSfFTAgdUSLAoVjaRJm7+6PvcM+q1zYOwS4wTYMF9w==}
-
-  '@types/readline-sync@1.4.8':
-    resolution: {integrity: sha512-BL7xOf0yKLA6baAX6MMOnYkoflUyj/c7y3pqMRfU0va7XlwHAOTOIo4x55P/qLfMsuaYdJJKubToLqRVmRtRZA==}
 
   '@types/resolve@1.20.2':
     resolution: {integrity: sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==}
@@ -15094,8 +15085,6 @@ snapshots:
   '@types/react@19.2.14':
     dependencies:
       csstype: 3.2.3
-
-  '@types/readline-sync@1.4.8': {}
 
   '@types/resolve@1.20.2': {}
 
