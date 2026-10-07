@@ -129,13 +129,11 @@ The account ID and isolated resource IDs come from `backend/wrangler.production.
 The workflow writes credential files with mode `0600` for the validated production
 commands, then removes them even on failure. It never bootstraps or resets the database.
 
-A run whose release planning executes on October 8 UTC creates release
-`26.10.08` and tag `v26.10.08` in `YY.MM.DD` format at the exact deployed
-`main` commit, even if
-it was originally scheduled or created on October 7. Delayed runs and retries
-use the current execution date rather than the original workflow creation date.
+Release versions use the release-planning execution date in `YY.MM.DD` format,
+with a `v`-prefixed tag at the exact deployed `main` commit. Delayed runs and
+retries use the current execution date rather than the workflow creation date.
 The workflow sets the Worker `VERSION` and the build checkout's package version
-to `26.10.08`, without pushing a version commit to `main`.
+to that date version, without pushing a version commit to `main`.
 The release notes list all commits added since the previous successful production
 release, including older branch commits merged during the day. They are grouped
 into Features (`feat`), Improvements (`impr`, `perf`), Fixes (`fix`) and Nerd
@@ -167,7 +165,6 @@ manual release stops the workflow before deployment.
 
 GitHub's scheduler can run late or drop jobs under load; 00:17 UTC is the requested
 trigger time, not an exact-time guarantee. See [GitHub scheduling behavior](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).
-Scheduled execution starts after this workflow is merged into the default branch.
 GitHub releases use the workflow's `GITHUB_TOKEN`, so they do not trigger the
 separate release-event Docker workflow; dispatch that workflow on the tag when
 container images are needed.
