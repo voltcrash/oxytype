@@ -45,8 +45,9 @@ Reward grants and inbox claims deduplicate retries. KV/DOs are unnecessary initi
 
 Docs/config/quote assets use the Worker ASSETS binding. Quote git automation
 requires an external HTTPS bridge. Structured console logs
-feed Workers observability; `/stats/*` remains credential protected. Prometheus
-and stats counters are isolate-local, not fleet-wide metrics.
+feed Workers observability. The isolate-local Prometheus registry and `/stats/*`
+admin endpoints are retired; use Cloudflare Analytics and logs for diagnostics.
+Public aggregates and `/users/stats` remain database-backed application features.
 
 ```mermaid
 flowchart LR
