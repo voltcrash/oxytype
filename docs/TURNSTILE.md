@@ -1,7 +1,7 @@
 # Turnstile
 
 All captcha flows use Cloudflare Turnstile: signup, user reports, quote submissions,
-and quote reports. The request field remains `captcha`; no data migration is needed.
+and quote reports. Requests send the token in the `captcha` field.
 
 ## Configuration
 
@@ -11,8 +11,6 @@ Allow the **frontend** hostname, then set:
 
 - Backend private `TURNSTILE_SECRET_KEY`; `FRONTEND_URL` must match the frontend.
 - Frontend build/runtime `TURNSTILE_SITE_KEY` (public).
-- Keep staging GitHub callback at
-  `https://oxytype-api-staging.voltcrash.workers.dev/api/auth/callback/github`.
 
 Staging allows `localhost` and `oxytype-api-staging.voltcrash.workers.dev` for the
 hosted frontend. Production should allow only its deployed frontend hostname.
@@ -55,5 +53,4 @@ readiness for [explicit rendering](https://developers.cloudflare.com/turnstile/g
 
 Allow `https://challenges.cloudflare.com` in `script-src` and `frame-src` when
 adding a [CSP](https://developers.cloudflare.com/turnstile/reference/content-security-policy/).
-Load the provider script directly, without proxying or caching it. No Google captcha
-scripts, variables or validation endpoints remain.
+Load the provider script directly, without proxying or caching it.
