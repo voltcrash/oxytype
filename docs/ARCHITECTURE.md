@@ -1,6 +1,6 @@
 # Oxytype architecture
 
-Snapshot: 3 October 2026. Package versions come from the workspace manifests and lockfile. This describes the codebase, including inherited architecture; Oxytype branding and deployment ownership are being updated in separate PRs.
+Package versions come from the workspace manifests and lockfile.
 
 ## Repository map
 
@@ -11,18 +11,19 @@ Snapshot: 3 October 2026. Package versions come from the workspace manifests and
 | `packages/contracts/` | Shared typed API contracts |
 | `packages/schemas/` | Shared Zod schemas and domain types |
 | `packages/util/`, `packages/funbox/`, `packages/challenges/` | Shared helpers and typing features |
-| `packages/oxlint-config/`, `packages/typescript-config/`, `packages/tsup-config/` | Shared tooling configuration |
+| `packages/oxlint-config/`, `packages/typescript-config/`, `packages/tsdown-config/` | Shared tooling configuration |
 | `packages/release/` | Daily production release helpers |
 | `docker/` | Static frontend container and build definition |
 | `.github/workflows/` | CI, labeling, Docker publishing, and repository automation |
 
-The root is a private pnpm workspace. Node 24, pnpm 12, TypeScript 7, and Turborepo 2 coordinate package builds. Internal package names currently carry the inherited scope; a separate PR renames that scope to Oxytype.
+The root is a private pnpm workspace. Node, TypeScript and Turborepo coordinate
+package builds. Internal packages use the `@oxytype` scope.
 
 ## Frontend
 
-Vite 8 builds the browser app; SolidJS 1.9 renders its `.tsx` UI. Solid Router 1.0 owns route matching, links, URL state, and browser history. `components/AppRouter.tsx` mounts the router; `navigation/routes.ts` defines routes. `components/core/NavigationRuntime.tsx` connects routing to auth redirects, startup loading, active-test guards, and the existing page lifecycle/animations. Page owners and typing-test refs stay cached across navigation.
+Vite builds the browser app; SolidJS renders its `.tsx` UI. Solid Router owns route matching, links, URL state, and browser history. `components/AppRouter.tsx` mounts the router; `navigation/routes.ts` defines routes. `components/core/NavigationRuntime.tsx` connects routing to auth redirects, startup loading, active-test guards, and page lifecycles/animations. Page owners and typing-test refs stay cached across navigation.
 
-Tailwind CSS 4 supplies utility classes and semantic theme colors; compatibility CSS retains theme/funbox selectors. Icons use the `Fa` component. The app also uses TanStack Query/DB for data access, Chart.js for graphs, Better Auth clients for account authentication, and a service worker for offline assets.
+Tailwind CSS supplies utility classes and semantic theme colors; compatibility CSS retains theme/funbox selectors. Icons use the `Fa` component. The app also uses TanStack Query/DB for data access, Chart.js for graphs, Better Auth clients for account authentication, and a service worker for offline assets.
 
 Internal anchors use `Link` (or `Button` with `router-link`), which marks them for Solid Router's native anchor handling. Modified clicks, downloads, and external links retain browser behavior. Imperative callers use `navigation/navigation.ts`: `navigate()` awaits page transitions; `replaceUrl()` updates filters/deep links without a page transition or history entry. Forced navigation bypasses busy-page guards, but cannot leave an active `no_quit` test. Auth redirects replace the requested URL rather than adding a redirect history entry.
 
