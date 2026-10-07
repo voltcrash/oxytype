@@ -1,119 +1,27 @@
-### **Table of Contents**
+# Adding layouts
 
-- [Forking Oxytype](#forking-oxytype)
-- [Creating Layouts](#creating-layouts)
-- [Committing Layouts](#committing-layouts)
+Follow [basic contributions](CONTRIBUTING_BASIC.md) to fork and open a pull request.
 
-### Forking Oxytype
+1. Copy a similar layout into `frontend/static/layouts/<name>.json`.
+2. Set `type` to `ansi` or `iso`, and `keymapShowTopRow` to control whether the
+   number row is always visible.
+3. Define `keys.row1` through `keys.row5`. Each key is an array of one to four
+   single-character legends, ordered as unshifted, shifted, AltGr and shifted
+   AltGr. For example, `["e", "E", "€"]` represents three legends. Escape
+   quote/backslash characters in JSON.
+4. Add the filename without `.json` to `LayoutNameSchema` in
+   `packages/schemas/src/layouts.ts`.
 
-First, you will have to make a personal copy of the Oxytype repository, also known as "forking". Go to the [Oxytype repo](https://github.com/voltcrash/oxytype/) and then click the "fork" button.
+Required row sizes:
 
+| Type | Row 1 | Row 2 | Row 3 | Row 4 | Row 5 |
+| --- | --- | --- | --- | --- | --- |
+| ANSI | 13 | 13 | 11 | 10 | 1–2 |
+| ISO | 13 | 12 | 12 | 11 | 1–2 |
 
-## Creating Layouts
+Follow [layout guidelines](CONTRIBUTING.md#layout-guidelines). For local validation,
+follow [development setup](CONTRIBUTING_ADVANCED.md), then run from the repository root:
 
-Once you have forked the repository you can now add your layout. Create a new JSON file in `./frontend/static/layouts/`, named as the layout name, e.g. `qwerty.json`.
-
-The contents of the file should be as follows:
-
-```json
-{
-  "keymapShowTopRow": false,
-  "type": "ansi",
-  "keys": {
-    "row1": [
-      ["`", "~"],
-      ["1", "!"],
-      ["2", "@"],
-      ["3", "#"],
-      ["4", "$"],
-      ["5", "%"],
-      ["6", "^"],
-      ["7", "&"],
-      ["8", "*"],
-      ["9", "("],
-      ["0", ")"],
-      ["-", "_"],
-      ["=", "+"]
-    ],
-    "row2": [
-      ["q", "Q"],
-      ["w", "W"],
-      ["e", "E"],
-      ["r", "R"],
-      ["t", "T"],
-      ["y", "Y"],
-      ["u", "U"],
-      ["i", "I"],
-      ["o", "O"],
-      ["p", "P"],
-      ["[", "{"],
-      ["]", "}"],
-      ["\\", "|"]
-    ],
-    "row3": [
-      ["a", "A"],
-      ["s", "S"],
-      ["d", "D"],
-      ["f", "F"],
-      ["g", "G"],
-      ["h", "H"],
-      ["j", "J"],
-      ["k", "K"],
-      ["l", "L"],
-      [";", ":"],
-      ["'", "\""]
-    ],
-    "row4": [
-      ["z", "Z"],
-      ["x", "X"],
-      ["c", "C"],
-      ["v", "V"],
-      ["b", "B"],
-      ["n", "N"],
-      ["m", "M"],
-      [",", "<"],
-      [".", ">"],
-      ["/", "?"]
-    ],
-    "row5": [[" "]]
-  }
-}
+```sh
+pnpm --filter @oxytype/frontend check-assets layouts
 ```
-
-It is recommended that you familiarize yourselves with JSON before adding a layout.
-
-`keymapShowTopRow` indicates whether to always show the first row of the layout.
-`type` can be `ansi` or `iso`.
-
-In `keys` you need to specify `row1` to `row5`. Add the keys within the row as string-array. The string-array can have up to four character. The character define unshifted, shifted, alt-gr and shifted alt-gr character in this order. For example `["e","E","€"]` defines `e` on regular key press, `E` if `shift` is held and `€` if `alt-gr` is held.
-
-**Note:** Quote and backslash characters need to be escaped: `\"` and `\\`.
-
-For ansi layouts the number of keys need to be exactly thirteen for `row1` and `row2`, eleven for `row3`, ten for `row4` and one or two for `row5`.
-
-For iso the number of keys need to be exactly thirteen for `row1`, twelve for `row2` and `row3`, eleven for `row4` and one or two for `row5`.
-
-In addition to the layout file you need to add your layout to the `packages/schemas/src/layouts.ts` file. Just append your layout name (without the `.json`) at the **end** of the `LayoutNameSchema`. Remember to add a comma like this:
-
-```ts
-export const LayoutNameSchema = z.enum([
-  "qwerty",
-  "dvorak",
-  "colemak",
-  ..."your_layout_name",
-]);
-```
-
-### Committing Layouts
-
-Once you have created your layout, you now need to create a pull request to the main Oxytype repository. Go to the branch where you created your layout on GitHub. Then make sure your branch is up to date. Once it is up to date, click "contribute".
-
-Update branch:
-
-Create a pull request:
-
-Make sure your PR title follow the syntax `feat(layout): add <YOUR_LAYOUT> layout (@<YOUR_GITHUB_NAME>)`, e.g. `feat(layout): add qwerty layout (@teddinotteddy)`
-
-## Layout Guidelines
-
-Make sure your layout follows the [Layout guidelines](./CONTRIBUTING.md#layout-guidelines).
