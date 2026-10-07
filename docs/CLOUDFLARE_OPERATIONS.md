@@ -45,7 +45,7 @@ pnpm build-be
 
 Build generates docs and copies quote/config assets, then performs a Wrangler
 bundle dry-run. The D1 suite runs actual SQLite in workerd; unit tests preserve
-controller/HTTP contracts. No container services are required.
+controller/HTTP contracts.
 
 ## Staging deployment
 
