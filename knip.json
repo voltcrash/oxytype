@@ -24,7 +24,6 @@
         "eslint-plugin-compat",
         "eslint-plugin-solid",
         "firebase-tools",
-        "magic-string",
         "normalize.css",
         "balloon-css",
         "tailwindcss",
@@ -44,9 +43,7 @@
       ],
       "project": [".storybook/**/*.{ts,tsx}", "stories/**/*.{ts,tsx}"],
       "ignoreDependencies": [
-        "@chromatic-com/storybook",
         "@storybook/addon-links",
-        "@storybook/addon-onboarding",
         "@storybook/builder-vite",
         "@vitest/coverage-v8"
       ]

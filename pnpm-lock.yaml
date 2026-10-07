@@ -274,9 +274,6 @@ importers:
       '@date-fns/utc':
         specifier: 2.1.1
         version: 2.1.1
-      '@oxytype/challenges':
-        specifier: workspace:*
-        version: link:../packages/challenges
       '@oxytype/contracts':
         specifier: workspace:*
         version: link:../packages/contracts
@@ -362,9 +359,6 @@ importers:
       '@types/qs':
         specifier: 6.15.1
         version: 6.15.1
-      '@types/readline-sync':
-        specifier: 1.4.8
-        version: 1.4.8
       '@types/string-similarity':
         specifier: 4.0.2
         version: 4.0.2
@@ -380,12 +374,6 @@ importers:
       miniflare:
         specifier: 5.20261001.0-alpha
         version: 5.20261001.0-alpha(@types/node@24.19.0)
-      openapi3-ts:
-        specifier: 4.6.1
-        version: 4.6.1
-      readline-sync:
-        specifier: 1.4.10
-        version: 1.4.10
       supertest:
         specifier: 7.3.0
         version: 7.3.0(supports-color@10.2.2)
@@ -651,9 +639,6 @@ importers:
       madge:
         specifier: 8.0.0
         version: 8.0.0(supports-color@10.2.2)(typescript@7.0.2)
-      magic-string:
-        specifier: 1.4.2
-        version: 1.4.2
       normalize.css:
         specifier: 8.0.1
         version: 8.0.1
@@ -715,9 +700,6 @@ importers:
         specifier: 4.5.0
         version: 4.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
-      '@chromatic-com/storybook':
-        specifier: 5.4.0
-        version: 5.4.0(storybook@10.6.1(@types/react@19.2.14)(prettier@3.7.1)(react@18.3.1)(vite-plus@1.0.0(@opentelemetry/api@1.9.1)(@types/node@24.19.0)(@vitest/browser-playwright@5.0.3)(@vitest/coverage-v8@5.0.3)(@vitest/ui@5.0.3)(esbuild@0.27.7)(happy-dom@20.8.9)(jiti@2.7.0)(jsdom@27.4.0(@noble/hashes@1.8.0)(supports-color@10.2.2))(sass@1.98.0)(terser@5.49.1)(tsx@4.21.0)(typescript@7.0.2)(yaml@2.9.1)))
       '@storybook/addon-a11y':
         specifier: 10.6.1
         version: 10.6.1(storybook@10.6.1(@types/react@19.2.14)(prettier@3.7.1)(react@18.3.1)(vite-plus@1.0.0(@opentelemetry/api@1.9.1)(@types/node@24.19.0)(@vitest/browser-playwright@5.0.3)(@vitest/coverage-v8@5.0.3)(@vitest/ui@5.0.3)(esbuild@0.27.7)(happy-dom@20.8.9)(jiti@2.7.0)(jsdom@27.4.0(@noble/hashes@1.8.0)(supports-color@10.2.2))(sass@1.98.0)(terser@5.49.1)(tsx@4.21.0)(typescript@7.0.2)(yaml@2.9.1)))
@@ -727,9 +709,6 @@ importers:
       '@storybook/addon-links':
         specifier: 10.6.1
         version: 10.6.1(@types/react@19.2.14)(react@18.3.1)(storybook@10.6.1(@types/react@19.2.14)(prettier@3.7.1)(react@18.3.1)(vite-plus@1.0.0(@opentelemetry/api@1.9.1)(@types/node@24.19.0)(@vitest/browser-playwright@5.0.3)(@vitest/coverage-v8@5.0.3)(@vitest/ui@5.0.3)(esbuild@0.27.7)(happy-dom@20.8.9)(jiti@2.7.0)(jsdom@27.4.0(@noble/hashes@1.8.0)(supports-color@10.2.2))(sass@1.98.0)(terser@5.49.1)(tsx@4.21.0)(typescript@7.0.2)(yaml@2.9.1)))
-      '@storybook/addon-onboarding':
-        specifier: 10.6.1
-        version: 10.6.1(storybook@10.6.1(@types/react@19.2.14)(prettier@3.7.1)(react@18.3.1)(vite-plus@1.0.0(@opentelemetry/api@1.9.1)(@types/node@24.19.0)(@vitest/browser-playwright@5.0.3)(@vitest/coverage-v8@5.0.3)(@vitest/ui@5.0.3)(esbuild@0.27.7)(happy-dom@20.8.9)(jiti@2.7.0)(jsdom@27.4.0(@noble/hashes@1.8.0)(supports-color@10.2.2))(sass@1.98.0)(terser@5.49.1)(tsx@4.21.0)(typescript@7.0.2)(yaml@2.9.1)))
       '@storybook/addon-vitest':
         specifier: 10.6.1
         version: 10.6.1(@vitest/browser-playwright@5.0.3)(@vitest/browser@5.0.3)(@vitest/runner@4.1.0)(react@18.3.1)(storybook@10.6.1(@types/react@19.2.14)(prettier@3.7.1)(react@18.3.1)(vite-plus@1.0.0(@opentelemetry/api@1.9.1)(@types/node@24.19.0)(@vitest/browser-playwright@5.0.3)(@vitest/coverage-v8@5.0.3)(@vitest/ui@5.0.3)(esbuild@0.27.7)(happy-dom@20.8.9)(jiti@2.7.0)(jsdom@27.4.0(@noble/hashes@1.8.0)(supports-color@10.2.2))(sass@1.98.0)(terser@5.49.1)(tsx@4.21.0)(typescript@7.0.2)(yaml@2.9.1)))(vitest@5.0.3)
@@ -1713,12 +1692,6 @@ packages:
 
   '@cacheable/utils@2.5.0':
     resolution: {integrity: sha512-buipgOVDkkPXNR5+xBpDw7Zk2n1EvU7qBJCNUcL7rhQ//kfpOXPAvQ511Os0vpLYJ1pZnvudNytkQt2hst3wqA==}
-
-  '@chromatic-com/storybook@5.4.0':
-    resolution: {integrity: sha512-U4Rny8H6BBa8uiRMnL0CFZyqZ0MWogN/szlMugsInfSnX+PtrLCVp2kjrvaG9bv6X5xSgHpnmepOzLm8+QFseA==}
-    engines: {node: '>=20.0.0', yarn: '>=1.22.18'}
-    peerDependencies:
-      storybook: ^0.0.0-0 || ^10.1.0 || ^10.1.0-0 || ^10.2.0-0 || ^10.3.0-0 || ^10.4.0-0 || ^10.5.0-0 || ^10.6.0-0 || ^11.0.0-0
 
   '@cloudflare/kv-asset-handler@0.5.0':
     resolution: {integrity: sha512-jxQYkj8dSIzc0cD6cMMNdOc1UVjqSqu8BZdor5s8cGjW2I8BjODt/kWPVdY+u9zj3ms75Q5qaZgnxUad83+eAg==}
@@ -3300,9 +3273,6 @@ packages:
       '@emnapi/core': ^1.7.1 || ^2.0.0-alpha.4
       '@emnapi/runtime': ^1.7.1 || ^2.0.0-alpha.4
 
-  '@neoconfetti/react@1.0.0':
-    resolution: {integrity: sha512-klcSooChXXOzIm+SE5IISIAn3bYzYfPjbX7D7HoqZL84oAfgREeSg5vSIaSFH+DaGzzvImTyWe1OyrJ67vik4A==}
-
   '@neodrag/core@3.0.0-next.11':
     resolution: {integrity: sha512-3WQWxyrbxiaK9zS5JU2wJsW2gpoQlZBXVghduBh61JpqaeE0T0cte8R0qYK2RuJo3J2TYQYqxO19CpG/C1i5eg==}
 
@@ -4870,11 +4840,6 @@ packages:
       react:
         optional: true
 
-  '@storybook/addon-onboarding@10.6.1':
-    resolution: {integrity: sha512-DLozSQWVELz39FSlBvwM420+UrveK7Q0n2ah1TWgdIUGMVhWt+ZHw2oKcjPO3xSn2N8V08G9F6JnhBrvms2Zvw==}
-    peerDependencies:
-      storybook: ^10.6.1
-
   '@storybook/addon-vitest@10.6.1':
     resolution: {integrity: sha512-ZGB7kDd9o0UiXIIXLZMKK9ruNyqo2jEBT+2YjlpKGDtJR6iAEhfWyiPY8JkobCV5Fge0oBqyg1x9am4wv/vp5w==}
     peerDependencies:
@@ -5364,9 +5329,6 @@ packages:
 
   '@types/react@19.2.14':
     resolution: {integrity: sha512-ilcTH/UniCkMdtexkoCN0bI7pMcJDvmQFPvuPvmEaYA/NSfFTAgdUSLAoVjaRJm7+6PvcM+q1zYOwS4wTYMF9w==}
-
-  '@types/readline-sync@1.4.8':
-    resolution: {integrity: sha512-BL7xOf0yKLA6baAX6MMOnYkoflUyj/c7y3pqMRfU0va7XlwHAOTOIo4x55P/qLfMsuaYdJJKubToLqRVmRtRZA==}
 
   '@types/resolve@1.20.2':
     resolution: {integrity: sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==}
@@ -6487,22 +6449,6 @@ packages:
   chownr@3.0.0:
     resolution: {integrity: sha512-+IxzY9BZOQd/XuYPRmrvEVjF/nqj5kgT4kEq7VofrDoM1MxoRjEWkrCC3EtLi59TVawxTAn+orJwFQcrqEN1+g==}
     engines: {node: '>=18'}
-
-  chromatic@18.10.1:
-    resolution: {integrity: sha512-oeCv4HvMrZPB7SzCD9yuzAPgB4c/TfhqLzDn1/K7dIYGvF/mWhOrwDa5sXHIkaXFJ+mYx9rMKy9fPShWPujH5Q==}
-    engines: {node: '>=22.0.0'}
-    hasBin: true
-    peerDependencies:
-      '@chromatic-com/cypress': ^0.*.* || ^1.0.0
-      '@chromatic-com/playwright': ^0.*.* || ^1.0.0
-      '@chromatic-com/vitest': ^0.*.* || ^1.0.0
-    peerDependenciesMeta:
-      '@chromatic-com/cypress':
-        optional: true
-      '@chromatic-com/playwright':
-        optional: true
-      '@chromatic-com/vitest':
-        optional: true
 
   ci-info@2.0.0:
     resolution: {integrity: sha512-5tK7EtrZ0N+OLFMthtqOj4fI2Jeb88C4CAZPu25LDVUgXJ0A3Js4PMGqrn0JU1W0Mh1/Z8wZzYPxqUrXeBboCQ==}
@@ -9245,9 +9191,6 @@ packages:
 
   openapi3-ts@3.2.0:
     resolution: {integrity: sha512-/ykNWRV5Qs0Nwq7Pc0nJ78fgILvOT/60OxEmB3v7yQ8a8Bwcm43D4diaYazG/KBn6czA+52XYy931WFLMCUeSg==}
-
-  openapi3-ts@4.6.1:
-    resolution: {integrity: sha512-XW9MOldkhoICNeXVzzmXzmOW5G73ppOEGmh7fLCqHjgfdEYCGGN+00MlVCeUZgovjjfC56j9tvtDt1zGabNjjA==}
 
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
@@ -12244,18 +12187,6 @@ snapshots:
       hashery: 1.5.1
       keyv: 5.6.0
 
-  '@chromatic-com/storybook@5.4.0(storybook@10.6.1(@types/react@19.2.14)(prettier@3.7.1)(react@18.3.1)(vite-plus@1.0.0(@opentelemetry/api@1.9.1)(@types/node@24.19.0)(@vitest/browser-playwright@5.0.3)(@vitest/coverage-v8@5.0.3)(@vitest/ui@5.0.3)(esbuild@0.27.7)(happy-dom@20.8.9)(jiti@2.7.0)(jsdom@27.4.0(@noble/hashes@1.8.0)(supports-color@10.2.2))(sass@1.98.0)(terser@5.49.1)(tsx@4.21.0)(typescript@7.0.2)(yaml@2.9.1)))':
-    dependencies:
-      '@neoconfetti/react': 1.0.0
-      chromatic: 18.10.1
-      jsonfile: 6.2.1
-      storybook: 10.6.1(@types/react@19.2.14)(prettier@3.7.1)(react@18.3.1)(vite-plus@1.0.0(@opentelemetry/api@1.9.1)(@types/node@24.19.0)(@vitest/browser-playwright@5.0.3)(@vitest/coverage-v8@5.0.3)(@vitest/ui@5.0.3)(esbuild@0.27.7)(happy-dom@20.8.9)(jiti@2.7.0)(jsdom@27.4.0(@noble/hashes@1.8.0)(supports-color@10.2.2))(sass@1.98.0)(terser@5.49.1)(tsx@4.21.0)(typescript@7.0.2)(yaml@2.9.1))
-      strip-ansi: 7.2.0
-    transitivePeerDependencies:
-      - '@chromatic-com/cypress'
-      - '@chromatic-com/playwright'
-      - '@chromatic-com/vitest'
-
   '@cloudflare/kv-asset-handler@0.5.0': {}
 
   '@cloudflare/unenv-preset@2.16.2(unenv@2.0.0-rc.24)(workerd@1.20261001.1)':
@@ -13464,8 +13395,6 @@ snapshots:
       '@tybys/wasm-util': 0.10.4
     optional: true
 
-  '@neoconfetti/react@1.0.0': {}
-
   '@neodrag/core@3.0.0-next.11': {}
 
   '@neodrag/solid@3.0.0-next.11(@neodrag/core@3.0.0-next.11)(solid-js@1.9.15)':
@@ -14613,10 +14542,6 @@ snapshots:
       '@types/react': 19.2.14
       react: 18.3.1
 
-  '@storybook/addon-onboarding@10.6.1(storybook@10.6.1(@types/react@19.2.14)(prettier@3.7.1)(react@18.3.1)(vite-plus@1.0.0(@opentelemetry/api@1.9.1)(@types/node@24.19.0)(@vitest/browser-playwright@5.0.3)(@vitest/coverage-v8@5.0.3)(@vitest/ui@5.0.3)(esbuild@0.27.7)(happy-dom@20.8.9)(jiti@2.7.0)(jsdom@27.4.0(@noble/hashes@1.8.0)(supports-color@10.2.2))(sass@1.98.0)(terser@5.49.1)(tsx@4.21.0)(typescript@7.0.2)(yaml@2.9.1)))':
-    dependencies:
-      storybook: 10.6.1(@types/react@19.2.14)(prettier@3.7.1)(react@18.3.1)(vite-plus@1.0.0(@opentelemetry/api@1.9.1)(@types/node@24.19.0)(@vitest/browser-playwright@5.0.3)(@vitest/coverage-v8@5.0.3)(@vitest/ui@5.0.3)(esbuild@0.27.7)(happy-dom@20.8.9)(jiti@2.7.0)(jsdom@27.4.0(@noble/hashes@1.8.0)(supports-color@10.2.2))(sass@1.98.0)(terser@5.49.1)(tsx@4.21.0)(typescript@7.0.2)(yaml@2.9.1))
-
   '@storybook/addon-vitest@10.6.1(@vitest/browser-playwright@5.0.3)(@vitest/browser@5.0.3)(@vitest/runner@4.1.0)(react@18.3.1)(storybook@10.6.1(@types/react@19.2.14)(prettier@3.7.1)(react@18.3.1)(vite-plus@1.0.0(@opentelemetry/api@1.9.1)(@types/node@24.19.0)(@vitest/browser-playwright@5.0.3)(@vitest/coverage-v8@5.0.3)(@vitest/ui@5.0.3)(esbuild@0.27.7)(happy-dom@20.8.9)(jiti@2.7.0)(jsdom@27.4.0(@noble/hashes@1.8.0)(supports-color@10.2.2))(sass@1.98.0)(terser@5.49.1)(tsx@4.21.0)(typescript@7.0.2)(yaml@2.9.1)))(vitest@5.0.3)':
     dependencies:
       '@storybook/global': 5.0.0
@@ -15103,8 +15028,6 @@ snapshots:
   '@types/react@19.2.14':
     dependencies:
       csstype: 3.2.3
-
-  '@types/readline-sync@1.4.8': {}
 
   '@types/resolve@1.20.2': {}
 
@@ -16428,10 +16351,6 @@ snapshots:
     optional: true
 
   chownr@3.0.0: {}
-
-  chromatic@18.10.1:
-    dependencies:
-      semver: 7.8.5
 
   ci-info@2.0.0: {}
 
@@ -19514,10 +19433,6 @@ snapshots:
       yaml: 1.10.2
 
   openapi3-ts@3.2.0:
-    dependencies:
-      yaml: 2.9.1
-
-  openapi3-ts@4.6.1:
     dependencies:
       yaml: 2.9.1
 
