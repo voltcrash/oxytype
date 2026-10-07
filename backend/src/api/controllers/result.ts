@@ -17,10 +17,6 @@ import {
 } from "../../anticheat/index";
 import MonkeyStatusCodes from "../../constants/monkey-status-codes";
 import {
-  incrementResult,
-  incrementDailyLeaderboard,
-} from "../../utils/prometheus";
-import {
   getDailyLeaderboard,
   purgeUserFromDailyLeaderboards,
 } from "../../utils/daily-leaderboards";
@@ -553,11 +549,6 @@ async function addResultAtomic(
     (await UserDAL.checkIfUserIsPremium(user.uid, user)) || undefined;
 
   if (dailyLeaderboard && validResultCriteria) {
-    incrementDailyLeaderboard(
-      completedEvent.mode,
-      completedEvent.mode2,
-      completedEvent.language,
-    );
     dailyLeaderboardRank = await dailyLeaderboard.addResult(
       {
         name: user.name,
@@ -729,8 +720,6 @@ async function addResultAtomic(
   if (weeklyXpLeaderboardRank !== -1) {
     data.weeklyXpLeaderboardRank = weeklyXpLeaderboardRank;
   }
-
-  incrementResult(completedEvent, dbresult.isPb);
 
   return new MonkeyResponse("Result saved", data);
 }
