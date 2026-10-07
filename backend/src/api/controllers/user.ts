@@ -9,7 +9,7 @@ import * as LeaderboardsDAL from "../../dal/leaderboards";
 import { purgeUserFromDailyLeaderboards } from "../../utils/daily-leaderboards";
 import { purgeUserFromXpLeaderboards } from "../../services/weekly-xp-leaderboard";
 import { deleteUserAccount } from "../../services/user-deletion";
-import { v4 as uuidv4 } from "uuid";
+import { randomUUID } from "node:crypto";
 import { newId } from "../../utils/id";
 import * as ReportDAL from "../../dal/report";
 import * as AuthUtil from "../../utils/auth";
@@ -693,7 +693,7 @@ export async function reportUser(
 
   const newReport: ReportDAL.DBReport = {
     _id: newId(),
-    id: uuidv4(),
+    id: randomUUID(),
     type: "user",
     timestamp: new Date().getTime(),
     uid,
