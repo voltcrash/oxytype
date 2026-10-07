@@ -6,7 +6,12 @@ Copy `example.env` to `.env` in this directory. Set `GITHUB_TOKEN` for releases.
 
 Run `pnpm release-dry` to inspect commands before a release. `pnpm release-no-deploy` builds and tags without deploying. Frontend preview deployments also require the Firebase project ID.
 
-Release versions use the UTC date in `YYYY.MM.DD` format, with zero-padded months and days. For example, October 4, 2026 is `2026.10.04` in `package.json` and Docker image tags, and `v2026.10.04` in Git tags and GitHub release names. The release date is captured when the release starts, independently of the previous version.
+Release versions use the UTC date in `YY.MM.DD` format, with a two-digit year
+and zero-padded months and days. For example, October 4, 2026 is `26.10.04`
+in `package.json` and Docker image tags, and `v26.10.04` in Git tags. Production
+GitHub release titles omit the `v` prefix; CLI release titles retain it.
+The release date is captured when the release starts, independently of the
+previous version. Publication timestamps retain their full ISO year.
 
 Only one tagged release is allowed per UTC day. Normal releases and dry runs check local and origin tags before installing dependencies, building, or deploying. An existing date tag stops the release; use `pnpm hotfix` for additional deployments that day, or make a new release on a later UTC date. Hotfixes keep the current version and do not create a tag or GitHub release.
 
