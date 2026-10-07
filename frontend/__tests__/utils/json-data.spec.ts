@@ -31,8 +31,8 @@ describe("getLanguageUrl", () => {
 describe("release snapshot", () => {
   const releases = [
     {
-      tag_name: "v2026.10.06",
-      name: "2026.10.06",
+      tag_name: "v26.10.06",
+      name: "26.10.06",
       published_at: "2026-10-06T00:17:00Z",
       body: "### Fixes\n\n- Repair history",
     },
@@ -50,7 +50,7 @@ describe("release snapshot", () => {
   });
 
   it("reads the footer version from the same JSON file", async () => {
-    expect(await getLatestRelease()).toBe("2026.10.06");
+    expect(await getLatestRelease()).toBe("26.10.06");
     expect(fetchMock).toHaveBeenCalledExactlyOnceWith("/release.json");
   });
 

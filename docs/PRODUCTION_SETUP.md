@@ -109,12 +109,16 @@ enabled providers and the built frontend's `/api` configuration before upload.
 The deploy command uploads secrets from the private file and packages the frontend
 under the Worker's public site prefix. Preserve other private values when editing.
 
-## Daily production releases
+## Production releases
 
-The **Daily production release** Actions workflow runs at `00:17 UTC` each day.
-It also supports **Run workflow** on `main`. It deploys the complete frontend/API
-site with the production Wrangler config, applies pending production D1 migrations,
-and publishes a GitHub release only after deployment succeeds.
+The **Production release** [Actions workflow](../.github/workflows/production-release.yml)
+checks for new commits at `00:17 UTC` each day. It also supports **Run workflow**
+on `main`. When commits have been added since the previous successful production
+release, it deploys the complete frontend/API site with the production Wrangler
+config, applies pending production D1 migrations, and publishes a GitHub release
+only after deployment succeeds. Without new commits, it skips dependency setup,
+builds, migrations, deployment and publication; the scheduled workflow run still
+starts and records the skip reason.
 
 Configure these Actions inputs in repository settings or the `production`
 environment before the first run:
@@ -130,16 +134,22 @@ The account ID and isolated resource IDs come from `backend/wrangler.production.
 The workflow writes credential files with mode `0600` for the validated production
 commands, then removes them even on failure. It never bootstraps or resets the database.
 
-A 00:17 UTC run on October 5 creates release `2026.10.05` and tag `v2026.10.05`
-at the exact deployed `main` commit. It sets the Worker `VERSION` and the build
-checkout's package version to `2026.10.05`, without pushing a version commit to `main`.
+A run whose release planning executes on October 8 UTC creates release
+`26.10.08` and tag `v26.10.08` in `YY.MM.DD` format at the exact deployed
+`main` commit, even if
+it was originally scheduled or created on October 7. Delayed runs and retries
+use the current execution date rather than the original workflow creation date.
+The workflow sets the Worker `VERSION` and the build checkout's package version
+to `26.10.08`, without pushing a version commit to `main`.
 The release notes list all commits added since the previous successful production
 release, including older branch commits merged during the day. They are grouped
 into Features (`feat`), Improvements (`impr`, `perf`), Fixes (`fix`) and Nerd
 stuff (everything else); GitHub merge commits are omitted. Missed days are
 included in the next successful release. The first scheduled release covers the
-preceding UTC day; the first manual run covers its current UTC day. Days without
-changes still deploy and publish a release with an empty-change notice.
+preceding execution UTC day; the first manual run covers its execution UTC day.
+The first production release establishes the deployment baseline even without
+recent commits. Subsequent runs compare commits, so a new commit still qualifies
+when its file contents or rendered release notes are unchanged.
 
 Before the frontend build, the workflow writes `frontend/static/release.json`
 with the planned release's notes and the nine newest earlier public releases.
@@ -153,10 +163,12 @@ and links to [GitHub releases](https://github.com/voltcrash/oxytype/releases)
 for older history. Hosting and the service worker avoid persistently caching the
 snapshot so the next deployment can update it.
 
-Runs are serialized. Rerunning a completed date skips deployment and publication;
-retrying a failed run keeps its original date and `main` snapshot. An older failed
-run cannot deploy over a newer production release. A date tag belonging to another
-commit or a conflicting manual release stops the workflow before deployment.
+Runs are serialized. Rerunning a completed date skips deployment and publication.
+A retry on a later UTC date also skips if its snapshot has already been released.
+Retrying a failed run keeps its original `main` snapshot but uses the date when
+the new attempt's release planning executes. An older snapshot cannot deploy over
+already released commits. A date tag belonging to another commit or a conflicting
+manual release stops the workflow before deployment.
 
 GitHub's scheduler can run late or drop jobs under load; 00:17 UTC is the requested
 trigger time, not an exact-time guarantee. See [GitHub scheduling behavior](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).

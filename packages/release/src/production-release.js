@@ -4,19 +4,15 @@ import { getReleaseVersion } from "./version.js";
 import { buildReleaseHistory } from "./release-history.js";
 
 const productionMarker = "<!-- oxytype-production-release -->";
-const dateTag = /^v\d{4}\.\d{2}\.\d{2}$/;
+const dateTag = /^v\d{2}\.\d{2}\.\d{2}$/;
 
 function git(cwd, ...args) {
   return execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
 }
 
-export async function prepareDailyRelease({ github, context, cwd }) {
-  const { data: run } = await github.rest.actions.getWorkflowRun({
-    ...context.repo,
-    run_id: context.runId,
-  });
-  // Run creation time remains stable when an attempt is retried after midnight.
-  const date = new Date(run.created_at);
+export async function prepareProductionRelease({ github, context, cwd }) {
+  // Delayed and retried runs use the UTC date when release planning executes.
+  const date = new Date();
   const tag = getReleaseVersion(date);
   const version = tag.slice(1);
   const sha = git(cwd, "rev-parse", "HEAD");
@@ -36,10 +32,16 @@ export async function prepareDailyRelease({ github, context, cwd }) {
       !existing.body?.includes(productionMarker)
     ) {
       throw new Error(
-        `Release ${tag} already exists outside the daily deployment`,
+        `Release ${tag} already exists outside the production deployment`,
       );
     }
-    return { version, tag, sha, shouldDeploy: false };
+    return {
+      version,
+      tag,
+      sha,
+      shouldDeploy: false,
+      skipReason: "already-released",
+    };
   }
 
   const productionReleases = releases
@@ -97,6 +99,15 @@ export async function prepareDailyRelease({ github, context, cwd }) {
     "--format=%H%x00%s",
     base ? `${base}..${sha}` : sha,
   );
+  if (previous !== undefined && commits === "") {
+    return {
+      version,
+      tag,
+      sha,
+      shouldDeploy: false,
+      skipReason: "no-new-commits",
+    };
+  }
   const changelog = buildDailyChangelog(
     commits
       ? commits.split("\n").map((line) => {
@@ -129,7 +140,7 @@ export async function prepareDailyRelease({ github, context, cwd }) {
   return { version, tag, sha, body, releaseHistory, shouldDeploy: true };
 }
 
-export async function publishDailyRelease({
+export async function publishProductionRelease({
   github,
   context,
   version,
