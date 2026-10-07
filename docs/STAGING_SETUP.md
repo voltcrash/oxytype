@@ -1,12 +1,9 @@
 # Staging browser setup
 
-Worker and migration 0002 are deployed. GitHub credentials and a managed Turnstile
-widget are configured privately. Real managed Turnstile validation passed against the deployed Worker.
-The frontend and API now share `https://oxytype-api-staging.voltcrash.workers.dev`.
-This avoids cross-site OAuth state/session cookies between localhost and Workers.
-Signup, profiles, result saving and payload hash checks are enabled. The owner
-confirmed real-user GitHub signup and a saved human typing result on hosted staging.
-These steps remain the repeatable browser check. See [Turnstile](TURNSTILE.md) for local test keys and policy.
+Host frontend and API together at `https://oxytype-api-staging.voltcrash.workers.dev`
+to keep OAuth state/session cookies on one origin. The steps below configure
+credentials, deploy the site and enable browser testing.
+See [Turnstile](TURNSTILE.md) for local test keys and policy.
 
 ## 1. GitHub credentials
 
@@ -35,8 +32,8 @@ do not copy local development vars or paste secrets into chat.
 Create a separate **managed** staging widget in the
 [Cloudflare Turnstile dashboard](https://dash.cloudflare.com/?to=/:account/turnstile).
 Allow `oxytype-api-staging.voltcrash.workers.dev` for the hosted staging frontend.
-The existing widget also permits `localhost`. When hosting elsewhere, add that
-hostname and set the deployed `FRONTEND_URL` to match.
+Allow `localhost` only when testing a local frontend. When hosting elsewhere,
+add that hostname and set the deployed `FRONTEND_URL` to match.
 The worker checks that hostname and each form's action through
 [Siteverify](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/).
 
@@ -48,7 +45,6 @@ BACKEND_URL=https://oxytype-api-staging.voltcrash.workers.dev/api
 TURNSTILE_SITE_KEY=your-staging-turnstile-site-key
 ```
 
-These files already exist in this worktree and contain the staging credentials.
 Development mode honors an explicit site key; ordinary local development uses
 Cloudflare's test widget. Test secrets are rejected by production-mode Workers.
 
@@ -62,6 +58,7 @@ set -a
 set +a
 BACKEND_URL=/api AUTH_PROVIDERS=google,github pnpm build-fe
 pnpm build-be
+pnpm --filter @oxytype/backend db:migrate:remote
 pnpm --filter @oxytype/backend deploy:staging-site --secrets-file .dev.vars.staging
 pnpm --filter @oxytype/backend exec wrangler secret list
 pnpm --filter @oxytype/backend exec wrangler d1 execute oxytype-staging --remote \
@@ -86,8 +83,8 @@ cached. Default `deploy:worker` remains API-only and restores its configured ori
 Open `https://oxytype-api-staging.voltcrash.workers.dev/login` in your regular browser.
 Sign in with GitHub, choose a username, complete Turnstile,
 complete a test, refresh, then sign out/sign in and confirm the result remains.
-Verify the browser requests the staging host. Use an ordinary typing sample;
-the earlier seeded API checks do not establish real-user anticheat compatibility.
+Verify the browser requests the staging host. Use an ordinary typing sample to
+check real-user anticheat compatibility.
 
 OAuth returns the popup to `/oauth-callback.html?requestId=...`. Static hosts must
 serve this standalone HTML page before the main app's SPA fallback. If the popup
@@ -98,4 +95,4 @@ lose OAuth cookies under browser privacy protections; `SameSite=None` alone does
 not prevent partitioning/blocking. See [Better Auth's cookie guidance](https://better-auth.com/docs/concepts/cookies).
 Return to local backend testing with `pnpm dev-be` and `pnpm dev-fe`.
 See [operations](CLOUDFLARE_OPERATIONS.md)
-and [anticheat limits](ANTICHEAT.md) before production cutover.
+and [anticheat limits](ANTICHEAT.md) for deployment and monitoring.
