@@ -40,7 +40,6 @@ export const BASE_CONFIGURATION: Configuration = {
     acceptKeys: false,
     maxKeysPerUser: 0,
     apeKeyBytes: 24,
-    apeKeySaltRounds: 5,
   },
   users: {
     signUp: false,
@@ -299,11 +298,6 @@ export const CONFIGURATION_FORM_SCHEMA: ObjectSchema<Configuration> = {
           type: "number",
           label: "Ape Key Bytes",
           min: 24,
-        },
-        apeKeySaltRounds: {
-          type: "number",
-          label: "Ape Key Salt Rounds",
-          min: 5,
         },
       },
     },

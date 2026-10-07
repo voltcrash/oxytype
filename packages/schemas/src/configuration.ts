@@ -85,7 +85,6 @@ export const ConfigurationSchema = z.object({
     acceptKeys: z.boolean(),
     maxKeysPerUser: z.number().int().nonnegative(),
     apeKeyBytes: z.number().int().nonnegative(),
-    apeKeySaltRounds: z.number().int().nonnegative(),
   }),
   rateLimiting: z.object({
     badAuthentication: z.object({
