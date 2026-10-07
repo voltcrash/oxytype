@@ -1,13 +1,8 @@
 {
   "name": "@oxytype/release",
   "private": true,
-  "bin": {
-    "oxytype-release": "./src/index.js"
-  },
   "type": "module",
   "scripts": {
-    "dev": "nodemon --watch src --exec \"node ./src/index.js --dry\"",
-    "dev-hotfix": "nodemon --watch src --exec \"node ./src/index.js --dry --hotfix\"",
     "dev-changelog": "nodemon ./src/buildChangelog.js",
     "test": "vp test run",
     "lint": "vp lint . --type-aware --type-check --format agent",
