@@ -42,11 +42,7 @@
         "stories/**/*.{stories.ts,stories.tsx,mdx}"
       ],
       "project": [".storybook/**/*.{ts,tsx}", "stories/**/*.{ts,tsx}"],
-      "ignoreDependencies": [
-        "@storybook/addon-links",
-        "@storybook/builder-vite",
-        "@vitest/coverage-v8"
-      ]
+      "ignoreDependencies": ["@storybook/addon-links", "@vitest/coverage-v8"]
     },
     "packages/oxlint-config": {
       "entry": ["plugins/*.js"],
