@@ -1,13 +1,8 @@
 # Production setup
 
-Production starts fresh, as requested; no legacy or staging data is imported.
 One Worker serves the frontend and `/api` on `https://oxytype.voltcrash.com`.
-Use `backend/wrangler.production.json` explicitly. The default Wrangler config and
-release CLI still target staging.
-
-Live since 3 October 2026: Worker version `6304be50-fcb3-406c-b4f1-f7ca2b207508`,
-frontend code `ec3b3919d`. Production GitHub consent and typing persistence still
-require the owner browser check below.
+Use `backend/wrangler.production.json` explicitly. The default Wrangler config
+targets staging; the production release workflow uses the production config.
 
 ## Resources
 
@@ -21,8 +16,8 @@ require the owner browser check below.
 
 Workers.dev and preview URLs are disabled. Cloudflare manages the custom domain's
 DNS record and TLS certificate through the [Workers custom-domain route](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/).
-No KV, Durable Object, legacy database or external quote bridge is required for
-the initial signup/result-history deployment.
+Quote publishing additionally requires the optional
+[external bridge](CLOUDFLARE_OPERATIONS.md#external-bridge).
 
 ## Private settings
 
@@ -75,7 +70,7 @@ they can finish after the response. The client installs `dashClient()` for audit
 log APIs. Activity tracking and Sentinel security policies remain opt-in; the
 basic dashboard connection requires no database migration.
 
-## First database setup — already completed for this deployment
+## First database setup
 
 On a **new, empty** production D1 only:
 
@@ -87,7 +82,7 @@ pnpm --filter @oxytype/backend db:bootstrap:production
 The atomic bootstrap refuses any existing application data. It enables signup,
 public profiles, result saving and payload hash checks; automatic bans remain
 disabled. Other features keep their base defaults. It creates no account or
-administrator, and enables no privileged admin/statistics endpoints or quote
+administrator, and enables no privileged admin endpoints or quote
 submission/publication. Do not rerun bootstrap during updates.
 
 ## Build and deploy updates
