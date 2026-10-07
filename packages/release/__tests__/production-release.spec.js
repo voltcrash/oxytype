@@ -248,15 +248,16 @@ describe("production releases", () => {
     expect(plan.body).toContain("No new changes merged to main");
   });
 
-  it("refuses snapshots that omit already deployed commits", async () => {
+  it("refuses later-day retries that omit already deployed commits", async () => {
     const oldSha = context.sha;
-    commit("already deployed change", "2026-10-04T22:00:00Z");
-    previousRelease();
+    commit("already deployed change", "2026-10-07T22:00:00Z");
+    previousRelease("v2026.10.07");
     git("checkout", "--quiet", oldSha);
     context.sha = oldSha;
+    vi.setSystemTime(new Date("2026-10-08T00:17:00Z"));
     await expect(
       prepareProductionRelease({ github, context, cwd }),
-    ).rejects.toThrow();
+    ).rejects.toThrow("merge-base --is-ancestor");
   });
 
   it("bundles the new release's exact notes before GitHub publication", async () => {
@@ -325,7 +326,7 @@ describe("production releases", () => {
     },
   );
 
-  it("refuses an older failed run after a newer production release", async () => {
+  it("refuses a production release dated after the execution day", async () => {
     previousRelease("v2026.10.06");
     await expect(
       prepareProductionRelease({ github, context, cwd }),
