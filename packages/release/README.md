@@ -2,8 +2,8 @@
 
 This package supplies the daily Cloudflare production workflow with release
 planning, changelog, date-version and site-history helpers. Deployment uses the
-explicit Wrangler production commands; Docker publication follows GitHub release
-publication. See [Cloudflare operations](../../docs/CLOUDFLARE_OPERATIONS.md).
+explicit Wrangler production commands. See
+[Cloudflare operations](../../docs/CLOUDFLARE_OPERATIONS.md).
 
 Release versions use the UTC date in `YY.MM.DD` format, with a two-digit year
 and zero-padded months and days. For example, October 4, 2026 is `26.10.04`
