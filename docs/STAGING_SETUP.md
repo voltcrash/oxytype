@@ -1,5 +1,7 @@
 # Staging browser setup
 
+For Oxytype maintainers testing the official staging site.
+
 Host frontend and API together at `https://oxytype-api-staging.voltcrash.workers.dev`
 to keep OAuth state/session cookies on one origin. The steps below configure
 credentials, deploy the site and enable browser testing.
@@ -32,8 +34,7 @@ do not copy local development vars or paste secrets into chat.
 Create a separate **managed** staging widget in the
 [Cloudflare Turnstile dashboard](https://dash.cloudflare.com/?to=/:account/turnstile).
 Allow `oxytype-api-staging.voltcrash.workers.dev` for the hosted staging frontend.
-Allow `localhost` only when testing a local frontend. When hosting elsewhere,
-add that hostname and set the deployed `FRONTEND_URL` to match.
+Allow `localhost` only when testing a local frontend.
 The worker checks that hostname and each form's action through
 [Siteverify](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/).
 
@@ -86,9 +87,10 @@ complete a test, refresh, then sign out/sign in and confirm the result remains.
 Verify the browser requests the staging host. Use an ordinary typing sample to
 check real-user anticheat compatibility.
 
-OAuth returns the popup to `/oauth-callback.html?requestId=...`. Static hosts must
-serve this standalone HTML page before the main app's SPA fallback. If the popup
-shows the app's 404 page, close it, fix the frontend server, refresh `/login` and retry.
+OAuth returns the popup to `/oauth-callback.html?requestId=...`. The staging Worker
+serves this standalone HTML page before the main app's SPA fallback. If the popup
+shows the app's 404 page, close it, check the staging site's assets, refresh `/login`
+and retry.
 
 Use the hosted URL for staging auth checks. Localhost calling the remote API can
 lose OAuth cookies under browser privacy protections; `SameSite=None` alone does

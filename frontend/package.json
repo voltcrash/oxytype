@@ -21,7 +21,6 @@
     "test-coverage": "vp test run --coverage",
     "dev-test": "concurrently --kill-others \"vp dev\" \"vp test watch\"",
     "tsc": "tsc",
-    "docker": "docker compose -f docker/compose.dev.yml up",
     "storybook": "cd storybook && pnpm run storybook",
     "import-tree": "tsx ./scripts/import-tree.ts",
     "generate-icon-types": "tsx scripts/generate-fontawesome-types.ts"

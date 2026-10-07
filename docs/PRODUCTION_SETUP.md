@@ -1,5 +1,7 @@
 # Production setup
 
+For Oxytype maintainers operating the official production site.
+
 One Worker serves the frontend and `/api` on `https://oxytype.voltcrash.com`.
 Use `backend/wrangler.production.json` explicitly. The default Wrangler config
 targets staging; the production release workflow uses the production config.
@@ -165,9 +167,6 @@ manual release stops the workflow before deployment.
 
 GitHub's scheduler can run late or drop jobs under load; 00:17 UTC is the requested
 trigger time, not an exact-time guarantee. See [GitHub scheduling behavior](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).
-GitHub releases use the workflow's `GITHUB_TOKEN`, so they do not trigger the
-separate release-event Docker workflow; dispatch that workflow on the tag when
-container images are needed.
 
 ## Browser verification and monitoring
 

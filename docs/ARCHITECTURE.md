@@ -13,8 +13,7 @@ Package versions come from the workspace manifests and lockfile.
 | `packages/util/`, `packages/funbox/`, `packages/challenges/` | Shared helpers and typing features |
 | `packages/oxlint-config/`, `packages/typescript-config/`, `packages/tsdown-config/` | Shared tooling configuration |
 | `packages/release/` | Daily production release helpers |
-| `docker/` | Static frontend container and build definition |
-| `.github/workflows/` | CI, labeling, Docker publishing, and repository automation |
+| `.github/workflows/` | CI, production releases, labeling, and repository automation |
 
 The root is a private pnpm workspace. Node, TypeScript and Turborepo coordinate
 package builds. Internal packages use the `@oxytype` scope.
@@ -70,7 +69,7 @@ Node/pnpm build workspace packages and API docs. Wrangler runs local workerd
 and D1 on port 5005; Solid/Vite runs on port 3000. Application and test IDs are
 strings. Vitest covers controllers and real D1 behavior.
 Backend build performs a Wrangler dry-run; deployment applies migrations then
-uses Wrangler. Docker publishes the static frontend only.
+uses Wrangler.
 
 The default Wrangler config targets staging. A separate production config serves
 frontend and API
@@ -90,4 +89,4 @@ Public contact and security reporting use the Oxytype repository and its securit
 policy. The
 original GPL license and contributor attribution remain in place.
 
-See [development setup](./CONTRIBUTING_ADVANCED.md), [self-hosting](./SELF_HOSTING.md), and [security reporting](./SECURITY.md) for operational details.
+See [development setup](./CONTRIBUTING_ADVANCED.md) and [security reporting](./SECURITY.md) for operational details.

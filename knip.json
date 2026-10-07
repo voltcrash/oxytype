@@ -56,5 +56,5 @@
     "caniuse-lite",
     "yaml"
   ],
-  "ignoreBinaries": ["docker", "tsx"]
+  "ignoreBinaries": ["tsx"]
 }

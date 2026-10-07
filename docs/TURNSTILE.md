@@ -10,7 +10,7 @@ Create separate managed widgets for staging and production in
 Allow the **frontend** hostname, then set:
 
 - Backend private `TURNSTILE_SECRET_KEY`; `FRONTEND_URL` must match the frontend.
-- Frontend build/runtime `TURNSTILE_SITE_KEY` (public).
+- Frontend build `TURNSTILE_SITE_KEY` (public).
 
 Staging allows `localhost` and `oxytype-api-staging.voltcrash.workers.dev` for the
 hosted frontend. Production should allow only its deployed frontend hostname.

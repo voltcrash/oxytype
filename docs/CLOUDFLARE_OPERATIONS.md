@@ -1,5 +1,7 @@
 # Cloudflare operations
 
+For local contributors and maintainers operating Oxytype staging and production.
+
 Backend runtime: one Worker, D1, Queues and Cron. Node is used for builds only.
 Local workerd uses local D1 without a Cloudflare login.
 The [production setup](PRODUCTION_SETUP.md) uses an isolated database and
@@ -43,7 +45,7 @@ pnpm build-be
 
 Build generates docs and copies quote/config assets, then performs a Wrangler
 bundle dry-run. The D1 suite runs actual SQLite in workerd; unit tests preserve
-controller/HTTP contracts. No container services are required.
+controller/HTTP contracts.
 
 ## Staging deployment
 
