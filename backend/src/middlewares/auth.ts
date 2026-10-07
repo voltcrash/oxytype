@@ -229,7 +229,7 @@ async function authenticateWithApeKey(
       throw new MonkeyError(code, message);
     }
 
-    const isKeyValid = await verifyApeKey(apeKey, targetApeKey.hash);
+    const isKeyValid = verifyApeKey(apeKey, targetApeKey.hash);
     if (!isKeyValid) {
       const { code, message } = statuses.APE_KEY_INVALID;
       throw new MonkeyError(code, message);
