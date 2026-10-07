@@ -1,11 +1,9 @@
 # Cloudflare operations
 
-See [assessment](CLOUDFLARE_ASSESSMENT.md) and [implementation plan](CLOUDFLARE_MIGRATION.md).
 Backend runtime: one Worker, D1, Queues and Cron. Node is used for builds only.
 Local workerd uses local D1 without a Cloudflare login.
-The [production setup](PRODUCTION_SETUP.md) uses a fresh, separate database and
-`backend/wrangler.production.json`. Legacy database export/import tooling has
-been retired.
+The [production setup](PRODUCTION_SETUP.md) uses an isolated database and
+`backend/wrangler.production.json`.
 
 ## Local development
 
