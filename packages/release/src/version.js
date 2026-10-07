@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 
 export function getReleaseVersion(date = new Date()) {
-  return `v${date.toISOString().slice(0, 10).replaceAll("-", ".")}`;
+  return `v${date.toISOString().slice(2, 10).replaceAll("-", ".")}`;
 }
 
 export function assertReleaseTagAvailable(version, cwd) {

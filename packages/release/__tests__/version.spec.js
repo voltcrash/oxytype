@@ -19,13 +19,13 @@ describe("release dates", () => {
   afterEach(() => vi.useRealTimers());
 
   it.each([
-    ["2026-10-04T12:00:00Z", "v2026.10.04"],
-    ["2026-01-01T00:00:00Z", "v2026.01.01"],
-    ["2026-12-31T23:59:59Z", "v2026.12.31"],
-    ["2027-01-01T00:00:00Z", "v2027.01.01"],
-    ["2028-02-29T12:00:00Z", "v2028.02.29"],
-    ["2026-10-04T00:30:00+05:30", "v2026.10.03"],
-    ["2026-10-04T23:30:00-07:00", "v2026.10.05"],
+    ["2026-10-04T12:00:00Z", "v26.10.04"],
+    ["2026-01-01T00:00:00Z", "v26.01.01"],
+    ["2026-12-31T23:59:59Z", "v26.12.31"],
+    ["2027-01-01T00:00:00Z", "v27.01.01"],
+    ["2028-02-29T12:00:00Z", "v28.02.29"],
+    ["2026-10-04T00:30:00+05:30", "v26.10.03"],
+    ["2026-10-04T23:30:00-07:00", "v26.10.05"],
   ])("formats %s as %s", (date, expected) => {
     expect(getReleaseVersion(new Date(date))).toBe(expected);
   });
@@ -33,7 +33,7 @@ describe("release dates", () => {
   it("uses the current date when no date is supplied", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-10-04T12:00:00Z"));
-    expect(getReleaseVersion()).toBe("v2026.10.04");
+    expect(getReleaseVersion()).toBe("v26.10.04");
   });
 });
 
@@ -66,25 +66,25 @@ describe("release tag availability", () => {
 
   it("allows today's first tag even when legacy and earlier date tags exist", () => {
     git("tag", "v26.32.0");
-    git("tag", "v2026.10.03");
+    git("tag", "v26.10.03");
     git("push", "--quiet", "origin", "--tags");
     expect(() =>
-      assertReleaseTagAvailable("v2026.10.04", repository),
+      assertReleaseTagAvailable("v26.10.04", repository),
     ).not.toThrow();
   });
 
   it("rejects an existing local tag", () => {
-    git("tag", "v2026.10.04");
-    expect(() => assertReleaseTagAvailable("v2026.10.04", repository)).toThrow(
+    git("tag", "v26.10.04");
+    expect(() => assertReleaseTagAvailable("v26.10.04", repository)).toThrow(
       /already exists locally.*pnpm hotfix/,
     );
   });
 
   it("rejects an existing remote tag that is absent locally", () => {
-    git("tag", "-a", "v2026.10.04", "-m", "Release");
-    git("push", "--quiet", "origin", "refs/tags/v2026.10.04");
-    git("tag", "-d", "v2026.10.04");
-    expect(() => assertReleaseTagAvailable("v2026.10.04", repository)).toThrow(
+    git("tag", "-a", "v26.10.04", "-m", "Release");
+    git("push", "--quiet", "origin", "refs/tags/v26.10.04");
+    git("tag", "-d", "v26.10.04");
+    expect(() => assertReleaseTagAvailable("v26.10.04", repository)).toThrow(
       /already exists on origin.*pnpm hotfix/,
     );
   });
