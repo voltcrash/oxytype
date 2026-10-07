@@ -7,7 +7,7 @@ explicit Wrangler production commands. See
 
 Release versions use the UTC date in `YY.MM.DD` format, with a two-digit year
 and zero-padded months and days. For example, October 4, 2026 is `26.10.04`
-in `package.json` and Docker image tags, and `v26.10.04` in Git tags. Production
+in `package.json`, and `v26.10.04` in Git tags. Production
 GitHub release titles omit the `v` prefix.
 The release date is captured when the release starts, independently of the
 previous version. Publication timestamps retain their full ISO year.
