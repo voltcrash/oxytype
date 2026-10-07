@@ -10,7 +10,6 @@ import {
 import path from "node:path";
 import injectHTML from "vite-plugin-html-inject";
 import childProcess from "child_process";
-import autoprefixer from "autoprefixer";
 import { fontStyles } from "./vite-plugins/font-styles";
 import { fontawesomeSubset } from "./vite-plugins/fontawesome-subset";
 import { fontPreview } from "./vite-plugins/font-preview";
@@ -268,9 +267,6 @@ function getBuildOptions({
 function getCssOptions(): CSSOptions {
   return {
     devSourcemap: true,
-    postcss: {
-      plugins: [autoprefixer({})],
-    },
   };
 }
 
