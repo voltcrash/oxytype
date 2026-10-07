@@ -23,7 +23,7 @@ telemetry checks; verification/leaderboard opt-out exempts only the bot heuristi
   after 122 seconds.
 - Server timestamps bound result duration plus credited abandoned time against
   the previous save; first saves use server account creation time. The existing
-  one-second allowance remains. Legacy accounts without creation time fall
+  one-second allowance applies. Accounts without creation time fall
   back to the epoch. Database read failures fail closed.
 
 Accuracy cannot be inferred from final character counts: corrected mistakes
@@ -122,7 +122,7 @@ It accepts admin audit responses, audit rows or arrays of
 `{ keySpacing, keyDuration }`, and prints per-label signal rates and feature
 percentiles. Tighten nothing until human false-positive rates are known.
 
-## Limits and rollout
+## Limits and monitoring
 
 This is consistency validation, a deliberately narrow bot heuristic, per-user
 replay detection and log-only review. Client telemetry remains forgeable;
@@ -140,24 +140,18 @@ normal typing, coarsened clocks, IME, pre-start keys, bailouts and zen, and
 modelled human timing produces no review signal. This is synthetic evidence;
 review real user samples before tightening rules or acting on signals.
 
-Staging includes the baseline implementation. Live API checks with a temporary
-seeded identity verified valid saves/persistence, inconsistent-data and
-fixed-timing rejections, server spacing and revoked sessions; test data was
-removed. Real-user OAuth/captcha and browser typing remain pending. Follow
-[staging setup](STAGING_SETUP.md) to configure credentials and repeat signup,
+Follow [staging setup](STAGING_SETUP.md) to configure credentials and repeat signup,
 save, refresh and sign-out/sign-in checks. Monitor `anticheat_rejected` audits
 by reason, `anticheat_flagged` audits by signal and important-audit growth.
 
-Rollout: apply migrations `0007_audit_log_event_index` and
-`0008_remove_legacy_result_hashes` before deploying. The latter removes retired
-payload-hash settings and user history while preserving replay fingerprints.
+Apply pending D1 migrations before deploying.
 Watch the summary endpoint, enable `samples.randomRate` briefly (for example
 0.05) to build a human baseline, review flagged results, then run the calibration
 command before changing thresholds or considering enforcement.
 
 ```sh
 cd backend
-pnpm vitest run __tests__/anticheat __tests__/d1/anticheat.spec.ts
+pnpm vitest run __tests__/d1/anticheat.spec.ts
 cd ../frontend
 pnpm vitest run __tests__/test/events/anticheat.spec.ts
 cd ..
