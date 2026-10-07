@@ -13,7 +13,6 @@ Package versions come from the workspace manifests and lockfile.
 | `packages/util/`, `packages/funbox/`, `packages/challenges/` | Shared helpers and typing features |
 | `packages/oxlint-config/`, `packages/typescript-config/`, `packages/tsdown-config/` | Shared tooling configuration |
 | `packages/release/` | Daily production release helpers |
-| `docker/` | Static frontend container and build definition |
 | `.github/workflows/` | CI, labeling, Docker publishing, and repository automation |
 
 The root is a private pnpm workspace. Node, TypeScript and Turborepo coordinate
