@@ -384,11 +384,12 @@ describe("daily production releases", () => {
 it("wires scheduled/manual production deployment before publication and always cleans credentials", () => {
   const path = fileURLToPath(
     new URL(
-      "../../../.github/workflows/daily-production-release.yml",
+      "../../../.github/workflows/production-release.yml",
       import.meta.url,
     ),
   );
   const workflow = parse(readFileSync(path, "utf8"));
+  expect(workflow.name).toBe("Production release");
   expect(workflow.on.schedule).toEqual([{ cron: "17 0 * * *" }]);
   expect(workflow.on).toHaveProperty("workflow_dispatch");
   expect(workflow.concurrency["cancel-in-progress"]).toBe(false);
@@ -427,7 +428,7 @@ it.each(["", "ba_dashboard_workflow_fixture"])(
       readFileSync(
         fileURLToPath(
           new URL(
-            "../../../.github/workflows/daily-production-release.yml",
+            "../../../.github/workflows/production-release.yml",
             import.meta.url,
           ),
         ),
