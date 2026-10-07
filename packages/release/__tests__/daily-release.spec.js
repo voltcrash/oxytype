@@ -170,6 +170,47 @@ describe("daily production releases", () => {
     expect(github.rest.repos.createRelease).not.toHaveBeenCalled();
   });
 
+  it("skips unchanged snapshots after several missed days", async () => {
+    previousRelease("v2026.10.03");
+    const plan = await prepareDailyRelease({ github, context, cwd });
+    expect(plan.shouldDeploy).toBe(false);
+    expect(plan.skipReason).toBe("no-new-commits");
+  });
+
+  it("also skips unchanged manual runs", async () => {
+    context.eventName = "workflow_dispatch";
+    previousRelease();
+    const plan = await prepareDailyRelease({ github, context, cwd });
+    expect(plan.shouldDeploy).toBe(false);
+    expect(plan.skipReason).toBe("no-new-commits");
+  });
+
+  it("bootstraps the first production release without recent commits", async () => {
+    const plan = await prepareDailyRelease({ github, context, cwd });
+    expect(plan.shouldDeploy).toBe(true);
+    expect(plan.body).toContain("No new changes merged to main");
+  });
+
+  it("deploys new commits even when their trees and rendered changelog are unchanged", async () => {
+    previousRelease();
+    commit("Merge pull request #7 from feature", "2026-10-04T22:00:00Z");
+    expect(git("diff", "v2026.10.04", "HEAD")).toBe("");
+    const plan = await prepareDailyRelease({ github, context, cwd });
+    expect(plan.shouldDeploy).toBe(true);
+    expect(plan.body).toContain("No new changes merged to main");
+  });
+
+  it("refuses snapshots that omit already deployed commits", async () => {
+    const oldSha = context.sha;
+    commit("already deployed change", "2026-10-04T22:00:00Z");
+    previousRelease();
+    git("checkout", "--quiet", oldSha);
+    context.sha = oldSha;
+    await expect(
+      prepareDailyRelease({ github, context, cwd }),
+    ).rejects.toThrow();
+  });
+
   it("bundles the new release's exact notes before GitHub publication", async () => {
     previousRelease();
     commit("fix: repair version history", "2026-10-04T22:00:00Z");
