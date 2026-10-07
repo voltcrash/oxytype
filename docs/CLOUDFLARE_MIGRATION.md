@@ -110,7 +110,9 @@ verification, deployment, and any external blockers throughout implementation.
   map custom models explicitly; inject D1/auth from bindings per request.
 - Port disabled-user/email hooks and registration cancellation/deletion.
 - Replace native bcrypt for legacy ApeKeys; use versioned SHA-256 hashes for new
-  random keys and opportunistically upgrade verified legacy keys.
+  random keys and opportunistically upgrade verified legacy keys. This
+  compatibility verifier was later retired after a read-only audit found no
+  ApeKeys in either retained D1 database; see [hash compatibility](CLOUDFLARE_OPERATIONS.md#apekey-hash-compatibility).
 - Port exact rate-limit windows/penalties to atomic D1 counters; trust Cloudflare
   IP metadata and preserve IPv6 grouping/headers.
 - Verify social callback/session/revocation/CSRF/freshness and API-key regressions.

@@ -66,8 +66,10 @@ Seven-day delays stay in the SQL scheduler.
 ## 3. Runtime incompatibilities
 
 Remove Node HTTP listener, boot/shutdown lifecycle, permanent Bull workers,
-process Cron, Mongo/Redis sockets and Lua loading. Replace native bcrypt with
-`bcryptjs` for legacy random ApeKeys and SHA-256 for new high-entropy keys.
+process Cron, Mongo/Redis sockets and Lua loading. The migration initially used
+`bcryptjs` for legacy random ApeKeys and SHA-256 for new high-entropy keys. The
+legacy verifier was later retired after both retained D1 databases were audited
+and found to contain no ApeKeys.
 Replace filesystem quote/config/docs access with Worker assets/D1. Local git
 (`simple-git`) and repository writes remain external. Replace Winston file
 transports with structured console logs and Workers observability.

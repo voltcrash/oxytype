@@ -286,9 +286,6 @@ importers:
       '@ts-rest/open-api':
         specifier: 3.52.1
         version: 3.52.1(@ts-rest/core@3.52.1(patch_hash=1d87a2612f7f1b57f89a06c50f4f92ae56858711540f5baa09c18e79ee6eca4b)(@types/node@24.19.0)(zod@4.6.5))(zod@4.6.5)
-      bcryptjs:
-        specifier: 3.0.3
-        version: 3.0.3
       better-auth:
         specifier: 1.7.7
         version: 1.7.7(@opentelemetry/api@1.9.1)(drizzle-kit@0.31.11)(drizzle-orm@0.45.3(@cloudflare/workers-types@5.20261001.1)(@electric-sql/pglite@0.3.16)(@opentelemetry/api@1.9.1)(kysely@0.29.6)(pg@8.12.0))(pg@8.12.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(solid-js@1.9.15)(vitest@5.0.3)
@@ -5689,10 +5686,6 @@ packages:
 
   baseline-browser-mapping@2.9.11:
     resolution: {integrity: sha512-Sg0xJUNDU1sJNGdfGWhVHX0kkZ+HWcvmVymJbj6NSgZZmW/8S9Y2HQ5euytnIgakgxN6papOAWiwDo1ctFDcoQ==}
-    hasBin: true
-
-  bcryptjs@3.0.3:
-    resolution: {integrity: sha512-GlF5wPWnSa/X5LKM1o0wz0suXIINz1iHRLvTS+sLyi7XPbe5ycmYI3DlZqVGZZtDgl4DmasFg7gOB3JYbphV5g==}
     hasBin: true
 
   better-auth@1.7.7:
@@ -13733,8 +13726,6 @@ snapshots:
   baseline-browser-mapping@2.11.26: {}
 
   baseline-browser-mapping@2.9.11: {}
-
-  bcryptjs@3.0.3: {}
 
   better-auth@1.7.7(@opentelemetry/api@1.9.1)(drizzle-kit@0.31.11)(drizzle-orm@0.45.3(@cloudflare/workers-types@5.20261001.1)(@electric-sql/pglite@0.3.16)(@opentelemetry/api@1.9.1)(kysely@0.29.6)(pg@8.12.0))(pg@8.12.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(solid-js@1.9.15)(vitest@5.0.3):
     dependencies:

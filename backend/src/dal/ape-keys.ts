@@ -81,16 +81,6 @@ export async function updateLastUsedOn(
   ).run();
   if (!result.meta.changes) throw new MonkeyError(404, "ApeKey not found");
 }
-export async function upgradeHash(
-  uid: string,
-  keyId: string,
-  hash: string,
-): Promise<void> {
-  await database()
-    .update(apeKeys)
-    .set({ hash })
-    .where(and(eq(apeKeys.id, keyId), eq(apeKeys.uid, uid)));
-}
 export async function deleteApeKey(uid: string, keyId: string): Promise<void> {
   const result = await database()
     .delete(apeKeys)
