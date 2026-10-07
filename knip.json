@@ -1,10 +1,20 @@
 {
   "workspaces": {
     "backend": {
-      "entry": ["src/worker.ts", "scripts/*.ts"],
-      "project": ["src/**/*.ts", "scripts/**/*.ts"],
-      "ignoreDependencies": ["@oxytype/oxlint-config"],
-      "ignoreBinaries": ["dist"]
+      "entry": [
+        "src/worker.ts",
+        "scripts/*.ts"
+      ],
+      "project": [
+        "src/**/*.ts",
+        "scripts/**/*.ts"
+      ],
+      "ignoreDependencies": [
+        "@oxytype/oxlint-config"
+      ],
+      "ignoreBinaries": [
+        "dist"
+      ]
     },
     "frontend": {
       "entry": [
@@ -33,7 +43,9 @@
       ]
     },
     "packages/*": {
-      "entry": ["src/index.ts", "tsup.config.js"],
+      "entry": [
+        "src/index.ts"
+      ],
       "project": "src/**/*.ts"
     },
     "frontend/storybook": {
@@ -42,7 +54,10 @@
         ".storybook/*.{ts,tsx}",
         "stories/**/*.{stories.ts,stories.tsx,mdx}"
       ],
-      "project": [".storybook/**/*.{ts,tsx}", "stories/**/*.{ts,tsx}"],
+      "project": [
+        ".storybook/**/*.{ts,tsx}",
+        "stories/**/*.{ts,tsx}"
+      ],
       "ignoreDependencies": [
         "@chromatic-com/storybook",
         "@storybook/addon-links",
@@ -52,12 +67,19 @@
       ]
     },
     "packages/oxlint-config": {
-      "entry": ["plugins/*.js"],
-      "project": ["plugins/*.js"]
+      "entry": [
+        "plugins/*.js"
+      ],
+      "project": [
+        "plugins/*.js"
+      ]
     }
   },
   "$schema": "https://unpkg.com/knip@6.39.0/schema.json",
-  "entry": ["commitlint.config.cjs", "stylelint.config.mjs"],
+  "entry": [
+    "commitlint.config.cjs",
+    "stylelint.config.mjs"
+  ],
   "ignoreDependencies": [
     "@commitlint/cli",
     "@commitlint/config-conventional",
@@ -66,5 +88,8 @@
     "prettier",
     "yaml"
   ],
-  "ignoreBinaries": ["docker", "tsx", "tsup-node"]
+  "ignoreBinaries": [
+    "docker",
+    "tsx"
+  ]
 }
