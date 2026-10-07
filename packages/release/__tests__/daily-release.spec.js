@@ -396,6 +396,13 @@ it("wires scheduled/manual production deployment before publication and always c
   expect(job.if).toContain("github.ref == 'refs/heads/main'");
   expect(job.environment.name).toBe("production");
   const steps = job.steps;
+  const plan = steps.findIndex((step) => step.id === "plan");
+  expect(plan).toBeGreaterThan(0);
+  for (const step of steps.slice(plan + 1, -1)) {
+    expect(step.if, step.name).toBe(
+      "steps.plan.outputs.shouldDeploy == 'true'",
+    );
+  }
   const deploy = steps.findIndex(
     (step) => step.name === "Deploy production with Wrangler",
   );
