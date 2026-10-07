@@ -11,12 +11,8 @@ function git(cwd, ...args) {
 }
 
 export async function prepareDailyRelease({ github, context, cwd }) {
-  const { data: run } = await github.rest.actions.getWorkflowRun({
-    ...context.repo,
-    run_id: context.runId,
-  });
-  // Run creation time remains stable when an attempt is retried after midnight.
-  const date = new Date(run.created_at);
+  // Delayed and retried runs use the UTC date when release planning executes.
+  const date = new Date();
   const tag = getReleaseVersion(date);
   const version = tag.slice(1);
   const sha = git(cwd, "rev-parse", "HEAD");

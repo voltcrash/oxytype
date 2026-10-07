@@ -60,6 +60,8 @@ describe("daily production releases", () => {
   }
 
   beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-05T00:02:00Z"));
     cwd = mkdtempSync(join(tmpdir(), "oxytype-daily-release-"));
     git("init", "--quiet", "--initial-branch=main");
     git("config", "user.name", "Release Tests");
@@ -96,12 +98,18 @@ describe("daily production releases", () => {
     rmSync(cwd, { recursive: true, force: true });
   });
 
-  it("dates retries from the original run, even after midnight", async () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-10-06T01:00:00Z"));
+  it("dates releases from execution rather than the original run creation", async () => {
+    github.rest.actions.getWorkflowRun.mockResolvedValue({
+      data: { created_at: "2026-10-07T00:17:00Z" },
+    });
+    vi.setSystemTime(new Date("2026-10-08T01:00:00Z"));
     const plan = await prepareDailyRelease({ github, context, cwd });
-    expect(plan.version).toBe("2026.10.05");
-    expect(plan.tag).toBe("v2026.10.05");
+    expect(plan.version).toBe("2026.10.08");
+    expect(plan.tag).toBe("v2026.10.08");
+    expect(plan.releaseHistory[0].published_at).toBe(
+      "2026-10-08T01:00:00.000Z",
+    );
+    expect(github.rest.actions.getWorkflowRun).not.toHaveBeenCalled();
     expect(github.rest.repos.createRelease).not.toHaveBeenCalled();
   });
 
