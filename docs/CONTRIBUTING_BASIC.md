@@ -4,7 +4,7 @@ You can improve Oxytype themes, languages, quotes, layouts, and documentation th
 
 1. Fork [voltcrash/oxytype](https://github.com/voltcrash/oxytype) to your GitHub account.
 2. Edit the relevant file in your fork. GitHub's web editor works for small changes.
-3. Open a pull request back to `voltcrash/oxytype` on `master`. Describe what changed and why.
+3. Open a pull request back to `voltcrash/oxytype` on `main`. Describe what changed and why.
 
 For application changes, use the [development setup guide](./CONTRIBUTING_ADVANCED.md). See the focused guides for [themes](./THEMES.md), [languages](./LANGUAGES.md), [quotes](./QUOTES.md), [layouts](./LAYOUTS.md), and [fonts](./FONTS.md).
 
