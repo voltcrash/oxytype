@@ -10,7 +10,7 @@ function git(cwd, ...args) {
   return execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
 }
 
-export async function prepareDailyRelease({ github, context, cwd }) {
+export async function prepareProductionRelease({ github, context, cwd }) {
   // Delayed and retried runs use the UTC date when release planning executes.
   const date = new Date();
   const tag = getReleaseVersion(date);
@@ -32,7 +32,7 @@ export async function prepareDailyRelease({ github, context, cwd }) {
       !existing.body?.includes(productionMarker)
     ) {
       throw new Error(
-        `Release ${tag} already exists outside the daily deployment`,
+        `Release ${tag} already exists outside the production deployment`,
       );
     }
     return {
@@ -140,7 +140,7 @@ export async function prepareDailyRelease({ github, context, cwd }) {
   return { version, tag, sha, body, releaseHistory, shouldDeploy: true };
 }
 
-export async function publishDailyRelease({
+export async function publishProductionRelease({
   github,
   context,
   version,

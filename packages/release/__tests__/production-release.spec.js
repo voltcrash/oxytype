@@ -21,13 +21,13 @@ import {
 } from "vite-plus/test";
 import { parse } from "yaml";
 import {
-  prepareDailyRelease,
-  publishDailyRelease,
-} from "../src/daily-release.js";
+  prepareProductionRelease,
+  publishProductionRelease,
+} from "../src/production-release.js";
 
 const marker = "<!-- oxytype-production-release -->";
 
-describe("daily production releases", () => {
+describe("production releases", () => {
   let cwd;
   let github;
   let context;
@@ -62,7 +62,7 @@ describe("daily production releases", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-10-05T00:02:00Z"));
-    cwd = mkdtempSync(join(tmpdir(), "oxytype-daily-release-"));
+    cwd = mkdtempSync(join(tmpdir(), "oxytype-production-release-"));
     git("init", "--quiet", "--initial-branch=main");
     git("config", "user.name", "Release Tests");
     git("config", "user.email", "release-tests@example.com");
@@ -103,7 +103,7 @@ describe("daily production releases", () => {
       data: { created_at: "2026-10-07T00:17:00Z" },
     });
     vi.setSystemTime(new Date("2026-10-08T01:00:00Z"));
-    const plan = await prepareDailyRelease({ github, context, cwd });
+    const plan = await prepareProductionRelease({ github, context, cwd });
     expect(plan.version).toBe("2026.10.08");
     expect(plan.tag).toBe("v2026.10.08");
     expect(plan.releaseHistory[0].published_at).toBe(
@@ -120,7 +120,7 @@ describe("daily production releases", () => {
       previousRelease();
       commit("feat: missed-day change", "2026-10-07T22:00:00Z");
       vi.setSystemTime(new Date("2026-10-08T00:17:00Z"));
-      const plan = await prepareDailyRelease({ github, context, cwd });
+      const plan = await prepareProductionRelease({ github, context, cwd });
       expect(plan.shouldDeploy).toBe(true);
       expect(plan.version).toBe("2026.10.08");
       expect(plan.body).toContain("missed-day change");
@@ -130,7 +130,7 @@ describe("daily production releases", () => {
   it("skips next-day retries of successfully published snapshots", async () => {
     previousRelease("v2026.10.05");
     vi.setSystemTime(new Date("2026-10-06T01:00:00Z"));
-    const plan = await prepareDailyRelease({ github, context, cwd });
+    const plan = await prepareProductionRelease({ github, context, cwd });
     expect(plan.tag).toBe("v2026.10.06");
     expect(plan.shouldDeploy).toBe(false);
     expect(plan.skipReason).toBe("no-new-commits");
@@ -141,9 +141,9 @@ describe("daily production releases", () => {
     commit("fix: pending deployment", "2026-10-07T22:00:00Z");
     git("tag", "v2026.10.07");
     vi.setSystemTime(new Date("2026-10-08T00:17:00Z"));
-    const plan = await prepareDailyRelease({ github, context, cwd });
+    const plan = await prepareProductionRelease({ github, context, cwd });
     expect(plan.shouldDeploy).toBe(true);
-    await publishDailyRelease({ github, context, ...plan });
+    await publishProductionRelease({ github, context, ...plan });
     expect(github.rest.repos.createRelease).toHaveBeenCalledWith(
       expect.objectContaining({
         tag_name: "v2026.10.08",
@@ -156,7 +156,7 @@ describe("daily production releases", () => {
   it("includes the preceding day's midnight boundary in the first scheduled release", async () => {
     commit("merged at midnight", "2026-10-04T00:00:00Z");
     commit("merged before deployment", "2026-10-04T23:59:59Z");
-    const plan = await prepareDailyRelease({ github, context, cwd });
+    const plan = await prepareProductionRelease({ github, context, cwd });
     expect(plan.body).toContain("### Nerd stuff");
     expect(plan.body).toContain("merged at midnight");
     expect(plan.body).toContain("merged before deployment");
@@ -167,7 +167,7 @@ describe("daily production releases", () => {
     context.eventName = "workflow_dispatch";
     commit("yesterday's change", "2026-10-04T22:00:00Z");
     commit("today's change", "2026-10-05T00:01:00Z");
-    const plan = await prepareDailyRelease({ github, context, cwd });
+    const plan = await prepareProductionRelease({ github, context, cwd });
     expect(plan.body).toContain("today's change");
     expect(plan.body).not.toContain("yesterday's change");
   });
@@ -187,7 +187,7 @@ describe("daily production releases", () => {
       },
     );
     context.sha = git("rev-parse", "HEAD");
-    const plan = await prepareDailyRelease({ github, context, cwd });
+    const plan = await prepareProductionRelease({ github, context, cwd });
     for (const text of [
       "old-authored feature",
       "direct main change",
@@ -203,14 +203,14 @@ describe("daily production releases", () => {
     previousRelease("v2026.10.03");
     commit("missed-day change", "2026-10-03T22:00:00Z");
     commit("latest change", "2026-10-04T22:00:00Z");
-    const plan = await prepareDailyRelease({ github, context, cwd });
+    const plan = await prepareProductionRelease({ github, context, cwd });
     expect(plan.body).toContain("missed-day change");
     expect(plan.body).toContain("latest change");
   });
 
   it("skips deployment and publication without commits since the last production release", async () => {
     previousRelease();
-    const plan = await prepareDailyRelease({ github, context, cwd });
+    const plan = await prepareProductionRelease({ github, context, cwd });
     expect(plan.shouldDeploy).toBe(false);
     expect(plan.skipReason).toBe("no-new-commits");
     expect(plan).not.toHaveProperty("body");
@@ -220,7 +220,7 @@ describe("daily production releases", () => {
 
   it("skips unchanged snapshots after several missed days", async () => {
     previousRelease("v2026.10.03");
-    const plan = await prepareDailyRelease({ github, context, cwd });
+    const plan = await prepareProductionRelease({ github, context, cwd });
     expect(plan.shouldDeploy).toBe(false);
     expect(plan.skipReason).toBe("no-new-commits");
   });
@@ -228,13 +228,13 @@ describe("daily production releases", () => {
   it("also skips unchanged manual runs", async () => {
     context.eventName = "workflow_dispatch";
     previousRelease();
-    const plan = await prepareDailyRelease({ github, context, cwd });
+    const plan = await prepareProductionRelease({ github, context, cwd });
     expect(plan.shouldDeploy).toBe(false);
     expect(plan.skipReason).toBe("no-new-commits");
   });
 
   it("bootstraps the first production release without recent commits", async () => {
-    const plan = await prepareDailyRelease({ github, context, cwd });
+    const plan = await prepareProductionRelease({ github, context, cwd });
     expect(plan.shouldDeploy).toBe(true);
     expect(plan.body).toContain("No new changes merged to main");
   });
@@ -243,7 +243,7 @@ describe("daily production releases", () => {
     previousRelease();
     commit("Merge pull request #7 from feature", "2026-10-04T22:00:00Z");
     expect(git("diff", "v2026.10.04", "HEAD")).toBe("");
-    const plan = await prepareDailyRelease({ github, context, cwd });
+    const plan = await prepareProductionRelease({ github, context, cwd });
     expect(plan.shouldDeploy).toBe(true);
     expect(plan.body).toContain("No new changes merged to main");
   });
@@ -255,14 +255,14 @@ describe("daily production releases", () => {
     git("checkout", "--quiet", oldSha);
     context.sha = oldSha;
     await expect(
-      prepareDailyRelease({ github, context, cwd }),
+      prepareProductionRelease({ github, context, cwd }),
     ).rejects.toThrow();
   });
 
   it("bundles the new release's exact notes before GitHub publication", async () => {
     previousRelease();
     commit("fix: repair version history", "2026-10-04T22:00:00Z");
-    const plan = await prepareDailyRelease({ github, context, cwd });
+    const plan = await prepareProductionRelease({ github, context, cwd });
     expect(plan.releaseHistory).toEqual([
       {
         tag_name: plan.tag,
@@ -293,7 +293,7 @@ describe("daily production releases", () => {
       { ...older[0], tag_name: "preview", prerelease: true },
       ...older,
     ]);
-    const plan = await prepareDailyRelease({ github, context, cwd });
+    const plan = await prepareProductionRelease({ github, context, cwd });
     expect(plan.releaseHistory.map((release) => release.tag_name)).toEqual([
       plan.tag,
       ...older
@@ -305,7 +305,7 @@ describe("daily production releases", () => {
 
   it("skips an already published production release on same-day retries", async () => {
     previousRelease("v2026.10.05");
-    const plan = await prepareDailyRelease({ github, context, cwd });
+    const plan = await prepareProductionRelease({ github, context, cwd });
     expect(plan.shouldDeploy).toBe(false);
   });
 
@@ -320,37 +320,37 @@ describe("daily production releases", () => {
         { tag_name: "v2026.10.05", ...release },
       ]);
       await expect(
-        prepareDailyRelease({ github, context, cwd }),
-      ).rejects.toThrow("outside the daily deployment");
+        prepareProductionRelease({ github, context, cwd }),
+      ).rejects.toThrow("outside the production deployment");
     },
   );
 
   it("refuses an older failed run after a newer production release", async () => {
     previousRelease("v2026.10.06");
-    await expect(prepareDailyRelease({ github, context, cwd })).rejects.toThrow(
-      "newer production release",
-    );
+    await expect(
+      prepareProductionRelease({ github, context, cwd }),
+    ).rejects.toThrow("newer production release");
   });
 
   it("rejects a date tag pointing at another commit", async () => {
     git("tag", "v2026.10.05");
     commit("new change", "2026-10-04T22:00:00Z");
-    await expect(prepareDailyRelease({ github, context, cwd })).rejects.toThrow(
-      "different commit",
-    );
+    await expect(
+      prepareProductionRelease({ github, context, cwd }),
+    ).rejects.toThrow("different commit");
   });
 
   it("allows retrying release publication when the date tag already matches the snapshot", async () => {
     git("tag", "v2026.10.05");
-    const plan = await prepareDailyRelease({ github, context, cwd });
+    const plan = await prepareProductionRelease({ github, context, cwd });
     expect(plan.shouldDeploy).toBe(true);
   });
 
   it("refuses a checkout different from the run's main snapshot", async () => {
     context.sha = "wrong-sha";
-    await expect(prepareDailyRelease({ github, context, cwd })).rejects.toThrow(
-      "workflow's main commit",
-    );
+    await expect(
+      prepareProductionRelease({ github, context, cwd }),
+    ).rejects.toThrow("workflow's main commit");
   });
 
   it("escapes commit subjects so release notes cannot inject Markdown", async () => {
@@ -359,15 +359,15 @@ describe("daily production releases", () => {
       "fix [link](https://example.com) <img> `code`",
       "2026-10-04T22:00:00Z",
     );
-    const plan = await prepareDailyRelease({ github, context, cwd });
+    const plan = await prepareProductionRelease({ github, context, cwd });
     expect(plan.body).toContain(
       "fix \\[link\\](https://example.com) \\<img\\> \\`code\\`",
     );
   });
 
   it("publishes the exact deployed SHA with a padded date title and v-prefixed tag", async () => {
-    const plan = await prepareDailyRelease({ github, context, cwd });
-    await publishDailyRelease({ github, context, ...plan });
+    const plan = await prepareProductionRelease({ github, context, cwd });
+    await publishProductionRelease({ github, context, ...plan });
     expect(github.rest.repos.createRelease).toHaveBeenCalledWith({
       ...context.repo,
       tag_name: "v2026.10.05",

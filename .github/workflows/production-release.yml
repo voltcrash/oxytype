@@ -38,11 +38,11 @@ jobs:
         uses: actions/github-script@v9.0.0
         with:
           script: |
-            const { prepareDailyRelease } = await import(`${process.env.GITHUB_WORKSPACE}/packages/release/src/daily-release.js`);
-            const plan = await prepareDailyRelease({ github, context, cwd: process.env.GITHUB_WORKSPACE });
+            const { prepareProductionRelease } = await import(`${process.env.GITHUB_WORKSPACE}/packages/release/src/production-release.js`);
+            const plan = await prepareProductionRelease({ github, context, cwd: process.env.GITHUB_WORKSPACE });
             for (const key of ['version', 'tag', 'sha', 'shouldDeploy']) core.setOutput(key, plan[key]);
             if (plan.shouldDeploy) {
-              require('node:fs').writeFileSync(`${process.env.RUNNER_TEMP}/daily-release-notes.md`, plan.body);
+              require('node:fs').writeFileSync(`${process.env.RUNNER_TEMP}/production-release-notes.md`, plan.body);
               require('node:fs').writeFileSync(`${process.env.GITHUB_WORKSPACE}/frontend/static/release.json`, `${JSON.stringify(plan.releaseHistory, null, 2)}\n`);
             } else {
               const message = plan.skipReason === 'no-new-commits'
@@ -122,13 +122,13 @@ jobs:
           RELEASE_SHA: ${{ steps.plan.outputs.sha }}
         with:
           script: |
-            const { publishDailyRelease } = await import(`${process.env.GITHUB_WORKSPACE}/packages/release/src/daily-release.js`);
-            const { data: release } = await publishDailyRelease({
+            const { publishProductionRelease } = await import(`${process.env.GITHUB_WORKSPACE}/packages/release/src/production-release.js`);
+            const { data: release } = await publishProductionRelease({
               github, context,
               version: process.env.RELEASE_VERSION,
               tag: process.env.RELEASE_TAG,
               sha: process.env.RELEASE_SHA,
-              body: require('node:fs').readFileSync(`${process.env.RUNNER_TEMP}/daily-release-notes.md`, 'utf8'),
+              body: require('node:fs').readFileSync(`${process.env.RUNNER_TEMP}/production-release-notes.md`, 'utf8'),
             });
             await core.summary.addLink(release.name, release.html_url).write();
 
