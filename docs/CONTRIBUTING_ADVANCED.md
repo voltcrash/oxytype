@@ -15,9 +15,8 @@ Email/password/reset flows remain disabled. See
 [Cloudflare operations](CLOUDFLARE_OPERATIONS.md) for authentication, configuration,
 Worker bindings, local data, integration setup and deployment.
 
-To target a remote API, set `BACKEND_URL` in `frontend/.env`; its value includes
-`/api` when using the staging Worker. The backend's `FRONTEND_URL` must trust the
-frontend origin. A same-site HTTPS proxy avoids third-party cookie restrictions.
+For browser checks against the official Oxytype staging site, follow
+[staging setup](STAGING_SETUP.md). Use its hosted URL for OAuth testing.
 
 Use `pnpm oxlint --type-aware --type-check --format agent` for type checking;
 `pnpm exec vp fmt` formats files. Commit hooks enforce formatting and lint.
