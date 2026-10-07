@@ -1,28 +1,33 @@
-# Oxytype AI Coding Instructions
+# Oxytype AI coding instructions
 
-Make the responses extremely concise. Sacrifice grammar for the sake of concision.
+Be extremely concise. Follow [AGENTS.md](../AGENTS.md) for repository conventions.
 
 ## Architecture
-**Monorepo**: pnpm + Turborepo with frontend (Vite + SolidJS), backend (Hono on Cloudflare Workers + D1 + Queues), and shared packages.
 
-## Commands
-All commands support `-fe`, `-be`, `-pkg` suffixes for targeted execution:
-```bash
-pnpm run lint-fe    # Frontend linting
-pnpm run test-be    # Backend + integration tests  
-pnpm run build-pkg  # Packages only
-pnpm run dev        # All workspaces with hot reload
+pnpm/Turborepo workspace: SolidJS frontend, Hono backend on Cloudflare Workers
+with D1 and Queues, and shared `@oxytype` packages. See
+[architecture](../docs/ARCHITECTURE.md) and [development setup](../docs/CONTRIBUTING_ADVANCED.md).
+
+Frontend UI uses `.tsx` components. Keep imperative DOM work inside
+component-owned refs/lifecycles. Use Tailwind, `class`, `cn`, configured colors
+and the `Fa` icon component.
+
+## Checks
+
+```sh
+pnpm oxlint --type-aware --type-check --format agent
+pnpm build-fe
+pnpm build-be
+pnpm build-pkg
 ```
 
-## SolidJS Migration
-Frontend is partially migrated - new components use SolidJS (`.tsx`), legacy code remains vanilla JS. 
+Run a single test from its package with `pnpm vitest run path/to/test.ts`.
+`pnpm dev-fe` and `pnpm dev-be` start the frontend and backend.
 
-## Debug Tips
-- Type/lint errors: Run `pnpm run lint` (OXLint is source of truth, not tsc)
+## Key files
 
-## Key Files
-- `turbo.json`: Task deps and caching
-- `frontend/src/ts/config-metadata.ts`: Config validation rules
-- `packages/contracts/src/index.ts`: API contract structure
-- `packages/funbox/src/list.ts`: All funbox definitions
-- `backend/src/api/routes/index.ts`: ts-rest setup
+- `turbo.json`: task dependencies and caching.
+- `frontend/src/ts/config/metadata.tsx`: config validation rules.
+- `packages/contracts/src/index.ts`: API contracts.
+- `packages/funbox/src/list.ts`: funbox definitions.
+- `backend/src/api/ts-rest-adapter.ts`: typed controller adapter.

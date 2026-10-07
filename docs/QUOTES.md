@@ -1,38 +1,26 @@
-### **Table of Contents**
+# Adding quotes
 
-- [Forking Oxytype](#forking-oxytype)
-- [Creating Quotes](#creating-quotes)
-- [Committing Quotes](#committing-quotes)
-- [Quote Guidelines](#quote-guidelines)
+Follow [basic contributions](CONTRIBUTING_BASIC.md) to fork and open a pull request.
 
-### Forking Oxytype
+Add entries to the `quotes` array in `frontend/static/quotes/<language>.json`.
+The language must exist in `LanguageSchema` in `packages/schemas/src/languages.ts`.
+Each quote needs:
 
-First you will have to copy the Oxytype repository also known as forking. Go to the [Oxytype Repo](https://github.com/voltcrash/oxytype/) and then click the "fork" button.
+- `text`: the quote text, at least 60 characters.
+- `source`: its attribution.
+- `id`: the next unused numeric ID in that language file.
+- `length`: the text's JavaScript string length, including spaces and punctuation.
 
+For a new quote language file, copy an existing file's structure: `language`,
+`groups` and `quotes`. Set `language` to match the filename without `.json`.
+Keep four contiguous length groups; the usual ranges are `[0, 100]`, `[101, 300]`,
+`[301, 600]` and `[601, 9999]`.
 
-## Creating Quotes
+Check [quote guidelines](CONTRIBUTING.md#quote-guidelines) and include translations
+of non-English quotes in the pull request description.
+For local validation, follow [development setup](CONTRIBUTING_ADVANCED.md), then
+run from the repository root:
 
-After you forked the Oxytype repository you can now add your quotes. (If you haven't already forked the repository, refer to this [section](#forking-oxytype).) (Before continuing to the next step make sure the quote's language exists in Oxytype) Add this code in at the end of the quotes `./frontend/static/quotes/[language].json`:
-
-```json
-{
-    "text": "[quote]",
-    "source": "[source]",
-    "id": [number of the quote],
-    "length": [number of characters in quote]
-}
+```sh
+pnpm --filter @oxytype/frontend check-assets quotes
 ```
-
-If the language does exist in Oxytype, but there are no quotes for it create a new file for the language.
-
-### Committing Quotes
-
-Once you have added your quote(s), you now need to create a pull request to the main Oxytype repository. Go to the branch where you added your quotes on GitHub. Then make sure your branch is up to date. Once it is up to date, click "contribute".
-
-Update branch:
-
-Create a pull request:
-
-## Quote Guidelines
-
-Make sure your quote(s) follows the [Quote guidelines](./CONTRIBUTING.md#quote-guidelines).

@@ -3,5 +3,3 @@
 Please report Oxytype vulnerabilities privately. Use [GitHub private vulnerability reporting](https://github.com/voltcrash/oxytype/security/advisories/new) if it is available. If that form is unavailable, open an issue requesting a private contact channel without disclosing the vulnerability.
 
 Include the affected version, steps to reproduce, and likely impact. Use [public issues](https://github.com/voltcrash/oxytype/issues) for ordinary bugs.
-
-The planned security contact is `contact@voltcrash.com`. It will be listed as an active reporting channel after the mailbox is configured.

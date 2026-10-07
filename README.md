@@ -17,10 +17,10 @@ The frontend runs at `http://localhost:3000` without opening a browser. Set `SER
 
 ## Contributing
 
-See [CONTRIBUTING.md](./docs/CONTRIBUTING.md) and the [code of conduct](./docs/CODE_OF_CONDUCT.md). Open bugs and feature requests in the [Oxytype repository](https://github.com/voltcrash/oxytype/issues). The [self-hosting guide](./docs/SELF_HOSTING.md) covers Worker deployment and static frontend hosting.
+See [CONTRIBUTING.md](./docs/CONTRIBUTING.md) and the [code of conduct](./docs/CODE_OF_CONDUCT.md). Report bugs in the [Oxytype repository](https://github.com/voltcrash/oxytype/issues). The [self-hosting guide](./docs/SELF_HOSTING.md) covers Worker deployment and static frontend hosting.
 
 ## Contact and security
 
 Public site: [oxytype.voltcrash.com](https://oxytype.voltcrash.com). See [production setup](./docs/PRODUCTION_SETUP.md) for deployment and updates.
 
-Use [GitHub issues](https://github.com/voltcrash/oxytype/issues) for general questions and [the security policy](./docs/SECURITY.md) for private vulnerability reports. The planned support address `contact@voltcrash.com` is not active yet.
+Use [GitHub discussions](https://github.com/voltcrash/oxytype/discussions) for general questions and feature ideas, and [the security policy](./docs/SECURITY.md) for private vulnerability reports.
