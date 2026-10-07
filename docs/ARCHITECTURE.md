@@ -36,6 +36,9 @@ Hono runs on a Cloudflare Worker. Shared ts-rest contracts and Zod schemas defin
 request/response shapes. Drizzle describes D1 tables; Better Auth uses the SQLite
 adapter for Google/GitHub accounts and database-backed sessions. `worker.ts`
 exports fetch, queue and scheduled handlers with invocation-scoped bindings.
+ApeKeys use versioned SHA-256 hashes and constant-time comparison; no legacy
+bcrypt verifier remains. See [the hash audit](CLOUDFLARE_OPERATIONS.md#apekey-hash-compatibility)
+before restoring older API-key records.
 
 `api/hono-adapter.ts` preserves transport-independent controllers. D1 owns data,
 exact rate windows, result progression and rankings. User
