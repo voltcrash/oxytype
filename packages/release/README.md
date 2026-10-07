@@ -12,13 +12,6 @@ GitHub release titles omit the `v` prefix.
 The release date is captured when the release starts, independently of the
 previous version. Publication timestamps retain their full ISO year.
 
-The October 4–7, 2026 GitHub releases were migrated in place to `26.10.04`
-through `26.10.07`, with `v`-prefixed tags at their original commits. Release IDs,
-publication dates and notes were preserved; changelog version references were
-shortened. Previous four-digit-year Git tags remain compatibility aliases for
-historical checkouts and comparisons. The checked-in site history includes all
-four migrated releases; deployed site assets adopt it on the next deployment.
-
 The production workflow permits one tagged release per UTC day. Retried runs
 skip a completed production release; conflicting date tags/releases fail before
 deployment. For an additional deployment that day, use the explicit Cloudflare
