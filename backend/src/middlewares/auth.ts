@@ -1,6 +1,6 @@
 import { getSessionCookie } from "better-auth/cookies";
-import { verifyApeKey, hashApeKey } from "../utils/ape-key-hash";
-import { upgradeHash, getApeKey, updateLastUsedOn } from "../dal/ape-keys";
+import { verifyApeKey } from "../utils/ape-key-hash";
+import { getApeKey, updateLastUsedOn } from "../dal/ape-keys";
 import MonkeyError from "../utils/error";
 import { verifySession } from "../utils/auth";
 import { base64UrlDecode, isDevEnvironment } from "../utils/misc";
@@ -235,9 +235,6 @@ async function authenticateWithApeKey(
       throw new MonkeyError(code, message);
     }
 
-    if (!targetApeKey.hash.startsWith("sha256:")) {
-      await upgradeHash(targetApeKey.uid, keyId, hashApeKey(apeKey));
-    }
     await updateLastUsedOn(targetApeKey.uid, keyId);
 
     return {
