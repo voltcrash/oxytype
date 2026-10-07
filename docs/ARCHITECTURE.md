@@ -13,7 +13,7 @@ Package versions come from the workspace manifests and lockfile.
 | `packages/util/`, `packages/funbox/`, `packages/challenges/` | Shared helpers and typing features |
 | `packages/oxlint-config/`, `packages/typescript-config/`, `packages/tsdown-config/` | Shared tooling configuration |
 | `packages/release/` | Daily production release helpers |
-| `.github/workflows/` | CI, labeling, Docker publishing, and repository automation |
+| `.github/workflows/` | CI, production releases, labeling, and repository automation |
 
 The root is a private pnpm workspace. Node, TypeScript and Turborepo coordinate
 package builds. Internal packages use the `@oxytype` scope.
