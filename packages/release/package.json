@@ -1,26 +1,13 @@
 {
   "name": "@oxytype/release",
   "private": true,
-  "bin": {
-    "oxytype-release": "./src/index.js"
-  },
   "type": "module",
   "scripts": {
-    "dev": "nodemon --watch src --exec \"node ./src/index.js --dry\"",
-    "dev-hotfix": "nodemon --watch src --exec \"node ./src/index.js --dry --hotfix\"",
-    "dev-changelog": "nodemon ./src/buildChangelog.js",
     "test": "vp test run",
     "lint": "vp lint . --type-aware --type-check --format agent",
-    "lint-fast": "vp lint . --format agent",
-    "purge-cf-cache": "./bin/purgeCfCache.sh"
-  },
-  "dependencies": {
-    "@octokit/rest": "22.0.1",
-    "dotenv": "18.0.5",
-    "readline-sync": "1.4.10"
+    "lint-fast": "vp lint . --format agent"
   },
   "devDependencies": {
-    "nodemon": "3.1.14",
     "vite-plus": "catalog:"
   }
 }

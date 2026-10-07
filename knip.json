@@ -23,7 +23,6 @@
         "@tanstack/eslint-plugin-query",
         "eslint-plugin-compat",
         "eslint-plugin-solid",
-        "firebase-tools",
         "normalize.css",
         "balloon-css",
         "tailwindcss",
@@ -55,7 +54,6 @@
     "@commitlint/cli",
     "@commitlint/config-conventional",
     "caniuse-lite",
-    "conventional-changelog",
     "yaml"
   ],
   "ignoreBinaries": ["docker", "tsx"]

@@ -86,7 +86,6 @@ export default defineConfig({
       "dist",
       ".turbo",
       "coverage",
-      "frontend/.firebase",
       "backend/__migration__",
     ],
     extends: [sharedLint],
