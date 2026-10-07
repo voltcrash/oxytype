@@ -36,7 +36,6 @@
     "start": "turbo run start",
     "start-be": "turbo run start --filter @oxytype/backend",
     "start-fe": "turbo run start --filter @oxytype/frontend",
-    "docker": "docker compose --env-file docker/.env -f docker/docker-compose.yml up -d",
     "audit-fe": "cd frontend && npm run audit",
     "format-check": "vp fmt . --check",
     "format-fix": "vp fmt .",
