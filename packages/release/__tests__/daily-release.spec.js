@@ -160,11 +160,14 @@ describe("daily production releases", () => {
     expect(plan.body).toContain("latest change");
   });
 
-  it("still deploys and publishes on days without changes", async () => {
+  it("skips deployment and publication without commits since the last production release", async () => {
     previousRelease();
     const plan = await prepareDailyRelease({ github, context, cwd });
-    expect(plan.shouldDeploy).toBe(true);
-    expect(plan.body).toContain("No new changes merged to main");
+    expect(plan.shouldDeploy).toBe(false);
+    expect(plan.skipReason).toBe("no-new-commits");
+    expect(plan).not.toHaveProperty("body");
+    expect(plan).not.toHaveProperty("releaseHistory");
+    expect(github.rest.repos.createRelease).not.toHaveBeenCalled();
   });
 
   it("bundles the new release's exact notes before GitHub publication", async () => {

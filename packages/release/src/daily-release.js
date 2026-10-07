@@ -39,7 +39,13 @@ export async function prepareDailyRelease({ github, context, cwd }) {
         `Release ${tag} already exists outside the daily deployment`,
       );
     }
-    return { version, tag, sha, shouldDeploy: false };
+    return {
+      version,
+      tag,
+      sha,
+      shouldDeploy: false,
+      skipReason: "already-released",
+    };
   }
 
   const productionReleases = releases
@@ -97,6 +103,15 @@ export async function prepareDailyRelease({ github, context, cwd }) {
     "--format=%H%x00%s",
     base ? `${base}..${sha}` : sha,
   );
+  if (previous !== undefined && commits === "") {
+    return {
+      version,
+      tag,
+      sha,
+      shouldDeploy: false,
+      skipReason: "no-new-commits",
+    };
+  }
   const changelog = buildDailyChangelog(
     commits
       ? commits.split("\n").map((line) => {
