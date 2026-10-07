@@ -1,5 +1,7 @@
 # Production setup
 
+For Oxytype maintainers operating the official production site.
+
 One Worker serves the frontend and `/api` on `https://oxytype.voltcrash.com`.
 Use `backend/wrangler.production.json` explicitly. The default Wrangler config
 targets staging; the production release workflow uses the production config.
