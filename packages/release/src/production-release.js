@@ -4,7 +4,7 @@ import { getReleaseVersion } from "./version.js";
 import { buildReleaseHistory } from "./release-history.js";
 
 const productionMarker = "<!-- oxytype-production-release -->";
-const dateTag = /^v\d{4}\.\d{2}\.\d{2}$/;
+const dateTag = /^v\d{2}\.\d{2}\.\d{2}$/;
 
 function git(cwd, ...args) {
   return execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
