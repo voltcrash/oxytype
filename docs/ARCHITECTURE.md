@@ -90,4 +90,4 @@ Public contact and security reporting use the Oxytype repository and its securit
 policy. The
 original GPL license and contributor attribution remain in place.
 
-See [development setup](./CONTRIBUTING_ADVANCED.md), [self-hosting](./SELF_HOSTING.md), and [security reporting](./SECURITY.md) for operational details.
+See [development setup](./CONTRIBUTING_ADVANCED.md) and [security reporting](./SECURITY.md) for operational details.
