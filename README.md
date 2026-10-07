@@ -17,7 +17,7 @@ The frontend runs at `http://localhost:3000` without opening a browser. Set `SER
 
 ## Contributing
 
-See [CONTRIBUTING.md](./docs/CONTRIBUTING.md) and the [code of conduct](./docs/CODE_OF_CONDUCT.md). Report bugs in the [Oxytype repository](https://github.com/voltcrash/oxytype/issues). The [self-hosting guide](./docs/SELF_HOSTING.md) covers Worker deployment and static frontend hosting.
+See [CONTRIBUTING.md](./docs/CONTRIBUTING.md) and the [code of conduct](./docs/CODE_OF_CONDUCT.md). Report bugs in the [Oxytype repository](https://github.com/voltcrash/oxytype/issues).
 
 ## Contact and security
 
