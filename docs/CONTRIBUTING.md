@@ -1,93 +1,65 @@
 # Contributing
 
-### **Table of Contents**
+Oxytype uses TypeScript, SolidJS, Tailwind CSS and a Hono backend on Cloudflare
+Workers with D1 and Queues. See [architecture](ARCHITECTURE.md).
 
-- [Getting Started](#getting-started)
-- [How to Contribute](#how-to-contribute)
-- [Standards and Guidelines](#standards-and-guidelines)
-  - [Theme Guidelines](#theme-guidelines)
-  - [Language Guidelines](#language-guidelines)
-  - [Quote Guidelines](#quote-guidelines)
-  - [Layout Guidelines](#layout-guidelines)
-- [Questions](#questions)
+For asset or documentation edits, follow [basic contributions](CONTRIBUTING_BASIC.md).
+For application changes, follow [development setup](CONTRIBUTING_ADVANCED.md).
+Open pull requests against `main`.
 
-## Getting Started
+## Pull request titles
 
-When contributing to Oxytype, it's good to know our best practices, tips, and tricks. First, Oxytype is written in ~~JavaScript~~ TypeScript, HTML, and CSS (in order of language usage within the project); thus, we assume you are comfortable with these languages or have basic knowledge of them. Our backend runs Hono on Cloudflare Workers and stores user data in D1. Better Auth supports Google/GitHub sign-in and stores linked provider accounts and sessions in D1 through Drizzle. D1 also stores daily/weekly leaderboards and scheduled jobs; Cloudflare Queues and Cron deliver background work. Furthermore, we use Oxc (Oxfmt and Oxlint) to format and lint our code.
+Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for
+pull request titles and commit messages. The
+[title check](../.github/workflows/semantic-pr-title.yml) accepts `build`, `chore`,
+`ci`, `docs`, `feat`, `fix`, `perf`, `refactor`, `revert`, `style` and `test`.
+Scopes are optional. Examples:
 
-## How to Contribute
+- `feat(quotes): add French quotes`
+- `fix(leaderboard): show user rank correctly`
+- `docs: update development setup`
 
-We have two separate contribution guides based on what you're looking to contribute. If you're simply looking to help us augment our language or quotes data, please refer to [CONTRIBUTING_BASIC.md](/docs/CONTRIBUTING_BASIC.md). This guide will go over how to do so easily and without the need to set up a local development server.
+## Theme guidelines
 
-If you're looking to make deeper code changes that affect functionality, or will require screenshots of the changes, please refer to [CONTRIBUTING_ADVANCED.md](/docs/CONTRIBUTING_ADVANCED.md).
+- Choose a unique theme with readable text and good contrast.
+- Use near-black or near-white text.
+- Register it in the theme schema and constants.
+- Check with flip test colors and colorful mode both enabled and disabled.
+- Include screenshots with those settings in the pull request.
 
-## Standards and Guidelines
+See [adding themes](THEMES.md).
 
-Below is a set of general guidelines for different types of changes.
+## Language guidelines
 
-### Pull Request Naming Guidelines
+- Exclude expletives and duplicate words.
+- Use valid JSON with no trailing commas.
+- Register each word list in the language schema and exactly one language group.
+- Match the word count to the filename: the base list has 200 words, `_1k` has
+  1,000, and so on.
 
-We use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for our pull request titles (and commit messages on the master branch). Please follow the guidelines below when naming pull requests.
+See [adding languages](LANGUAGES.md).
 
-For types, we use the following:
+## Quote guidelines
 
-- `feat`: A new feature
-- `fix`: A bug fix
-- `docs`: Documentation only changes
-- `style`: Changes that do not affect the meaning of the code (white space, formatting, missing semi-colons, etc)
-- `refactor`: A code change that neither fixes a bug nor adds a feature, but makes the code easier to read, understand, or improve
-- `perf`: A code change that improves performance
-- `test`: Adding missing tests or correcting existing tests
-- `build`: Changes that affect the build system or external dependencies (example scopes: vite, tsup-node, npm)
-- `ci`: Changes to our CI configuration files and scripts (example scopes: GitHub Workflows)
-- `revert`: Reverts a previous commit
-- `chore`: Other changes that don't apply to any of the above
+- Exclude unlawful, abusive or obscene content.
+- Use valid JSON and check for duplicate text and IDs.
+- Set `length` to the text's JavaScript string length and use the next unused ID.
+- Add quotes of at least 60 characters.
+- Include translations of non-English quotes in the pull request description.
 
-#### Examples
+See [adding quotes](QUOTES.md).
 
-- `feat: add new feature `
-- `impr(quotes): add english quotes `
-- `fix(leaderboard): show user rank correctly `
+## Layout guidelines
 
-### Theme Guidelines
+Match the layout schema's key counts and character order. See
+[adding layouts](LAYOUTS.md).
 
-<!-- TODO: add screenshots to provide examples for dos and don'ts -->
+## Font guidelines
 
-Before submitting a theme make sure...
-
-- your theme is unique and isn't visually similar to any we already have.
-- the text color is either black or white (or very close to these colors)
-- your theme has been added to the `_list` file and the `textColor` property is the theme's main color
-- your theme is clear and readable with both `flip test colors` and `colorful mode` enabled and disabled
-
-If you want to contribute themes but don't know how, check [THEMES.md](/docs/THEMES.md)
-
-### Language Guidelines
-
-- Do not include expletive words
-- Ensure that your contribution meets JSON standards (no trailing comma at the end of a list)
-- Be sure to add your language to the `_list` and `_groups` files
-- Make sure the number of words in the file corresponds to the file name (for example: `languageName.json` is 200 words, `languageName_1k.json` is 1000 words, and so on)
-
-If you want to contribute languages but don't know how, check [LANGUAGES.md](/docs/LANGUAGES.md)
-
-### Quote Guidelines
-
-- Do not include content that contains any libelous or otherwise unlawful, abusive, or obscene text.
-- Ensure that your contribution meets JSON standards (no trailing comma at the end of a list)
-- Verify quotes added aren't duplicates of any already present
-- Verify the `length` property is correct (length of the text in characters)
-- Verify the `id` property is incremented correctly
-- Please do not add extremely short quotes (less than 60 characters)
-- For quotes not in English, please include translations of quotes in the description of your pull request. This assists in the verification process to ensure the integrity of the quotes.
-- Remember to name your pull request properly. For example, if you are adding new quotes for the language `French`, your pull request should be named `impr(quotes): add French quotes `.
-
-If you want to contribute quotes but don't know how, check [QUOTES.md](/docs/QUOTES.md)
-
-### Layout Guidelines
-
-If you want to contribute layouts but don't know how, check [LAYOUTS.md](/docs/LAYOUTS.md)
+Use WOFF2 files, valid font names and matching schema/constants entries. See
+[adding fonts](FONTS.md).
 
 ## Questions
 
-Open an [issue](https://github.com/voltcrash/oxytype/issues) or a [discussion](https://github.com/voltcrash/oxytype/discussions) in this repository.
+Open an [issue](https://github.com/voltcrash/oxytype/issues) for bugs or a
+[discussion](https://github.com/voltcrash/oxytype/discussions) for questions and ideas.
