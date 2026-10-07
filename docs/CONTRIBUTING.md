@@ -10,8 +10,7 @@ Open pull requests against `main`.
 ## Pull request titles
 
 Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for
-pull request titles and commit messages. The
-[title check](../.github/workflows/semantic-pr-title.yml) accepts `build`, `chore`,
+pull request titles and commit messages. Use types `build`, `chore`,
 `ci`, `docs`, `feat`, `fix`, `perf`, `refactor`, `revert`, `style` and `test`.
 Scopes are optional. Examples:
 
