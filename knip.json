@@ -55,7 +55,6 @@
     "@commitlint/cli",
     "@commitlint/config-conventional",
     "caniuse-lite",
-    "conventional-changelog",
     "yaml"
   ],
   "ignoreBinaries": ["docker", "tsx"]
