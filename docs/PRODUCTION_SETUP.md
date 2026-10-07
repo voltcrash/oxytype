@@ -165,9 +165,6 @@ manual release stops the workflow before deployment.
 
 GitHub's scheduler can run late or drop jobs under load; 00:17 UTC is the requested
 trigger time, not an exact-time guarantee. See [GitHub scheduling behavior](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).
-GitHub releases use the workflow's `GITHUB_TOKEN`, so they do not trigger the
-separate release-event Docker workflow; dispatch that workflow on the tag when
-container images are needed.
 
 ## Browser verification and monitoring
 
