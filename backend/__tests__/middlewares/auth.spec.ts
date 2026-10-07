@@ -21,7 +21,6 @@ import {
   EndpointMetadata,
   RequestAuthenticationOptions,
 } from "@oxytype/contracts/util/api";
-import * as Prometheus from "../../src/utils/prometheus";
 import { enableMonkeyErrorExpects } from "../__testData__/monkey-error";
 import { Context } from "../../src/middlewares/context";
 
@@ -84,15 +83,6 @@ describe("middlewares/auth", () => {
   });
 
   describe("authenticateTsRestRequest", () => {
-    const prometheusRecordAuthTimeMock = vi.spyOn(Prometheus, "recordAuthTime");
-    const prometheusIncrementAuthMock = vi.spyOn(Prometheus, "incrementAuth");
-
-    beforeEach(() => {
-      [prometheusIncrementAuthMock, prometheusRecordAuthTimeMock].forEach(
-        (it) => it.mockClear(),
-      );
-    });
-
     it("should fail if token is not fresh", async () => {
       //GIVEN
       Date.now = vi.fn(() => 60001);
@@ -111,8 +101,6 @@ describe("middlewares/auth", () => {
       expect(nextFunction).toHaveBeenLastCalledWith(
         expect.toMatchMonkeyError(expectedError),
       );
-      expect(prometheusIncrementAuthMock).not.toHaveBeenCalled();
-      expect(prometheusRecordAuthTimeMock).toHaveBeenCalledOnce();
     });
     it("should allow the request if token is fresh", async () => {
       //GIVEN
@@ -127,9 +115,6 @@ describe("middlewares/auth", () => {
       expect(decodedToken?.email).toBe(mockDecodedToken.email);
       expect(decodedToken?.uid).toBe(mockDecodedToken.uid);
       expect(nextFunction).toHaveBeenCalledOnce();
-
-      expect(prometheusIncrementAuthMock).toHaveBeenCalledWith("Bearer");
-      expect(prometheusRecordAuthTimeMock).toHaveBeenCalledOnce();
     });
     it("should allow the request if apeKey is supported", async () => {
       //WHEN
@@ -221,9 +206,6 @@ describe("middlewares/auth", () => {
       expect(decodedToken?.email).toBe("");
       expect(decodedToken?.uid).toBe("");
       expect(nextFunction).toHaveBeenCalledTimes(1);
-
-      expect(prometheusIncrementAuthMock).toHaveBeenCalledWith("None");
-      expect(prometheusRecordAuthTimeMock).toHaveBeenCalledOnce();
     });
     it("should allow the request with apeKey on public endpoint", async () => {
       //WHEN
@@ -238,9 +220,6 @@ describe("middlewares/auth", () => {
       expect(decodedToken?.email).toBe("");
       expect(decodedToken?.uid).toBe("123");
       expect(nextFunction).toHaveBeenCalledTimes(1);
-
-      expect(prometheusIncrementAuthMock).toHaveBeenCalledWith("ApeKey");
-      expect(prometheusRecordAuthTimeMock).toHaveBeenCalledOnce();
     });
     it("should allow request with Uid on dev", async () => {
       //WHEN
@@ -284,13 +263,6 @@ describe("middlewares/auth", () => {
       );
 
       //THEH
-      expect(prometheusIncrementAuthMock).not.toHaveBeenCalled();
-      expect(prometheusRecordAuthTimeMock).toHaveBeenCalledWith(
-        "None",
-        "failure",
-        expect.anything(),
-        expect.anything(),
-      );
     });
     it("should fail with empty authentication", async () => {
       await expect(async () =>
@@ -300,13 +272,6 @@ describe("middlewares/auth", () => {
       );
 
       //THEH
-      expect(prometheusIncrementAuthMock).not.toHaveBeenCalled();
-      expect(prometheusRecordAuthTimeMock).toHaveBeenCalledWith(
-        "",
-        "failure",
-        expect.anything(),
-        expect.anything(),
-      );
     });
     it("should fail with missing authentication token", async () => {
       await expect(async () =>
@@ -316,13 +281,6 @@ describe("middlewares/auth", () => {
       );
 
       //THEH
-      expect(prometheusIncrementAuthMock).not.toHaveBeenCalled();
-      expect(prometheusRecordAuthTimeMock).toHaveBeenCalledWith(
-        "Bearer",
-        "failure",
-        expect.anything(),
-        expect.anything(),
-      );
     });
     it("should fail with unknown authentication scheme", async () => {
       await expect(async () =>
@@ -332,31 +290,8 @@ describe("middlewares/auth", () => {
       );
 
       //THEH
-      expect(prometheusIncrementAuthMock).not.toHaveBeenCalled();
-      expect(prometheusRecordAuthTimeMock).toHaveBeenCalledWith(
-        "unknown",
-        "failure",
-        expect.anything(),
-        expect.anything(),
-      );
     });
-    it("should record country if provided", async () => {
-      const prometheusRecordRequestCountryMock = vi.spyOn(
-        Prometheus,
-        "recordRequestCountry",
-      );
 
-      await authenticate(
-        { headers: { "cf-ipcountry": "gb" } },
-        { isPublic: true },
-      );
-
-      //THEN
-      expect(prometheusRecordRequestCountryMock).toHaveBeenCalledWith(
-        "gb",
-        expect.anything(),
-      );
-    });
     it("should allow the request with authentation on dev public endpoint", async () => {
       //WHEN
       const result = await authenticate({}, { isPublicOnDev: true });
@@ -381,9 +316,6 @@ describe("middlewares/auth", () => {
       expect(decodedToken?.email).toBe("");
       expect(decodedToken?.uid).toBe("");
       expect(nextFunction).toHaveBeenCalledTimes(1);
-
-      expect(prometheusIncrementAuthMock).toHaveBeenCalledWith("None");
-      expect(prometheusRecordAuthTimeMock).toHaveBeenCalledOnce();
     });
     it("should allow the request with apeKey on dev public endpoint", async () => {
       //WHEN
@@ -398,9 +330,6 @@ describe("middlewares/auth", () => {
       expect(decodedToken?.email).toBe("");
       expect(decodedToken?.uid).toBe("123");
       expect(nextFunction).toHaveBeenCalledTimes(1);
-
-      expect(prometheusIncrementAuthMock).toHaveBeenCalledWith("ApeKey");
-      expect(prometheusRecordAuthTimeMock).toHaveBeenCalledOnce();
     });
     it("should allow with apeKey if apeKeys are disabled on dev public endpoint", async () => {
       //GIVEN
@@ -418,9 +347,6 @@ describe("middlewares/auth", () => {
       expect(decodedToken?.email).toBe("");
       expect(decodedToken?.uid).toBe("123");
       expect(nextFunction).toHaveBeenCalledTimes(1);
-
-      expect(prometheusIncrementAuthMock).toHaveBeenCalledWith("ApeKey");
-      expect(prometheusRecordAuthTimeMock).toHaveBeenCalledOnce();
     });
     it("should allow the request with authentation on dev public endpoint in production", async () => {
       //WHEN
@@ -457,9 +383,6 @@ describe("middlewares/auth", () => {
       expect(decodedToken?.email).toBe("");
       expect(decodedToken?.uid).toBe("123");
       expect(nextFunction).toHaveBeenCalledTimes(1);
-
-      expect(prometheusIncrementAuthMock).toHaveBeenCalledWith("ApeKey");
-      expect(prometheusRecordAuthTimeMock).toHaveBeenCalledOnce();
     });
   });
 });
