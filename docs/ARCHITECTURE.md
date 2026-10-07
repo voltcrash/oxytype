@@ -69,7 +69,7 @@ Node/pnpm build workspace packages and API docs. Wrangler runs local workerd
 and D1 on port 5005; Solid/Vite runs on port 3000. Application and test IDs are
 strings. Vitest covers controllers and real D1 behavior.
 Backend build performs a Wrangler dry-run; deployment applies migrations then
-uses Wrangler. Docker publishes the static frontend only.
+uses Wrangler.
 
 The default Wrangler config targets staging. A separate production config serves
 frontend and API
