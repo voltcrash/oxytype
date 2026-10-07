@@ -59,7 +59,6 @@
         "stories/**/*.{ts,tsx}"
       ],
       "ignoreDependencies": [
-        "@chromatic-com/storybook",
         "@storybook/addon-links",
         "@storybook/addon-onboarding",
         "@storybook/builder-vite",
