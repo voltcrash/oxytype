@@ -35,7 +35,6 @@
     "@better-auth/drizzle-adapter": "1.7.7",
     "@better-auth/infra": "0.4.14",
     "@date-fns/utc": "2.1.1",
-    "@oxytype/challenges": "workspace:*",
     "@oxytype/contracts": "workspace:*",
     "@oxytype/funbox": "workspace:*",
     "@oxytype/schemas": "workspace:*",

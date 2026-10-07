@@ -274,9 +274,6 @@ importers:
       '@date-fns/utc':
         specifier: 2.1.1
         version: 2.1.1
-      '@oxytype/challenges':
-        specifier: workspace:*
-        version: link:../packages/challenges
       '@oxytype/contracts':
         specifier: workspace:*
         version: link:../packages/contracts
