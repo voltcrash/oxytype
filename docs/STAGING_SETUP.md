@@ -32,8 +32,7 @@ do not copy local development vars or paste secrets into chat.
 Create a separate **managed** staging widget in the
 [Cloudflare Turnstile dashboard](https://dash.cloudflare.com/?to=/:account/turnstile).
 Allow `oxytype-api-staging.voltcrash.workers.dev` for the hosted staging frontend.
-Allow `localhost` only when testing a local frontend. When hosting elsewhere,
-add that hostname and set the deployed `FRONTEND_URL` to match.
+Allow `localhost` only when testing a local frontend.
 The worker checks that hostname and each form's action through
 [Siteverify](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/).
 
