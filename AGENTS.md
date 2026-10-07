@@ -1,5 +1,5 @@
 Be extremely concise. Sacrifice grammar for concision.
-Frontend UI uses SolidJS `.tsx` components. Keep imperative DOM work inside component-owned refs/lifecycles; allowed exceptions are in `frontend/SOLID_MIGRATION.md`.
+Frontend UI uses SolidJS `.tsx` components. Keep imperative DOM work inside component-owned refs/lifecycles. Allowed imperative work: document/head updates, canvas and screenshots, word/letter rendering and caret positioning. Preserve static `noscript`/`#nocss` fallbacks in `frontend/src/html/warnings.html`.
 Single test file: `pnpm vitest run path/to/test.ts`
 When running oxc lint, always use `--format agent`.
 For typechecking, use `pnpm oxlint --type-aware --type-check` instead of `tsc`.
