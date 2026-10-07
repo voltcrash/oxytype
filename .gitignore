@@ -82,7 +82,6 @@ backend/imports/
 .firebaserc
 .firebaserc_copy
 serviceAccountKey*.json
-!docker/serviceAccountKey-example.json
 
 #generated files
 dist/
