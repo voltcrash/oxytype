@@ -75,7 +75,7 @@ redeployments. Set `BETTER_AUTH_URL` in Wrangler vars to the deployed URL plus
 `/api/auth`, rebuild/redeploy. Do not put secrets in git. Optional secrets:
 `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`,
 `GITHUB_CLIENT_SECRET`, `TURNSTILE_SECRET_KEY`,
-`INTEGRATION_SECRET`, `STATS_USERNAME`, `STATS_PASSWORD`.
+`INTEGRATION_SECRET`.
 Optional nonsecret vars: `INTEGRATION_URL`, `QUOTES_REPOSITORY`.
 
 Without OAuth credentials no social login is available. Without a real Turnstile
@@ -87,8 +87,9 @@ live API checks passed with a temporary seeded identity. GitHub and Turnstile cr
 saving are enabled for browser testing. Follow [staging browser setup](STAGING_SETUP.md)
 for browser verification steps. Real-user GitHub signup and a human result save
 have now been confirmed on hosted staging. Keep automatic
-bans disabled while reviewing real typing samples. `/stats/*` remains inaccessible
-without stats credentials.
+bans disabled while reviewing real typing samples. The unused isolate-local
+`/stats/*` diagnostics endpoints are retired; use Cloudflare Analytics and Workers
+logs. Old `STATS_USERNAME` and `STATS_PASSWORD` bindings can be removed.
 
 Cross-site staging cookies use Secure/SameSite=None and explicit localhost
 origin checks. Some browsers block third-party cookies; a same-site frontend/API

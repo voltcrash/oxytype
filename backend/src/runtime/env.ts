@@ -31,8 +31,6 @@ export type WorkerEnv = {
   API_PATH_OVERRIDE?: string;
   MAINTENANCE?: string;
   VERSION?: string;
-  STATS_USERNAME?: string;
-  STATS_PASSWORD?: string;
 };
 
 export type Runtime = {

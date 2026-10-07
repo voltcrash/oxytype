@@ -18,7 +18,6 @@ import { Hono } from "hono";
 import { serveStatic } from "../../utils/static";
 import { ApiEnv } from "../http";
 import { initServer, createHonoEndpoints } from "../hono-adapter";
-import { addStatsRoutes } from "./stats";
 import { MonkeyResponse } from "../../utils/monkey-response";
 import { isDevEnvironment } from "../../utils/misc";
 import { getLiveConfiguration } from "../../init/configuration";
@@ -74,7 +73,6 @@ export function addApiRoutes(app: Hono<ApiEnv>, docsRoot?: string): void {
     });
   }
 
-  addStatsRoutes(app);
   app.use(async (c, next) => {
     if (
       !c.req.path.startsWith("/configuration") &&
