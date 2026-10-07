@@ -6,12 +6,7 @@ import { ApiContext } from "../api/http";
 import { HTTPException } from "hono/http-exception";
 import { isCustomCode } from "../constants/monkey-status-codes";
 
-import {
-  recordClientErrorByVersion,
-  recordServerErrorByVersion,
-} from "../utils/prometheus";
 import { isDevEnvironment } from "../utils/misc";
-import { version } from "../version";
 import { addLog } from "../dal/logs";
 
 type ErrorData = {
@@ -48,13 +43,7 @@ async function errorHandlingMiddleware(
 
     await incrementBadAuth(req, status);
 
-    if (status >= 400 && status < 500) {
-      recordClientErrorByVersion(c.req.header("x-client-version") ?? "unknown");
-    }
-
     if (!isDevEnvironment() && status >= 500 && status !== 503) {
-      recordServerErrorByVersion(version);
-
       const { uid, errorId } = data as {
         uid: string;
         errorId: string;

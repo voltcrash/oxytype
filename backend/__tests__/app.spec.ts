@@ -181,14 +181,13 @@ describe("Hono HTTP application", () => {
       data: null,
     });
   });
-  it("keeps configuration and stats available during maintenance", async () => {
+  it("keeps configuration available during maintenance", async () => {
     configuration.maintenance = true;
     const client = createClient();
     await client
       .get("/")
       .expect(503, { message: "Server is down for maintenance" });
     await client.get("/configuration").expect(200);
-    await client.get("/stats/swagger-stats").expect(200);
   });
   it("honors environment maintenance", async () => {
     vi.stubEnv("MAINTENANCE", "true");
@@ -422,36 +421,23 @@ describe("Hono HTTP application", () => {
       await client.post(path).send({}).expect(404);
     }
   });
-  it("serves stats and all Prometheus metrics in development", async () => {
-    const client = createClient();
-    await client.get("/probe").expect(200);
-    const stats = await client.get("/stats/swagger-stats").expect(200);
-    expect(stats.body.requests).toBeGreaterThan(0);
-    expect(stats.body.averageDurationMs).toBeGreaterThanOrEqual(0);
-    await client.get("/stats").expect(302).expect("Location", "/stats/ui");
-    await client.get("/stats/ui").expect(200).expect("Content-Type", /html/);
-    const metrics = await client.get("/stats/metrics").expect(200);
-    expect(metrics.text).toContain("api_http_requests_total");
-    expect(metrics.text).toContain("api_http_request_duration_seconds");
-    expect(metrics.text).toContain("api_request_auth_total");
-  });
-  it("protects every stats endpoint in production, including maintenance", async () => {
-    vi.stubEnv("MODE", "prod");
-    vi.stubEnv("STATS_USERNAME", "admin");
-    vi.stubEnv("STATS_PASSWORD", "secret");
-    configuration.maintenance = true;
-    const client = createClient();
-    for (const path of [
-      "/stats",
-      "/stats/ui",
-      "/stats/swagger-stats",
-      "/stats/metrics",
-      "/stats/swagger.json",
-    ]) {
-      await client.get(path).expect(401).expect("WWW-Authenticate", /Basic/);
-      await client.get(path).auth("admin", "wrong").expect(401);
+  it("returns 404 for retired stats endpoints in development and production", async () => {
+    for (const mode of ["dev", "prod"]) {
+      vi.stubEnv("MODE", mode);
+      const client = createClient();
+      for (const path of [
+        "/stats",
+        "/stats/",
+        "/stats/ui",
+        "/stats/swagger-stats",
+        "/stats/metrics",
+        "/stats/swagger.json",
+      ]) {
+        const response = await client.get(path).expect(404);
+        expect(response.headers["www-authenticate"]).toBeUndefined();
+        expect(response.body.data).toBeNull();
+      }
     }
-    await client.get("/stats/metrics").auth("admin", "secret").expect(200);
   });
   it("serves docs with the Redoc CSP in development and production", async () => {
     for (const mode of ["dev", "prod"]) {

@@ -11,7 +11,6 @@ import LaterQueue, {
   type LaterTaskContexts,
   type LaterTaskType,
 } from "../queues/later-queue";
-import { recordTimeToCompleteJob } from "../utils/prometheus";
 import { WeeklyXpLeaderboard } from "../services/weekly-xp-leaderboard";
 import { MonkeyMail } from "@oxytype/schemas/users";
 import { isSafeNumber, mapRange } from "@oxytype/util/numbers";
@@ -209,7 +208,6 @@ export async function jobHandler(
   }
 
   const elapsed = performance.now() - start;
-  recordTimeToCompleteJob(LaterQueue.queueName, taskName, elapsed);
   Logger.success(`Job: ${taskName} - completed in ${elapsed}ms`);
 }
 

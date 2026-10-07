@@ -75,9 +75,10 @@ Replace filesystem quote/config/docs access with Worker assets/D1. Local git
 transports with structured console logs and Workers observability.
 
 Bindings/config/auth are invocation scoped via AsyncLocalStorage; no import-time
-`process.exit` or production environment decisions. Crypto, Buffer, AsyncLocalStorage
-and compatible `prom-client` still bundle; metrics are per isolate, not fleet
-aggregates. Node compatibility defaults on for the selected 2026-10-02 date;
+`process.exit` or production environment decisions. Crypto, Buffer and
+AsyncLocalStorage still bundle. Isolate-local `prom-client` metrics were later
+retired; fleet diagnostics use Workers observability. Node compatibility defaults
+on for the selected 2026-10-02 date;
 this does not make native modules or a persistent process available.
 [Cloudflare runtime change](https://developers.cloudflare.com/changelog/post/2026-08-04-nodejs-compat-default/).
 

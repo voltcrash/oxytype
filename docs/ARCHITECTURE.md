@@ -12,7 +12,7 @@ Snapshot: 3 October 2026. Package versions come from the workspace manifests and
 | `packages/schemas/` | Shared Zod schemas and domain types |
 | `packages/util/`, `packages/funbox/`, `packages/challenges/` | Shared helpers and typing features |
 | `packages/oxlint-config/`, `packages/typescript-config/`, `packages/tsup-config/` | Shared tooling configuration |
-| `packages/release/` | Release and deployment CLI |
+| `packages/release/` | Daily production release helpers |
 | `docker/` | Static frontend container and build definition |
 | `.github/workflows/` | CI, labeling, Docker publishing, and repository automation |
 
@@ -48,8 +48,9 @@ Reward grants and inbox claims deduplicate retries. KV/DOs are unnecessary initi
 
 Docs/config/quote assets use the Worker ASSETS binding. Quote git automation
 requires an external HTTPS bridge. Structured console logs
-feed Workers observability; `/stats/*` remains credential protected. Prometheus
-and stats counters are isolate-local, not fleet-wide metrics.
+feed Workers observability. The isolate-local Prometheus registry and `/stats/*`
+admin endpoints are retired; use Cloudflare Analytics and logs for diagnostics.
+Public aggregates and `/users/stats` remain database-backed application features.
 
 ```mermaid
 flowchart LR
@@ -72,7 +73,7 @@ controllers and real D1 behavior.
 Backend build performs a Wrangler dry-run; deployment applies migrations then
 uses Wrangler. Docker publishes the static frontend only.
 
-The default Wrangler config and release CLI target staging; hosted staging has
+The default Wrangler config targets staging; hosted staging has
 real-user signup/results. A separate production config serves frontend and API
 on `oxytype.voltcrash.com` with isolated D1, queues, GitHub OAuth and Turnstile
 credentials. Production starts fresh; no legacy/staging data is imported.

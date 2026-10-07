@@ -7,12 +7,6 @@ import { base64UrlDecode, isDevEnvironment } from "../utils/misc";
 import { ApiMiddleware } from "../api/http";
 import statuses from "../constants/monkey-status-codes";
 import {
-  incrementAuth,
-  recordAuthTime,
-  recordRequestCountry,
-} from "../utils/prometheus";
-import { performance } from "perf_hooks";
-import {
   EndpointMetadata,
   RequestAuthenticationOptions,
 } from "@oxytype/contracts/util/api";
@@ -45,9 +39,7 @@ export function authenticateTsRestRequest(): ApiMiddleware {
       ...((getMetadata(req).authenticationOptions ?? {}) as EndpointMetadata),
     };
 
-    const startTime = performance.now();
     let token: DecodedToken;
-    let authType = "None";
 
     const isPublic =
       options.isPublic === true ||
@@ -55,71 +47,41 @@ export function authenticateTsRestRequest(): ApiMiddleware {
 
     const { authorization: authHeader } = req.headers;
 
-    try {
-      if (authHeader !== undefined && authHeader !== "") {
-        token = await authenticateWithAuthHeader(
-          authHeader,
-          req.ctx.configuration,
-          options,
-        );
-      } else if (
-        typeof getSessionCookie(
-          new Headers({ cookie: req.headers["cookie"] ?? "" }),
-          { cookiePrefix: "oxytype" },
-        ) === "string"
-      ) {
-        token = await authenticateWithSession(
-          new Headers({ cookie: req.headers["cookie"] ?? "" }),
-          options,
-          "Session",
-        );
-      } else if (isPublic === true) {
-        token = {
-          type: "None",
-          uid: "",
-          email: "",
-        };
-      } else {
-        throw new MonkeyError(
-          401,
-          "Unauthorized",
-          `endpoint: ${req.path} no authorization header found`,
-        );
-      }
-
-      incrementAuth(token.type);
-
-      req.ctx = {
-        ...req.ctx,
-        decodedToken: token,
-      };
-    } catch (error) {
-      authType = authHeader?.split(" ")[0] ?? "None";
-
-      recordAuthTime(
-        authType,
-        "failure",
-        Math.round(performance.now() - startTime),
-        req,
+    if (authHeader !== undefined && authHeader !== "") {
+      token = await authenticateWithAuthHeader(
+        authHeader,
+        req.ctx.configuration,
+        options,
       );
-
-      throw error;
+    } else if (
+      typeof getSessionCookie(
+        new Headers({ cookie: req.headers["cookie"] ?? "" }),
+        { cookiePrefix: "oxytype" },
+      ) === "string"
+    ) {
+      token = await authenticateWithSession(
+        new Headers({ cookie: req.headers["cookie"] ?? "" }),
+        options,
+        "Session",
+      );
+    } else if (isPublic === true) {
+      token = {
+        type: "None",
+        uid: "",
+        email: "",
+      };
+    } else {
+      throw new MonkeyError(
+        401,
+        "Unauthorized",
+        `endpoint: ${req.path} no authorization header found`,
+      );
     }
-    recordAuthTime(
-      token.type,
-      "success",
-      Math.round(performance.now() - startTime),
-      req,
-    );
 
-    const country = req.headers["cf-ipcountry"] as string;
-    if (country) {
-      recordRequestCountry(country, req);
-    }
-
-    // if (req.method !== "OPTIONS" && req?.ctx?.decodedToken?.uid) {
-    //   recordRequestForUid(req.ctx.decodedToken.uid);
-    // }
+    req.ctx = {
+      ...req.ctx,
+      decodedToken: token,
+    };
 
     await next();
   };

@@ -27,11 +27,6 @@ export function buildApp(options: { docsRoot?: string } = {}): Hono<ApiEnv> {
   const getPath = createPathNormalizer(contract, [
     "/",
     "/configure",
-    "/stats",
-    "/stats/ui",
-    "/stats/swagger-stats",
-    "/stats/metrics",
-    "/stats/swagger.json",
     docsPrefix,
     ...["internal", "internal.json", "public", "public.json"].map(
       (path) => `${docsPrefix}/${path}`,

@@ -57,10 +57,9 @@ Queues: `oxytype-staging-tasks` and `oxytype-staging-dlq`.
 The default API-only config trusts `http://localhost:3000`; hosted staging uses
 the Worker origin. Production routes are isolated in `wrangler.production.json`.
 
-Wrangler uses `backend/wrangler.jsonc`; changing its default deploy target changes
-the release CLI too. Production has a separate reviewed config/resources; use
-its explicit commands. Current backend release script migrates/deploys staging;
-it no longer SSHs into a Node server. Frontend delivery is separate.
+Wrangler uses `backend/wrangler.jsonc` for staging. Production has a separate
+config/resources; use its explicit commands or the daily production workflow.
+Both hosted sites serve frontend and API through the Worker assets binding.
 
 ```sh
 pnpm --filter @oxytype/backend exec wrangler login
@@ -76,7 +75,7 @@ redeployments. Set `BETTER_AUTH_URL` in Wrangler vars to the deployed URL plus
 `/api/auth`, rebuild/redeploy. Do not put secrets in git. Optional secrets:
 `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`,
 `GITHUB_CLIENT_SECRET`, `TURNSTILE_SECRET_KEY`,
-`INTEGRATION_SECRET`, `STATS_USERNAME`, `STATS_PASSWORD`.
+`INTEGRATION_SECRET`.
 Optional nonsecret vars: `INTEGRATION_URL`, `QUOTES_REPOSITORY`.
 
 Without OAuth credentials no social login is available. Without a real Turnstile
@@ -88,8 +87,9 @@ live API checks passed with a temporary seeded identity. GitHub and Turnstile cr
 saving are enabled for browser testing. Follow [staging browser setup](STAGING_SETUP.md)
 for browser verification steps. Real-user GitHub signup and a human result save
 have now been confirmed on hosted staging. Keep automatic
-bans disabled while reviewing real typing samples. `/stats/*` remains inaccessible
-without stats credentials.
+bans disabled while reviewing real typing samples. The unused isolate-local
+`/stats/*` diagnostics endpoints are retired; use Cloudflare Analytics and Workers
+logs. Old `STATS_USERNAME` and `STATS_PASSWORD` bindings can be removed.
 
 Cross-site staging cookies use Secure/SameSite=None and explicit localhost
 origin checks. Some browsers block third-party cookies; a same-site frontend/API

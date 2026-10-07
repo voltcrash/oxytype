@@ -2,17 +2,6 @@ import { EndpointMetadata } from "@oxytype/contracts/util/api";
 import { ApiMiddleware, HttpRequest } from "../api/http";
 import MonkeyError from "../utils/error";
 import { isDevEnvironment } from "../utils/misc";
-import { recordClientVersion as prometheusRecordClientVersion } from "../utils/prometheus";
-
-export function recordClientVersion(): ApiMiddleware {
-  return async (c, next) => {
-    const version =
-      c.req.header("x-client-version") ?? c.req.header("client-version");
-    prometheusRecordClientVersion(version ?? "unknown");
-    await next();
-  };
-}
-
 export function onlyAvailableOnDev(): ApiMiddleware {
   return async (_c, next) => {
     if (!isDevEnvironment()) {
