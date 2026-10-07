@@ -22,4 +22,12 @@ unchanged; ordinary frontend development/build commands use the checked-in
 snapshot without accessing GitHub. The footer and history modal fetch the
 site-hosted file, and older history is linked to GitHub.
 
-The **Daily production release** GitHub workflow deploys the complete production Worker site at 00:17 UTC, or manually from `main`, then publishes a date-named release with all changes since the previous production release. It keeps retries tied to the original date and deployed commit. See [production automation setup](../../docs/PRODUCTION_SETUP.md#daily-production-releases) for required Actions inputs and first-release behavior. The interactive CLI above remains a separate staging/Firebase release flow.
+The **Production release** [GitHub workflow](../../.github/workflows/production-release.yml)
+checks for new commits at 00:17 UTC, or manually from `main`. It skips deployment
+and publication when no commits have been added since the last production release.
+Otherwise, it deploys the complete production Worker site and publishes a
+date-named release containing all changes since that release. Delayed runs and
+retries use the UTC date when release planning executes, while retaining the
+run's original `main` snapshot. See [production automation setup](../../docs/PRODUCTION_SETUP.md#production-releases)
+for required Actions inputs and first-release behavior. The interactive CLI above
+remains a separate staging/Firebase release flow.
