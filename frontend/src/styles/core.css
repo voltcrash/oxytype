@@ -189,6 +189,22 @@ kbd {
     pointer-events: none !important;
   }
 }
+/* Phones: long tooltips wrap inside the screen instead of running off it. */
+@variant max-sm {
+  [aria-label][data-balloon-pos]::after {
+    max-width: calc(100vw - 2rem);
+  }
+  [aria-label][data-balloon-pos]:not([data-balloon-length])::after {
+    width: max-content;
+    max-width: min(20rem, calc(100vw - 2rem));
+    white-space: normal;
+  }
+  [aria-label][data-balloon-pos][data-balloon-break]:not(
+      [data-balloon-length]
+    )::after {
+    white-space: pre-wrap;
+  }
+}
 
 table {
   @apply z-0;
