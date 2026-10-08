@@ -1,4 +1,4 @@
-import { cleanup, render } from "@solidjs/testing-library";
+import { cleanup, render, screen } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -96,5 +96,63 @@ describe("SidebarLayout hotkeys", () => {
     cleanup();
     pressMod("1");
     expect(onSelect).not.toHaveBeenCalled();
+  });
+});
+
+function holdMod(down: boolean): void {
+  document.body.dispatchEvent(
+    new KeyboardEvent(down ? "keydown" : "keyup", {
+      key: "Control",
+      code: "ControlLeft",
+      ctrlKey: down,
+      bubbles: true,
+    }),
+  );
+}
+
+describe("SidebarLayout hotkey hints", () => {
+  afterEach(() => holdMod(false));
+
+  const hints = (): string[] =>
+    [...document.querySelectorAll("kbd")].map((kbd) => kbd.textContent);
+
+  it("shows each item's hotkey while mod is held", () => {
+    renderSidebar();
+    expect(hints()).toEqual([]);
+    holdMod(true);
+    expect(hints()).toEqual(["Ctrl+1", "Ctrl+2"]);
+    holdMod(false);
+    expect(hints()).toEqual([]);
+  });
+
+  it("replaces counts while held", () => {
+    render(() => (
+      <SidebarLayout
+        items={items}
+        active={undefined}
+        onSelect={vi.fn()}
+        counts={{ one: 3 }}
+        hotkeys
+      >
+        content
+      </SidebarLayout>
+    ));
+    expect(screen.getByText("3")).toBeTruthy();
+    holdMod(true);
+    expect(screen.queryByText("3")).toBeNull();
+    expect(hints()).toEqual(["Ctrl+1", "Ctrl+2"]);
+  });
+
+  it("hides hints while disabled or a popup is open", () => {
+    renderSidebar(() => false);
+    holdMod(true);
+    expect(hints()).toEqual([]);
+    cleanup();
+    holdMod(false);
+
+    state.popup = true;
+    renderSidebar();
+    holdMod(true);
+    expect(hints()).toEqual([]);
   });
 });
