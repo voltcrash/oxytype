@@ -675,8 +675,9 @@ describe("result controller test", () => {
       expect(publicUpdateStatsMock).toHaveBeenCalledWith(
         4,
         15.1 + 10 - 5, //duration + incompleteTestSeconds-afk
+        "web",
       );
-      expect(userIncrementXpMock).toHaveBeenCalledWith(uid, 177);
+      expect(userIncrementXpMock).toHaveBeenCalledWith(uid, 177, "web");
       expect(weeklyXpAddResultMock).toHaveBeenCalledWith(
         expect.objectContaining({ enabled: true }),
         expect.objectContaining({ xpGained: 177 }),
@@ -685,6 +686,7 @@ describe("result controller test", () => {
         uid,
         4,
         15.1 + 10 - 5, //duration + incompleteTestSeconds-afk
+        "web",
       );
     });
     it("should fail if result saving is disabled", async () => {
@@ -720,7 +722,12 @@ describe("result controller test", () => {
         .set("Authorization", `Bearer ${uid}`)
         .send({ result: buildCompletedEvent() })
         .expect(200);
-      expect(userUpdateTypingStatsMock).toHaveBeenCalledWith(uid, 4, 10.1);
+      expect(userUpdateTypingStatsMock).toHaveBeenCalledWith(
+        uid,
+        4,
+        10.1,
+        "web",
+      );
     });
     it("adds english time 15 results to the daily leaderboard by default", async () => {
       await mockApp
@@ -754,7 +761,7 @@ describe("result controller test", () => {
         .send({ result: buildCompletedEvent() })
         .then((response) => response);
       await vi.waitFor(() =>
-        expect(resultGetLastTimestampMock).toHaveBeenCalledWith(uid),
+        expect(resultGetLastTimestampMock).toHaveBeenCalledWith(uid, "web"),
       );
       resolveUser({ name: "bob" });
       expect((await request).status).toBe(200);

@@ -126,12 +126,14 @@ describe("Loaderboard Controller", () => {
         0,
         50,
         false,
+        undefined,
       );
 
       expect(getLeaderboardCountMock).toHaveBeenCalledWith(
         "time",
         "60",
         "english",
+        undefined,
       );
     });
 
@@ -172,6 +174,7 @@ describe("Loaderboard Controller", () => {
         page,
         pageSize,
         false,
+        undefined,
       );
     });
 
@@ -300,6 +303,7 @@ describe("Loaderboard Controller", () => {
         "60",
         "english",
         uid,
+        undefined,
       );
     });
     it("should get null if no rank", async () => {
@@ -323,6 +327,7 @@ describe("Loaderboard Controller", () => {
         "60",
         "english",
         uid,
+        undefined,
       );
       expect(body).toEqual({
         message: "Rank retrieved",
@@ -499,6 +504,7 @@ describe("Loaderboard Controller", () => {
         "60",
         lbConf,
         -1,
+        undefined,
       );
 
       expect(getResultMock).toHaveBeenCalledWith(0, 50, lbConf, premiumEnabled);
@@ -536,6 +542,7 @@ describe("Loaderboard Controller", () => {
         "60",
         lbConf,
         1722470400000,
+        undefined,
       );
     });
     it("should get for english time 60 with page and pageSize", async () => {
@@ -576,6 +583,7 @@ describe("Loaderboard Controller", () => {
         "60",
         lbConf,
         -1,
+        undefined,
       );
 
       expect(getResultMock).toHaveBeenCalledWith(
@@ -770,6 +778,7 @@ describe("Loaderboard Controller", () => {
         "60",
         lbConf,
         -1,
+        undefined,
       );
 
       expect(getRankMock).toHaveBeenCalledWith(uid, lbConf);
@@ -949,7 +958,11 @@ describe("Loaderboard Controller", () => {
         },
       });
 
-      expect(getXpWeeklyLeaderboardMock).toHaveBeenCalledWith(lbConf, -1);
+      expect(getXpWeeklyLeaderboardMock).toHaveBeenCalledWith(
+        lbConf,
+        -1,
+        "web",
+      );
 
       expect(getResultMock).toHaveBeenCalledWith(0, 50, lbConf, false);
     });
@@ -979,6 +992,7 @@ describe("Loaderboard Controller", () => {
       expect(getXpWeeklyLeaderboardMock).toHaveBeenCalledWith(
         lbConf,
         1721606400000,
+        "web",
       );
     });
 
@@ -1007,7 +1021,11 @@ describe("Loaderboard Controller", () => {
         },
       });
 
-      expect(getXpWeeklyLeaderboardMock).toHaveBeenCalledWith(lbConf, -1);
+      expect(getXpWeeklyLeaderboardMock).toHaveBeenCalledWith(
+        lbConf,
+        -1,
+        "web",
+      );
 
       expect(getResultMock).toHaveBeenCalledWith(page, pageSize, lbConf, false);
     });
@@ -1108,7 +1126,11 @@ describe("Loaderboard Controller", () => {
         data: resultData,
       });
 
-      expect(getXpWeeklyLeaderboardMock).toHaveBeenCalledWith(lbConf, -1);
+      expect(getXpWeeklyLeaderboardMock).toHaveBeenCalledWith(
+        lbConf,
+        -1,
+        "web",
+      );
 
       expect(getRankMock).toHaveBeenCalledWith(uid, lbConf);
     });
@@ -1134,6 +1156,7 @@ describe("Loaderboard Controller", () => {
       expect(getXpWeeklyLeaderboardMock).toHaveBeenCalledWith(
         lbConf,
         1721606400000,
+        "web",
       );
 
       expect(getRankMock).toHaveBeenCalledWith(uid, lbConf);

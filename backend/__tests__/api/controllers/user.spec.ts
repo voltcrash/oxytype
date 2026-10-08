@@ -647,7 +647,7 @@ describe("user controller test", () => {
         message: "User's PB cleared",
         data: null,
       });
-      expect(clearPbMock).toHaveBeenCalledWith(uid);
+      expect(clearPbMock).toHaveBeenCalledWith(uid, undefined);
       expect(purgeUserFromDailyLeaderboardsMock).toHaveBeenCalledWith(
         uid,
         (await Configuration.getLiveConfiguration()).dailyLeaderboards,
@@ -992,7 +992,7 @@ describe("user controller test", () => {
         message: "Tag PB cleared",
         data: null,
       });
-      expect(removeTagPbMock).toHaveBeenLastCalledWith(uid, tagId);
+      expect(removeTagPbMock).toHaveBeenLastCalledWith(uid, tagId, undefined);
     });
   });
 
@@ -1114,7 +1114,7 @@ describe("user controller test", () => {
           { ...tagTwo, _id: tagTwo._id },
         ],
       });
-      expect(getTagsMock).toHaveBeenCalledWith(uid);
+      expect(getTagsMock).toHaveBeenCalledWith(uid, undefined);
     });
   });
   describe("update lb memory", () => {
@@ -1458,7 +1458,7 @@ describe("user controller test", () => {
         message: "Personal bests retrieved",
         data: personalBest,
       });
-      expect(getPBMock).toHaveBeenCalledWith(uid, "time", "15");
+      expect(getPBMock).toHaveBeenCalledWith(uid, "time", "15", undefined);
     });
     it("should get pbs with ape key", async () => {
       //GIVEN
@@ -1548,7 +1548,7 @@ describe("user controller test", () => {
         data: stats,
       });
 
-      expect(getStatsMock).toHaveBeenCalledWith(uid);
+      expect(getStatsMock).toHaveBeenCalledWith(uid, undefined);
     });
     it("should get stats with ape key", async () => {
       //GIVEN
@@ -1809,7 +1809,11 @@ describe("user controller test", () => {
           details: foundUser.profileDetails,
         },
       });
-      expect(getUserByNameMock).toHaveBeenCalledWith("bob", "get user profile");
+      expect(getUserByNameMock).toHaveBeenCalledWith(
+        "bob",
+        "get user profile",
+        undefined,
+      );
       expect(getUserMock).not.toHaveBeenCalled();
     });
     it("should get testActivity if enabled", async () => {
@@ -1900,7 +1904,11 @@ describe("user controller test", () => {
           isPremium: true,
         },
       });
-      expect(getUserByNameMock).toHaveBeenCalledWith("bob", "get user profile");
+      expect(getUserByNameMock).toHaveBeenCalledWith(
+        "bob",
+        "get user profile",
+        undefined,
+      );
       expect(getUserMock).not.toHaveBeenCalled();
     });
     it("should get by uid without authentication", async () => {
@@ -1926,7 +1934,11 @@ describe("user controller test", () => {
         }),
       });
       expect(getUserByNameMock).not.toHaveBeenCalled();
-      expect(getUserMock).toHaveBeenCalledWith(uid, "get user profile");
+      expect(getUserMock).toHaveBeenCalledWith(
+        uid,
+        "get user profile",
+        undefined,
+      );
     });
     it("should fail if feature is disabled", async () => {
       //GIVEN
@@ -2518,7 +2530,7 @@ describe("user controller test", () => {
         data: null,
       });
 
-      expect(setStreakHourOffsetMock).toHaveBeenCalledWith(uid, -2);
+      expect(setStreakHourOffsetMock).toHaveBeenCalledWith(uid, -2, undefined);
       expect(addImportantLogMock).toHaveBeenCalledWith(
         "user_streak_hour_offset_set",
         { hourOffset: -2 },
