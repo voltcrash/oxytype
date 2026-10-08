@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vite-plus/test";
-import { readdirSync, readFileSync } from "fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "fs";
 import { resolve } from "path";
 import { fileURLToPath } from "url";
 import { CompletedEvent } from "@oxytype/schemas/results";
@@ -20,7 +20,8 @@ import {
 // Parity harness for the typing-core extraction. The fixtures were recorded
 // from the real web test (packages/typing-core/scripts/record-fixtures.ts).
 // The frontend output is snapshotted next to them so typing-core can be
-// checked against exactly what the web computes.
+// checked against exactly what the web computes. Regenerate the snapshots
+// with UPDATE_PARITY_SNAPSHOTS=1 - only when the web output is meant to change.
 
 const FIXTURES_DIR = resolve(
   fileURLToPath(import.meta.url),
@@ -104,11 +105,18 @@ describe("typing-core parity fixtures", () => {
             incompleteTestSeconds: getIncompleteTestSeconds(eventLog),
           },
         };
-        await expect(
-          `${JSON.stringify(snapshot, null, 2)}\n`,
-        ).toMatchFileSnapshot(
-          resolve(FIXTURES_DIR, "__snapshots__", `${name}.json`),
-        );
+        // compared as data, the files are reformatted by the formatter.
+        // json round trip on purpose: drops undefined just like the file
+        // oxlint-disable-next-line unicorn/prefer-structured-clone
+        const actual = JSON.parse(JSON.stringify(snapshot)) as unknown;
+        const file = resolve(FIXTURES_DIR, "__snapshots__", `${name}.json`);
+        if (
+          process.env["UPDATE_PARITY_SNAPSHOTS"] === "1" ||
+          !existsSync(file)
+        ) {
+          writeFileSync(file, `${JSON.stringify(actual, null, 2)}\n`);
+        }
+        expect(actual).toEqual(JSON.parse(readFileSync(file, "utf-8")));
       });
     },
   );
