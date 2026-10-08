@@ -49,7 +49,6 @@ export default defineConfig({
     ignorePatterns: [
       "pnpm-lock.yaml",
       "node_modules",
-      ".turbo",
       "dist",
       "build",
       "logs",
