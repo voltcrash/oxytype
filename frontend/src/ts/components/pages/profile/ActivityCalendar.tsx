@@ -109,12 +109,12 @@ export function ActivityCalendar(props: {
   return (
     <div
       class={cn(
-        "testActivity flex justify-center rounded-(--roundness) bg-sub-alt p-4 [--font-size:1em] [--gap-size:0.25em] max-[calc(1024px+5rem)]:[--font-size:0.8em] max-[calc(1024px+5rem)]:[--gap-size:0.1em] max-[425px]:hidden [@media(width<=calc(1280px+5rem))_and_(width>calc(1024px+5rem))]:[--gap-size:0.15em] [@media(width<=calc(1536px+5rem))_and_(width>calc(1280px+5rem))]:[--gap-size:0.2em]",
+        "testActivity flex overflow-x-auto rounded-(--roundness) bg-sub-alt p-4 sm:justify-center [--font-size:1em] [--gap-size:0.25em] max-[calc(1024px+5rem)]:[--font-size:0.8em] max-[calc(1024px+5rem)]:[--gap-size:0.1em] [@media(width<=calc(1280px+5rem))_and_(width>calc(1024px+5rem))]:[--gap-size:0.15em] [@media(width<=calc(1536px+5rem))_and_(width>calc(1280px+5rem))]:[--gap-size:0.2em]",
         !view().shown && "hidden",
       )}
     >
       <div class="wrapper grid w-full max-w-[80em] grid-cols-[min-content_1fr] grid-rows-[min-content_1fr_min-content] gap-[1em] [grid-template-areas:'top_top'_'day_chart'_'empty_month'] max-[calc(1024px+5rem)]:[grid-template-areas:'top_top'_'chart_chart'_'month_month']">
-        <div class="top grid grid-cols-[15rem_1fr_max-content] gap-4 [grid-area:top] [grid-template-areas:'title_title_legend'] has-[.year]:[grid-template-areas:'year_title_legend'] max-[calc(640px+5rem)]:grid-cols-[8rem_1fr_8rem]">
+        <div class="top grid grid-cols-1 gap-4 [grid-area:top] [grid-template-areas:'title'_'legend'] has-[.year]:[grid-template-areas:'year'_'title'_'legend'] sm:grid-cols-[15rem_1fr_max-content] sm:[grid-template-areas:'title_title_legend'] sm:has-[.year]:[grid-template-areas:'year_title_legend']">
           <Show when={props.isAccountPage}>
             <div class="year text-(length:--font-size) [grid-area:year] [&_.ss-main]:border-[0.2em] [&_.ss-main]:border-bg">
               <SlimSelect
@@ -136,52 +136,32 @@ export function ActivityCalendar(props: {
           <div class="title self-center text-left text-(length:--font-size) text-sub [grid-area:title]">
             {view().title}
           </div>
-          <div class="legend flex items-center justify-end gap-(--gap-size) self-center text-sub [grid-area:legend] [&_span]:text-(length:--font-size) [&_span:first-child]:mr-(--gap-size) [&_span:last-child]:ml-(--gap-size)">
+          <div class="legend flex flex-wrap items-center justify-end gap-(--gap-size) self-center text-sub [grid-area:legend] [&_span]:text-(length:--font-size) [&_span:first-child]:mr-(--gap-size) [&_span:last-child]:ml-(--gap-size)">
             <span>less</span>
             <div
               data-level="0"
-              class={cn(
-                squareClass,
-                "h-[1em] w-[1em] max-[calc(640px+5rem)]:h-auto max-[calc(640px+5rem)]:w-full",
-                levelClass("0"),
-              )}
+              class={cn(squareClass, "h-[1em] w-[1em]", levelClass("0"))}
             ></div>
             <div
               data-level="1"
-              class={cn(
-                squareClass,
-                "h-[1em] w-[1em] max-[calc(640px+5rem)]:h-auto max-[calc(640px+5rem)]:w-full",
-                levelClass("1"),
-              )}
+              class={cn(squareClass, "h-[1em] w-[1em]", levelClass("1"))}
             ></div>
             <div
               data-level="2"
-              class={cn(
-                squareClass,
-                "h-[1em] w-[1em] max-[calc(640px+5rem)]:h-auto max-[calc(640px+5rem)]:w-full",
-                levelClass("2"),
-              )}
+              class={cn(squareClass, "h-[1em] w-[1em]", levelClass("2"))}
             ></div>
             <div
               data-level="3"
-              class={cn(
-                squareClass,
-                "h-[1em] w-[1em] max-[calc(640px+5rem)]:h-auto max-[calc(640px+5rem)]:w-full",
-                levelClass("3"),
-              )}
+              class={cn(squareClass, "h-[1em] w-[1em]", levelClass("3"))}
             ></div>
             <div
               data-level="4"
-              class={cn(
-                squareClass,
-                "h-[1em] w-[1em] max-[calc(640px+5rem)]:h-auto max-[calc(640px+5rem)]:w-full",
-                levelClass("4"),
-              )}
+              class={cn(squareClass, "h-[1em] w-[1em]", levelClass("4"))}
             ></div>
             <span>more</span>
           </div>
         </div>
-        <div class="activity grid grid-flow-col grid-cols-[repeat(53,1fr)] grid-rows-[repeat(7,1fr)] gap-(--gap-size) [grid-area:chart]">
+        <div class="activity grid min-w-[36rem] grid-flow-col grid-cols-[repeat(53,1fr)] grid-rows-[repeat(7,1fr)] gap-(--gap-size) [grid-area:chart] sm:min-w-0">
           <For each={view().days}>
             {(day) => (
               <div
