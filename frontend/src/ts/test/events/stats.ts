@@ -1,6 +1,6 @@
 import { CharCounts, countChars, isSpace } from "../../utils/strings";
 import { getEventsForWord, getEventsPerWord, getInputFromDom } from "./helpers";
-import { calculateWpm } from "../../utils/numbers";
+import { calculateWpm } from "@oxytype/typing-core/stats-math";
 import { roundTo2 } from "@oxytype/util/numbers";
 import { EventLog, TestEventNoMs } from "./types";
 import Hangul from "hangul-js";
