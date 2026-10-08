@@ -1,7 +1,8 @@
 # TUI backend contracts
 
-Stage B provides backend support for the terminal client. The `/device` approval
-page and web/TUI controls belong to Stage C; the full TUI begins in Stage D.
+Stage B provides backend support for the terminal client. Stage C supplies the
+`/device` approval page and web/TUI controls; see [TUI_WEB.md](TUI_WEB.md).
+The full TUI begins in Stage D.
 
 ## Client identity and account data
 
