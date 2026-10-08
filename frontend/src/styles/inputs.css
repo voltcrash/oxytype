@@ -11,6 +11,24 @@ textarea {
   @apply resize-y;
 }
 
+/* iOS Safari zooms the page when focusing text fields smaller than 16px.
+   !important so it also beats per-field text-* utilities. */
+@media (pointer: coarse) {
+  input:not(
+    [type="checkbox"],
+    [type="radio"],
+    [type="range"],
+    [type="color"],
+    [type="file"],
+    [type="button"],
+    [type="submit"],
+    [type="reset"]
+  ),
+  textarea {
+    font-size: max(16px, 1em) !important;
+  }
+}
+
 input[type="range"] {
   @apply appearance-none p-0 w-full h-[1.25em] rounded;
   &::-webkit-slider-thumb {
