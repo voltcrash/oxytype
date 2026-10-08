@@ -14,6 +14,7 @@ export const appRoutes = [
   { path: "/about", info: { page: "about" } },
   { path: "/settings", info: { page: "settings" } },
   { path: "/login", info: { page: "login", access: "guest" } },
+  { path: "/device", info: { page: "device" } },
   { path: "/account", info: { page: "account", access: "user" } },
   {
     path: "/account-settings",

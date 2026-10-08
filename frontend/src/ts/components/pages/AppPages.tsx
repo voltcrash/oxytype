@@ -68,6 +68,7 @@ export function AppPages(): JSXElement {
     settings: deferredPage("settings"),
     account: deferredPage("account"),
     login: deferredPage("login"),
+    device: deferredPage("device"),
     profile: deferredPage("profile"),
     profileSearch: deferredPage("profileSearch"),
     test: <TestPage ref={(el) => refs.set("test", el)} />,
