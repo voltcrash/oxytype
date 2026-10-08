@@ -4,7 +4,13 @@ import {
 } from "@oxytype/contracts/leaderboards";
 import { queryOptions } from "@tanstack/solid-query";
 import Ape from "../ape";
-import { pageSize, Selection, setPage } from "../states/leaderboard-selection";
+import {
+  getPage,
+  getSelection,
+  pageSize,
+  Selection,
+  setPage,
+} from "../states/leaderboard-selection";
 
 const queryKeys = {
   root: (options: Selection & { userSpecific?: true }) => [
@@ -13,6 +19,7 @@ const queryKeys = {
     "leaderboard",
     options.type,
     {
+      client: options.client ?? "web",
       mode: options.mode,
       mode2: options.mode2,
       language: options.language,
@@ -36,6 +43,7 @@ export const getLeaderboardQueryOptions = (
     queryKey: queryKeys.data(options),
     queryFn: async () => {
       const baseQuery = {
+        client: options.client ?? "web",
         pageSize,
         page: options.page,
       };
@@ -78,7 +86,17 @@ export const getLeaderboardQueryOptions = (
         );
       }
 
-      if (response.body.data.entries.length === 0 && options.page !== 0) {
+      if (
+        response.body.data.entries.length === 0 &&
+        options.page !== 0 &&
+        getPage() === options.page &&
+        (getSelection().client ?? "web") === (options.client ?? "web") &&
+        getSelection().type === options.type &&
+        getSelection().previous === options.previous &&
+        getSelection().mode === options.mode &&
+        getSelection().mode2 === options.mode2 &&
+        getSelection().language === options.language
+      ) {
         const page = Math.max(
           0,
           Math.ceil(response.body.data.count / pageSize) - 1,
@@ -102,11 +120,13 @@ export const getRankQueryOptions = (options: Selection) =>
       if (options.type === "weekly") {
         request = Ape.leaderboards.getWeeklyXpRank({
           query: {
+            client: options.client ?? "web",
             weeksBefore: options.previous ? 1 : undefined,
           },
         });
       } else {
         const baseQuery: GetLeaderboardRankQuery = {
+          client: options.client ?? "web",
           mode: options.mode,
           mode2: options.mode2,
           language: options.language,
