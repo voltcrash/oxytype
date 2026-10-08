@@ -4,7 +4,9 @@ import { createSignal } from "solid-js";
 import { showModal } from "./modals";
 import { showErrorNotification } from "./notifications";
 
-type IdAndTags = Pick<Result<Mode>, "_id" | "tags"> & { source?: "resultPage" };
+type IdAndTags = Pick<Result<Mode>, "_id" | "tags" | "client"> & {
+  source?: "resultPage";
+};
 const [getSelectedResult, setSelectedResult] = createSignal<IdAndTags | null>(
   null,
 );

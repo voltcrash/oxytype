@@ -72,6 +72,7 @@ export function EditResultTagsModal() {
           showLoaderBar();
 
           void updateTags({
+            client: selected.client,
             resultId: selected._id,
             currentTagIds,
             newTagIds,
