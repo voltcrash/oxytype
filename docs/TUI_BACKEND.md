@@ -48,7 +48,7 @@ Updating an offline result's tags cannot promote it to a tag PB.
 
 Bearer-authenticated API requests can omit `Origin`. Auth mutations can do so
 with a valid bearer session and no browser cookie/Fetch Metadata context.
-Cookie-origin checks and web CORS remain enabled. Anonymous native access is
+Cookie-origin checks and web CORS remain enabled. Anonymous native POST access is
 limited to the device code/token endpoints in the auth wrapper.
 
 The installed [Better Auth device plugin](https://better-auth.com/docs/plugins/device-authorization)

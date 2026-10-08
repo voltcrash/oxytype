@@ -125,8 +125,9 @@ migration, test and documentation commits.
 - Terminal timing verified through a recorded raw-PTY/shared-session fixture and
   production anticheat. This is automated transport evidence; human TUI
   calibration follows the interactive client stages.
-- All migrations and client partitions have D1 integration coverage. Package,
-  backend and frontend checks/builds pass. Details: [TUI_BACKEND.md](TUI_BACKEND.md).
+- Verification: 98 D1 integration, 721 backend unit, 169 core and 1,788 frontend
+  tests. Package tests, lint/typecheck, formatting and both builds pass.
+  Details: [TUI_BACKEND.md](TUI_BACKEND.md).
 
 
 ### B1. `client` field in schemas
