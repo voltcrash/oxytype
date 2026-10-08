@@ -271,7 +271,7 @@ export function LeaderboardPage(): JSXElement {
                   />
                 </div>
 
-                <div>
+                <div class="overflow-x-auto">
                   <Table
                     type={getSelection().type === "weekly" ? "xp" : "speed"}
                     entries={entriesQueryData()?.entries ?? []}
