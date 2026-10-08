@@ -81,6 +81,7 @@ export function SettingsPage(): JSXElement {
           setCurrentSettingsSection(section);
         }}
         header={<SettingsSearch />}
+        hotkeys
         counts={isSettingsSearchActive() ? getSearchMatchCounts() : undefined}
         footer={
           getConfig.showKeyTips ? (
