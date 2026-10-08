@@ -60,6 +60,17 @@ describe("SettingsSearch type to search", () => {
     expect(input.selectionStart).toBe("caret".length);
   });
 
+  it("focuses on backspace only when there's a query to edit", () => {
+    const input = renderSearch();
+    press("Backspace");
+    expect(document.activeElement).not.toBe(input);
+    setSettingsSearch("caret");
+    press("Backspace", document.body, { metaKey: true });
+    expect(document.activeElement).not.toBe(input);
+    press("Backspace");
+    expect(document.activeElement).toBe(input);
+  });
+
   it("ignores shortcuts and non-printable keys", () => {
     const input = renderSearch();
     press("k", document.body, { metaKey: true });
