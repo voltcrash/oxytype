@@ -5,11 +5,17 @@ import {
   SpeedHistogramSchema,
   TypingStatsSchema,
 } from "@oxytype/schemas/public";
-import { Mode2Schema, ModeSchema } from "@oxytype/schemas/shared";
+import {
+  ClientQuerySchema,
+  ClientSchema,
+  Mode2Schema,
+  ModeSchema,
+} from "@oxytype/schemas/shared";
 import { LanguageSchema } from "@oxytype/schemas/languages";
 
 export const GetSpeedHistogramQuerySchema = z
   .object({
+    client: ClientSchema.optional(),
     language: LanguageSchema,
     mode: ModeSchema,
     mode2: Mode2Schema,
@@ -50,6 +56,7 @@ export const publicContract = c.router(
       description: "get number of tests and time users spend typing.",
       method: "GET",
       path: "/typingStats",
+      query: ClientQuerySchema.strict(),
       responses: {
         200: GetTypingStatsResponseSchema,
       },
