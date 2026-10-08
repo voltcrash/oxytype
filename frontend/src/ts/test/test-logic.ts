@@ -103,6 +103,7 @@ import { setAccountButtonSpinner } from "../states/header";
 import { Config } from "../config/store";
 import { setQuoteLengthAll, toggleFunbox, setConfig } from "../config/setters";
 import {
+  testSession,
   resetTestEvents,
   cleanupData,
   logEventsDataToTheConsoleTable,
@@ -116,7 +117,6 @@ import {
   getKeypressesPerSecond,
 } from "./events/stats";
 import { getLiveCachedAccuracy } from "./events/live-cache";
-import { buildCompletedEvent } from "./completed-event";
 import { isDevEnvironment } from "../utils/env";
 import { resetModifierState } from "../states/modifiers";
 import { nthElementFromArray } from "../utils/arrays";
@@ -138,6 +138,7 @@ export function startTest(now: number): boolean {
 
   setTestActive(true);
   TestTimer.clear();
+  testSession.start(now, false);
 
   for (const fb of getActiveFunboxesWithFunction("start")) {
     fb.functions.start();
@@ -476,7 +477,7 @@ async function init(): Promise<boolean> {
   let generatedWords: string[] = [];
   let generatedSectionIndexes: number[] = [];
   try {
-    const gen = await WordsGenerator.generateWords(language);
+    const gen = await testSession.generate(language, WordsGenerator);
     generatedWords = gen.words;
     generatedSectionIndexes = gen.sectionIndexes;
     wordsHaveTab = gen.hasTab;
@@ -624,11 +625,12 @@ export async function addWord(): Promise<void> {
   }
 
   try {
-    const randomWord = await WordsGenerator.getNextWord(
+    const randomWord = await testSession.nextWord(
       TestWords.words.length,
       bound,
       TestWords.words.get(TestWords.words.length - 1)?.text ?? "",
       TestWords.words.get(TestWords.words.length - 2)?.text,
+      WordsGenerator,
     );
 
     const newWord = TestWords.words.push(
@@ -738,7 +740,7 @@ export async function finish(difficultyFailed = false): Promise<void> {
   }
 
   const eventLog = buildEventLog();
-  const ce = buildCompletedEvent(eventLog, {
+  const ce = testSession.complete(eventLog, {
     config: Config,
     currentQuote: getCurrentQuote(),
     customText: getCompletedEventCustomText(),
