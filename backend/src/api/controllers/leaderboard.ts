@@ -1,3 +1,4 @@
+import type { Client } from "@oxytype/schemas/shared";
 import { MonkeyResponse } from "../../utils/monkey-response";
 import * as LeaderboardsDAL from "../../dal/leaderboards";
 import MonkeyError from "../../utils/error";
@@ -47,9 +48,15 @@ export async function getLeaderboard(
     page,
     pageSize,
     req.ctx.configuration.users.premium.enabled,
+    req.query.client,
   );
 
-  const count = await LeaderboardsDAL.getCount(mode, mode2, language);
+  const count = await LeaderboardsDAL.getCount(
+    mode,
+    mode2,
+    language,
+    req.query.client,
+  );
   const normalizedLeaderboard = leaderboard.map((it) => omit(it, ["_id"]));
 
   return new MonkeyResponse("Leaderboard retrieved", {
@@ -65,7 +72,13 @@ export async function getRankFromLeaderboard(
   const { language, mode, mode2 } = req.query;
   const { uid } = req.ctx.decodedToken;
 
-  const data = await LeaderboardsDAL.getRank(mode, mode2, language, uid);
+  const data = await LeaderboardsDAL.getRank(
+    mode,
+    mode2,
+    language,
+    uid,
+    req.query.client,
+  );
 
   if (data === null) {
     return new MonkeyResponse("Rank retrieved", null);
@@ -75,7 +88,7 @@ export async function getRankFromLeaderboard(
 }
 
 function getDailyLeaderboardWithError(
-  { language, mode, mode2, daysBefore }: DailyLeaderboardQuery,
+  { language, mode, mode2, daysBefore, client }: DailyLeaderboardQuery,
   config: Configuration["dailyLeaderboards"],
 ): DailyLeaderboards.DailyLeaderboard {
   const customTimestamp =
@@ -89,6 +102,7 @@ function getDailyLeaderboardWithError(
     mode2,
     config,
     customTimestamp,
+    client,
   );
   if (!dailyLeaderboard) {
     throw new MonkeyError(404, "There is no daily leaderboard for this mode");
@@ -143,13 +157,18 @@ export async function getDailyLeaderboardRank(
 function getWeeklyXpLeaderboardWithError(
   config: Configuration["leaderboards"]["weeklyXp"],
   weeksBefore?: number,
+  client: Client = "web",
 ): WeeklyXpLeaderboard.WeeklyXpLeaderboard {
   const customTimestamp =
     weeksBefore === undefined
       ? -1
       : getCurrentWeekTimestamp() - weeksBefore * MILLISECONDS_IN_DAY * 7;
 
-  const weeklyXpLeaderboard = WeeklyXpLeaderboard.get(config, customTimestamp);
+  const weeklyXpLeaderboard = WeeklyXpLeaderboard.get(
+    config,
+    customTimestamp,
+    client,
+  );
   if (!weeklyXpLeaderboard) {
     throw new MonkeyError(404, "XP leaderboard for this week not found.");
   }
@@ -165,6 +184,7 @@ export async function getWeeklyXpLeaderboard(
   const weeklyXpLeaderboard = getWeeklyXpLeaderboardWithError(
     req.ctx.configuration.leaderboards.weeklyXp,
     weeksBefore,
+    req.query.client,
   );
   const results = await weeklyXpLeaderboard.getResults(
     page,
@@ -188,6 +208,7 @@ export async function getWeeklyXpLeaderboardRank(
   const weeklyXpLeaderboard = getWeeklyXpLeaderboardWithError(
     req.ctx.configuration.leaderboards.weeklyXp,
     req.query.weeksBefore,
+    req.query.client,
   );
   const rankEntry = await weeklyXpLeaderboard.getRank(
     uid,
