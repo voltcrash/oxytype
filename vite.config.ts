@@ -49,7 +49,6 @@ export default defineConfig({
     ignorePatterns: [
       "pnpm-lock.yaml",
       "node_modules",
-      ".turbo",
       "dist",
       "build",
       "logs",
@@ -84,7 +83,6 @@ export default defineConfig({
     ignorePatterns: [
       "node_modules",
       "dist",
-      ".turbo",
       "coverage",
       "backend/__migration__",
     ],

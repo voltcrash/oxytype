@@ -123,7 +123,6 @@ copyAnticheatToDev.sh
 frontend/src/webfonts-generated
 frontend/static/webfonts-preview
 
-.turbo
 frontend/.env.sentry-build-plugin
 frontend/.standalone-generated
 .claude/worktrees

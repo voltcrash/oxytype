@@ -13,7 +13,7 @@ export default defineConfig({
   },
   pack: extendConfig({ entry: ["src/index.ts"] }),
   lint: {
-    ignorePatterns: ["node_modules", "dist", ".turbo"],
+    ignorePatterns: ["node_modules", "dist"],
     extends: [sharedLint],
     options: {
       typeAware: false,

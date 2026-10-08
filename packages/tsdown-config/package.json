@@ -9,7 +9,7 @@
     }
   },
   "scripts": {
-    "dev": "vp pack --watch",
+    "dev": "vp pack --watch --no-clean",
     "build": "vp pack",
     "ts-check": "vp lint . --type-aware --type-check --format agent",
     "lint": "vp lint . --type-aware --type-check --format agent",

@@ -4,7 +4,7 @@ Be extremely concise. Follow [AGENTS.md](../AGENTS.md) for repository convention
 
 ## Architecture
 
-pnpm/Turborepo workspace: SolidJS frontend, Hono backend on Cloudflare Workers
+pnpm/Vite+ workspace: SolidJS frontend, Hono backend on Cloudflare Workers
 with D1 and Queues, and shared `@oxytype` packages. See
 [architecture](../docs/ARCHITECTURE.md) and [development setup](../docs/CONTRIBUTING_ADVANCED.md).
 
@@ -26,7 +26,7 @@ Run a single test from its package with `pnpm vitest run path/to/test.ts`.
 
 ## Key files
 
-- `turbo.json`: task dependencies and caching.
+- Root `package.json` scripts: `vp run` tasks; `build-pkg` builds shared packages first.
 - `frontend/src/ts/config/metadata.tsx`: config validation rules.
 - `packages/contracts/src/index.ts`: API contracts.
 - `packages/funbox/src/list.ts`: funbox definitions.

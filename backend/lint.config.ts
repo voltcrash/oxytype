@@ -2,7 +2,7 @@ import { sharedLint, pluginLint } from "../packages/oxlint-config/config";
 import type { OxlintConfig } from "vite-plus/lint";
 
 export const backendLint: OxlintConfig = {
-  ignorePatterns: ["node_modules", "__migration__", "dist", ".turbo"],
+  ignorePatterns: ["node_modules", "__migration__", "dist"],
   extends: [sharedLint, pluginLint],
   overrides: [
     {

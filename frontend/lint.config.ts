@@ -10,7 +10,6 @@ export const frontendLint: OxlintConfig = {
     "dist",
     "coverage",
     ".firebase",
-    ".turbo",
     ".standalone-generated",
   ],
   extends: [sharedLint, pluginLint],
