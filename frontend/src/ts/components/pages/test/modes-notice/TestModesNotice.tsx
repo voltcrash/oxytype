@@ -34,7 +34,7 @@ export function TestModesNotice() {
     <Show when={getConfig.showTestModesNotice}>
       <div
         class={cn(
-          "flex flex-wrap justify-center gap-x-4 text-base text-sub transition-opacity duration-125 select-none",
+          "flex flex-wrap justify-center gap-x-4 gap-y-2 text-base text-sub transition-opacity duration-125 select-none sm:gap-y-0",
           {
             "opacity-0": getFocus(),
           },
