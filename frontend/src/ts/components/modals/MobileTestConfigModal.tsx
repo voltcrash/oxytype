@@ -40,6 +40,7 @@ function MCButton(props: {
   return (
     <Button
       variant="button"
+      class="min-h-10"
       text={props.text}
       active={props.active}
       disabled={props.disabled}
@@ -114,7 +115,7 @@ export function MobileTestConfigModal(): JSXElement {
 
   return (
     <AnimatedModal id="MobileTestConfig" modalClass="grid gap-4">
-      <div class="grid gap-2">
+      <div class="grid grid-cols-2 gap-2">
         <MCButton
           text="punctuation"
           active={getConfig.punctuation && !isPunctuationDisabled()}
@@ -137,7 +138,7 @@ export function MobileTestConfigModal(): JSXElement {
 
       <Separator />
 
-      <div class="grid gap-2">
+      <div class="grid grid-cols-3 gap-2">
         <For each={modes}>
           {(mode) => (
             <MCButton
@@ -152,7 +153,7 @@ export function MobileTestConfigModal(): JSXElement {
       <Separator />
 
       <Show when={getConfig.mode !== "zen"}>
-        <div class="grid gap-2">
+        <div class="grid grid-cols-3 gap-2">
           <Show when={getConfig.mode === "time"}>
             <For each={times}>
               {(time) => (
