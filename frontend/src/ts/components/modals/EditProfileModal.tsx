@@ -145,9 +145,11 @@ export function EditProfile() {
 
         <div>
           <label class="mb-[0.25em] block text-sub">github</label>
-          <div class="flex items-center">
-            <p class="my-2 mr-2">https://github.com/</p>
-            <div class="w-full max-w-60">
+          <div class="flex flex-wrap items-center sm:flex-nowrap">
+            <p class="my-2 mr-2 min-w-0 [overflow-wrap:anywhere]">
+              https://github.com/
+            </p>
+            <div class="w-full sm:max-w-60">
               <form.Field
                 name="github"
                 validators={{
@@ -169,9 +171,11 @@ export function EditProfile() {
 
         <div>
           <label class="mb-[0.25em] block text-sub">twitter</label>
-          <div class="flex items-center">
-            <p class="my-2 mr-2">https://x.com/</p>
-            <div class="w-full max-w-60">
+          <div class="flex flex-wrap items-center sm:flex-nowrap">
+            <p class="my-2 mr-2 min-w-0 [overflow-wrap:anywhere]">
+              https://x.com/
+            </p>
+            <div class="w-full sm:max-w-60">
               <form.Field
                 name="twitter"
                 validators={{
@@ -218,9 +222,12 @@ export function EditProfile() {
                 <For each={[{ id: -1 }, ...badges]}>
                   {(badge) => (
                     <Button
-                      class={cn("p-0 opacity-25 hover:opacity-100", {
-                        "opacity-100": field().state.value === badge.id,
-                      })}
+                      class={cn(
+                        "p-0 opacity-25 max-sm:min-h-9 max-sm:min-w-9 hover:opacity-100",
+                        {
+                          "opacity-100": field().state.value === badge.id,
+                        },
+                      )}
                       active={field().state.value === badge.id}
                       onClick={() => field().handleChange(badge.id)}
                     >
@@ -249,7 +256,9 @@ export function EditProfile() {
           </form.Field>
         </div>
 
-        <SubmitButton form={form}>save</SubmitButton>
+        <SubmitButton form={form} class="w-full">
+          save
+        </SubmitButton>
       </form>
     </AnimatedModal>
   );
