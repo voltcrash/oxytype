@@ -52,16 +52,6 @@ export function buildAgentLog(req: MonkeyRequest): AgentLog {
   return agentLog;
 }
 
-export function padNumbers(
-  numbers: number[],
-  maxLength: number,
-  fillString: string,
-): string[] {
-  return numbers.map((number) =>
-    number.toString().padStart(maxLength, fillString),
-  );
-}
-
 export function matchesAPattern(text: string, pattern: string): boolean {
   const regex = new RegExp(`^${pattern}$`);
   return regex.test(text);

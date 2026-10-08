@@ -71,7 +71,4 @@ export async function patchConfiguration(
   await getLiveConfiguration();
   return true;
 }
-export async function updateFromConfigurationFile(): Promise<void> {
-  /* Seed and patch D1 explicitly using Wrangler; Workers have no mutable configuration file. */
-}
 export const __testing = { mergeConfigurations };
