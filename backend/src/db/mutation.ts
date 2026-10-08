@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { eq } from "drizzle-orm";
 import type { D1PreparedStatement } from "@cloudflare/workers-types";
+import { attachClientProfiles, extractClientProfile } from "./client-profile";
 import { users } from "./schema";
 import { binding, database, encode, statement } from "./client";
 import { newId } from "../utils/id";
@@ -23,7 +24,9 @@ export async function readUser(uid: string): Promise<DBUser | undefined> {
     .from(users)
     .where(eq(users.uid, uid))
     .get();
-  return row ? (row.data as unknown as DBUser) : undefined;
+  return row
+    ? await attachClientProfiles(row.data as unknown as DBUser)
+    : undefined;
 }
 
 /** Enlist a write in the current user's atomic batch, or execute it directly. */
@@ -46,7 +49,7 @@ function userStatement(user: DBUser, version: number): D1PreparedStatement {
     Number(user.banned ?? false),
     Number(user.lbOptOut ?? false),
     Number(user.needsToChangeName ?? false),
-    encode(user),
+    encode({ ...user, clientProfiles: undefined }),
     user.uid,
     version,
   );
@@ -65,9 +68,10 @@ export async function atomicUser<T>(
       .where(eq(users.uid, uid))
       .get();
     if (!row) throw new MonkeyError(404, "User not found");
+    const user = await attachClientProfiles(row.data as unknown as DBUser);
     const draft: Draft = {
       uid,
-      user: row.data as unknown as DBUser,
+      user,
       statements: [],
     };
     const result = await drafts.run(draft, action);
@@ -81,6 +85,18 @@ export async function atomicUser<T>(
           row.version,
         ),
         userStatement(draft.user, row.version),
+        ...Object.entries({
+          web: extractClientProfile(draft.user),
+          ...draft.user.clientProfiles,
+        }).map(([client, profile]) =>
+          statement(
+            "INSERT INTO client_profiles(uid,client,time_typing,data) VALUES(?,?,?,?) ON CONFLICT(uid,client) DO UPDATE SET time_typing=excluded.time_typing,data=excluded.data",
+            uid,
+            client,
+            profile.timeTyping ?? 0,
+            encode(profile),
+          ),
+        ),
         ...draft.statements,
         statement("DELETE FROM mutation_guards WHERE id=?", guard),
       ]);
