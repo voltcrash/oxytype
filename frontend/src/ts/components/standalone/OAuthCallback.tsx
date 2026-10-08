@@ -26,7 +26,7 @@ export function OAuthCallback(): JSXElement {
     <>
       <StandaloneHeader label="Sign in" />
       <main class="grid justify-center text-text">
-        <div class="grid w-[350px] content-center items-center gap-4 text-center">
+        <div class="grid w-full max-w-[350px] content-center items-center gap-4 text-center">
           <div class="text-[2rem] text-main">
             <Fa icon={error() === null ? "fa-check" : "fa-times"} fixedWidth />
           </div>
