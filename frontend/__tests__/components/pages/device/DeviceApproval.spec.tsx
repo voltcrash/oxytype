@@ -29,13 +29,11 @@ import { DeviceApproval } from "../../../../src/ts/components/pages/device/Devic
 
 beforeEach(() => {
   setUser({ uid: "one", displayName: "Tester" });
-  review
-    .mockReset()
-    .mockResolvedValue({
-      user_code: "ABCDEFGH",
-      client_id: "oxytype-tui",
-      status: "pending",
-    });
+  review.mockReset().mockResolvedValue({
+    user_code: "ABCDEFGH",
+    client_id: "oxytype-tui",
+    status: "pending",
+  });
   decide.mockReset().mockResolvedValue(undefined);
 });
 afterEach(cleanup);
