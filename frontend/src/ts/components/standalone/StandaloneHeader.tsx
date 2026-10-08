@@ -13,8 +13,8 @@ function LogoContent(props: { label?: string; focus?: boolean }): JSXElement {
       >
         <img src="/images/favicon/oxytype.svg" alt="" width="40" height="40" />
       </div>
-      <div class="text relative -mt-[0.23em] [font-family:'Lexend_Deca',sans-serif] text-[2rem] leading-[2rem] font-normal transition-colors">
-        <div class="top absolute left-[0.35em] text-[0.325em] leading-[0.325em] text-sub transition-[color,opacity] duration-125">
+      <div class="text relative -mt-[0.23em] [font-family:'Lexend_Deca',sans-serif] text-[1.5rem] leading-[1.5rem] font-normal transition-colors sm:text-[2rem] sm:leading-[2rem]">
+        <div class="top absolute left-[0.35em] text-[0.325em] leading-[0.325em] whitespace-nowrap text-sub transition-[color,opacity] duration-125">
           type with focus
         </div>
         oxytype
@@ -33,7 +33,7 @@ export function StandaloneHeader(props: {
   homeLink?: boolean;
 }): JSXElement {
   const logoClass =
-    "-mx-1 grid cursor-pointer grid-cols-[auto_1fr] gap-2 px-1 py-[0.35rem] text-text no-underline transition-none whitespace-nowrap select-none";
+    "-mx-1 grid cursor-pointer grid-cols-[auto_1fr] gap-2 px-1 py-[0.35rem] text-text no-underline transition-none whitespace-normal select-none sm:whitespace-nowrap";
   return (
     <header
       class={cn(
