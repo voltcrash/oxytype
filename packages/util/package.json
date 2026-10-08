@@ -1,11 +1,7 @@
 {
   "name": "@oxytype/util",
   "exports": {
-    "./*": {
-      "types": "./src/*.ts",
-      "import": "./dist/*.mjs",
-      "require": "./dist/*.cjs"
-    }
+    "./*": "./src/*.ts"
   },
   "scripts": {
     "dev": "vp pack --watch --no-clean",
