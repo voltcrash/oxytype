@@ -100,8 +100,7 @@ export function SidebarLayout<T extends string>(props: {
                 active={props.active === key}
                 class={cn(
                   "min-w-0 justify-start text-left [--themable-button-active:var(--themable-button-text)]",
-                  props.counts !== undefined &&
-                    "w-full justify-start [&>span:last-child]:ml-auto",
+                  props.counts !== undefined && "w-full",
                   props.counts !== undefined &&
                     (props.counts[key] ?? 0) === 0 &&
                     "opacity-50",
@@ -110,7 +109,7 @@ export function SidebarLayout<T extends string>(props: {
               >
                 <span class="min-w-0 wrap-anywhere">{item.text}</span>
                 <Show when={props.counts !== undefined}>
-                  <span class="shrink-0 rounded bg-bg px-[0.5em] text-em-xs text-sub">
+                  <span class="ml-auto shrink-0 rounded bg-bg px-[0.5em] text-em-xs text-sub">
                     {props.counts?.[key] ?? 0}
                   </span>
                 </Show>
