@@ -100,6 +100,8 @@ export async function downloadResultsCSV(array: Result<Mode>[]): Promise<void> {
       "bailedOut",
       "tags",
       "timestamp",
+      "client",
+      "offline",
     ],
     ...array.map((item) => [
       item._id,
@@ -126,6 +128,8 @@ export async function downloadResultsCSV(array: Result<Mode>[]): Promise<void> {
       item.bailedOut,
       item.tags?.join(";"),
       item.timestamp,
+      item.client ?? "web",
+      item.offline ?? false,
     ]),
   ]
     .map((e) => e.join(","))
