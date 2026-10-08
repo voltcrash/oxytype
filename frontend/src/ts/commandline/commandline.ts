@@ -598,10 +598,6 @@ export async function onCommandlineKeyDown(e: KeyboardEvent): Promise<void> {
 
 let lastHover: HTMLElement | undefined;
 
-export function onCommandlineMouseMove(): void {
-  commandlineState.mouseMode = true;
-}
-
 export async function onSuggestionMouseMove(e: MouseEvent): Promise<void> {
   commandlineState.mouseMode = true;
   const target = e.target as HTMLElement | null;

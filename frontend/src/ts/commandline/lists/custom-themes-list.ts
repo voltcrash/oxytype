@@ -23,7 +23,7 @@ const commands: Command[] = [
   },
 ];
 
-export function update(): void {
+function update(): void {
   if (!isAuthenticated()) {
     return;
   }

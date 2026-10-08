@@ -74,34 +74,6 @@ export function normalizeName(name: string): string {
 }
 
 /**
- * @param text String to split
- * @param delimiters Single character delimiters.
- */
-export function splitByAndKeep(text: string, delimiters: string[]): string[] {
-  const splitString: string[] = [];
-  let currentToken: string[] = [];
-  const delimiterSet = new Set<string>(delimiters);
-
-  for (const char of text) {
-    if (delimiterSet.has(char)) {
-      if (currentToken.length > 0) {
-        splitString.push(currentToken.join(""));
-      }
-      splitString.push(char);
-      currentToken = [];
-    } else {
-      currentToken.push(char);
-    }
-  }
-
-  if (currentToken.length > 0) {
-    splitString.push(currentToken.join(""));
-  }
-
-  return splitString;
-}
-
-/**
  * Highlights all occurrences of specified words within a given text.
  * Each match is wrapped in a <span class="highlight"> element.
  * Matches are ignored if they appear as part of a larger word
@@ -275,17 +247,16 @@ export function isWordRightToLeft(
     : [result[0], result[1] === word.length];
 }
 
-export const CHAR_EQUIVALENCE_SETS = [
+const CHAR_EQUIVALENCE_SETS = [
   new Set(["’", "‘", "'", "ʼ", "׳", "ʻ", "᾽", "᾽"]),
   new Set([`"`, "”", "“", "„"]),
   new Set(["–", "—", "-", "‐", "‑"]),
   new Set([",", "‚"]),
 ];
 
-export const LANGUAGE_EQUIVALENCE_SETS: Partial<Record<Language, Set<string>>> =
-  {
-    russian: new Set(["ё", "е", "e"]),
-  };
+const LANGUAGE_EQUIVALENCE_SETS: Partial<Record<Language, Set<string>>> = {
+  russian: new Set(["ё", "е", "e"]),
+};
 
 /**
  * Checks if two characters are visually/typographically equivalent for typing purposes.

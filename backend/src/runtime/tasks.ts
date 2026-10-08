@@ -12,7 +12,7 @@ import { updateLeaderboards } from "../jobs/update-leaderboards";
 const DeliverySchema = z
   .object({ id: z.string().min(1), kind: z.enum(["outbox", "job"]) })
   .strict();
-export type Delivery = z.infer<typeof DeliverySchema>;
+type Delivery = z.infer<typeof DeliverySchema>;
 export async function dispatch(): Promise<void> {
   const queue = runtime().env.TASKS;
   if (queue === undefined) return;

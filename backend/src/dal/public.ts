@@ -5,11 +5,6 @@ import { stage } from "../db/mutation";
 import { publicStats, speedHistograms } from "../db/schema";
 import type { TypingStats, SpeedHistogram } from "@oxytype/schemas/public";
 export type PublicTypingStatsDB = TypingStats & { _id: "stats" };
-export type PublicSpeedStatsDB = {
-  _id: "speedStatsHistogram";
-  english_time_15: SpeedHistogram;
-  english_time_60: SpeedHistogram;
-};
 export async function updateStats(
   restartCount: number,
   time: number,

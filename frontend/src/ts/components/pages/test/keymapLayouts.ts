@@ -12,10 +12,10 @@ export const Shift = formatForDisplay("Shift", { platform: "mac" });
 export const Alt = formatForDisplay("Alt", options);
 export const Hyper = "Monke";
 export const HyperShort = "";
-export const Backspace = "Backspace";
+const Backspace = "Backspace";
 export const BackspaceShort = formatForDisplay("Backspace", options);
 export const Meta = formatForDisplay("Meta", options);
-export const Enter = "Enter";
+const Enter = "Enter";
 export const EnterShort = formatForDisplay("Enter", { platform: "mac" });
 
 export type KeyDefinition = {
@@ -71,7 +71,7 @@ const staggeredAnsi: KeymapLayout = [
   buildRow("row1", [
     { layoutPosition: { col: 0 }, isExtraKey: true },
     ...addLayoutKeys(12, { start: 1 }),
-    { legend: "Backspace", width: 2, isExtraKey: true },
+    { legend: Backspace, width: 2, isExtraKey: true },
   ]),
   buildRow("row2", [
     { legend: "Tab", width: 1.5, isExtraKey: true },
@@ -107,7 +107,7 @@ const staggeredIso: KeymapLayout = [
   buildRow("row1", [
     { layoutPosition: { col: 0 }, isExtraKey: true },
     ...addLayoutKeys(12, { start: 1 }),
-    { legend: "Backspace", width: 2, isExtraKey: true },
+    { legend: Backspace, width: 2, isExtraKey: true },
   ]),
   buildRow("row2", [
     { legend: "Tab", width: 1.5, isExtraKey: true },
@@ -337,7 +337,7 @@ const alice: KeymapLayout = [
     { layoutPosition: { col: 10 }, rotation: -10 },
     { layoutPosition: { col: 11 }, y: -0.1 },
     { layoutPosition: { col: 12 } },
-    { legend: "Backspace", width: 2, isExtraKey: true },
+    { legend: Backspace, width: 2, isExtraKey: true },
   ]),
   buildRow("row2", [
     { legend: "PgUp", isExtraKey: true, x: 0.2 },
@@ -407,7 +407,7 @@ const aliceIso: KeymapLayout = [
     { layoutPosition: { col: 10 }, rotation: -10 },
     { layoutPosition: { col: 11 }, y: -0.1 },
     { layoutPosition: { col: 12 } },
-    { legend: "Backspace", width: 2, isExtraKey: true },
+    { legend: Backspace, width: 2, isExtraKey: true },
   ]),
   buildRow("row2", [
     { legend: "PgUp", isExtraKey: true, x: 0.2 },

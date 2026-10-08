@@ -51,10 +51,10 @@
   },
   "devDependencies": {
     "@commitlint/cli": "21.2.3",
-    "@commitlint/config-conventional": "21.2.3",
     "@types/node": "24.19.0",
     "@vitest/coverage-v8": "catalog:",
     "caniuse-lite": "1.0.30001814",
+    "conventional-changelog-conventionalcommits": "10.4.0",
     "husky": "9.1.7",
     "knip": "6.39.0",
     "lint-staged": "17.6.0",
@@ -63,8 +63,7 @@
     "stylelint-config-standard": "40.0.0",
     "turbo": "2.11.6",
     "vite-plus": "catalog:",
-    "vitest": "catalog:",
-    "yaml": "2.9.1"
+    "vitest": "catalog:"
   },
   "lint-staged": {
     "*": [

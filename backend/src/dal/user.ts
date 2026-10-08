@@ -6,13 +6,7 @@ import {
 } from "../utils/pb";
 import MonkeyError from "../utils/error";
 import { newId } from "../utils/id";
-import {
-  database,
-  statement,
-  encode,
-  isUniqueViolation,
-  chunks,
-} from "../db/client";
+import { database, statement, encode, isUniqueViolation } from "../db/client";
 import { currentUserDraft, mutateUser, readUser, stage } from "../db/mutation";
 import { users, inbox, rewardGrants } from "../db/schema";
 import { getCachedConfiguration } from "../init/configuration";
@@ -124,9 +118,6 @@ export async function exists(uid: string): Promise<boolean> {
       uid,
     ).first()) !== null
   );
-}
-export async function deleteUser(uid: string): Promise<void> {
-  await database().delete(users).where(eq(users.uid, uid));
 }
 export async function resetUser(uid: string): Promise<void> {
   await mutateUser(uid, async (user) => {
@@ -420,9 +411,6 @@ export async function checkIfTagPb(
     return updated;
   });
 }
-export async function resetPb(uid: string): Promise<void> {
-  await clearPb(uid);
-}
 export async function setSuspicious(uid: string): Promise<void> {
   await mutateUser(uid, (user) => {
     user.suspicious = true;
@@ -658,19 +646,6 @@ async function readInbox(uid: string): Promise<MonkeyMail[]> {
         rewards: row.read ? [] : row.data["rewards"],
       }) as MonkeyMail,
   );
-}
-type AddToInboxBulkEntry = { uid: string; mail: MonkeyMail[] };
-export async function addToInboxBulk(
-  entries: AddToInboxBulkEntry[],
-  config: Configuration["users"]["inbox"],
-): Promise<void> {
-  for (const batch of chunks(entries, 10)) {
-    await Promise.all(
-      batch.map(
-        async (entry) => await addToInbox(entry.uid, entry.mail, config),
-      ),
-    );
-  }
 }
 export async function addToInbox(
   uid: string,

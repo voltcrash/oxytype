@@ -3,7 +3,7 @@ import { Validation } from "../types/validation";
 
 // this file is needed becauase otherwise it would produce a circular dependency
 
-export type CommandExecOptions<T> = {
+type CommandExecOptions<T> = {
   input?: T;
 };
 

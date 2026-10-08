@@ -34,11 +34,6 @@ const TableBody: Component<ComponentProps<"tbody">> = (props) => {
   );
 };
 
-const TableFooter: Component<ComponentProps<"tfoot">> = (props) => {
-  const [local, others] = splitProps(props, ["class"]);
-  return <tfoot class={cn("", local.class)} {...others}></tfoot>;
-};
-
 const TableRow: Component<ComponentProps<"tr">> = (props) => {
   const [local, others] = splitProps(props, ["class"]);
   return <tr class={cn(local.class)} {...others}></tr>;
@@ -81,7 +76,6 @@ export {
   TableBody,
   TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,

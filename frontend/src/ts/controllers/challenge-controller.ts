@@ -25,7 +25,7 @@ import { areUnsortedArraysEqual } from "../utils/arrays";
 
 let challengeLoading = false;
 
-export function clearActive(): void {
+function clearActive(): void {
   if (
     getLoadedChallenge() !== null &&
     !challengeLoading &&

@@ -16,10 +16,6 @@ export function getIncorrectShiftsInARow(): number {
   return incorrectShiftsInARow;
 }
 
-export function setIncorrectShiftsInARow(value: number): void {
-  incorrectShiftsInARow = value;
-}
-
 export function incrementIncorrectShiftsInARow(): void {
   incorrectShiftsInARow++;
 }

@@ -115,7 +115,7 @@ export async function rejectReports(
   return new MonkeyResponse("Reports removed and users notified.", null);
 }
 
-export async function handleReports(
+async function handleReports(
   reports: { reportId: string; reason?: string }[],
   accept: boolean,
   inboxConfig: Configuration["users"]["inbox"],

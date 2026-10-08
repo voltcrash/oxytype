@@ -52,16 +52,6 @@ export function buildAgentLog(req: MonkeyRequest): AgentLog {
   return agentLog;
 }
 
-export function padNumbers(
-  numbers: number[],
-  maxLength: number,
-  fillString: string,
-): string[] {
-  return numbers.map((number) =>
-    number.toString().padStart(maxLength, fillString),
-  );
-}
-
 export function matchesAPattern(text: string, pattern: string): boolean {
   const regex = new RegExp(`^${pattern}$`);
   return regex.test(text);
@@ -135,7 +125,7 @@ type TimeUnit =
   | "month"
   | "year";
 
-export const MINUTE_IN_SECONDS = 1 * 60;
+const MINUTE_IN_SECONDS = 1 * 60;
 export const HOUR_IN_SECONDS = 1 * 60 * MINUTE_IN_SECONDS;
 export const DAY_IN_SECONDS = 1 * 24 * HOUR_IN_SECONDS;
 export const WEEK_IN_SECONDS = 1 * 7 * DAY_IN_SECONDS;

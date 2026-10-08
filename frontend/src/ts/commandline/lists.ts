@@ -38,7 +38,7 @@ import { applyConfigFromJson } from "../config/lifecycle";
 import { getLastEventLog } from "../states/test";
 import { commandlineState } from "../states/commandline";
 
-export const commands: CommandsSubgroup = {
+const commands: CommandsSubgroup = {
   title: "",
   list: [
     //result
@@ -384,7 +384,7 @@ export function setStackToDefault(): void {
   setStack([commands]);
 }
 
-export function setStack(val: CommandsSubgroup[]): void {
+function setStack(val: CommandsSubgroup[]): void {
   commandlineState.subgroupStack = val;
 }
 

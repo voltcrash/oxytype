@@ -7,11 +7,11 @@ import {
 let memoryTimer: number | null = null;
 let memoryInterval: NodeJS.Timeout | null = null;
 
-export function show(): void {
+function show(): void {
   setMemoryTimerVisibility("shown");
 }
 
-export function hide(): void {
+function hide(): void {
   setMemoryTimerVisibility("hidden");
 }
 
@@ -40,6 +40,6 @@ export function start(time: number): void {
   }, 1000);
 }
 
-export function update(sec: number): void {
+function update(sec: number): void {
   setMemoryTimerText(`Timer left to memorise all words: ${sec}s`);
 }

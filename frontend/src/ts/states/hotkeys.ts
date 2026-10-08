@@ -23,7 +23,8 @@ type Hotkeys = {
   commandPalette: Hotkey;
 };
 
-export const [hotkeys, setHotkeys] = createStore<Hotkeys>(updateHotkeys());
+const [hotkeys, setHotkeys] = createStore<Hotkeys>(updateHotkeys());
+export { hotkeys };
 
 createEffect(() => {
   getActivePage(); // depend on active page

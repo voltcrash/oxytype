@@ -8,5 +8,3 @@ export async function updateLeaderboards(): Promise<void> {
   await LeaderboardsDAL.update("time", "60", "english");
   await LeaderboardsDAL.update("time", "15", "english");
 }
-
-export default updateLeaderboards;

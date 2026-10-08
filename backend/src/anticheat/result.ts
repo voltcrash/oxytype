@@ -13,7 +13,7 @@ export type ResultFailure =
   | "consistency-mismatch";
 
 export const SCORE_TOLERANCE = 0.011;
-export const TIMED_TEST_TOLERANCE_SECONDS = 0.25;
+const TIMED_TEST_TOLERANCE_SECONDS = 0.25;
 export const TELEMETRY_CUTOFF_SECONDS = 122;
 
 export function consistency(values: number[]): number {

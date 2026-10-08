@@ -29,12 +29,12 @@ export const soundsConfig: SoundConfigType = {
   26: { numberOfSounds: 10 },
 };
 
-export type ClickSoundConfig = {
+type ClickSoundConfig = {
   numberOfSounds: number;
 };
 
 export type SupportedOscillatorTypes = Exclude<OscillatorType, "custom">;
-export type OscillatorSoundConfig = {
+type OscillatorSoundConfig = {
   oscillatorType: SupportedOscillatorTypes;
 };
 

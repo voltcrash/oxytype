@@ -3,7 +3,7 @@ import { probit } from "@oxytype/util/timing-stats";
 export type KeyTimings = { keySpacing: number[]; keyDuration: number[] };
 
 /** Deterministic uniform draws, so statistical assertions stay stable. */
-export function seeded(seed: number): () => number {
+function seeded(seed: number): () => number {
   let state = seed >>> 0;
   return () => {
     state = (Math.imul(state, 1664525) + 1013904223) >>> 0;

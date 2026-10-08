@@ -58,7 +58,7 @@ function getKey(req: HttpRequest): string {
   return getIpKey(req.ip);
 }
 
-export function customHandler(req: HttpRequest): never {
+function customHandler(req: HttpRequest): never {
   if (req.ctx.decodedToken.type === "ApeKey") {
     throw new MonkeyError(
       statuses.APE_KEY_RATE_LIMIT_EXCEEDED.code,
@@ -104,7 +104,7 @@ export function createRateLimiter(
   };
 }
 
-export const requestLimiters = Object.fromEntries(
+const requestLimiters = Object.fromEntries(
   Object.entries(limits).map(([id, options]) => [
     id,
     createRateLimiter(options),

@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.json"
+    ".": "./index.jsonc"
   },
   "devDependencies": {
     "@types/node": "24.19.0",

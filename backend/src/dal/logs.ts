@@ -36,9 +36,6 @@ export async function addImportantLog(
 ): Promise<void> {
   await insert(event, message, uid, true);
 }
-export async function deleteUserLogs(uid: string): Promise<void> {
-  await database().delete(logs).where(eq(logs.uid, uid));
-}
 
 export async function countUserLogs(
   uid: string,

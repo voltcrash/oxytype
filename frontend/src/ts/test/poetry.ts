@@ -4,7 +4,7 @@ const bannedChars = new Set(["—", "_", " "]);
 const maxWords = 100;
 const apiURL = "https://poetrydb.org/random";
 
-export class Poem extends Section {
+class Poem extends Section {
   constructor(title: string, author: string, words: string[]) {
     super(title, author, words);
     this.title = title;

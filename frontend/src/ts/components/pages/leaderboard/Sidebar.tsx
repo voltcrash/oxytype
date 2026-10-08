@@ -17,7 +17,7 @@ type ValidLeaderboards = {
   daily: LanguagesByModeByMode2;
 };
 
-export type ModeSelect = Pick<Selection, "mode" | "mode2">;
+type ModeSelect = Pick<Selection, "mode" | "mode2">;
 
 export function Sidebar(props: {
   selection: Accessor<Selection>;

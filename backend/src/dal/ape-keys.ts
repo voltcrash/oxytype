@@ -87,6 +87,3 @@ export async function deleteApeKey(uid: string, keyId: string): Promise<void> {
     .where(and(eq(apeKeys.id, keyId), eq(apeKeys.uid, uid)));
   if (!result.meta.changes) throw new MonkeyError(404, "ApeKey not found");
 }
-export async function deleteAllApeKeys(uid: string): Promise<void> {
-  await database().delete(apeKeys).where(eq(apeKeys.uid, uid));
-}

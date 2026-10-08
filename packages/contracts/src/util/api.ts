@@ -72,6 +72,7 @@ export const MonkeyValidationErrorSchema = MonkeyResponseSchema.extend({
 });
 export type MonkeyValidationError = z.infer<typeof MonkeyValidationErrorSchema>;
 
+/** @alias */
 export const MonkeyClientError = MonkeyResponseSchema;
 export type MonkeyClientErrorType = z.infer<typeof MonkeyClientError>;
 

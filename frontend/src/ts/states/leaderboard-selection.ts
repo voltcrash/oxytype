@@ -24,7 +24,7 @@ const SpeedSelection = z.object({
   language: LanguageSchema,
 });
 
-export const SelectionSchema = SpeedSelection.or(XpSelection);
+const SelectionSchema = SpeedSelection.or(XpSelection);
 export type Selection = z.infer<typeof SelectionSchema>;
 
 export const LeaderboardUrlParamsSchema = z

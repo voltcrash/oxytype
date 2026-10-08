@@ -67,7 +67,7 @@ export type InputProps<T extends keyof ConfigSchemas.Config> = {
     : (val: string) => ConfigSchemas.Config[T];
 };
 
-export type SecondaryInputProps<T extends keyof ConfigSchemas.Config> = {
+type SecondaryInputProps<T extends keyof ConfigSchemas.Config> = {
   secondKey: T;
 } & InputProps<T>;
 

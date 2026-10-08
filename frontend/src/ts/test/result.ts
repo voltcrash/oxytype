@@ -287,7 +287,7 @@ function applyFakeChartData(): void {
   getResultChartScale("error").max = Math.max(...fakeChartData.err);
 }
 
-export async function updateChartPBLine(): Promise<void> {
+async function updateChartPBLine(): Promise<void> {
   const { Chart } = await import("chart.js");
   const themecolors = getTheme();
   const localPb = DB.getLocalPB(

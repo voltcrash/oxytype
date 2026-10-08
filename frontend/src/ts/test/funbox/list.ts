@@ -33,9 +33,9 @@ for (const [name, data] of Object.entries(metadata)) {
   };
 }
 
-export function get(funboxName: FunboxName): FunboxMetadataWithFunctions;
-export function get(funboxNames: FunboxName[]): FunboxMetadataWithFunctions[];
-export function get(
+function get(funboxName: FunboxName): FunboxMetadataWithFunctions;
+function get(funboxNames: FunboxName[]): FunboxMetadataWithFunctions[];
+function get(
   funboxNameOrNames: FunboxName | FunboxName[],
 ): FunboxMetadataWithFunctions | FunboxMetadataWithFunctions[] {
   if (Array.isArray(funboxNameOrNames)) {
@@ -63,23 +63,6 @@ export function getActiveFunboxesWithProperty(
   property: FunboxProperty,
 ): FunboxMetadataWithFunctions[] {
   return getActiveFunboxes().filter((fb) => fb.properties?.includes(property));
-}
-
-/**
- * Find a single active funbox defining the given property
- * @param property
- * @returns the active funbox if any, `undefined`  otherwise.
- * @throws Error if there are multiple funboxes defining the given property
- */
-export function findSingleActiveFunboxWithProperty(
-  property: FunboxProperty,
-): FunboxMetadataWithFunctions | undefined {
-  const matching = getActiveFunboxesWithProperty(property);
-  if (matching.length === 0) return undefined;
-  if (matching.length === 1) return matching[0];
-  throw new Error(
-    `Expecting exactly one funbox with property "${property} but found ${matching.length}`,
-  );
 }
 
 type MandatoryFunboxFunction<F extends keyof FunboxFunctions> = Exclude<
