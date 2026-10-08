@@ -6,7 +6,10 @@ import * as Boards from "../../src/dal/leaderboards";
 import * as Public from "../../src/dal/public";
 import { completedEvent } from "../__testData__/completed-event";
 import { BASE_CONFIGURATION } from "../../src/constants/base-configuration";
-import { getDailyLeaderboard } from "../../src/utils/daily-leaderboards";
+import {
+  getDailyLeaderboard,
+  purgeUserFromDailyLeaderboards,
+} from "../../src/utils/daily-leaderboards";
 import * as Weekly from "../../src/services/weekly-xp-leaderboard";
 
 describe("client leaderboard partitions", () => {
@@ -104,6 +107,35 @@ describe("client leaderboard partitions", () => {
       expect(contexts.map((row) => row.ctx.client ?? "web")).toEqual(
         expect.arrayContaining(["web", "tui"]),
       );
+    });
+  });
+  it("clears one client's daily placements while moderation still purges both", async () => {
+    await withRuntime(test.env, async () => {
+      const config = { ...BASE_CONFIGURATION.dailyLeaderboards, enabled: true };
+      await purgeUserFromDailyLeaderboards("ranked-client", config, "tui");
+      expect(
+        await getDailyLeaderboard("english", "time", "15", config)?.getRank(
+          "ranked-client",
+          config,
+        ),
+      ).toMatchObject({ wpm: 100 });
+      expect(
+        await getDailyLeaderboard(
+          "english",
+          "time",
+          "15",
+          config,
+          -1,
+          "tui",
+        )?.getRank("ranked-client", config),
+      ).toBeNull();
+      await purgeUserFromDailyLeaderboards("ranked-client", config);
+      expect(
+        await getDailyLeaderboard("english", "time", "15", config)?.getRank(
+          "ranked-client",
+          config,
+        ),
+      ).toBeNull();
     });
   });
 });
