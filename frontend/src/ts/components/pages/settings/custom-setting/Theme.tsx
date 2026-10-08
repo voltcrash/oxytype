@@ -361,7 +361,7 @@ function CustomThemeButton(props: { theme: CustomTheme }): JSXElement {
         class={cn(
           "mx-1 p-2",
           "[--themable-button-hover-text:var(--main)] [--themable-button-text:var(--sub)]",
-          "opacity-0 group-hover/theme:opacity-100",
+          "opacity-0 group-hover/theme:opacity-100 pointer-coarse:opacity-100",
         )}
         onClick={(e) => {
           e.stopPropagation();
@@ -416,7 +416,9 @@ function CustomThemeButton(props: { theme: CustomTheme }): JSXElement {
           });
         }}
       />
-      <div>{replaceUnderscoresWithSpaces(props.theme.name)}</div>
+      <div class="min-w-0 truncate">
+        {replaceUnderscoresWithSpaces(props.theme.name)}
+      </div>
       <Button
         variant="text"
         fa={{
@@ -426,7 +428,7 @@ function CustomThemeButton(props: { theme: CustomTheme }): JSXElement {
         class={cn(
           "mx-1 p-2",
           "[--themable-button-hover-text:var(--main)] [--themable-button-text:var(--sub)]",
-          "opacity-0 group-hover/theme:opacity-100",
+          "opacity-0 group-hover/theme:opacity-100 pointer-coarse:opacity-100",
         )}
         onClick={(e) => {
           e.stopPropagation();
@@ -504,7 +506,7 @@ function ThemeButton(props: { theme: ThemeWithName }): JSXElement {
         class={cn(
           "absolute inset-y-0 left-0 flex items-center pr-6 pl-1",
           "bg-linear-to-r from-(--bg) from-60% to-transparent",
-          "opacity-0 transition-[opacity,color,background] duration-125 group-hover/theme:opacity-100",
+          "opacity-0 transition-[opacity,color,background] duration-125 group-hover/theme:opacity-100 pointer-coarse:opacity-100",
           isFav() && "opacity-100",
         )}
       >
@@ -542,7 +544,7 @@ function ThemeButton(props: { theme: ThemeWithName }): JSXElement {
         class={cn(
           "absolute inset-y-0 right-0 flex items-center pr-1.5 pl-8",
           "bg-linear-to-l from-(--bg) from-70% to-transparent",
-          "opacity-0 transition-opacity duration-125 group-hover/theme:opacity-100",
+          "opacity-0 transition-opacity duration-125 group-hover/theme:opacity-100 pointer-coarse:opacity-100",
           isActive() && "opacity-100",
         )}
       >
