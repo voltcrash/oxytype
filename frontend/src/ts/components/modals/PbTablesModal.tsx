@@ -4,7 +4,11 @@ import { createMemo, createSignal, JSXElement } from "solid-js";
 
 import { getConfig } from "../../config/store";
 import * as DB from "../../db";
-import { pbTablesMode } from "../../states/pb-tables-modal";
+import {
+  pbTablesMode,
+  pbTablesBests,
+  pbTablesClient,
+} from "../../states/pb-tables-modal";
 import { cn } from "../../utils/cn";
 import { Formatting } from "../../utils/format";
 import { getLanguageDisplayString } from "../../utils/strings";
@@ -22,9 +26,9 @@ type PBRow = PBWithMode2 & {
 };
 
 function buildRows(mode: Mode): PBRow[] {
-  const allmode2 = DB.getSnapshot()?.personalBests?.[mode] as
-    | Record<Mode2<Mode>, PBWithMode2[]>
-    | undefined;
+  const allmode2 = (pbTablesBests() ?? DB.getSnapshot()?.personalBests)?.[
+    mode
+  ] as Record<Mode2<Mode>, PBWithMode2[]> | undefined;
   if (allmode2 === undefined) return [];
 
   const list: PBWithMode2[] = [];
@@ -164,6 +168,7 @@ export function PbTablesModal(): JSXElement {
   return (
     <AnimatedModal
       id="PbTables"
+      title={`${pbTablesClient() === "tui" ? "TUI" : "Web"} personal bests`}
       modalClass="max-w-full gap-0 p-4 sm:p-8"
       beforeShow={() => {
         setRows(buildRows(pbTablesMode()));
