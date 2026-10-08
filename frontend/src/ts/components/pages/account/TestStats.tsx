@@ -40,13 +40,13 @@ export function TestStats(props: {
 
             return (
               <>
-                <div class="flex items-center justify-center text-sub">
+                <div class="flex flex-wrap items-center justify-center text-sub">
                   estimated words typed{" "}
-                  <span class="p-5 text-5xl text-text lg:text-5xl">
+                  <span class="p-5 text-4xl text-text sm:text-5xl">
                     {stats.words}
                   </span>
                 </div>
-                <div class="grid grid-cols-3 gap-4">
+                <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
                   <Stat
                     header="tests started"
                     value={stats.restarted + stats.completed}
