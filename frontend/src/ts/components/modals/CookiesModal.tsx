@@ -41,7 +41,7 @@ export function CookiesModal(): JSXElement {
       <H3
         text="We use cookies by the way"
         fa={{ icon: "fa-cookie-bite" }}
-        class="mb-0 pb-0 text-2xl"
+        class="mb-0 pb-0 text-xl sm:text-2xl"
       />
       <AnimeSwitch
         exitBeforeEnter
