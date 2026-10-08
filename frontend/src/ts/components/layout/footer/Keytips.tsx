@@ -3,7 +3,7 @@ import { JSXElement, Show } from "solid-js";
 import { getConfig } from "../../../config/store";
 import { getFocus } from "../../../states/test";
 import { cn } from "../../../utils/cn";
-import { CommandlineHotkey } from "../../hotkeys/CommandlineHotkey";
+import { CommandPaletteHotkey } from "../../hotkeys/CommandPaletteHotkey";
 import { QuickRestartHotkey } from "../../hotkeys/QuickRestartHotkey";
 
 export function Keytips(): JSXElement {
@@ -22,7 +22,7 @@ export function Keytips(): JSXElement {
         </div>
 
         <div class="flex items-center gap-2">
-          <CommandlineHotkey />
+          <CommandPaletteHotkey />
           <span>- command palette</span>
         </div>
       </div>

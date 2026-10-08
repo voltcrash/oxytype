@@ -1,3 +1,3 @@
 import "./quickrestart";
-import "./commandline";
+import "./command-palette";
 import "./konami";

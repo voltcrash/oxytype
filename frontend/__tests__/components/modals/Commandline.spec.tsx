@@ -95,7 +95,7 @@ import {
 } from "../../../src/ts/states/core";
 import { hideModalAndClearChain } from "../../../src/ts/states/modals";
 import { isAnyPopupVisible } from "../../../src/ts/states/overlay-visibility";
-import "../../../src/ts/input/hotkeys/commandline";
+import "../../../src/ts/input/hotkeys/command-palette";
 import "../../../src/ts/input/hotkeys/quickrestart";
 
 describe("theme picker lifecycle", () => {

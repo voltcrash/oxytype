@@ -29,7 +29,7 @@ import { Button } from "../../common/Button";
 import { H2 } from "../../common/Headers";
 import { Page } from "../../common/Page";
 import { SidebarLayout } from "../../common/SidebarLayout";
-import { CommandlineHotkey } from "../../hotkeys/CommandlineHotkey";
+import { CommandPaletteHotkey } from "../../hotkeys/CommandPaletteHotkey";
 import { AccountTab } from "../account-settings/AccountTab";
 import { AuthenticationTab } from "../account-settings/AuthenticationTab";
 import { DangerZoneTab } from "../account-settings/DangerZoneTab";
@@ -88,7 +88,7 @@ export function SettingsPage(): JSXElement {
                     and space below to match the gap above the tip */}
               <div class="px-2 pb-2 text-em-xs text-sub">
                 tip: you can also change all these settings quickly via the
-                command palette (<CommandlineHotkey />)
+                command palette (<CommandPaletteHotkey />)
               </div>
             </>
           ) : undefined
