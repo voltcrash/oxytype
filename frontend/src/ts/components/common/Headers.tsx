@@ -13,7 +13,7 @@ export function H2(props: {
     <h2
       id={props.id}
       class={cn(
-        "flex place-items-center gap-[0.5em] pb-[0.5em] text-[2.25em] text-sub",
+        "flex place-items-center gap-[0.5em] pb-[0.5em] text-[1.75em] text-sub [overflow-wrap:anywhere] sm:text-[2.25em]",
         props.class,
       )}
     >
