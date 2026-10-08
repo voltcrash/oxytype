@@ -1,3 +1,15 @@
+/* No grey tap flash; touch-action: manipulation drops the double-tap zoom delay. */
+a,
+button,
+.button,
+.textButton,
+input[type="button"],
+input[type="reset"],
+input[type="submit"] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
 a.button,
 a.textButton {
   @apply no-underline;
