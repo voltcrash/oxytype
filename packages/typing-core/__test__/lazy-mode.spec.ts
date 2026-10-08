@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vite-plus/test";
-import { replaceAccents } from "../../src/ts/test/lazy-mode";
+import { replaceAccents } from "../src/lazy-mode";
 
 let additionalAccents = [
   ["abc", "1"],
