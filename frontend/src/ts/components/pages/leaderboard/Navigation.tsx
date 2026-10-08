@@ -16,12 +16,12 @@ export function Navigation(props: {
   isLoading?: boolean;
   class?: string;
 }): JSXElement {
-  const buttonClass = "px-3 sm:px-4 text-em-base";
+  const buttonClass = "px-2 xs:px-3 sm:px-4 text-em-base";
 
   return (
     <div
       class={cn(
-        "grid grid-flow-col items-center gap-2 justify-self-end",
+        "grid grid-flow-col items-center gap-1 sm:gap-2 justify-self-end",
         props.class,
       )}
     >
