@@ -3,6 +3,8 @@ import {
   shuffle,
   zipfyRandomArrayIndex,
 } from "./arrays";
+import { Language } from "@oxytype/schemas/languages";
+import { LanguageProperties } from "./languages";
 
 export type FunboxWordsFrequency = "normal" | "zipf";
 
@@ -63,4 +65,21 @@ export async function withWords(words: string[]): Promise<Wordset> {
   }
   currentWordset.resetIndexes();
   return currentWordset;
+}
+
+export class PolyglotWordset extends Wordset {
+  public wordsWithLanguage: Map<string, Language>;
+  public languageProperties: Map<Language, LanguageProperties>;
+
+  constructor(
+    wordsWithLanguage: Map<string, Language>,
+    languageProperties: Map<Language, LanguageProperties>,
+  ) {
+    // build and shuffle the word array
+    const wordArray = Array.from(wordsWithLanguage.keys());
+    shuffle(wordArray);
+    super(wordArray);
+    this.wordsWithLanguage = wordsWithLanguage;
+    this.languageProperties = languageProperties;
+  }
 }

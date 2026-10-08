@@ -4,6 +4,7 @@ import * as CustomText from "./custom-text";
 import {
   Wordset,
   FunboxWordsFrequency,
+  PolyglotWordset,
   withWords,
 } from "@oxytype/typing-core/wordset";
 import QuotesController, {
@@ -28,7 +29,6 @@ import {
 import { WordGenError } from "@oxytype/typing-core/errors";
 
 import { showLoaderBar, hideLoaderBar } from "../states/loader-bar";
-import { PolyglotWordset } from "./funbox/funbox-functions";
 import { LanguageObject } from "@oxytype/schemas/languages";
 import {
   getSelectedQuoteId,

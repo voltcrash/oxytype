@@ -4,7 +4,11 @@ import {
   setWordsVisible,
   setWordsWrapperVisible,
 } from "../../states/funbox";
-import { FunboxWordsFrequency, Wordset } from "@oxytype/typing-core/wordset";
+import {
+  FunboxWordsFrequency,
+  PolyglotWordset,
+  Wordset,
+} from "@oxytype/typing-core/wordset";
 import * as GetText from "@oxytype/typing-core/generate";
 import { Config } from "../../config/store";
 import { setConfig, toggleFunbox } from "../../config/setters";
@@ -26,7 +30,7 @@ import { highlight } from "../../events/keymap";
 import * as MemoryTimer from "./memory-funbox-timer";
 import { getPoem } from "../poetry";
 import * as JSONData from "../../utils/json-data";
-import { LanguageProperties, Section } from "@oxytype/typing-core/languages";
+import { Section } from "@oxytype/typing-core/languages";
 import { getSection } from "../wikipedia";
 import * as WeakSpot from "../weak-spot";
 import * as IPAddresses from "../../utils/ip-addresses";
@@ -159,23 +163,6 @@ class PseudolangWordGenerator extends Wordset {
       word += nextChar;
     }
     return word;
-  }
-}
-
-export class PolyglotWordset extends Wordset {
-  public wordsWithLanguage: Map<string, Language>;
-  public languageProperties: Map<Language, LanguageProperties>;
-
-  constructor(
-    wordsWithLanguage: Map<string, Language>,
-    languageProperties: Map<Language, LanguageProperties>,
-  ) {
-    // build and shuffle the word array
-    const wordArray = Array.from(wordsWithLanguage.keys());
-    Arrays.shuffle(wordArray);
-    super(wordArray);
-    this.wordsWithLanguage = wordsWithLanguage;
-    this.languageProperties = languageProperties;
   }
 }
 
