@@ -32,7 +32,7 @@
     "dev-be": "vp run build-pkg && vp run --filter @oxytype/backend dev",
     "dev-fe": "vp run build-pkg && vp run --filter @oxytype/frontend dev",
     "dev-pkg": "vp run build-pkg && vp run --filter \"./packages/*\" --parallel dev",
-    "storybook": "turbo run storybook --force",
+    "storybook": "vp run build-pkg && vp run --filter @oxytype/frontend storybook",
     "start": "turbo run start",
     "start-be": "turbo run start --filter @oxytype/backend",
     "start-fe": "turbo run start --filter @oxytype/frontend",
