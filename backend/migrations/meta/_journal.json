@@ -64,6 +64,13 @@
       "when": 1791306000000,
       "tag": "0008_remove_legacy_result_hashes",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1791477812891,
+      "tag": "0009_result_client",
+      "breakpoints": true
     }
   ]
 }

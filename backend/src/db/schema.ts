@@ -165,10 +165,13 @@ export const results = sqliteTable(
     language: text("language").notNull(),
     wpm: real("wpm").notNull(),
     acc: real("acc").notNull(),
+    client: text("client").$type<"web" | "tui">().notNull().default("web"),
     submissionHash: text("submission_hash"),
     data: json(),
   },
   (t) => [
+    index("results_client_time_idx").on(t.uid, t.client, t.timestamp, t.id),
+    check("results_client", sql`${t.client} IN ('web','tui')`),
     index("results_owner_time_idx").on(t.uid, t.timestamp, t.id),
     index("results_mode_idx").on(t.uid, t.mode, t.mode2, t.language),
     uniqueIndex("results_submission_idx").on(t.uid, t.submissionHash),
