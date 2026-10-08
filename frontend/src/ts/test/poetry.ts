@@ -1,4 +1,4 @@
-import { Section } from "../utils/json-data";
+import { Section } from "@oxytype/typing-core/languages";
 
 const bannedChars = new Set(["—", "_", " "]);
 const maxWords = 100;

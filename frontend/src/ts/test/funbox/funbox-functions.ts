@@ -26,6 +26,7 @@ import { highlight } from "../../events/keymap";
 import * as MemoryTimer from "./memory-funbox-timer";
 import { getPoem } from "../poetry";
 import * as JSONData from "../../utils/json-data";
+import { LanguageProperties, Section } from "@oxytype/typing-core/languages";
 import { getSection } from "../wikipedia";
 import * as WeakSpot from "../weak-spot";
 import * as IPAddresses from "../../utils/ip-addresses";
@@ -44,7 +45,7 @@ export type FunboxFunctions = {
   clearGlobal?: () => void;
   rememberSettings?: () => void;
   toggleScript?: (params: string[]) => void;
-  pullSection?: (language?: Language) => Promise<JSONData.Section | false>;
+  pullSection?: (language?: Language) => Promise<Section | false>;
   handleSpace?: () => void;
   getEmulatedChar?: (event: KeyboardEvent) => string | null;
   handleKeydown?: (event: KeyboardEvent) => Promise<void>;
@@ -163,11 +164,11 @@ class PseudolangWordGenerator extends Wordset {
 
 export class PolyglotWordset extends Wordset {
   public wordsWithLanguage: Map<string, Language>;
-  public languageProperties: Map<Language, JSONData.LanguageProperties>;
+  public languageProperties: Map<Language, LanguageProperties>;
 
   constructor(
     wordsWithLanguage: Map<string, Language>,
-    languageProperties: Map<Language, JSONData.LanguageProperties>,
+    languageProperties: Map<Language, LanguageProperties>,
   ) {
     // build and shuffle the word array
     const wordArray = Array.from(wordsWithLanguage.keys());
@@ -513,12 +514,12 @@ const list: Partial<Record<FunboxName, FunboxFunctions>> = {
     },
   },
   poetry: {
-    async pullSection(): Promise<JSONData.Section | false> {
+    async pullSection(): Promise<Section | false> {
       return getPoem();
     },
   },
   wikipedia: {
-    async pullSection(lang?: Language): Promise<JSONData.Section | false> {
+    async pullSection(lang?: Language): Promise<Section | false> {
       return getSection((lang ?? "") || "english");
     },
   },

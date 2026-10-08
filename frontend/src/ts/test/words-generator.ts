@@ -17,7 +17,7 @@ import * as Misc from "../utils/misc";
 import * as Strings from "../utils/strings";
 import * as Arrays from "../utils/arrays";
 import * as GetText from "../utils/generate";
-import { FunboxWordOrder } from "../utils/json-data";
+import { FunboxWordOrder } from "@oxytype/typing-core/languages";
 import {
   findSingleActiveFunboxWithFunction,
   getActiveFunboxes,
