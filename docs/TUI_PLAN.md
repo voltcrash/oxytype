@@ -26,9 +26,9 @@ Terminal client for oxytype. Same backend, same accounts. OpenTUI + Solid.
 
 ### A1. Scaffold `packages/typing-core`
 
-- Package w/ tsdown-config, typescript-config, oxlint-config, vitest.
+- Package w/ typescript-config, oxlint-config, vitest. Exports `src/*.ts`, no build.
 - Empty `index.ts`. Registered in pnpm workspace.
-- Done: `pnpm build-pkg` + `test-pkg` pass.
+- Done: `pnpm lint-pkg` + `test-pkg` pass.
 
 ### A2. Parity fixture harness
 
