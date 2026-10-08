@@ -24,6 +24,20 @@ Terminal client for oxytype. Same backend, same accounts. OpenTUI + Solid.
 
 ## Stage A — Shared core
 
+Completed A1–A13 in one PR, with separate extraction/testing commits.
+
+- Core exports source directly; clients inject config, asset, quote, storage and
+  text-source adapters. Frontend retains rendering and browser lifecycle hooks.
+- Parity: eight recorded web input/timing fixtures, identical completed-event
+  payloads and hashes, plus 61 seeded word-generation snapshots.
+- Frontend consumes the session facade for events, generation and results, and
+  the shared input, timer, practice/weak-spot and pace logic.
+- Browser smoke: words-10 with typo correction, result stats, pace caret and
+  restart; time-15 emitted ticks 1–15 and completed normally.
+- Verification: package lint/typecheck/tests, frontend lint/typecheck/tests and
+  production build. See `packages/typing-core/README.md` for API/fixture details.
+
+
 ### A1. Scaffold `packages/typing-core`
 
 - Package w/ typescript-config, oxlint-config, vitest. Exports `src/*.ts`, no build.
