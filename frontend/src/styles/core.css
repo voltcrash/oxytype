@@ -118,6 +118,8 @@ html {
 html {
   @apply overflow-y-scroll scroll-smooth;
   line-height: 1.25;
+  /* Keep text size stable on landscape rotation (iOS/Android). */
+  text-size-adjust: 100%;
 }
 
 a {
