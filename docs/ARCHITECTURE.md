@@ -11,6 +11,7 @@ Package versions come from the workspace manifests and lockfile.
 | `packages/contracts/` | Shared typed API contracts |
 | `packages/schemas/` | Shared Zod schemas and domain types |
 | `packages/util/`, `packages/funbox/`, `packages/challenges/` | Shared helpers and typing features |
+| `packages/typing-core/` | Headless typing test logic shared by web and TUI |
 | `packages/oxlint-config/`, `packages/typescript-config/` | Shared tooling configuration |
 | `packages/release/` | Daily production release helpers |
 | `.github/workflows/` | CI, production releases, labeling, and repository automation |
