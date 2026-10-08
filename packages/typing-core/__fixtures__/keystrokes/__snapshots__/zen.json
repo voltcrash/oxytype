@@ -54,9 +54,10 @@
       142.50000000000045, 100.30000000000018, 72.89999999999964,
       22.400000000000546
     ],
-    "keyOverlap": 15.5
+    "keyOverlap": 15.5,
+    "client": "web"
   },
-  "hash": "2482989077f52c67273c8e87a7e26a11a3efc0b5",
+  "hash": "f84db70cdbf3cb6053a2cfb617cea4b16418ea51",
   "derived": {
     "inputHistory": ["hello ", "there ", "zen\n", "mode ", "rocks"],
     "missedWords": {},

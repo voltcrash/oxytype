@@ -2,7 +2,7 @@ import { describe, it, expect } from "vite-plus/test";
 import { readdirSync, readFileSync } from "fs";
 import { resolve } from "path";
 import { fileURLToPath } from "url";
-import { CompletedEvent } from "@oxytype/schemas/results";
+import { CompletedEvent, CompletedEventSchema } from "@oxytype/schemas/results";
 import { Config } from "@oxytype/schemas/configs";
 import { buildCompletedEvent } from "../src/completed-event";
 import { hashResult } from "../src/result-hash";
@@ -80,6 +80,18 @@ function rebuild(
 describe("typing-core parity fixtures", () => {
   it("has fixtures", () => {
     expect(fixtures.length).toBeGreaterThan(0);
+  });
+
+  it("includes the client in result hashes", async () => {
+    const fixture = fixtures[0];
+    if (!fixture) throw new Error("Missing fixture");
+    const web = { ...rebuild(fixture), uid: "fixture-uid" };
+    const tui = { ...web, client: "tui" as const };
+    expect(
+      CompletedEventSchema.parse({ ...tui, hash: await hashResult(tui) })
+        .client,
+    ).toBe("tui");
+    expect(await hashResult(tui)).not.toBe(await hashResult(web));
   });
 
   describe.each(fixtures.map((f) => [f.name, f] as const))(
