@@ -9,7 +9,7 @@
     "full-check": "turbo lint build test integration-test lint-styles lint-json check-assets --force",
     "prepare": "husky",
     "pre-commit": "lint-staged",
-    "ts-check": "turbo run ts-check",
+    "ts-check": "vp run build-pkg && vp run --filter \"!oxytype\" ts-check",
     "lint": "vp run build-pkg && vp run --filter \"!oxytype\" lint",
     "lint-check-config": "node packages/oxlint-config/check-application-defaults.ts",
     "lint-be": "vp run build-pkg && vp run --filter @oxytype/backend lint",
