@@ -1,101 +1,158 @@
-import { cleanup, fireEvent, render, screen } from "@solidjs/testing-library";
+import { cleanup, render, screen } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vite-plus/test";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+
+const { state } = vi.hoisted(() => ({ state: { popup: false } }));
+vi.mock("../../../src/ts/states/overlay-visibility", () => ({
+  isAnyPopupVisible: () => state.popup,
+}));
+
+// jsdom has no ResizeObserver
+vi.stubGlobal(
+  "ResizeObserver",
+  class {
+    observe = vi.fn();
+    disconnect = vi.fn();
+  },
+);
 
 import { SidebarLayout } from "../../../src/ts/components/common/SidebarLayout";
 
-const items = {
-  first: { text: "first tab", icon: "fa-user" },
-  second: { text: "second tab", icon: "fa-key" },
-} as const;
-
-beforeEach(() => {
-  // jsdom has no ResizeObserver; the sidebar uses it to center itself
-  vi.stubGlobal(
-    "ResizeObserver",
-    class {
-      observe = vi.fn();
-      disconnect = vi.fn();
-    },
-  );
-});
-
 afterEach(() => {
   cleanup();
-  vi.unstubAllGlobals();
+  state.popup = false;
 });
 
-describe("SidebarLayout", () => {
-  it("renders an item per tab and the content", () => {
-    render(() => (
-      <SidebarLayout items={items} active="first" onSelect={() => undefined}>
-        <div>content</div>
-      </SidebarLayout>
-    ));
+const items = {
+  one: { text: "one", icon: "fa-tools" },
+  two: { text: "two", icon: "fa-keyboard" },
+} as const;
 
-    expect(screen.getByText("first tab")).toBeInTheDocument();
-    expect(screen.getByText("second tab")).toBeInTheDocument();
-    expect(screen.getByText("content")).toBeInTheDocument();
+// jsdom isn't a mac, so mod is ctrl
+function pressMod(key: string): KeyboardEvent {
+  const event = new KeyboardEvent("keydown", {
+    key,
+    code: `Digit${key}`,
+    ctrlKey: true,
+    bubbles: true,
+    cancelable: true,
+  });
+  document.body.dispatchEvent(event);
+  document.body.dispatchEvent(
+    new KeyboardEvent("keyup", { key, code: `Digit${key}`, bubbles: true }),
+  );
+  return event;
+}
+
+function renderSidebar(
+  hotkeys: () => boolean = () => true,
+): ReturnType<typeof vi.fn> {
+  const onSelect = vi.fn();
+  render(() => (
+    <SidebarLayout
+      items={items}
+      active="one"
+      onSelect={onSelect}
+      hotkeys={hotkeys()}
+    >
+      content
+    </SidebarLayout>
+  ));
+  return onSelect;
+}
+
+describe("SidebarLayout hotkeys", () => {
+  it("selects the item at the pressed number", () => {
+    const onSelect = renderSidebar();
+    const event = pressMod("2");
+    expect(onSelect).toHaveBeenCalledWith("two");
+    // keeps the browser from switching tabs
+    expect(event.defaultPrevented).toBe(true);
+    pressMod("1");
+    expect(onSelect).toHaveBeenLastCalledWith("one");
   });
 
-  it("selects a tab on click", () => {
-    const [active, setActive] = createSignal<keyof typeof items>("first");
-    render(() => (
-      <SidebarLayout items={items} active={active()} onSelect={setActive}>
-        <div>{active()}</div>
-      </SidebarLayout>
-    ));
-
-    fireEvent.click(screen.getByText("second tab"));
-
-    expect(active()).toBe("second");
-    expect(screen.getByText("second")).toBeInTheDocument();
+  it("ignores numbers without an item", () => {
+    const onSelect = renderSidebar();
+    const event = pressMod("3");
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
   });
 
-  it("renders the header above the items", () => {
+  it("does nothing while disabled or a popup is open", () => {
+    const [enabled, setEnabled] = createSignal(false);
+    const onSelect = renderSidebar(enabled);
+    pressMod("1");
+    expect(onSelect).not.toHaveBeenCalled();
+
+    setEnabled(true);
+    state.popup = true;
+    pressMod("1");
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it("stops listening once unmounted", () => {
+    const onSelect = renderSidebar();
+    cleanup();
+    pressMod("1");
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+});
+
+function holdMod(down: boolean): void {
+  document.body.dispatchEvent(
+    new KeyboardEvent(down ? "keydown" : "keyup", {
+      key: "Control",
+      code: "ControlLeft",
+      ctrlKey: down,
+      bubbles: true,
+    }),
+  );
+}
+
+describe("SidebarLayout hotkey hints", () => {
+  afterEach(() => holdMod(false));
+
+  const hints = (): string[] =>
+    [...document.querySelectorAll("kbd")].map((kbd) => kbd.textContent);
+
+  it("shows each item's hotkey while mod is held", () => {
+    renderSidebar();
+    expect(hints()).toEqual([]);
+    holdMod(true);
+    expect(hints()).toEqual(["Ctrl+1", "Ctrl+2"]);
+    holdMod(false);
+    expect(hints()).toEqual([]);
+  });
+
+  it("replaces counts while held", () => {
     render(() => (
       <SidebarLayout
         items={items}
         active={undefined}
-        onSelect={() => undefined}
-        header={<input placeholder="search" />}
+        onSelect={vi.fn()}
+        counts={{ one: 3 }}
+        hotkeys
       >
-        <div />
+        content
       </SidebarLayout>
     ));
-
-    const header = screen.getByPlaceholderText("search");
-    const firstItem = screen.getByText("first tab");
-    expect(
-      header.compareDocumentPosition(firstItem) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+    expect(screen.getByText("3")).toBeTruthy();
+    holdMod(true);
+    expect(screen.queryByText("3")).toBeNull();
+    expect(hints()).toEqual(["Ctrl+1", "Ctrl+2"]);
   });
 
-  it("renders the footer below the items", () => {
-    render(() => (
-      <SidebarLayout
-        items={items}
-        active="first"
-        onSelect={() => undefined}
-        footer={<div>footer</div>}
-      >
-        <div />
-      </SidebarLayout>
-    ));
+  it("hides hints while disabled or a popup is open", () => {
+    renderSidebar(() => false);
+    holdMod(true);
+    expect(hints()).toEqual([]);
+    cleanup();
+    holdMod(false);
 
-    const footer = screen.getByText("footer");
-    const lastItem = screen.getByText("second tab");
-    expect(
-      footer.compareDocumentPosition(lastItem) &
-        Node.DOCUMENT_POSITION_PRECEDING,
-    ).toBeTruthy();
+    state.popup = true;
+    renderSidebar();
+    holdMod(true);
+    expect(hints()).toEqual([]);
   });
 });

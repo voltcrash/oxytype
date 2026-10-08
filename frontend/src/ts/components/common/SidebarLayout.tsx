@@ -1,4 +1,9 @@
 import {
+  createHotkeyHint,
+  formatForDisplay,
+  Hotkey,
+} from "@tanstack/solid-hotkeys";
+import {
   createSignal,
   For,
   JSXElement,
@@ -8,6 +13,8 @@ import {
 } from "solid-js";
 
 import { useRef } from "../../hooks/useRef";
+import { createHotkey } from "../../input/hotkeys/utils";
+import { isAnyPopupVisible } from "../../states/overlay-visibility";
 import { getHeaderBottom } from "../../states/page-layout";
 import { FaSolidIcon } from "../../types/font-awesome";
 import { cn } from "../../utils/cn";
@@ -29,6 +36,8 @@ export function SidebarLayout<T extends string>(props: {
   footer?: JSXElement;
   // when set, shows a count next to each item and dims items without one
   counts?: Partial<Record<T, number>>;
+  // mod + 1-9 selects the first nine items while true
+  hotkeys?: boolean;
   children: JSXElement;
 }): JSXElement {
   const [contentRef, content] = useRef<HTMLDivElement>();
@@ -56,6 +65,24 @@ export function SidebarLayout<T extends string>(props: {
     }
   };
 
+  const keys = (): T[] => Object.keys(props.items) as T[];
+  const hotkey = (index: number): Hotkey => `Mod+${index + 1}` as Hotkey;
+  for (let i = 0; i < 9; i++) {
+    createHotkey(
+      hotkey(i),
+      () => {
+        const key = keys()[i];
+        if (key !== undefined && !isAnyPopupVisible()) select(key);
+      },
+      () => ({ enabled: props.hotkeys === true && i < keys().length }),
+    );
+  }
+
+  // holding mod reveals which number selects each item
+  const isModHeld = createHotkeyHint(hotkey(0));
+  const showHotkeys = (): boolean =>
+    props.hotkeys === true && isModHeld() && !isAnyPopupVisible();
+
   return (
     <div
       class="content-grid flex flex-col gap-8 md:flex-row"
@@ -76,15 +103,14 @@ export function SidebarLayout<T extends string>(props: {
             <div class="col-span-full w-full">{props.header}</div>
           </Show>
           <For each={Object.entries(props.items) as [T, SidebarItem][]}>
-            {([key, item]) => (
+            {([key, item], index) => (
               <Button
                 variant="text"
                 fa={{ icon: item.icon, class: "shrink-0" }}
                 active={props.active === key}
                 class={cn(
                   "min-w-0 justify-start text-left [--themable-button-active:var(--themable-button-text)]",
-                  props.counts !== undefined &&
-                    "w-full justify-start [&>span:last-child]:ml-auto",
+                  (props.counts !== undefined || showHotkeys()) && "w-full",
                   props.counts !== undefined &&
                     (props.counts[key] ?? 0) === 0 &&
                     "opacity-50",
@@ -92,10 +118,19 @@ export function SidebarLayout<T extends string>(props: {
                 onClick={() => select(key)}
               >
                 <span class="min-w-0 wrap-anywhere">{item.text}</span>
-                <Show when={props.counts !== undefined}>
-                  <span class="shrink-0 rounded bg-bg px-[0.5em] text-em-xs text-sub">
-                    {props.counts?.[key] ?? 0}
-                  </span>
+                <Show
+                  when={showHotkeys() && index() < 9}
+                  fallback={
+                    <Show when={props.counts !== undefined}>
+                      <span class="ml-auto shrink-0 rounded bg-bg px-[0.5em] text-em-xs text-sub">
+                        {props.counts?.[key] ?? 0}
+                      </span>
+                    </Show>
+                  }
+                >
+                  <kbd class="ml-auto shrink-0">
+                    {formatForDisplay(hotkey(index()))}
+                  </kbd>
                 </Show>
               </Button>
             )}
