@@ -11,7 +11,8 @@ export function Keytips(): JSXElement {
     <Show when={getConfig.showKeyTips}>
       <div
         class={cn(
-          "mb-8 flex flex-col items-center gap-2 transition-opacity",
+          // keyboard shortcuts are useless on touch devices
+          "mb-8 hidden flex-col items-center gap-2 transition-opacity sm:flex",
           getFocus() && "opacity-0",
         )}
       >
