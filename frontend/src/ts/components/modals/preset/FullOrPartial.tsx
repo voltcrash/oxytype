@@ -27,7 +27,7 @@ export function FullOrPartial(props: {
       </div>
       <Show when={props.type === "partial"}>
         <div class="text-sub">partial groups</div>
-        <div class="grid grid-cols-2 gap-y-2">
+        <div class="grid grid-cols-1 gap-y-2 xs:grid-cols-2">
           <For each={ConfigGroupNameSchema.options}>
             {(group) => props.renderCheckbox(group, camelCaseToWords(group))}
           </For>
