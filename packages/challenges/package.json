@@ -2,11 +2,7 @@
   "name": "@oxytype/challenges",
   "private": true,
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
-    }
+    ".": "./src/index.ts"
   },
   "scripts": {
     "dev": "vp pack --watch --no-clean",
