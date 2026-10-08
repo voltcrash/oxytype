@@ -46,6 +46,7 @@ export function Login(): JSXElement {
       <Show when={envConfig.authProviders.includes("google")}>
         <Button
           text="sign in with Google"
+          class="w-full"
           fa={{ icon: "fa-google", variant: "brand" }}
           onClick={() =>
             void trySignIn(
@@ -62,6 +63,7 @@ export function Login(): JSXElement {
       <Show when={envConfig.authProviders.includes("github")}>
         <Button
           text="sign in with GitHub"
+          class="w-full"
           fa={{ icon: "fa-github", variant: "brand" }}
           onClick={() =>
             void trySignIn(
