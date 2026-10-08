@@ -1,3 +1,4 @@
+import type { Client, ClientQuery } from "@oxytype/schemas/shared";
 import type { CaptchaAction } from "@oxytype/contracts/captcha";
 import { atomicUser } from "../../db/mutation";
 import * as UserDAL from "../../dal/user";
@@ -198,10 +199,12 @@ export async function updateName(
   return new MonkeyResponse("User's name updated", null);
 }
 
-export async function clearPb(req: MonkeyRequest): Promise<MonkeyResponse> {
+export async function clearPb(
+  req: MonkeyRequest<ClientQuery>,
+): Promise<MonkeyResponse> {
   const { uid } = req.ctx.decodedToken;
 
-  await UserDAL.clearPb(uid);
+  await UserDAL.clearPb(uid, req.query?.client);
   await purgeUserFromDailyLeaderboards(
     uid,
     req.ctx.configuration.dailyLeaderboards,
@@ -256,6 +259,7 @@ type RelevantUserInfo = Omit<
   | "ips"
   | "testActivity"
   | "suspicious"
+  | "clientProfiles"
 >;
 
 function getRelevantUserInfo(user: UserDAL.DBUser): RelevantUserInfo {
@@ -271,15 +275,18 @@ function getRelevantUserInfo(user: UserDAL.DBUser): RelevantUserInfo {
     "ips",
     "testActivity",
     "suspicious",
+    "clientProfiles",
   ]);
 }
 
-export async function getUser(req: MonkeyRequest): Promise<GetUserResponse> {
+export async function getUser(
+  req: MonkeyRequest<ClientQuery>,
+): Promise<GetUserResponse> {
   const { uid } = req.ctx.decodedToken;
 
   // Social sign-in creates the authentication account before username/captcha
   // onboarding creates its application profile. Preserve the session on 404.
-  const userInfo = await UserDAL.getUser(uid, "get user");
+  const userInfo = await UserDAL.getUser(uid, "get user", req.query?.client);
 
   userInfo.personalBests ??= {
     time: {},
@@ -305,7 +312,7 @@ export async function getUser(req: MonkeyRequest): Promise<GetUserResponse> {
 
   const isPremium = await UserDAL.checkIfUserIsPremium(uid, userInfo);
 
-  const allTimeLbs = await getAllTimeLbs(uid);
+  const allTimeLbs = await getAllTimeLbs(uid, req.query?.client);
   const testActivity = generateCurrentTestActivity(userInfo.testActivity);
   const relevantUserInfo = getRelevantUserInfo(userInfo);
 
@@ -371,12 +378,12 @@ export async function addTag(
 }
 
 export async function clearTagPb(
-  req: MonkeyRequest<undefined, undefined, TagIdPathParams>,
+  req: MonkeyRequest<ClientQuery, undefined, TagIdPathParams>,
 ): Promise<MonkeyResponse> {
   const { uid } = req.ctx.decodedToken;
   const { tagId } = req.params;
 
-  await UserDAL.removeTagPb(uid, tagId);
+  await UserDAL.removeTagPb(uid, tagId, req.query?.client);
   return new MonkeyResponse("Tag PB cleared", null);
 }
 
@@ -400,10 +407,12 @@ export async function removeTag(
   return new MonkeyResponse("Tag deleted", null);
 }
 
-export async function getTags(req: MonkeyRequest): Promise<GetTagsResponse> {
+export async function getTags(
+  req: MonkeyRequest<ClientQuery>,
+): Promise<GetTagsResponse> {
   const { uid } = req.ctx.decodedToken;
 
-  const tags = await UserDAL.getTags(uid);
+  const tags = await UserDAL.getTags(uid, req.query?.client);
   return new MonkeyResponse("Tags retrieved", tags);
 }
 
@@ -461,14 +470,18 @@ export async function getPersonalBests(
   const { uid } = req.ctx.decodedToken;
   const { mode, mode2 } = req.query;
 
-  const data = (await UserDAL.getPersonalBests(uid, mode, mode2)) ?? null;
+  const data =
+    (await UserDAL.getPersonalBests(uid, mode, mode2, req.query.client)) ??
+    null;
   return new MonkeyResponse("Personal bests retrieved", data);
 }
 
-export async function getStats(req: MonkeyRequest): Promise<GetStatsResponse> {
+export async function getStats(
+  req: MonkeyRequest<ClientQuery>,
+): Promise<GetStatsResponse> {
   const { uid } = req.ctx.decodedToken;
 
-  const data = (await UserDAL.getStats(uid)) ?? null;
+  const data = (await UserDAL.getStats(uid, req.query?.client)) ?? null;
   return new MonkeyResponse("Personal stats retrieved", data);
 }
 
@@ -516,8 +529,12 @@ export async function getProfile(
   const { uidOrName } = req.params;
 
   const user = req.query.isUid
-    ? await UserDAL.getUser(uidOrName, "get user profile")
-    : await UserDAL.getUserByName(uidOrName, "get user profile");
+    ? await UserDAL.getUser(uidOrName, "get user profile", req.query.client)
+    : await UserDAL.getUserByName(
+        uidOrName,
+        "get user profile",
+        req.query.client,
+      );
 
   const {
     name,
@@ -587,7 +604,7 @@ export async function getProfile(
     return new MonkeyResponse("Profile retrived: banned user", baseProfile);
   }
 
-  const allTimeLbs = await getAllTimeLbs(user.uid);
+  const allTimeLbs = await getAllTimeLbs(user.uid, req.query.client);
 
   const profileData = {
     ...baseProfile,
@@ -708,14 +725,17 @@ export async function reportUser(
 }
 
 export async function setStreakHourOffset(
-  req: MonkeyRequest<undefined, SetStreakHourOffsetRequest>,
+  req: MonkeyRequest<ClientQuery, SetStreakHourOffsetRequest>,
 ): Promise<MonkeyResponse> {
   const { uid } = req.ctx.decodedToken;
   const { hourOffset } = req.body;
 
-  const user = await UserDAL.getPartialUser(uid, "update user profile", [
-    "streak",
-  ]);
+  const user = await UserDAL.getPartialUser(
+    uid,
+    "update user profile",
+    ["streak"],
+    req.query?.client,
+  );
 
   if (
     user.streak?.hourOffset !== undefined &&
@@ -724,7 +744,7 @@ export async function setStreakHourOffset(
     throw new MonkeyError(403, "Streak hour offset already set");
   }
 
-  await UserDAL.setStreakHourOffset(uid, hourOffset);
+  await UserDAL.setStreakHourOffset(uid, hourOffset, req.query?.client);
 
   void addImportantLog("user_streak_hour_offset_set", { hourOffset }, uid);
 
@@ -740,18 +760,23 @@ export async function revokeAllTokens(
   return new MonkeyResponse("All tokens revoked", null);
 }
 
-async function getAllTimeLbs(uid: string): Promise<AllTimeLbs> {
+async function getAllTimeLbs(
+  uid: string,
+  client: Client = "web",
+): Promise<AllTimeLbs> {
   const allTime15English = await LeaderboardsDAL.getRank(
     "time",
     "15",
     "english",
     uid,
+    client,
   );
 
   const allTime15EnglishCount = await LeaderboardsDAL.getCount(
     "time",
     "15",
     "english",
+    client,
   );
 
   const allTime60English = await LeaderboardsDAL.getRank(
@@ -759,12 +784,14 @@ async function getAllTimeLbs(uid: string): Promise<AllTimeLbs> {
     "60",
     "english",
     uid,
+    client,
   );
 
   const allTime60EnglishCount = await LeaderboardsDAL.getCount(
     "time",
     "60",
     "english",
+    client,
   );
 
   const english15 =
@@ -833,14 +860,16 @@ export function generateCurrentTestActivity(
 }
 
 export async function getTestActivity(
-  req: MonkeyRequest,
+  req: MonkeyRequest<ClientQuery>,
 ): Promise<GetTestActivityResponse> {
   const { uid } = req.ctx.decodedToken;
   const premiumFeaturesEnabled = req.ctx.configuration.users.premium.enabled;
-  const user = await UserDAL.getPartialUser(uid, "testActivity", [
+  const user = await UserDAL.getPartialUser(
+    uid,
     "testActivity",
-    "premium",
-  ]);
+    ["testActivity", "premium"],
+    req.query?.client,
+  );
   const userHasPremium = await UserDAL.checkIfUserIsPremium(uid, user);
 
   if (!premiumFeaturesEnabled) {
@@ -866,13 +895,16 @@ async function authDeleteUserIgnoreError(uid: string): Promise<void> {
 }
 
 export async function getCurrentTestActivity(
-  req: MonkeyRequest,
+  req: MonkeyRequest<ClientQuery>,
 ): Promise<GetCurrentTestActivityResponse> {
   const { uid } = req.ctx.decodedToken;
 
-  const user = await UserDAL.getPartialUser(uid, "current test activity", [
-    "testActivity",
-  ]);
+  const user = await UserDAL.getPartialUser(
+    uid,
+    "current test activity",
+    ["testActivity"],
+    req.query?.client,
+  );
   const data = generateCurrentTestActivity(user.testActivity);
   return new MonkeyResponse(
     "Current test activity data retrieved",
@@ -881,11 +913,16 @@ export async function getCurrentTestActivity(
 }
 
 export async function getStreak(
-  req: MonkeyRequest,
+  req: MonkeyRequest<ClientQuery>,
 ): Promise<GetStreakResponse> {
   const { uid } = req.ctx.decodedToken;
 
-  const user = await UserDAL.getPartialUser(uid, "streak", ["streak"]);
+  const user = await UserDAL.getPartialUser(
+    uid,
+    "streak",
+    ["streak"],
+    req.query?.client,
+  );
 
   return new MonkeyResponse("Streak data retrieved", user.streak ?? null);
 }
