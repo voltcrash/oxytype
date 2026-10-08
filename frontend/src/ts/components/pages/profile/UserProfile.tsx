@@ -1,4 +1,4 @@
-import { PersonalBest, PersonalBests } from "@oxytype/schemas/shared";
+import { Client, PersonalBest, PersonalBests } from "@oxytype/schemas/shared";
 import {
   RankAndCount,
   UserProfile as UserProfileType,
@@ -16,12 +16,14 @@ import { UserDetails } from "./UserDetails";
 export function UserProfile(props: {
   profile: UserProfileType;
   isAccountPage?: true;
+  client?: Client;
 }): JSXElement {
   return (
     <div class="grid w-full gap-8">
       <UserDetails
         profile={props.profile}
         isAccountPage={props.isAccountPage}
+        client={props.client}
       />
       <Show when={!props.profile.banned && !props.profile.lbOptOut}>
         <LeaderboardPosition
