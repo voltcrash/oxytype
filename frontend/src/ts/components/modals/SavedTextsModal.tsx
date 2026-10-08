@@ -116,7 +116,7 @@ export function SavedTextsModal(props: {
                 <Button
                   variant="button"
                   text={name}
-                  class="flex-1"
+                  class="min-w-0 flex-1 [overflow-wrap:anywhere]"
                   onClick={() => handleNameClick(name, false)}
                 />
                 <Button
@@ -157,7 +157,7 @@ export function SavedTextsModal(props: {
                   <Button
                     variant="button"
                     text={name()}
-                    class="flex-1"
+                    class="min-w-0 flex-1 [overflow-wrap:anywhere]"
                     onClick={() => handleNameClick(name(), true)}
                   />
                   <Button
