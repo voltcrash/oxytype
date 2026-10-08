@@ -36,7 +36,7 @@ export function ResultTags(props: {
         <span>tags</span>
         <div
           class={cn(
-            "textButton editTagsButton ml-[0.5em] px-[0.25em] py-0",
+            "textButton editTagsButton ml-[0.5em] px-[0.25em] py-0 max-sm:min-h-9 max-sm:min-w-9 max-sm:items-center",
             tags().savedResultId === undefined && "invisible",
           )}
           aria-label="Edit tags"

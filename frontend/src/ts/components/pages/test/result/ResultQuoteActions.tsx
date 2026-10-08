@@ -76,7 +76,10 @@ export function ResultQuoteActions(): JSXElement {
     <>
       <span
         id="reportQuoteButton"
-        class={cn("textButton px-1 py-0", !quote().reportVisible && "hidden")}
+        class={cn(
+          "textButton px-1 py-0 max-sm:min-h-9 max-sm:min-w-9 max-sm:items-center",
+          !quote().reportVisible && "hidden",
+        )}
         aria-label="Report quote"
         data-balloon-pos="up"
         onClick={() => {
@@ -94,7 +97,10 @@ export function ResultQuoteActions(): JSXElement {
       </span>
       <span
         id="favoriteQuoteButton"
-        class={cn("textButton px-1 py-0", !quote().favoriteVisible && "hidden")}
+        class={cn(
+          "textButton px-1 py-0 max-sm:min-h-9 max-sm:min-w-9 max-sm:items-center",
+          !quote().favoriteVisible && "hidden",
+        )}
         aria-label="Favorite quote"
         data-balloon-pos="up"
         onClick={() => void toggleFavorite()}
@@ -109,7 +115,7 @@ export function ResultQuoteActions(): JSXElement {
       <span
         id="rateQuoteButton"
         class={cn(
-          "textButton gap-1 px-1 py-0",
+          "textButton gap-1 px-1 py-0 max-sm:min-h-9 max-sm:min-w-9 max-sm:items-center",
           !quote().rateVisible && "hidden",
         )}
         aria-label="Rate quote"
