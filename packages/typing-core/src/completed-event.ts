@@ -1,3 +1,4 @@
+import { Client } from "@oxytype/schemas/shared";
 import { Config } from "@oxytype/schemas/configs";
 import {
   CompletedEvent,
@@ -28,6 +29,7 @@ import {
  * Everything the completed event needs that is not derived from the event log.
  */
 export type CompletedEventContext = {
+  client?: Client;
   config: Pick<
     Config,
     | "mode"
@@ -84,6 +86,7 @@ export function buildCompletedEvent(
   };
 
   const completedEvent: Omit<CompletedEvent, "hash" | "uid"> = {
+    client: ctx.client ?? "web",
     wpm: Numbers.roundTo2(calculateWpm(chars.correctWord, duration)),
     rawWpm: Numbers.roundTo2(
       calculateWpm(chars.allCorrect + chars.incorrect + chars.extra, duration),
