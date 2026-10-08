@@ -10,7 +10,7 @@ import { QuoteData } from "@oxytype/schemas/quotes";
 import {
   Quote as QuoteType,
   QuoteWithTextSplit as QuoteWithTextSplitType,
-} from "../types/quotes";
+} from "@oxytype/typing-core/quotes";
 
 export type Quote = QuoteType;
 export type QuoteWithTextSplit = QuoteWithTextSplitType;

@@ -1,6 +1,5 @@
 import { Language } from "@oxytype/schemas/languages";
 import { QuoteDataQuote } from "@oxytype/schemas/quotes";
-import { RequiredProperties } from "../utils/misc";
 
 export type Quote = QuoteDataQuote & {
   group: number;
@@ -8,4 +7,5 @@ export type Quote = QuoteDataQuote & {
   textSplit?: string[];
 };
 
-export type QuoteWithTextSplit = RequiredProperties<Quote, "textSplit">;
+export type QuoteWithTextSplit = Omit<Quote, "textSplit"> &
+  Required<Pick<Quote, "textSplit">>;
