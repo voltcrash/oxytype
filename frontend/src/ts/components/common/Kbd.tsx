@@ -5,14 +5,12 @@ type Props =
   | { hotkey: Hotkey; text?: undefined }
   | { hotkey?: undefined; text: string };
 
+export function formatHotkey(hotkey: Hotkey): string {
+  return formatForDisplay(hotkey, { useSymbols: false })
+    .toLowerCase()
+    .replace(/\+/g, " + ");
+}
+
 export function Kbd(props: Props): JSXElement {
-  return (
-    <kbd>
-      {props.hotkey
-        ? formatForDisplay(props.hotkey, { useSymbols: false })
-            .toLowerCase()
-            .replace(/\+/g, " + ")
-        : props.text}
-    </kbd>
-  );
+  return <kbd>{props.hotkey ? formatHotkey(props.hotkey) : props.text}</kbd>;
 }
