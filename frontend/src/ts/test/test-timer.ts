@@ -28,7 +28,7 @@ import {
   getLiveCachedTimerStartMs,
 } from "./events/live-cache";
 import { getChars } from "./events/stats";
-import { calculateWpm } from "../utils/numbers";
+import { calculateWpm } from "@oxytype/typing-core/stats-math";
 import {
   getActiveWordIndex,
   isTestActive,
