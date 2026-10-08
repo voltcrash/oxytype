@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import { createTestRuntime } from "./helpers";
 import { withRuntime } from "../../src/runtime/env";
+import { scheduled } from "../../src/runtime/tasks";
 import { getAuth } from "../../src/init/auth";
 import * as Users from "../../src/dal/user";
 import Worker from "../../src/worker";
@@ -166,6 +167,62 @@ describe("D1 device authorization and native bearer access", () => {
       error: "expired_token",
     });
   });
+  it("requires the owner who claimed a code to approve it", async () => {
+    const code = await issue();
+    const owner = {
+      authorization: `Bearer ${token}`,
+      origin: "http://localhost:3000",
+    };
+    expect(
+      (
+        await request(
+          `/auth/device?user_code=${encodeURIComponent(code.user_code)}`,
+          undefined,
+          owner,
+        )
+      ).status,
+    ).toBe(200);
+    const otherToken = await withRuntime(test.env, async () => {
+      const auth = await getAuth().$context;
+      const user = await auth.internalAdapter.createUser(
+        {
+          name: "Other",
+          email: "device-other@example.test",
+          emailVerified: true,
+        },
+        { method: "oauth", oauth: { providerId: "github" } },
+      );
+      const session = await auth.internalAdapter.createSession(user.id, false);
+      if (session === null) throw new Error("Missing session");
+      return session.token;
+    });
+    const other = {
+      authorization: `Bearer ${otherToken}`,
+      origin: "http://localhost:3000",
+    };
+    expect(
+      (
+        await request(
+          "/auth/device/approve",
+          { userCode: code.user_code },
+          other,
+        )
+      ).status,
+    ).toBe(403);
+    expect(
+      (await request("/auth/device/deny", { userCode: code.user_code }, other))
+        .status,
+    ).toBe(403);
+    expect(
+      (
+        await request(
+          "/auth/device/approve",
+          { userCode: code.user_code },
+          owner,
+        )
+      ).status,
+    ).toBe(200);
+  });
   it("preserves browser origin checks and requires authenticated approval", async () => {
     const code = await issue();
     expect(
@@ -214,5 +271,24 @@ describe("D1 device authorization and native bearer access", () => {
     expect(response.headers.get("access-control-allow-origin")).toBe(
       "http://localhost:3000",
     );
+  });
+  it("cleans expired device codes while preserving pending live codes", async () => {
+    const code = await issue();
+    await test.env.DB.prepare(
+      "INSERT INTO auth_device_codes(id,device_code,user_code,expires_at,status,client_id) VALUES('expired-cleanup','expired-cleanup','expired-cleanup',0,'pending','oxytype-tui')",
+    ).run();
+    await withRuntime(test.env, async () => await scheduled(3600000));
+    expect(
+      await test.env.DB.prepare(
+        "SELECT id FROM auth_device_codes WHERE id='expired-cleanup'",
+      ).first(),
+    ).toBeNull();
+    expect(
+      await test.env.DB.prepare(
+        "SELECT device_code FROM auth_device_codes WHERE device_code=?",
+      )
+        .bind(code.device_code)
+        .first("device_code"),
+    ).toBe(code.device_code);
   });
 });
