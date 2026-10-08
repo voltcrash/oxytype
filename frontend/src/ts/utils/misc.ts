@@ -1,17 +1,11 @@
 import { lastElementFromArray } from "./arrays";
-import { Config } from "@oxytype/schemas/configs";
-import { Mode, Mode2, PersonalBests } from "@oxytype/schemas/shared";
+import { Mode } from "@oxytype/schemas/shared";
 import { Result } from "@oxytype/schemas/results";
 import { RankAndCount } from "@oxytype/schemas/users";
 import { roundTo2 } from "@oxytype/util/numbers";
 import { download } from "../components/common/Download";
 
-export function whorf(speed: number, wordlen: number): number {
-  return Math.min(
-    speed,
-    Math.floor(speed * Math.pow(1.03, -2 * (wordlen - 3))),
-  );
-}
+export { whorf } from "@oxytype/typing-core/mode";
 
 export function findGetParameter(
   parameterName: string,
@@ -77,29 +71,7 @@ type LastIndex = {
   return match ? this.lastIndexOf(lastElementFromArray(match) as string) : -1;
 };
 
-export function getMode2<M extends keyof PersonalBests>(
-  config: Pick<Config, "mode" | "time" | "words">,
-  randomQuote: { id: number } | null,
-): Mode2<M> {
-  const mode = config.mode;
-  let retVal: string;
-
-  if (mode === "time") {
-    retVal = config.time.toString();
-  } else if (mode === "words") {
-    retVal = config.words.toString();
-  } else if (mode === "custom") {
-    retVal = "custom";
-  } else if (mode === "zen") {
-    retVal = "zen";
-  } else if (mode === "quote") {
-    retVal = `${randomQuote?.id ?? -1}`;
-  } else {
-    throw new Error("Invalid mode");
-  }
-
-  return retVal as Mode2<M>;
-}
+export { getMode2 } from "@oxytype/typing-core/mode";
 
 export async function downloadResultsCSV(array: Result<Mode>[]): Promise<void> {
   const csvString = [
