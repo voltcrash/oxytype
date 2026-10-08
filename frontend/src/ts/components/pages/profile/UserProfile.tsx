@@ -57,9 +57,12 @@ export function UserProfile(props: {
 
       <ActivityCalendar
         testActivity={
-          props.isAccountPage ? undefined : props.profile.testActivity
+          props.isAccountPage && props.client !== "tui"
+            ? undefined
+            : props.profile.testActivity
         }
         isAccountPage={props.isAccountPage}
+        client={props.client}
       />
     </div>
   );
