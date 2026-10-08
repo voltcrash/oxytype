@@ -117,6 +117,7 @@ it("removes legacy hashes and settings while preserving replay fingerprints and 
       expect(resultRows.results).toEqual([
         {
           id: "result",
+          client: "web",
           uid: "history",
           timestamp: 123,
           mode: "time",
