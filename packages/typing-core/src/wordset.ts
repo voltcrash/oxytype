@@ -1,5 +1,8 @@
-import { zipfyRandomArrayIndex } from "../utils/misc";
-import { randomElementFromArray, shuffle } from "../utils/arrays";
+import {
+  randomElementFromArray,
+  shuffle,
+  zipfyRandomArrayIndex,
+} from "./arrays";
 
 export type FunboxWordsFrequency = "normal" | "zipf";
 

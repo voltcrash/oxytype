@@ -1,7 +1,11 @@
 import { Config } from "../config/store";
 import { setConfig, setQuoteLengthAll, toggleFunbox } from "../config/setters";
 import * as CustomText from "./custom-text";
-import { Wordset, FunboxWordsFrequency, withWords } from "./wordset";
+import {
+  Wordset,
+  FunboxWordsFrequency,
+  withWords,
+} from "@oxytype/typing-core/wordset";
 import QuotesController, {
   Quote,
   QuoteWithTextSplit,
