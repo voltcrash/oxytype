@@ -80,9 +80,11 @@ export function AboutPage(): JSXElement {
                   }
                 >
                   {([title, stat]) => (
-                    <div class="text-center">
+                    <div class="text-center wrap-break-word">
                       <div class="text-sub">{title}</div>
-                      <div class="text-5xl">{stat()?.text ?? "-"}</div>
+                      <div class="text-4xl sm:text-5xl">
+                        {stat()?.text ?? "-"}
+                      </div>
                       <div class="text-xl">{stat()?.subText ?? "-"}</div>
                     </div>
                   )}
@@ -353,7 +355,7 @@ export function AboutPage(): JSXElement {
                 }}
               >
                 <For each={contributorsData()}>
-                  {(name) => <div>{name}</div>}
+                  {(name) => <div class="wrap-break-word">{name}</div>}
                 </For>
               </div>
             )}
