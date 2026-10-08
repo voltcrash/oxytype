@@ -1,3 +1,4 @@
+import { clientBoard } from "../db/client-profile";
 import Logger from "../utils/logger";
 import { statement, encode, binding } from "../db/client";
 import { createHash } from "node:crypto";
@@ -33,7 +34,11 @@ async function handleDailyLeaderboardResults(
     ...xpRewardBrackets.map((bracket) => bracket.maxRank),
   );
 
-  const dailyLeaderboard = new DailyLeaderboard(modeRule, yesterdayTimestamp);
+  const dailyLeaderboard = new DailyLeaderboard(
+    modeRule,
+    yesterdayTimestamp,
+    ctx.client,
+  );
 
   const results = await dailyLeaderboard.getResults(
     Math.floor((ctx.offset ?? 0) / 20),
@@ -71,13 +76,17 @@ async function handleDailyLeaderboardResults(
           rewards: [
             {
               type: "xp",
+              ...(ctx.client === "tui" ? { client: ctx.client } : {}),
               item: Math.round(xpReward),
             },
           ],
         });
 
         rewardMail.id = rewardId(
-          `daily:${yesterdayTimestamp}:${language}:${mode}:${mode2}:${entry.uid}`,
+          clientBoard(
+            `daily:${yesterdayTimestamp}:${language}:${mode}:${mode2}:${entry.uid}`,
+            ctx.client,
+          ),
         );
         mailEntries.push({
           uid: entry.uid,
@@ -96,7 +105,10 @@ async function handleDailyLeaderboardResults(
         ctx: { ...ctx, offset: (ctx.offset ?? 0) + 20 },
       },
       {
-        jobId: `daily:${yesterdayTimestamp}:${language}:${mode}:${mode2}:${(ctx.offset ?? 0) + 20}`,
+        jobId: clientBoard(
+          `daily:${yesterdayTimestamp}:${language}:${mode}:${mode2}:${(ctx.offset ?? 0) + 20}`,
+          ctx.client,
+        ),
         delay: 0,
       },
     );
@@ -117,7 +129,10 @@ async function handleWeeklyXpLeaderboardResults(
   }
 
   const { lastWeekTimestamp } = ctx;
-  const weeklyXpLeaderboard = new WeeklyXpLeaderboard(lastWeekTimestamp);
+  const weeklyXpLeaderboard = new WeeklyXpLeaderboard(
+    lastWeekTimestamp,
+    ctx.client,
+  );
 
   const maxRankToGet = Math.max(
     ...xpRewardBrackets.map((bracket) => bracket.maxRank),
@@ -162,12 +177,15 @@ async function handleWeeklyXpLeaderboardResults(
         rewards: [
           {
             type: "xp",
+            ...(ctx.client === "tui" ? { client: ctx.client } : {}),
             item: Math.round(xpReward),
           },
         ],
       });
 
-      rewardMail.id = rewardId(`weekly:${lastWeekTimestamp}:${uid}`);
+      rewardMail.id = rewardId(
+        clientBoard(`weekly:${lastWeekTimestamp}:${uid}`, ctx.client),
+      );
       mailEntries.push({
         uid: uid,
         mail: [rewardMail],

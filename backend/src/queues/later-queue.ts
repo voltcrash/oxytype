@@ -1,3 +1,4 @@
+import type { Client } from "@oxytype/schemas/shared";
 import Logger from "../utils/logger";
 import { MonkeyQueue } from "./monkey-queue";
 import { ValidModeRule } from "@oxytype/schemas/configuration";
@@ -20,11 +21,13 @@ export type LaterTask<T extends LaterTaskType> = {
 export type LaterTaskContexts = {
   "daily-leaderboard-results": {
     yesterdayTimestamp: number;
+    client?: Client;
     offset?: number;
     modeRule: ValidModeRule;
   };
   "weekly-xp-leaderboard-results": {
     lastWeekTimestamp: number;
+    client?: Client;
     offset?: number;
   };
 };
@@ -54,6 +57,7 @@ class LaterQueue extends MonkeyQueue<LaterTask<LaterTaskType>> {
   async scheduleForNextWeek(
     taskName: LaterTaskType,
     taskId: string,
+    client: Client = "web",
   ): Promise<void> {
     const currentWeekTimestamp = getCurrentWeekTimestamp();
     const jobId = `${taskName}:${currentWeekTimestamp}:${taskId}`;
@@ -62,6 +66,7 @@ class LaterQueue extends MonkeyQueue<LaterTask<LaterTaskType>> {
       taskName,
       ctx: {
         lastWeekTimestamp: currentWeekTimestamp,
+        ...(client === "tui" ? { client } : {}),
       },
     };
 
@@ -78,6 +83,7 @@ class LaterQueue extends MonkeyQueue<LaterTask<LaterTaskType>> {
     taskName: LaterTaskType,
     taskId: string,
     modeRule: ValidModeRule,
+    client: Client = "web",
   ): Promise<void> {
     const currentDayTimestamp = getCurrentDayTimestamp();
     const jobId = `${taskName}:${currentDayTimestamp}:${taskId}`;
@@ -86,6 +92,7 @@ class LaterQueue extends MonkeyQueue<LaterTask<LaterTaskType>> {
       taskName,
       ctx: {
         modeRule,
+        ...(client === "tui" ? { client } : {}),
         yesterdayTimestamp: currentDayTimestamp,
       },
     };
