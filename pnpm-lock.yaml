@@ -838,6 +838,9 @@ importers:
 
   packages/typing-core:
     dependencies:
+      '@oxytype/funbox':
+        specifier: workspace:*
+        version: link:../funbox
       '@oxytype/schemas':
         specifier: workspace:*
         version: link:../schemas
