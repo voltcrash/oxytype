@@ -15,7 +15,7 @@ Package versions come from the workspace manifests and lockfile.
 | `packages/release/` | Daily production release helpers |
 | `.github/workflows/` | CI, production releases, labeling, and repository automation |
 
-The root is a private pnpm workspace. Node, TypeScript and Turborepo coordinate
+The root is a private pnpm workspace. Node, TypeScript and Vite+ (`vp run`) coordinate
 package builds. Internal packages use the `@oxytype` scope.
 
 ## Frontend
