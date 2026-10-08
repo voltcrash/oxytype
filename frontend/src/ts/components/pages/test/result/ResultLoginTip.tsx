@@ -9,7 +9,7 @@ export function ResultLoginTip(): JSXElement {
   return (
     <div
       class={cn(
-        "loginTip col-[1/3] text-center text-sub",
+        "loginTip col-[1/-1] text-center text-sub",
         (!resultState.loginTip || getIsScreenshotting()) && "hidden",
       )}
     >
