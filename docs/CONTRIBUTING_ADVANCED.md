@@ -2,7 +2,8 @@
 
 Use Git, Node 24.21.0 and pnpm 12.8.1 (pins in `.node-version`/`.nvmrc`). On
 Windows, disable Git autocrlf before cloning. Install dependencies with
-`pnpm install --frozen-lockfile`; build shared packages with `pnpm build-pkg`.
+`pnpm install --frozen-lockfile`. Shared packages export TypeScript source and
+need no build.
 
 For frontend-only work, `pnpm dev-fe` starts Solid/Vite on port 3000. To run the
 backend, copy `backend/.dev.vars.example` to `backend/.dev.vars`, apply local D1
@@ -25,10 +26,9 @@ Run a single test with `pnpm vitest run path/to/test.ts` from its package. Backe
 checks. Frontend imperative DOM work belongs in component refs/lifecycles; styling
 uses Tailwind classes, `cn` and configured colors; icons use `Fa`.
 
-Check unused code and dependencies after building shared packages:
+Check unused code and dependencies:
 
 ```sh
-pnpm build-pkg
 TURNSTILE_SITE_KEY=1x00000000000000000000AA pnpm knip
 ```
 
