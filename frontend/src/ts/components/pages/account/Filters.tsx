@@ -182,7 +182,7 @@ export function Filters(props: {
         <div
           class={
             options.classOverride ??
-            "flex justify-evenly gap-2 [&>button]:w-full [&>button]:last:col-span-2"
+            "grid grid-cols-2 justify-evenly gap-2 md:flex [&>button]:w-full [&>button]:last:col-span-2"
           }
         >
           <For each={items()}>
@@ -241,7 +241,7 @@ export function Filters(props: {
       </AsyncContent>
       <div>
         <H3 fa={{ icon: "fa-filter" }} text="filters" />
-        <div class="mb-4 grid gap-4 sm:grid-cols-2 lg:flex lg:justify-evenly [&>button]:w-full">
+        <div class="mb-4 grid grid-cols-2 gap-4 lg:flex lg:justify-evenly [&>button]:w-full">
           <Button
             text="all"
             onClick={() => props.onChangeFilters(fromDefaultSettings(tags()))}
@@ -297,7 +297,7 @@ export function Filters(props: {
         <Separator class="mb-4 block lg:hidden" />
         <ButtonGroup
           singleSelect
-          classOverride="grid gap-4 sm:grid-cols-2 lg:flex lg:justify-evenly [&>button]:w-full [&>button]:last:col-span-2"
+          classOverride="grid grid-cols-2 gap-4 lg:flex lg:justify-evenly [&>button]:w-full [&>button]:last:col-span-2"
           group="date"
           format={(val) => {
             if (val === "all") return "all time";
