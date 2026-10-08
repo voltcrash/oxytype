@@ -31,7 +31,7 @@
     "dev": "vp run --filter \"!oxytype\" --parallel dev",
     "dev-be": "vp run --filter @oxytype/backend dev",
     "dev-fe": "vp run --filter @oxytype/frontend dev",
-    "storybook": "vp run build-pkg && vp run --filter @oxytype/frontend storybook",
+    "storybook": "vp run --filter @oxytype/frontend storybook",
     "start": "vp run build && vp run --filter @oxytype/frontend --filter @oxytype/backend --parallel start",
     "start-be": "vp run build-be && vp run --filter @oxytype/backend start",
     "start-fe": "vp run build-fe && vp run --filter @oxytype/frontend start",
