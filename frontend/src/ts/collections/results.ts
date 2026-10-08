@@ -1,5 +1,5 @@
 import { ResultMinified } from "@oxytype/schemas/results";
-import { Difficulty, Mode, Mode2 } from "@oxytype/schemas/shared";
+import { Client, Difficulty, Mode, Mode2 } from "@oxytype/schemas/shared";
 import { ResultFilters } from "@oxytype/schemas/users";
 import { queryCollectionOptions } from "@tanstack/query-db-collection";
 import {
@@ -43,6 +43,7 @@ import { getCurrentQuote } from "../states/test";
 import { removeLanguageSize } from "../utils/strings";
 
 export type ResultsQueryState = {
+  client?: Client;
   difficulty: SnapshotResult<Mode>["difficulty"][];
   pb: SnapshotResult<Mode>["isPb"][];
   mode: SnapshotResult<Mode>["mode"][];
@@ -58,7 +59,10 @@ export type ResultsQueryState = {
 };
 
 const queryKeys = {
-  root: () => [...baseKey("results", { isUserSpecific: true })],
+  root: (client: Client = "web") => [
+    ...baseKey("results", { isUserSpecific: true }),
+    client,
+  ],
   fullResult: (_id: string) => [...queryKeys.root(), _id],
 };
 
@@ -190,6 +194,7 @@ function normalizeResult(
   resultDate.setMilliseconds(0);
 
   //results strip default values, add them back
+  result.client ??= "web";
   result.bailedOut ??= false;
   result.blindMode ??= false;
   result.lazyMode ??= false;
@@ -216,48 +221,64 @@ function normalizeResult(
   } as SnapshotResult<Mode>;
 }
 
-const resultsCollection = createCollection(
-  queryCollectionOptions({
-    staleTime: Infinity,
-    gcTime: Infinity, //remove when __nonReactive is removed
-    queryKey: queryKeys.root(),
-    enabled: isAuthenticated,
-    queryFn: async () => {
-      const tagIds = await getTagsOnce();
-      const knownTagIds = new Set([...tagIds.map((it) => it._id)]);
-      //const options = parseLoadSubsetOptions(ctx.meta?.loadSubsetOptions);
+// oxlint-disable-next-line typescript/explicit-function-return-type
+function createResultsCollection(client: Client) {
+  const collection = createCollection(
+    queryCollectionOptions({
+      staleTime: Infinity,
+      gcTime: Infinity, //remove when __nonReactive is removed
+      queryKey: queryKeys.root(client),
+      enabled: isAuthenticated,
+      queryFn: async () => {
+        const tagIds = await getTagsOnce();
+        const knownTagIds = new Set([...tagIds.map((it) => it._id)]);
+        //const options = parseLoadSubsetOptions(ctx.meta?.loadSubsetOptions);
 
-      const response = await Ape.results.get({
-        //query: { limit: options.limit },
-      });
+        const response = await Ape.results.get({
+          query: { client },
+        });
 
-      if (response.status !== 200) {
-        throw new Error(`Error fetching results:${response.body.message}`);
-      }
+        if (response.status !== 200) {
+          throw new Error(`Error fetching results:${response.body.message}`);
+        }
 
-      const results = response.body.data
-        .map((result) => normalizeResult(result, knownTagIds))
-        .map(applyIdWorkaround);
+        const results = response.body.data
+          .map((result) => normalizeResult(result, knownTagIds))
+          .map(applyIdWorkaround);
 
-      if (getLastResult() === undefined && results.length > 0) {
-        const lastResult = results.reduce((acc, cur) =>
-          acc === undefined || acc.timestamp < cur.timestamp ? cur : acc,
-        );
-        setLastResult(lastResult);
-      }
-      return results;
-    },
-    queryClient,
-    getKey: (it) => it._id,
-  }),
-);
+        if (
+          client === "web" &&
+          getLastResult() === undefined &&
+          results.length > 0
+        ) {
+          const lastResult = results.reduce((acc, cur) =>
+            acc === undefined || acc.timestamp < cur.timestamp ? cur : acc,
+          );
+          setLastResult(lastResult);
+        }
+        return results;
+      },
+      queryClient,
+      getKey: (it) => it._id,
+    }),
+  );
 
-resultsCollection.createIndex((row) => row.timestamp, {
-  indexType: BTreeIndex,
-});
+  collection.createIndex((row) => row.timestamp, {
+    indexType: BTreeIndex,
+  });
+
+  return collection;
+}
+
+const resultsByClient = {
+  web: createResultsCollection("web"),
+  tui: createResultsCollection("tui"),
+};
+const resultsCollection = resultsByClient.web;
 
 type ActionType = {
   updateTags: {
+    client?: Client;
     resultId: string;
     currentTagIds: string[];
     newTagIds: string[];
@@ -272,85 +293,102 @@ type ActionType = {
   };
 };
 
-const actions = {
-  updateTags: createOptimisticAction<ActionType["updateTags"]>({
-    onMutate: ({ resultId, newTagIds }) => {
-      resultsCollection.update(resultId, (result) => {
-        result.tags = newTagIds;
-      });
-    },
-    mutationFn: async ({ resultId, currentTagIds, newTagIds, afterUpdate }) => {
-      const response = await Ape.results.updateTags({
-        body: { resultId, tagIds: newTagIds },
-      });
-      if (response.status !== 200) {
-        throw new Error(
-          `Failed to update result tag: ${response.body.message}`,
-        );
-      }
-      const results = getResults();
-      const result = results.find((it) => it._id === resultId);
-
-      if (result === undefined) {
-        throw new Error(`Cannot find result with id ${resultId}`);
-      }
-
-      const tagsToUpdate = [
-        ...currentTagIds.filter((tag) => !newTagIds.includes(tag)),
-        ...newTagIds.filter((tag) => !currentTagIds.includes(tag)),
-      ];
-      tagsToUpdate.forEach((tag) => {
-        reconcileLocalTagPB(
-          tag,
-          result.mode,
-          result.mode2,
-          result.punctuation,
-          result.numbers,
-          result.language,
-          result.difficulty,
-          result.lazyMode,
-          results,
-        );
-      });
-
-      resultsCollection.utils.writeUpdate({
-        _id: resultId,
-        tags: newTagIds,
-      });
-
-      afterUpdate?.({ tagPbs: response.body.data.tagPbs });
-    },
-  }),
-  insertLocalResult: createOptimisticAction<ActionType["insertLocalResult"]>({
-    onMutate: ({ result }) => {
-      resultsCollection.utils.writeInsert(normalizeResult(result));
-    },
-    mutationFn: async () => {
-      //we don't sync the changes back to the backend here, it is done already
-      return;
-    },
-  }),
-  deleteLocalTag: createOptimisticAction<ActionType["deleteLocalTag"]>({
-    onMutate: ({ tagId }) => {
-      for (const result of [...resultsCollection.values()].filter((it) =>
-        it.tags.includes(tagId),
-      )) {
-        resultsCollection.utils.writeUpdate({
-          ...result,
-          tags: result.tags.filter((it) => it !== tagId),
+// oxlint-disable-next-line typescript/explicit-function-return-type
+function createActions(client: Client) {
+  const resultsCollection = resultsByClient[client];
+  const actions = {
+    updateTags: createOptimisticAction<ActionType["updateTags"]>({
+      onMutate: ({ resultId, newTagIds }) => {
+        resultsCollection.update(resultId, (result) => {
+          result.tags = newTagIds;
         });
-      }
-    },
-    mutationFn: async () => {
-      //we do not sync the changes back to the backend
-      return;
-    },
-  }),
+      },
+      mutationFn: async ({
+        resultId,
+        currentTagIds,
+        newTagIds,
+        afterUpdate,
+      }) => {
+        const response = await Ape.results.updateTags({
+          body: { resultId, tagIds: newTagIds },
+        });
+        if (response.status !== 200) {
+          throw new Error(
+            `Failed to update result tag: ${response.body.message}`,
+          );
+        }
+        const results = getResults(client);
+        const result = results.find((it) => it._id === resultId);
+
+        if (result === undefined) {
+          throw new Error(`Cannot find result with id ${resultId}`);
+        }
+
+        const tagsToUpdate = [
+          ...currentTagIds.filter((tag) => !newTagIds.includes(tag)),
+          ...newTagIds.filter((tag) => !currentTagIds.includes(tag)),
+        ];
+        if (client === "web") {
+          tagsToUpdate.forEach((tag) => {
+            reconcileLocalTagPB(
+              tag,
+              result.mode,
+              result.mode2,
+              result.punctuation,
+              result.numbers,
+              result.language,
+              result.difficulty,
+              result.lazyMode,
+              results,
+            );
+          });
+        }
+
+        resultsCollection.utils.writeUpdate({
+          _id: resultId,
+          tags: newTagIds,
+        });
+
+        afterUpdate?.({ tagPbs: response.body.data.tagPbs });
+      },
+    }),
+    insertLocalResult: createOptimisticAction<ActionType["insertLocalResult"]>({
+      onMutate: ({ result }) => {
+        resultsCollection.utils.writeInsert(normalizeResult(result));
+      },
+      mutationFn: async () => {
+        //we don't sync the changes back to the backend here, it is done already
+        return;
+      },
+    }),
+    deleteLocalTag: createOptimisticAction<ActionType["deleteLocalTag"]>({
+      onMutate: ({ tagId }) => {
+        for (const result of [...resultsCollection.values()].filter((it) =>
+          it.tags.includes(tagId),
+        )) {
+          resultsCollection.utils.writeUpdate({
+            ...result,
+            tags: result.tags.filter((it) => it !== tagId),
+          });
+        }
+      },
+      mutationFn: async () => {
+        //we do not sync the changes back to the backend
+        return;
+      },
+    }),
+  };
+  return actions;
+}
+const actionsByClient = {
+  web: createActions("web"),
+  tui: createActions("tui"),
 };
 // --- Public API ---
 export async function updateTags(
   params: ActionType["updateTags"],
 ): Promise<void> {
+  const resultsCollection = resultsByClient[params.client ?? "web"];
   if (!resultsCollection.isReady()) {
     // if its not ready yet, send the api request to update the tags
     const response = await Ape.results.updateTags({
@@ -359,6 +397,11 @@ export async function updateTags(
 
     if (response.status !== 200) {
       throw new Error(`Failed to update result tag: ${response.body.message}`);
+    }
+
+    if (params.client === "tui") {
+      params.afterUpdate?.({ tagPbs: response.body.data.tagPbs });
+      return;
     }
 
     const result = getLastResult();
@@ -394,30 +437,31 @@ export async function updateTags(
     return;
   }
 
-  const transaction = actions.updateTags(params);
+  const transaction =
+    actionsByClient[params.client ?? "web"].updateTags(params);
   await transaction.isPersisted.promise;
 }
 
 export async function insertLocalResult(
   params: ActionType["insertLocalResult"],
 ): Promise<void> {
-  if (!resultsCollection.isReady()) {
+  const client = params.result.client ?? "web";
+  if (!resultsByClient[client].isReady()) {
     //not loaded yet, don't need to insert
     return;
   }
-  const transaction = actions.insertLocalResult(params);
+  const transaction = actionsByClient[client].insertLocalResult(params);
   await transaction.isPersisted.promise;
 }
 
 export async function deleteLocalTag(
   params: ActionType["deleteLocalTag"],
 ): Promise<void> {
-  if (!resultsCollection.isReady()) {
-    //not loaded yet, don't need to update
-    return;
+  for (const client of ["web", "tui"] as const) {
+    if (!resultsByClient[client].isReady()) continue;
+    const transaction = actionsByClient[client].deleteLocalTag(params);
+    await transaction.isPersisted.promise;
   }
-  const transaction = actions.deleteLocalTag(params);
-  await transaction.isPersisted.promise;
 }
 
 // oxlint-disable-next-line typescript/explicit-function-return-type
@@ -444,7 +488,7 @@ export function buildResultsQuery(state: ResultsQueryState) {
   };
 
   let query = new Query()
-    .from({ r: resultsCollection })
+    .from({ r: resultsByClient[state.client ?? "web"] })
     .where(({ r }) => gte(r.timestamp, state.timestamp))
     .where(({ r }) => inArray(r.difficulty, state.difficulty))
     .where(({ r }) => inArray(r.isPb, state.pb))
@@ -481,8 +525,10 @@ export function buildResultsQuery(state: ResultsQueryState) {
 
 export function createResultsQueryState(
   filters: ResultFilters,
+  client: Client = "web",
 ): ResultsQueryState {
   return {
+    client,
     difficulty: valueFilter(filters.difficulty),
     pb: boolFilter(filters.pb),
     mode: valueFilter(filters.mode),
@@ -709,11 +755,12 @@ export async function waitForResultsReady(): Promise<void> {
 createEffectOn(isAuthenticated, (hasUser) => {
   if (hasUser) {
     void resultsCollection.utils.refetch();
+    if (resultsByClient.tui.isReady()) void resultsByClient.tui.utils.refetch();
   }
 });
 
-function getResults(): SnapshotResult<Mode>[] {
-  return [...resultsCollection.values()];
+function getResults(client: Client = "web"): SnapshotResult<Mode>[] {
+  return [...resultsByClient[client].values()];
 }
 /**
  * Used for non reactive access. Do not use in Solid components.
