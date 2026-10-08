@@ -65,23 +65,6 @@ export function getActiveFunboxesWithProperty(
   return getActiveFunboxes().filter((fb) => fb.properties?.includes(property));
 }
 
-/**
- * Find a single active funbox defining the given property
- * @param property
- * @returns the active funbox if any, `undefined`  otherwise.
- * @throws Error if there are multiple funboxes defining the given property
- */
-export function findSingleActiveFunboxWithProperty(
-  property: FunboxProperty,
-): FunboxMetadataWithFunctions | undefined {
-  const matching = getActiveFunboxesWithProperty(property);
-  if (matching.length === 0) return undefined;
-  if (matching.length === 1) return matching[0];
-  throw new Error(
-    `Expecting exactly one funbox with property "${property} but found ${matching.length}`,
-  );
-}
-
 type MandatoryFunboxFunction<F extends keyof FunboxFunctions> = Exclude<
   FunboxFunctions[F],
   undefined

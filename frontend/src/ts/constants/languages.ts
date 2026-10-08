@@ -394,14 +394,3 @@ export type LanguageGroupName = keyof typeof LanguageGroups;
 export const LanguageGroupNames: LanguageGroupName[] = Array.from(
   Object.keys(LanguageGroups),
 );
-
-/**
- * Fetches the language group for a given language.
- * @param language The language code.
- * @returns the language group.
- */
-export function getGroupForLanguage(
-  language: Language,
-): LanguageGroupName | undefined {
-  return LanguageGroupNames.find((group) => group.includes(language));
-}

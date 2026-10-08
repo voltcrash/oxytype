@@ -129,13 +129,6 @@ export function hideModalAndClearChain(id: ModalId): void {
   setModalState("openModals", id, { visible: false, chained: false });
 }
 
-export function hideCurrentModalAndClearChain(): void {
-  const currentlyOpenModal = getCurrentlyOpenModal();
-  if (currentlyOpenModal !== null) {
-    hideModalAndClearChain(currentlyOpenModal);
-  }
-}
-
 export function getModalVisibility(id: ModalId): ModalVisibility | null {
   return modalState.openModals[id] ?? null;
 }

@@ -22,10 +22,6 @@ export let randomTheme: ThemeIdentifier | null = null;
 let isPreviewingTheme = false;
 let randomThemeIndex = 0;
 
-export function applyPreset(name: ThemeName): void {
-  void apply(name);
-}
-
 export function convertCustomColorsToTheme(colors: CustomThemeColors): Theme {
   return {
     bg: colors[0],
