@@ -23,6 +23,8 @@ const aliases: Record<string, string> = {
   colors: "colours",
   colorful: "colourful",
   tips: "shortcuts hotkeys",
+  palette: "commandline command line",
+  shortcut: "hotkey hotkeys keybind keybinds",
   pace: "ghost",
   timer: "countdown",
   fps: "framerate frames frame rate",
