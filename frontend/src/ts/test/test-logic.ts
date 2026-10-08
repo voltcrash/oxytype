@@ -110,27 +110,14 @@ import {
   buildEventLog,
 } from "./events/data";
 import {
-  getKeypressDurations,
-  getChars,
-  getBurstHistory,
-  getLastKeypressToEndMs,
-  getStartToFirstKeypressMs,
-  getTestDurationMs,
-  getAccuracy,
-  getKeypressOverlap,
-  getErrorCountHistory,
-  getWpmHistory,
-  getAfkDuration,
   getIncompleteTestSeconds,
   getDateBasedTestDurationMs,
   getInputHistory,
   getKeypressesPerSecond,
-  getKeypressSpacing,
 } from "./events/stats";
 import { getLiveCachedAccuracy } from "./events/live-cache";
-import { calculateWpm } from "../utils/numbers";
+import { buildCompletedEvent } from "./completed-event";
 import { isDevEnvironment } from "../utils/env";
-import { EventLog } from "./events/types";
 import { resetModifierState } from "../states/modifiers";
 import { nthElementFromArray } from "../utils/arrays";
 
@@ -704,118 +691,15 @@ export async function retrySavingResult(): Promise<void> {
   await saveResult(completedEvent, true);
 }
 
-function buildCompletedEvent(
-  eventLog: EventLog,
-): Omit<CompletedEvent, "hash" | "uid"> {
-  const chars = getChars(eventLog);
-
-  //tags
-  const activeTagsIds: string[] = __nonReactive
-    .getActiveTags()
-    .map((tag) => tag._id);
-
-  let language = Config.language;
-  if (Config.mode === "quote") {
-    language = Strings.removeLanguageSize(Config.language);
-  }
-
-  let customText: CompletedEventCustomText | undefined = undefined;
-  if (Config.mode === "custom") {
-    const temp = CustomText.getData();
-    customText = {
-      textLen: temp.text.length,
-      mode: temp.mode,
-      pipeDelimiter: temp.pipeDelimiter,
-      limit: temp.limit,
-    };
-  }
-
-  let duration = getTestDurationMs(eventLog) / 1000;
-
-  const rawPerSecond = getBurstHistory(eventLog);
-  const afkDuration = getAfkDuration(eventLog);
-  const stddev = Numbers.stdDev(rawPerSecond);
-  const avg = Numbers.mean(rawPerSecond);
-  let consistency = Numbers.roundTo2(Numbers.kogasa(stddev / avg));
-  if (!consistency || isNaN(consistency)) {
-    consistency = 0;
-  }
-
-  const keypressSpacing = getKeypressSpacing(eventLog);
-
-  let keyConsistencyArray = [...keypressSpacing];
-  if (keypressSpacing.length > 0) {
-    keyConsistencyArray = keyConsistencyArray.slice(
-      0,
-      keyConsistencyArray.length - 1,
-    );
-  }
-  const keyStddev = Numbers.stdDev(keyConsistencyArray);
-  const keyAvg = Numbers.mean(keyConsistencyArray);
-  let keyConsistency = Numbers.roundTo2(Numbers.kogasa(keyStddev / keyAvg));
-  if (!keyConsistency || isNaN(keyConsistency)) {
-    keyConsistency = 0;
-  }
-
-  const wpmHistory = getWpmHistory(eventLog);
-  const wpmCons = Numbers.roundTo2(
-    Numbers.kogasa(Numbers.stdDev(wpmHistory) / Numbers.mean(wpmHistory)),
-  );
-  const wpmConsistency = isNaN(wpmCons) ? 0 : wpmCons;
-
-  const chartData = {
-    wpm: wpmHistory,
-    burst: rawPerSecond,
-    err: getErrorCountHistory(eventLog),
+function getCompletedEventCustomText(): CompletedEventCustomText | undefined {
+  if (Config.mode !== "custom") return undefined;
+  const temp = CustomText.getData();
+  return {
+    textLen: temp.text.length,
+    mode: temp.mode,
+    pipeDelimiter: temp.pipeDelimiter,
+    limit: temp.limit,
   };
-
-  const currentQuote = getCurrentQuote();
-  const completedEvent: Omit<CompletedEvent, "hash" | "uid"> = {
-    wpm: Numbers.roundTo2(calculateWpm(chars.correctWord, duration)),
-    rawWpm: Numbers.roundTo2(
-      calculateWpm(chars.allCorrect + chars.incorrect + chars.extra, duration),
-    ),
-    charStats: [chars.correctWord, chars.incorrect, chars.extra, chars.missed],
-    charTotal: chars.allCorrect + chars.incorrect + chars.extra,
-    acc: Numbers.roundTo2(getAccuracy(eventLog).percentage),
-    language: language,
-    testDuration: duration,
-    lastKeyToEnd: getLastKeypressToEndMs(eventLog),
-    startToFirstKey: getStartToFirstKeypressMs(eventLog),
-    afkDuration: afkDuration,
-    quoteLength: currentQuote?.group ?? -1,
-    customText: customText,
-    tags: activeTagsIds,
-    punctuation: Config.punctuation,
-    numbers: Config.numbers,
-    lazyMode: Config.lazyMode,
-    timestamp: Date.now(),
-    mode: Config.mode,
-    mode2: Misc.getMode2(Config, currentQuote),
-    bailedOut: getBailedOut(),
-    funbox: Config.funbox,
-    difficulty: Config.difficulty,
-    blindMode: Config.blindMode,
-    stopOnLetter: Config.stopOnError === "letter",
-    restartCount: getRestartCount(),
-    incompleteTests: getIncompleteTests(),
-    incompleteTestSeconds:
-      getIncompleteSeconds() < 0 ? 0 : Numbers.roundTo2(getIncompleteSeconds()),
-
-    consistency: consistency,
-    wpmConsistency: wpmConsistency,
-    keyConsistency: keyConsistency,
-    chartData: chartData,
-
-    keySpacing: keypressSpacing,
-    keyDuration: getKeypressDurations(eventLog),
-    keyOverlap: getKeypressOverlap(eventLog),
-  };
-
-  if (completedEvent.mode !== "custom") delete completedEvent.customText;
-  if (completedEvent.mode !== "quote") delete completedEvent.quoteLength;
-
-  return completedEvent;
 }
 
 export async function finish(difficultyFailed = false): Promise<void> {
@@ -854,7 +738,17 @@ export async function finish(difficultyFailed = false): Promise<void> {
   }
 
   const eventLog = buildEventLog();
-  const ce = buildCompletedEvent(eventLog);
+  const ce = buildCompletedEvent(eventLog, {
+    config: Config,
+    currentQuote: getCurrentQuote(),
+    customText: getCompletedEventCustomText(),
+    tags: __nonReactive.getActiveTags().map((tag) => tag._id),
+    bailedOut: getBailedOut(),
+    restartCount: getRestartCount(),
+    incompleteTests: getIncompleteTests(),
+    incompleteSeconds: getIncompleteSeconds(),
+    timestamp: Date.now(),
+  });
   PaceCaret.setLastTestWpm(ce.wpm);
 
   console.debug("Completed event object", ce);
