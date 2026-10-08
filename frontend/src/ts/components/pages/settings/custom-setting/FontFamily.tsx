@@ -133,7 +133,7 @@ export function FontFamily(): JSXElement {
       }
       fullWidthInputs={
         <Show when={!hasLocalFont()}>
-          <div class="grid grid-cols-[repeat(auto-fit,minmax(13.5rem,1fr))] gap-2">
+          <div class="grid grid-cols-2 gap-2 sm:grid-cols-[repeat(auto-fit,minmax(13.5rem,1fr))]">
             <For each={getOptions(ConfigSchema.shape.fontFamily)?.sort()}>
               {(option) => {
                 const optionsMeta = configMetadata.fontFamily.optionsMetadata;
