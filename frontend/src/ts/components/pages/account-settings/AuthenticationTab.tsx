@@ -84,7 +84,7 @@ function AuthEmail(props: { authMethod: AuthMethod }) {
       {(value) => (
         <Button
           variant="text"
-          class="w-full p-1 font-mono"
+          class="w-full p-2 font-mono wrap-anywhere sm:p-1"
           fa={{ icon: isRevealed() ? "fa-eye-slash" : "fa-eye" }}
           text={isRevealed() ? value() : obfuscateEmail(value())}
           balloon={{
