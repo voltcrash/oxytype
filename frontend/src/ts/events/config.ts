@@ -1,7 +1,7 @@
 import { Config } from "@oxytype/schemas/configs";
 import { createEvent } from "../hooks/createEvent";
 
-export type ConfigEventKey =
+type ConfigEventKey =
   | keyof Config
   | "fullConfigChange"
   | "fullConfigChangeFinished";

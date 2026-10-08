@@ -2,7 +2,7 @@ import { createMutable } from "solid-js/store";
 import type { Command, CommandsSubgroup } from "../commandline/types";
 import type { ValidationResult } from "../types/validation";
 
-export type CommandlineMode = "search" | "input";
+type CommandlineMode = "search" | "input";
 
 export type InputModeParams = {
   command: Command | null;

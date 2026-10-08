@@ -11,7 +11,7 @@ import { baseKey } from "../queries/utils/keys";
 import { applyIdWorkaround, tempId } from "./utils/misc";
 import { isAuthenticated } from "../states/core";
 
-export type CustomThemeItem = CustomTheme;
+type CustomThemeItem = CustomTheme;
 
 const queryKeys = {
   root: () => [...baseKey("customThemes", { isUserSpecific: true })],

@@ -14,7 +14,7 @@ export type ResultCrownType =
   | "error"
   | "warning";
 
-export type ResultStat = {
+type ResultStat = {
   text: string;
   // undefined = no hover label
   ariaLabel?: string;
@@ -55,7 +55,7 @@ export type ResultChartLegendId =
   | "tagPbLine";
 
 // start = not started or finished
-export type ReplayPlayback = "start" | "playing" | "paused";
+type ReplayPlayback = "start" | "playing" | "paused";
 
 export type ReplayLetter = {
   char: string;
