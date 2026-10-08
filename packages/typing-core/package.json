@@ -13,6 +13,9 @@
     "lint": "npm run madge && vp lint . --type-aware --type-check --format agent",
     "lint-fast": "vp lint . --format agent"
   },
+  "dependencies": {
+    "@oxytype/util": "workspace:*"
+  },
   "devDependencies": {
     "@oxytype/typescript-config": "workspace:*",
     "@types/node": "24.19.0",

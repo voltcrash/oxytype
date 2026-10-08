@@ -834,6 +834,10 @@ importers:
   packages/typescript-config: {}
 
   packages/typing-core:
+    dependencies:
+      '@oxytype/util':
+        specifier: workspace:*
+        version: link:../util
     devDependencies:
       '@oxytype/typescript-config':
         specifier: workspace:*
