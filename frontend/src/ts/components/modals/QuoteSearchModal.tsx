@@ -166,6 +166,7 @@ function Item(props: {
             <div class="flex shrink">
               <Button
                 variant="text"
+                class="min-h-9 min-w-9 sm:min-h-0 sm:min-w-0"
                 fa={{ icon: "fa-flag" }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -178,6 +179,7 @@ function Item(props: {
               />
               <Button
                 variant="text"
+                class="min-h-9 min-w-9 sm:min-h-0 sm:min-w-0"
                 fa={{
                   icon: "fa-heart",
                   variant: isFav() ? "solid" : "regular",
