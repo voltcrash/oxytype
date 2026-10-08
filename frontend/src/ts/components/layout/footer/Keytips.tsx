@@ -23,7 +23,7 @@ export function Keytips(): JSXElement {
 
         <div class="flex items-center gap-2">
           <CommandlineHotkey />
-          <span>- command line</span>
+          <span>- command palette</span>
         </div>
       </div>
     </Show>

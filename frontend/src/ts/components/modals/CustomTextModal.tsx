@@ -113,7 +113,7 @@ export function CustomTextModal(): JSXElement {
         value.limitTime === "0"
       ) {
         showNoticeNotification(
-          "Infinite test! Make sure to use Bail Out from the command line to save your result.",
+          "Infinite test! Make sure to use Bail Out from the command palette to save your result.",
           { durationMs: 7000 },
         );
       }

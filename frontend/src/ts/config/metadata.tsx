@@ -278,7 +278,7 @@ export const configMetadata: ConfigMetadataObject = {
     changeRequiresRestart: false,
     group: "behavior",
     description:
-      'Press tab, esc or enter to quickly restart the test, or to quickly jump to the test page. These options disable tab navigation on most parts of the website. Using the "esc" option will move opening the commandline to the tab key.',
+      'Press tab, esc or enter to quickly restart the test, or to quickly jump to the test page. These options disable tab navigation on most parts of the website. Using the "esc" option will move opening the command palette to the tab key.',
   },
   repeatQuotes: {
     key: "repeatQuotes",
@@ -326,11 +326,11 @@ export const configMetadata: ConfigMetadataObject = {
   singleListCommandLine: {
     key: "singleListCommandLine",
     fa: { icon: "fa-list" },
-    displayString: "single list command line",
+    displayString: "single list command palette",
     changeRequiresRestart: false,
     group: "behavior",
     description:
-      "When enabled, it will show the command line with all commands in a single list instead of submenu arrangements. Selecting 'manual' will expose all commands only after typing >.",
+      "When enabled, it will show the command palette with all commands in a single list instead of submenu arrangements. Selecting 'manual' will expose all commands only after typing >.",
   },
   minWpm: {
     key: "minWpm",

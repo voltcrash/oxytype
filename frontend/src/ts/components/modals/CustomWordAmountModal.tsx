@@ -26,7 +26,7 @@ export function CustomWordAmountModal(): JSXElement {
         showNoticeNotification("Stay safe and take breaks!");
       } else if (val === 0) {
         showNoticeNotification(
-          "Infinite words! Make sure to use Bail Out from the command line to save your result.",
+          "Infinite words! Make sure to use Bail Out from the command palette to save your result.",
           { durationMs: 7000 },
         );
       }

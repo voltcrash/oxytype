@@ -95,7 +95,7 @@ function QuickRestart() {
   return (
     <>
       <Notice when={wordsHaveTab() && getConfig.quickRestart === "esc"}>
-        <Kbd hotkey={hotkeys.commandline} /> to open commandline
+        <Kbd hotkey={hotkeys.commandline} /> to open command palette
       </Notice>
       <Notice
         when={
