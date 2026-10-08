@@ -111,6 +111,24 @@ Completed A1–A13 in one PR, with separate extraction/testing commits.
 
 ## Stage B — Backend + schemas
 
+Completed B1–B9 in one PR stacked on Stage A, with separate implementation,
+migration, test and documentation commits.
+
+- Client identity covers payload hashes, persisted history, regular/tag PBs,
+  typing totals, XP, streaks/activity, rank memory and all leaderboard types.
+  Existing data and omitted query parameters remain web by default.
+- Offline history/stats retain completion timestamps; 30-day age limit, no PBs,
+  rankings or XP rewards. Replay/score validation remains active.
+- Native bearer GET/PATCH verified with curl against an ephemeral D1-backed
+  server. Device code → claim/approve → token → API → revocation tested on D1;
+  web cookie-origin/CORS checks remain enabled.
+- Terminal timing verified through a recorded raw-PTY/shared-session fixture and
+  production anticheat. This is automated transport evidence; human TUI
+  calibration follows the interactive client stages.
+- All migrations and client partitions have D1 integration coverage. Package,
+  backend and frontend checks/builds pass. Details: [TUI_BACKEND.md](TUI_BACKEND.md).
+
+
 ### B1. `client` field in schemas
 
 - `client: "web" | "tui"` on completed event (default `web`). Frontend sends `web`.
