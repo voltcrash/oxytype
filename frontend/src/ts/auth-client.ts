@@ -20,7 +20,7 @@ export const authClient = createAuthClient({
   plugins: [dashClient()],
 });
 import type { AuthUser, SocialProvider } from "./auth-types";
-export type { AuthUser, UserCredential, SocialProvider } from "./auth-types";
+export type { AuthUser, SocialProvider } from "./auth-types";
 const [getAuthenticatedUser, setAuthenticatedUser] =
   createSignal<AuthUser | null>(null);
 export { getAuthenticatedUser };
