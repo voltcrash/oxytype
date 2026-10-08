@@ -50,9 +50,5 @@
     }
   },
   "$schema": "https://unpkg.com/knip@6.39.0/schema.json",
-  "ignoreDependencies": [
-    "@commitlint/config-conventional",
-    "caniuse-lite",
-    "yaml"
-  ]
+  "ignoreDependencies": ["caniuse-lite", "yaml"]
 }

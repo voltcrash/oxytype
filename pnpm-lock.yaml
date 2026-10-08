@@ -214,9 +214,6 @@ importers:
       '@commitlint/cli':
         specifier: 21.2.3
         version: 21.2.3(@types/node@24.19.0)(conventional-commits-filter@6.0.1)(conventional-commits-parser@7.1.2)(typescript@7.0.2)
-      '@commitlint/config-conventional':
-        specifier: 21.2.3
-        version: 21.2.3
       '@types/node':
         specifier: 24.19.0
         version: 24.19.0
@@ -226,6 +223,9 @@ importers:
       caniuse-lite:
         specifier: 1.0.30001814
         version: 1.0.30001814
+      conventional-changelog-conventionalcommits:
+        specifier: 10.4.0
+        version: 10.4.0
       husky:
         specifier: 9.1.7
         version: 9.1.7
