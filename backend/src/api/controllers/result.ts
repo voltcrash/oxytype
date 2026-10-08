@@ -1,3 +1,4 @@
+import type { ClientQuery } from "@oxytype/schemas/shared";
 import { isUniqueViolation } from "../../db/client";
 import { atomicUser } from "../../db/mutation";
 import * as ResultDAL from "../../dal/result";
@@ -96,6 +97,7 @@ export async function getResults(
 
   const results = await ResultDAL.getResults(uid, {
     onOrAfterTimestamp,
+    client: req.query.client,
     limit,
     offset,
   });
@@ -124,10 +126,10 @@ export async function getResultById(
 }
 
 export async function getLastResult(
-  req: MonkeyRequest,
+  req: MonkeyRequest<ClientQuery>,
 ): Promise<GetLastResultResponse> {
   const { uid } = req.ctx.decodedToken;
-  const result = await ResultDAL.getLastResult(uid);
+  const result = await ResultDAL.getLastResult(uid, req.query?.client);
   return new MonkeyResponse("Result retrieved", result);
 }
 
@@ -214,7 +216,7 @@ async function addResultAtomic(
 
   // Independent of the user row; read both in one round trip.
   const lastResultTimestampRead = tryCatch(
-    ResultDAL.getLastResultTimestamp(uid),
+    ResultDAL.getLastResultTimestamp(uid, req.body.result.client),
   );
   const user = await UserDAL.getUser(uid, "add result");
 
@@ -242,7 +244,12 @@ async function addResultAtomic(
   if (req.ctx.configuration.results.objectHashCheckEnabled) {
     const objectToHash = omit(completedEvent, ["hash"]);
     const serverhash = objectHash(objectToHash);
-    if (serverhash !== resulthash) {
+    // Older web clients hashed before the client discriminator existed.
+    const legacyWebHash =
+      completedEvent.client === "web"
+        ? objectHash(omit(objectToHash, ["client"]))
+        : undefined;
+    if (serverhash !== resulthash && legacyWebHash !== resulthash) {
       await addLog(
         "incorrect_result_hash",
         {

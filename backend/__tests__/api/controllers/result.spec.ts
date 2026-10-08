@@ -871,6 +871,7 @@ describe("result controller test", () => {
 
 function buildCompletedEvent(result?: Partial<CompletedEvent>): CompletedEvent {
   return {
+    client: "web",
     acc: 86,
     afkDuration: 5,
     bailedOut: false,

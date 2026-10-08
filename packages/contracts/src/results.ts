@@ -12,9 +12,11 @@ import {
   ResultMinifiedSchema,
   ResultSchema,
 } from "@oxytype/schemas/results";
+import { ClientSchema, ClientQuerySchema } from "@oxytype/schemas/shared";
 import { IdSchema } from "@oxytype/schemas/util";
 
 export const GetResultsQuerySchema = z.object({
+  client: ClientSchema.optional(),
   onOrAfterTimestamp: z
     .number()
     .int()
@@ -164,6 +166,7 @@ export const resultsContract = c.router(
       summary: "get last result",
       description: "Gets a user's last saved result",
       path: "/last",
+      query: ClientQuerySchema.strict(),
       method: "GET",
       responses: {
         200: GetLastResultResponseSchema,

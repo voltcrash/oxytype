@@ -22,6 +22,7 @@ export function buildDbResult(
 ): DBResult {
   const ce = completedEvent;
   const res: DBResult = {
+    client: ce.client ?? "web",
     _id: newId(),
     uid: ce.uid,
     wpm: ce.wpm,
