@@ -11,7 +11,6 @@ The [production setup](PRODUCTION_SETUP.md) uses an isolated database and
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm build-pkg
 cp backend/.dev.vars.example backend/.dev.vars
 pnpm --filter @oxytype/backend db:migrate
 pnpm dev-be
