@@ -7,7 +7,9 @@ export function AlertsSection(props: {
   return (
     <div>
       <div class="flex text-xl">{props.title}</div>
-      <div class="grid min-h-20 items-center gap-4">{props.body}</div>
+      <div class="grid min-h-20 grid-cols-[minmax(0,1fr)] items-center gap-4">
+        {props.body}
+      </div>
     </div>
   );
 }

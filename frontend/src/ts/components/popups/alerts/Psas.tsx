@@ -31,7 +31,7 @@ export function Psas(): JSXElement {
 
 function Psa(props: { psa: AlertPsa }): JSXElement {
   return (
-    <div class="grid h-min grid-cols-[0.25rem_1fr] gap-x-2">
+    <div class="grid h-min grid-cols-[0.25rem_minmax(0,1fr)] gap-x-2">
       <div
         class={cn(
           "h-full w-1 rounded-sm transition-colors duration-125",
