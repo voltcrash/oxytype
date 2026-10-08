@@ -116,6 +116,18 @@ function reserve(reason: string, hotkeys: string[]): Record<string, string> {
 }
 
 /**
+ * Canonical form (e.g. `ctrl+k` -> `Mod+K`) so configs compare and sync cleanly.
+ * Invalid hotkeys are returned as is, to be rejected by validation.
+ */
+export function normalizeCommandPaletteHotkey(
+  hotkey: string,
+  platform: Platform = detectPlatform(),
+): string {
+  if (!validateHotkey(hotkey).valid) return hotkey;
+  return normalizeHotkey(hotkey, platform);
+}
+
+/**
  * Returns why a hotkey can't open the command palette, or undefined if it can.
  */
 export function getCommandPaletteHotkeyError(

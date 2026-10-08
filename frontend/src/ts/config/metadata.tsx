@@ -5,6 +5,11 @@ import { JSXElement } from "solid-js";
 
 import * as CustomThemes from "../collections/custom-themes";
 import { getDefaultConfig } from "../constants/default-config";
+import {
+  DEFAULT_COMMAND_PALETTE_HOTKEY,
+  getCommandPaletteHotkeyError,
+  normalizeCommandPaletteHotkey,
+} from "../input/hotkeys/command-palette-hotkey";
 import { isAuthenticated } from "../states/core";
 import { showNoticeNotification } from "../states/notifications";
 import { FaObject } from "../types/font-awesome";
@@ -277,6 +282,21 @@ export const configMetadata: ConfigMetadataObject = {
     displayString: "quick restart",
     changeRequiresRestart: false,
     group: "behavior",
+    // the command palette can't share a key with quick restart
+    overrideConfig: ({ value, currentConfig }) => {
+      if (
+        getCommandPaletteHotkeyError(
+          currentConfig.commandPaletteHotkey,
+          value,
+        ) === undefined
+      ) {
+        return {};
+      }
+      showNoticeNotification(
+        "Command palette shortcut was reset because quick restart uses the same key",
+      );
+      return { commandPaletteHotkey: DEFAULT_COMMAND_PALETTE_HOTKEY };
+    },
     description:
       "Press tab, esc or enter to quickly restart the test, or to quickly jump to the test page. These options disable tab navigation on most parts of the website.",
   },
@@ -340,6 +360,16 @@ export const configMetadata: ConfigMetadataObject = {
     group: "behavior",
     description:
       "Keyboard shortcut that opens the command palette. Shortcuts used by the browser, the operating system or quick restart are not allowed.",
+    overrideValue: ({ value }) => normalizeCommandPaletteHotkey(value),
+    isBlocked: ({ value, currentConfig }) => {
+      const error = getCommandPaletteHotkeyError(
+        value,
+        currentConfig.quickRestart,
+      );
+      if (error === undefined) return false;
+      showNoticeNotification(error);
+      return true;
+    },
   },
   minWpm: {
     key: "minWpm",

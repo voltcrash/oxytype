@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vite-plus/test";
-import { getCommandPaletteHotkeyError } from "../../../src/ts/input/hotkeys/command-palette-hotkey";
+import {
+  getCommandPaletteHotkeyError,
+  normalizeCommandPaletteHotkey,
+} from "../../../src/ts/input/hotkeys/command-palette-hotkey";
 
 describe("getCommandPaletteHotkeyError", () => {
   describe.for(["mac", "windows", "linux"] as const)("on %s", (platform) => {
@@ -84,5 +87,19 @@ describe("getCommandPaletteHotkeyError", () => {
     expect(getCommandPaletteHotkeyError("Meta+K", "off", "linux")).toMatch(
       /operating system/,
     );
+  });
+});
+
+describe("normalizeCommandPaletteHotkey", () => {
+  it("normalizes aliases and casing", () => {
+    expect(normalizeCommandPaletteHotkey("ctrl+k", "windows")).toBe("Mod+K");
+    expect(normalizeCommandPaletteHotkey("cmd+shift+k", "mac")).toBe(
+      "Mod+Shift+K",
+    );
+    expect(normalizeCommandPaletteHotkey("tab", "linux")).toBe("Tab");
+  });
+
+  it("leaves invalid hotkeys untouched", () => {
+    expect(normalizeCommandPaletteHotkey("foo+bar", "mac")).toBe("foo+bar");
   });
 });

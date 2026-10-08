@@ -103,6 +103,59 @@ describe("Config", () => {
       expect(Config.setConfig("showAllLines", true)).toBe(false);
     });
 
+    it("blocks reserved command palette hotkeys", () => {
+      //WHEN / THEN
+      expect(Config.setConfig("commandPaletteHotkey", "Mod+F")).toBe(false);
+      expect(getConfig().commandPaletteHotkey).toBe("Mod+K");
+      expect(notificationAddMock).toHaveBeenCalledWith(
+        "Shortcut is reserved for find",
+      );
+    });
+
+    it("blocks the quick restart key as command palette hotkey", () => {
+      //GIVEN
+      replaceConfig({ quickRestart: "tab" });
+
+      //WHEN / THEN
+      expect(Config.setConfig("commandPaletteHotkey", "Tab")).toBe(false);
+      expect(Config.setConfig("commandPaletteHotkey", "Escape")).toBe(true);
+    });
+
+    it("normalizes the command palette hotkey", () => {
+      //WHEN
+      Config.setConfig("commandPaletteHotkey", "alt+mod+p");
+
+      //THEN
+      expect(getConfig().commandPaletteHotkey).toBe("Mod+Alt+P");
+    });
+
+    it("resets the command palette hotkey when quick restart takes its key", () => {
+      //GIVEN
+      replaceConfig({ quickRestart: "off", commandPaletteHotkey: "Escape" });
+
+      //WHEN
+      expect(Config.setConfig("quickRestart", "esc")).toBe(true);
+
+      //THEN
+      expect(getConfig()).toMatchObject({
+        quickRestart: "esc",
+        commandPaletteHotkey: "Mod+K",
+      });
+      expect(notificationAddMock).toHaveBeenCalled();
+    });
+
+    it("keeps the command palette hotkey when quick restart doesn't conflict", () => {
+      //GIVEN
+      replaceConfig({ quickRestart: "off", commandPaletteHotkey: "Escape" });
+
+      //WHEN
+      expect(Config.setConfig("quickRestart", "tab")).toBe(true);
+
+      //THEN
+      expect(getConfig().commandPaletteHotkey).toBe("Escape");
+      expect(notificationAddMock).not.toHaveBeenCalled();
+    });
+
     it("disables live text stats when enabling monkey", () => {
       //GIVEN
       replaceConfig({
