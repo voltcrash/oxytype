@@ -54,8 +54,10 @@ function ReleaseItem(props: {
 }): JSXElement {
   return (
     <div class="grid min-w-0 gap-4">
-      <div class="flex place-items-center justify-between">
-        <div class="text-4xl text-main">{props.name}</div>
+      <div class="flex flex-col gap-1 sm:flex-row sm:place-items-center sm:justify-between">
+        <div class="min-w-0 break-words text-2xl text-main sm:text-4xl">
+          {props.name}
+        </div>
         <div class="text-sub">{props.publishedAt}</div>
       </div>
       <div
