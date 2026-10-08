@@ -153,14 +153,16 @@ const userColumn = ({
     header: "name",
     cell: (info) =>
       userOverride?.() ?? (
-        <User
-          avatarFallback="user-circle"
-          avatarColor="sub"
-          flagsColor="sub"
-          user={info.row.original}
-          class="w-min text-[1em] **:data-[ui-element='button']:[--themable-button-text:var(--text-color)]"
-          linkToProfile={true}
-        />
+        <div class="max-w-[9rem] max-sm:overflow-hidden sm:max-w-none">
+          <User
+            avatarFallback="user-circle"
+            avatarColor="sub"
+            flagsColor="sub"
+            user={info.row.original}
+            class="w-min text-[1em] **:data-[ui-element='button']:[--themable-button-text:var(--text-color)]"
+            linkToProfile={true}
+          />
+        </div>
       ),
     meta: {
       cellMeta: () => ({ class: "w-full" }),
