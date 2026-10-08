@@ -72,6 +72,9 @@ export function readLeaderboardGetParameters(
 
   if (params.type === "weekly") {
     newSelection.previous = params.lastWeek ?? false;
+    newSelection.mode = undefined;
+    newSelection.mode2 = undefined;
+    newSelection.language = undefined;
   } else {
     newSelection.mode = params.mode ?? "time";
     newSelection.mode2 = params.mode2 ?? "15";
@@ -82,11 +85,8 @@ export function readLeaderboardGetParameters(
 
   setSelection({ ...getSelection(), ...newSelection } as Selection);
 
-  if (params.goToUserPage === true) {
-    setGoToUserPage(true);
-  } else if (params.page !== undefined) {
-    setPage(Math.max(0, params.page - 1));
-  }
+  setGoToUserPage(params.goToUserPage === true);
+  setPage(params.page === undefined ? 0 : Math.max(0, params.page - 1));
 }
 
 export function updateGetParameters(
