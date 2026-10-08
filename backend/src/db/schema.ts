@@ -93,6 +93,24 @@ export const authVerifications = sqliteTable(
     index("auth_verifications_expiry_idx").on(t.expiresAt),
   ],
 );
+export const authDeviceCodes = sqliteTable(
+  "auth_device_codes",
+  {
+    id: id(),
+    deviceCode: text("device_code").notNull().unique(),
+    userCode: text("user_code").notNull().unique(),
+    userId: text("user_id").references(() => authUsers.id, {
+      onDelete: "cascade",
+    }),
+    expiresAt: date("expires_at"),
+    status: text("status").notNull(),
+    lastPolledAt: integer("last_polled_at", { mode: "timestamp_ms" }),
+    pollingInterval: integer("polling_interval"),
+    clientId: text("client_id"),
+    scope: text("scope"),
+  },
+  (t) => [index("auth_device_codes_expiry_idx").on(t.expiresAt)],
+);
 export const authRateLimits = sqliteTable("auth_rate_limits", {
   id: id(),
   key: text("key").notNull().unique(),
@@ -124,6 +142,19 @@ const owner = () =>
   text("uid")
     .notNull()
     .references(() => users.uid, { onDelete: "cascade" });
+export const clientProfiles = sqliteTable(
+  "client_profiles",
+  {
+    uid: owner(),
+    client: text("client").$type<"web" | "tui">().notNull(),
+    timeTyping: real("time_typing").notNull().default(0),
+    data: json(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.uid, t.client] }),
+    check("client_profiles_client", sql`${t.client} IN ('web','tui')`),
+  ],
+);
 export const configs = sqliteTable("configs", {
   uid: owner().primaryKey(),
   id: text("id").notNull(),
@@ -345,14 +376,15 @@ export const weeklyEntries = sqliteTable(
   {
     period: integer("period").notNull(),
     uid: owner(),
+    client: text("client").$type<"web" | "tui">().notNull().default("web"),
     xp: integer("xp").notNull(),
     timeTypedSeconds: real("time_typed_seconds").notNull(),
     expiresAt: integer("expires_at").notNull(),
     data: json(),
   },
   (t) => [
-    primaryKey({ columns: [t.period, t.uid] }),
-    index("weekly_entries_rank_idx").on(t.period, t.xp, t.uid),
+    primaryKey({ columns: [t.client, t.period, t.uid] }),
+    index("weekly_entries_rank_idx").on(t.client, t.period, t.xp, t.uid),
     index("weekly_entries_expiry_idx").on(t.expiresAt),
     index("weekly_entries_owner_idx").on(t.uid),
   ],
@@ -361,10 +393,11 @@ export const userActivity = sqliteTable(
   "user_activity",
   {
     uid: owner(),
+    client: text("client").$type<"web" | "tui">().notNull().default("web"),
     day: integer("day").notNull(),
     count: integer("count").notNull(),
   },
-  (t) => [primaryKey({ columns: [t.uid, t.day] })],
+  (t) => [primaryKey({ columns: [t.uid, t.client, t.day] })],
 );
 export const inbox = sqliteTable(
   "inbox",
