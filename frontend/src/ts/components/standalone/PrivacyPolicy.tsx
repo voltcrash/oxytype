@@ -4,7 +4,7 @@ export function PrivacyPolicy() {
   return (
     <>
       <StandaloneHeader label="Privacy Policy" />
-      <main class="grid gap-6">
+      <main class="grid min-w-0 gap-6 wrap-break-word">
         <h1 class="text-3xl text-main">Privacy Policy</h1>
         <p>
           Oxytype is preparing a privacy policy for its own hosting and

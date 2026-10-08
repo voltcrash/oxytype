@@ -4,7 +4,7 @@ export function TermsOfService() {
   return (
     <>
       <StandaloneHeader label="Terms of Service" />
-      <main class="grid gap-6">
+      <main class="grid min-w-0 gap-6 wrap-break-word">
         <h1 class="text-3xl text-main">Terms of Service</h1>
         <p>
           Oxytype terms are being prepared. The terms inherited from Monkeytype
