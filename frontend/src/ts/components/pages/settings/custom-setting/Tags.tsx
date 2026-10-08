@@ -33,12 +33,14 @@ export function Tags(): JSXElement {
             {(tag) => (
               <div class="grid grid-cols-[1fr_auto_auto_auto] gap-2">
                 <Button
-                  text={tag.name}
+                  class="min-w-0"
                   active={tag.active}
                   onClick={() => {
                     void toggleTagActive({ tagId: tag._id });
                   }}
-                />
+                >
+                  <span class="min-w-0 truncate">{tag.name}</span>
+                </Button>
                 <Button
                   fa={{
                     icon: "fa-crown",
