@@ -303,6 +303,7 @@ function getSpeedColumns({
         ),
       meta: {
         align: "right",
+        breakpoint: "sm",
       },
     }),
   ];
@@ -361,6 +362,7 @@ function getXpColumns({
         ),
       meta: {
         align: "right",
+        breakpoint: "sm",
         cellMeta: (info) =>
           info.value !== undefined
             ? {
