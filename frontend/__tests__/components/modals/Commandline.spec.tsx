@@ -65,7 +65,7 @@ vi.mock("../../../src/ts/states/test", () => ({
   wordsHaveTab: () => false,
 }));
 vi.mock("../../../src/ts/states/hotkeys", () => ({
-  hotkeys: { commandline: "Escape", quickRestart: "Tab" },
+  hotkeys: { commandPalette: "Mod+K", quickRestart: "Tab" },
   quickRestartHotkeyMap: { off: "", esc: "Escape", tab: "Tab", enter: "Enter" },
 }));
 vi.mock("../../../src/ts/input/hotkeys/utils", () => ({
@@ -220,8 +220,8 @@ describe("theme picker lifecycle", () => {
           new KeyboardEvent("keydown", { key: "Tab" }),
         );
         expect(restart).toHaveBeenCalledWith({ isQuickRestart: true });
-        hotkeyHandlers.get("Escape")?.(
-          new KeyboardEvent("keydown", { key: "Escape" }),
+        hotkeyHandlers.get("Mod+K")?.(
+          new KeyboardEvent("keydown", { key: "k", ctrlKey: true }),
         );
         await waitFor(() => expect(dialog.open).toBe(true));
       } finally {

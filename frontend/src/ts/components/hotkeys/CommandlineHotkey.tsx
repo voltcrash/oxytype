@@ -7,7 +7,7 @@ import { Kbd } from "../common/Kbd";
 export function CommandlineHotkey() {
   return (
     <>
-      <Kbd hotkey={hotkeys.commandline} />
+      <Kbd hotkey={hotkeys.commandPalette} />
       <Show when={!isFirefox()}>
         &nbsp;or&nbsp;
         <Kbd hotkey="Mod+Shift+P" />

@@ -8,5 +8,5 @@ function openCommandline(): void {
   showModal("Commandline");
 }
 
-createHotkey(() => hotkeys.commandline, openCommandline);
+createHotkey(() => hotkeys.commandPalette, openCommandline);
 createHotkey("Mod+Shift+P", openCommandline);
