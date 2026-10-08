@@ -33,4 +33,3 @@ export function createDocsRoutes(root = "/docs"): Hono<ApiEnv> {
 
   return router;
 }
-export default createDocsRoutes();
