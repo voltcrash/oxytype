@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "full-check": "turbo lint build test integration-test lint-styles lint-json check-assets --force",
+    "full-check": "vp run lint && vp run build && vp run test && vp run lint-styles && vp run lint-json-assets && vp run check-assets",
     "prepare": "husky",
     "pre-commit": "lint-staged",
     "ts-check": "vp run build-pkg && vp run --filter \"!oxytype\" ts-check",
