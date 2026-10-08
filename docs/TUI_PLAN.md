@@ -18,7 +18,7 @@ Terminal client for oxytype. Same backend, same accounts. OpenTUI + Solid.
 
 - One phase = one small PR. Lint, typecheck, tests green.
 - Frontend behavior unchanged during core extraction phases.
-- Update `tui/MISSING.md` whenever a feature is skipped/approximated.
+- Update `tui/MISSING.md` whenever a feature is skipped/approximated. Create it (template from D1) if absent.
 
 ---
 
@@ -168,7 +168,8 @@ Terminal client for oxytype. Same backend, same accounts. OpenTUI + Solid.
 
 - Bun + `@opentui/solid`, Solid JSX transform, lint/typecheck/test wiring, turbo tasks.
 - Hello-world screen.
-- Done: `pnpm --filter @voltcrash/oxytype dev` renders.
+- Create `tui/MISSING.md`: intro + table `Feature | Status (missing/approximated) | Reason | Approximation`. Seed w/ known: TTS, sounds, custom fonts, background images, screenshots, visual funboxes.
+- Done: `pnpm --filter @voltcrash/oxytype dev` renders; `tui/MISSING.md` exists.
 
 ### D2. App shell + router
 
