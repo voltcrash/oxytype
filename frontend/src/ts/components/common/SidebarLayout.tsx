@@ -1,3 +1,4 @@
+import { Hotkey } from "@tanstack/solid-hotkeys";
 import {
   createSignal,
   For,
@@ -8,6 +9,8 @@ import {
 } from "solid-js";
 
 import { useRef } from "../../hooks/useRef";
+import { createHotkey } from "../../input/hotkeys/utils";
+import { isAnyPopupVisible } from "../../states/overlay-visibility";
 import { getHeaderBottom } from "../../states/page-layout";
 import { FaSolidIcon } from "../../types/font-awesome";
 import { cn } from "../../utils/cn";
@@ -29,6 +32,8 @@ export function SidebarLayout<T extends string>(props: {
   footer?: JSXElement;
   // when set, shows a count next to each item and dims items without one
   counts?: Partial<Record<T, number>>;
+  // mod + 1-9 selects the first nine items while true
+  hotkeys?: boolean;
   children: JSXElement;
 }): JSXElement {
   const [contentRef, content] = useRef<HTMLDivElement>();
@@ -55,6 +60,18 @@ export function SidebarLayout<T extends string>(props: {
       content()?.scrollIntoView({ block: "start" });
     }
   };
+
+  const keys = (): T[] => Object.keys(props.items) as T[];
+  for (let i = 0; i < 9; i++) {
+    createHotkey(
+      `Mod+${i + 1}` as Hotkey,
+      () => {
+        const key = keys()[i];
+        if (key !== undefined && !isAnyPopupVisible()) select(key);
+      },
+      () => ({ enabled: props.hotkeys === true && i < keys().length }),
+    );
+  }
 
   return (
     <div
