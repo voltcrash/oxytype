@@ -1,3 +1,4 @@
+import { canDelete } from "@oxytype/typing-core/input/engine";
 import { Config } from "../../config/store";
 import * as TestWords from "../../test/test-words";
 import { getInputElementValue } from "../input-element";
@@ -47,28 +48,17 @@ export function onBeforeDelete(event: InputEvent): void {
     }
   }
 
-  if (Config.freedomMode) {
-    //allow anything in freedom mode
-    return;
-  }
-
-  const confidence = Config.confidenceMode;
   const previousWord = TestWords.words.get(getActiveWordIndex() - 1);
-  const previousWordCorrect =
-    getInputForWord(getActiveWordIndex() - 1) === previousWord?.textWithCommit;
-
-  if (confidence === "on" && inputIsEmpty && !previousWordCorrect) {
+  if (
+    !canDelete(Config, {
+      inputValue,
+      wordIndex: getActiveWordIndex(),
+      previousWordCorrect:
+        getInputForWord(getActiveWordIndex() - 1) ===
+        previousWord?.textWithCommit,
+      previousWordAvailable: true,
+    })
+  ) {
     event.preventDefault();
-    return;
-  }
-
-  if (confidence === "max") {
-    event.preventDefault();
-    return;
-  }
-
-  if (inputIsEmpty && previousWordCorrect) {
-    event.preventDefault();
-    return;
   }
 }

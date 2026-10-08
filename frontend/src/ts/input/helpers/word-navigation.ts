@@ -1,3 +1,4 @@
+import { getPreviousWordInput } from "@oxytype/typing-core/input/engine";
 import { Config } from "../../config/store";
 import * as TestUI from "../../test/test-ui";
 import * as PaceCaret from "../../test/pace-caret";
@@ -98,20 +99,12 @@ export function goToPreviousWord(inputType: DeleteInputType): void {
 
   const nospaceEnabled = isFunboxActiveWithProperty("nospace");
 
-  if (inputType === "deleteWordBackward") {
-    setInputElementValue("");
-  } else if (inputType === "deleteContentBackward") {
-    const word = getInputForWord(getActiveWordIndex());
-    if (nospaceEnabled) {
-      // nospace has no separator, so the prior word's commit was its last
-      // letter; a single backspace deletes that letter (same as non-nospace
-      // deletes the separator below)
-      setInputElementValue(word.slice(0, -1));
-    } else if (word.endsWith("\n") || word.endsWith(" ")) {
-      setInputElementValue(word.slice(0, -1));
-    } else {
-      setInputElementValue(word);
-    }
-  }
+  setInputElementValue(
+    getPreviousWordInput(
+      getInputForWord(getActiveWordIndex()),
+      inputType,
+      nospaceEnabled,
+    ),
+  );
   void TestUI.afterTestWordChange("back");
 }
