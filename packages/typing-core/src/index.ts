@@ -1,3 +1,22 @@
-// Headless typing test logic shared by the web frontend and the terminal client.
-// Modules are imported by subpath (`@oxytype/typing-core/<module>`).
-export const PACKAGE_NAME = "@oxytype/typing-core";
+export { createTestSession, TestSession } from "./session";
+export type {
+  SessionConfig,
+  SessionEvents,
+  TestSessionDeps,
+  LiveStats,
+} from "./session";
+export { createWordsGenerator } from "./words-generator";
+export type {
+  WordsGenerator,
+  WordsGeneratorDeps,
+  WordsGeneratorConfig,
+} from "./words-generator";
+export { createLanguageLoader } from "./languages";
+export {
+  createFunboxWordFunctions,
+  getWordFunboxes,
+} from "./funbox-word-functions";
+export { QuotesController } from "./quote-source";
+export { buildCompletedEvent } from "./completed-event";
+export { hashResult, preloadResultHasher } from "./result-hash";
+export type { EventLog, InputEventData } from "./events/types";
