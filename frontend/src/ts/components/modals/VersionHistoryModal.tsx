@@ -63,7 +63,7 @@ function ReleaseItem(props: {
       <div
         class={cn(
           "grid min-w-0 gap-4 [overflow-wrap:anywhere]",
-          "[&_h3]:mt-4 [&_h3]:text-xl [&_h3]:text-sub [&_h3:first-child]:mt-0",
+          "[&_h3]:mt-4 [&_h3]:text-lg [&_h3]:text-sub sm:[&_h3]:text-xl [&_h3:first-child]:mt-0",
           "[&_ul]:grid [&_ul]:gap-1",
           "[&_li]:relative [&_li]:pl-[2ch] [&_li]:before:absolute [&_li]:before:left-0 [&_li]:before:content-['-']",
           "[&_code]:rounded [&_code]:bg-sub-alt [&_code]:px-1",
@@ -72,7 +72,7 @@ function ReleaseItem(props: {
         // oxlint-disable-next-line solid/no-innerhtml
         innerHTML={props.bodyHTML}
       ></div>
-      <div class="mt-4 mb-16 h-1 w-full rounded bg-sub-alt"></div>
+      <div class="mt-4 mb-8 h-1 w-full rounded bg-sub-alt sm:mb-16"></div>
     </div>
   );
 }
