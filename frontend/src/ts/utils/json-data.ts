@@ -3,6 +3,13 @@ import { LayoutObject } from "@oxytype/schemas/layouts";
 import { languageHashes } from "virtual:language-hashes";
 import { isDevEnvironment } from "./env";
 import { toHex } from "./strings";
+import {
+  createLanguageLoader,
+  memoizeAsync,
+} from "@oxytype/typing-core/languages";
+
+// still read by the wikipedia funbox until it moves to typing-core
+export { Section } from "@oxytype/typing-core/languages";
 
 //pin implementation
 const fetch = window.fetch;
@@ -33,35 +40,6 @@ async function fetchJson<T>(url: string): Promise<T> {
 }
 
 /**
- * Memoizes an asynchronous function.
- * @template P   Cache key type
- * @template Args Function argument tuple
- * @template R   Resolved value of the Promise
- * @param fn The async function to memoize.
- * @param getKey Optional function to compute a cache key from the function arguments. If omitted, the first argument is used as the key.
- * @returns A memoized version of the async function with the same signature.
- */
-function memoizeAsync<P, Args extends unknown[], R>(
-  fn: (...args: Args) => Promise<R>,
-  getKey?: (...args: Args) => P,
-): (...args: Args) => Promise<R> {
-  const cache = new Map<P, Promise<R>>();
-
-  return async (...args: Args): Promise<R> => {
-    const key = getKey ? getKey(...args) : (args[0] as P);
-
-    const cached = cache.get(key);
-    if (cached !== undefined) {
-      return cached;
-    }
-
-    const result = fn(...args);
-    cache.set(key, result);
-    return result;
-  };
-}
-
-/**
  * Memoizes the fetchJson function to cache the results of fetch requests.
  * @param url - The URL used to fetch JSON data.
  * @returns A promise that resolves to the cached JSON data.
@@ -78,14 +56,6 @@ export async function getLayout(layoutName: string): Promise<LayoutObject> {
   return await cachedFetchJson<LayoutObject>(`/layouts/${layoutName}.json`);
 }
 
-// used for polyglot wordset language-specific properties
-export type LanguageProperties = Pick<
-  LanguageObject,
-  "noLazyMode" | "joiningScript" | "rightToLeft" | "additionalAccents"
->;
-
-let currentLanguage: LanguageObject;
-
 /**
  * Content-addressed in production so the service worker can serve repeat
  * visits from cache without a network round trip.
@@ -96,48 +66,33 @@ export function getLanguageUrl(lang: Language): string {
   return hash === undefined ? url : `${url}?v=${hash.slice(0, 16)}`;
 }
 
-const cachedFetchLanguage = memoizeAsync(
-  async (lang: Language): Promise<LanguageObject> => {
-    const loaded = await fetchJson<LanguageObject>(getLanguageUrl(lang));
-
-    if (!isDevEnvironment()) {
-      //check the content to make it less easy to manipulate
-      const encoder = new TextEncoder();
-      const data = encoder.encode(JSON.stringify(loaded, null, 0));
-      const hashBuffer = await cryptoSubtle.digest("SHA-256", data);
-      const hash = toHex(hashBuffer);
-      if (hash !== languageHashes[lang]) {
-        throw new Error(
-          "Integrity check failed. Try refreshing the page. If this error persists, please contact support.",
-        );
-      }
+const languageLoader = createLanguageLoader({
+  fetchJson,
+  getUrl: getLanguageUrl,
+  verify: async (lang, loaded) => {
+    if (isDevEnvironment()) return;
+    //check the content to make it less easy to manipulate
+    const encoder = new TextEncoder();
+    const data = encoder.encode(JSON.stringify(loaded, null, 0));
+    const hashBuffer = await cryptoSubtle.digest("SHA-256", data);
+    const hash = toHex(hashBuffer);
+    if (hash !== languageHashes[lang]) {
+      throw new Error(
+        "Integrity check failed. Try refreshing the page. If this error persists, please contact support.",
+      );
     }
-    return loaded;
   },
-);
+});
+
 /**
  * Fetches the language object for a given language from the server.
  * @param lang The language code.
  * @returns A promise that resolves to the language object.
  */
-export async function getLanguage(lang: Language): Promise<LanguageObject> {
-  // try {
-  if (currentLanguage === undefined || currentLanguage.name !== lang) {
-    const loaded = await cachedFetchLanguage(lang);
+export const getLanguage = languageLoader.getLanguage;
 
-    currentLanguage = loaded;
-  }
-  return currentLanguage;
-}
-
-export async function checkIfLanguageSupportsZipf(
-  language: Language,
-): Promise<"yes" | "no" | "unknown"> {
-  const lang = await getLanguage(language);
-  if (lang.orderedByFrequency === true) return "yes";
-  if (lang.orderedByFrequency === false) return "no";
-  return "unknown";
-}
+export const checkIfLanguageSupportsZipf =
+  languageLoader.checkIfLanguageSupportsZipf;
 
 /**
  * Fetches the current language object.
@@ -149,19 +104,6 @@ export async function getCurrentLanguage(
 ): Promise<LanguageObject> {
   return await getLanguage(languageName);
 }
-
-export class Section {
-  public title: string;
-  public author: string;
-  public words: string[];
-  constructor(title: string, author: string, words: string[]) {
-    this.title = title;
-    this.author = author;
-    this.words = words;
-  }
-}
-
-export type FunboxWordOrder = "normal" | "reverse";
 
 /**
  * Fetches the list of contributors from the server.
