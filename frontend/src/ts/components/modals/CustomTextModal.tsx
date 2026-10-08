@@ -422,7 +422,7 @@ export function CustomTextModal(): JSXElement {
           }}
         >
           <Separator class="row-start-2 block lg:hidden" />
-          <div class="row-start-3 grid gap-4 lg:row-start-1">
+          <div class="row-start-1 grid gap-4">
             {/* Top buttons row 1 */}
             <div class="grid grid-cols-2 gap-4">
               <Button
@@ -484,7 +484,7 @@ export function CustomTextModal(): JSXElement {
                     field={field}
                     ref={textareaRef}
                     placeholder="type or paste your custom text"
-                    class="min-h-182.5 self-start overflow-x-hidden overflow-y-scroll p-4 text-base font-(--font) text-text"
+                    class="min-h-48 self-start overflow-x-hidden overflow-y-scroll p-4 text-base font-(--font) text-text lg:min-h-182.5"
                     onKeyDown={handleTextareaKeydown}
                     onKeyPress={handleTextareaKeypress}
                   />
@@ -501,10 +501,10 @@ export function CustomTextModal(): JSXElement {
             />
           </div>
 
-          {/* Settings sidebar — on large screens spans all rows in column 2 */}
+          {/* Settings sidebar — stacks below the textarea on small screens, column 2 on large screens */}
           <div
             class={cn(
-              "grid h-min gap-4 text-xs",
+              "row-start-3 grid h-min gap-4 text-xs lg:row-start-auto",
               isDisabled() && "pointer-events-none opacity-50 select-none",
             )}
           >
