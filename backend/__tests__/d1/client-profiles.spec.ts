@@ -204,6 +204,19 @@ describe("client-scoped account progression", () => {
       ]);
     });
   });
+  it("keeps leaderboard rank memory separate", async () => {
+    await withRuntime(test.env, async () => {
+      await Users.updateLbMemory("profiles", "time", "15", "english", 2);
+      await Users.updateLbMemory("profiles", "time", "15", "english", 1, "tui");
+      expect(
+        (await Users.getUser("profiles", "test")).lbMemory?.time?.[15]?.english,
+      ).toBe(2);
+      expect(
+        (await Users.getUser("profiles", "test", "tui")).lbMemory?.time?.[15]
+          ?.english,
+      ).toBe(1);
+    });
+  });
   it("resets all partitions and cascades profile rows on deletion", async () => {
     await withRuntime(test.env, async () => {
       await Users.updateTypingStats("reset-clients", 1, 20, "tui");

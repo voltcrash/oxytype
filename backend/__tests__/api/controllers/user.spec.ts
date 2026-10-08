@@ -651,6 +651,7 @@ describe("user controller test", () => {
       expect(purgeUserFromDailyLeaderboardsMock).toHaveBeenCalledWith(
         uid,
         (await Configuration.getLiveConfiguration()).dailyLeaderboards,
+        "web",
       );
       expect(addImportantLogMock).toHaveBeenCalledWith(
         "user_cleared_pbs",
@@ -1148,6 +1149,7 @@ describe("user controller test", () => {
         "60",
         "english",
         7,
+        undefined,
       );
     });
 
