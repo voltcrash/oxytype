@@ -395,6 +395,9 @@ importers:
       '@oxytype/schemas':
         specifier: workspace:*
         version: link:../packages/schemas
+      '@oxytype/typing-core':
+        specifier: workspace:*
+        version: link:../packages/typing-core
       '@oxytype/util':
         specifier: workspace:*
         version: link:../packages/util
