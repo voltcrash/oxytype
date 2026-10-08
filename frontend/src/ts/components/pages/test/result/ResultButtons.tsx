@@ -54,7 +54,6 @@ export function ResultButtons(): JSXElement {
       id: "nextTestButton",
       label: "Next test",
       icon: () => ({ icon: "fa-chevron-right" }),
-      class: "max-sm:col-span-2",
       onClick: () => void TestLogic.restart(),
     },
     {
@@ -132,7 +131,7 @@ export function ResultButtons(): JSXElement {
       </Show>
       <div
         class={cn(
-          "buttons col-[1/3] grid grid-flow-col justify-center gap-4 max-sm:grid-flow-row max-sm:grid-cols-[1fr_1fr]",
+          "buttons col-[1/3] grid grid-flow-col justify-center gap-4 max-sm:flex max-sm:flex-wrap max-sm:gap-2",
           getIsScreenshotting() && "hidden",
         )}
       >
@@ -141,7 +140,7 @@ export function ResultButtons(): JSXElement {
             <button
               type="button"
               class={cn(
-                "text",
+                "text max-sm:min-h-10 max-sm:min-w-10 max-sm:items-center",
                 button.class,
                 button.noStressHidden && resultState.noStress && "hidden",
               )}
