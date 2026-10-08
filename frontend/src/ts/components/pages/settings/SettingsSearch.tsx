@@ -27,7 +27,14 @@ export function SettingsSearch(): JSXElement {
     const onKeyDown = (e: KeyboardEvent): void => {
       if (!inputRef || e.defaultPrevented) return;
       if (getActivePage() !== "settings") return;
-      if (!isTypeToSearchKey(e)) return;
+      // backspace edits an existing query, e.g. after toggling a setting
+      const isBackspace =
+        e.key === "Backspace" &&
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !e.altKey &&
+        getSettingsSearch() !== "";
+      if (!isTypeToSearchKey(e) && !isBackspace) return;
       if (isEditableElement(document.activeElement)) return;
       if (isAnyPopupVisible()) return;
       inputRef.focus();
