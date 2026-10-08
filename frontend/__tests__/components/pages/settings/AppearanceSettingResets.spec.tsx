@@ -19,6 +19,19 @@ import { applyFontFamily } from "../../../../src/ts/ui";
 import FileStorage from "../../../../src/ts/utils/file-storage";
 import * as JsonData from "../../../../src/ts/utils/json-data";
 
+// Rendering every theme button makes these tests slow enough to time out on CI.
+vi.mock("../../../../src/ts/constants/themes", async (importOriginal) => {
+  const actual =
+    await importOriginal<
+      typeof import("../../../../src/ts/constants/themes")
+    >();
+  const used = new Set(["serika", "serika_dark", "aether"]);
+  return {
+    ...actual,
+    ThemesList: actual.ThemesList.filter((theme) => used.has(theme.name)),
+  };
+});
+
 // Keep FileStorage's reactive notifications; replace only its IndexedDB backend.
 vi.mock("idb", () => {
   const files = new Map<string, string>();
