@@ -1,3 +1,9 @@
+import {
+  clientProfile,
+  clientBoard,
+  projectClientUser,
+  type ClientProfile,
+} from "../db/client-profile";
 import { eq, and, desc, inArray } from "drizzle-orm";
 import {
   canFunboxGetPb,
@@ -26,6 +32,7 @@ import type {
   CountByYearAndDay,
 } from "@oxytype/schemas/users";
 import type {
+  Client,
   Mode,
   Mode2,
   PersonalBest,
@@ -33,7 +40,10 @@ import type {
 } from "@oxytype/schemas/shared";
 import type { Result as ResultType } from "@oxytype/schemas/results";
 import type { Configuration } from "@oxytype/schemas/configuration";
-import { isToday, isYesterday } from "@oxytype/util/date-and-time";
+import {
+  getStartOfDayTimestamp,
+  MILLISECONDS_IN_DAY,
+} from "@oxytype/util/date-and-time";
 import { addImportantLog } from "./logs";
 
 export type DBUserTag = UserTag;
@@ -48,6 +58,7 @@ export type DBUser = Omit<
   | "testActivity"
 > & {
   _id: string;
+  clientProfiles?: Partial<Record<Client, ClientProfile>>;
   resultFilterPresets?: ResultFilters[];
   tags?: DBUserTag[];
   lbPersonalBests?: LbPersonalBests;
@@ -140,6 +151,13 @@ export async function resetUser(uid: string): Promise<void> {
       streak: { length: 0, lastResultTimestamp: 0, maxLength: 0 },
       testActivity: {},
     });
+    delete user.clientProfiles;
+    await stage(
+      statement(
+        "DELETE FROM client_profiles WHERE uid=? AND client='tui'",
+        uid,
+      ),
+    );
     delete user.lbOptOut;
     delete user.inbox;
     await stage(
@@ -194,17 +212,31 @@ export async function flagForNameChange(uid: string): Promise<void> {
     user.needsToChangeName = true;
   });
 }
-export async function clearPb(uid: string): Promise<void> {
+export async function clearPb(
+  uid: string,
+  client: Client = "web",
+): Promise<void> {
   await mutateUser(uid, async (user) => {
-    user.personalBests = emptyPb();
-    user.lbPersonalBests = { time: {} };
-    await stage(statement("DELETE FROM leaderboard_bests WHERE uid=?", uid));
+    const profile = clientProfile(user, client);
+    profile.personalBests = emptyPb();
+    profile.lbPersonalBests = { time: {} };
+    await stage(
+      statement(
+        "DELETE FROM leaderboard_bests WHERE uid=? AND ((?='web' AND board NOT LIKE 'tui:%') OR (?='tui' AND board LIKE 'tui:%'))",
+        uid,
+        client,
+        client,
+      ),
+    );
   });
 }
 export async function optOutOfLeaderboards(uid: string): Promise<void> {
   await mutateUser(uid, async (user) => {
     user.lbOptOut = true;
     user.lbPersonalBests = { time: {} };
+    for (const profile of Object.values(user.clientProfiles ?? {})) {
+      profile.lbPersonalBests = { time: {} };
+    }
     for (const table of [
       "leaderboard_bests",
       "daily_entries",
@@ -223,19 +255,24 @@ export async function updateQuoteRatings(
   });
   return true;
 }
-export async function getUser(uid: string, stack: string): Promise<DBUser> {
+export async function getUser(
+  uid: string,
+  stack: string,
+  client: Client = "web",
+): Promise<DBUser> {
   const user = await readUser(uid);
   if (!user) throw new MonkeyError(404, "User not found", stack);
   user.personalBests ??= emptyPb();
   user.inbox = await readInbox(uid);
-  return user;
+  return projectClientUser(user, client);
 }
 export async function getPartialUser<K extends keyof DBUser>(
   uid: string,
   stack: string,
   fields: K[],
+  client: Client = "web",
 ): Promise<Pick<DBUser, K>> {
-  const user = await getUser(uid, stack);
+  const user = await getUser(uid, stack, client);
   return Object.fromEntries(
     fields
       .filter((key) => user[key] !== undefined)
@@ -248,7 +285,7 @@ export async function findByName(name: string): Promise<DBUser | undefined> {
     .from(users)
     .where(eq(users.nameKey, name.toLowerCase()))
     .get();
-  return row?.data as unknown as DBUser | undefined;
+  return row ? await readUser(row.uid) : undefined;
 }
 export async function isNameAvailable(
   name: string,
@@ -260,10 +297,11 @@ export async function isNameAvailable(
 export async function getUserByName(
   name: string,
   stack: string,
+  client: Client = "web",
 ): Promise<DBUser> {
   const user = await findByName(name);
   if (!user) throw new MonkeyError(404, "User not found", stack);
-  return user;
+  return projectClientUser(user, client);
 }
 export async function addResultFilterPreset(
   uid: string,
@@ -302,8 +340,20 @@ export async function addTag(uid: string, name: string): Promise<DBUserTag> {
   });
   return tag;
 }
-export async function getTags(uid: string): Promise<DBUserTag[]> {
-  return (await getUser(uid, "get tags")).tags ?? [];
+export async function getTags(
+  uid: string,
+  client: Client = "web",
+): Promise<DBUserTag[]> {
+  const user = await getUser(uid, "get tags");
+  const profile = clientProfile(user, client);
+  return (user.tags ?? []).map((tag) =>
+    client === "web"
+      ? tag
+      : {
+          ...tag,
+          personalBests: profile.tagPersonalBests?.[tag._id] ?? emptyPb(),
+        },
+  );
 }
 function tagById(user: DBUser, id: string): DBUserTag {
   const tag = user.tags?.find((item) => item._id === id);
@@ -323,11 +373,26 @@ export async function removeTag(uid: string, id: string): Promise<void> {
   await mutateUser(uid, (user) => {
     tagById(user, id);
     user.tags = user.tags?.filter((item) => item._id !== id);
+    for (const profile of Object.values(user.clientProfiles ?? {})) {
+      if (profile.tagPersonalBests) {
+        profile.tagPersonalBests = Object.fromEntries(
+          Object.entries(profile.tagPersonalBests).filter(
+            ([key]) => key !== id,
+          ),
+        );
+      }
+    }
   });
 }
-export async function removeTagPb(uid: string, id: string): Promise<void> {
+export async function removeTagPb(
+  uid: string,
+  id: string,
+  client: Client = "web",
+): Promise<void> {
   await mutateUser(uid, (user) => {
-    tagById(user, id).personalBests = emptyPb();
+    const tag = tagById(user, id);
+    if (client === "web") tag.personalBests = emptyPb();
+    else (clientProfile(user, client).tagPersonalBests ??= {})[id] = emptyPb();
   });
 }
 export async function updateLbMemory(
@@ -346,6 +411,7 @@ export async function updateLbMemory(
 }
 function pbEligible(result: Result): boolean {
   return (
+    result.offline !== true &&
     canFunboxGetPb(result) &&
     !(
       "stopOnLetter" in result &&
@@ -362,22 +428,23 @@ export async function checkIfPb(
 ): Promise<boolean> {
   if (!pbEligible(result)) return false;
   return await mutateUser(uid, async (user) => {
+    const profile = clientProfile(user, result.client);
     const pb = checkAndUpdatePb(
-      user.personalBests ?? emptyPb(),
-      user.lbPersonalBests ?? { time: {} },
+      profile.personalBests ?? emptyPb(),
+      profile.lbPersonalBests ?? { time: {} },
       result,
     );
-    user.personalBests = pb.personalBests;
-    user.lbPersonalBests = pb.lbPersonalBests;
+    profile.personalBests = pb.personalBests;
+    profile.lbPersonalBests = pb.lbPersonalBests;
     const duration = Number(result.mode2),
       language = result.language ?? "english";
-    const best = user.lbPersonalBests?.time[duration]?.[language];
+    const best = profile.lbPersonalBests?.time[duration]?.[language];
     if (result.mode === "time" && best !== undefined) {
       await stage(
         statement(
           "INSERT INTO leaderboard_bests(uid,board,wpm,acc,timestamp,data) VALUES(?,?,?,?,?,?) ON CONFLICT(uid,board) DO UPDATE SET wpm=excluded.wpm,acc=excluded.acc,timestamp=excluded.timestamp,data=excluded.data",
           uid,
-          `${language}_time_${duration}`,
+          clientBoard(`${language}_time_${duration}`, result.client),
           best.wpm,
           best.acc,
           best.timestamp,
@@ -395,16 +462,23 @@ export async function checkIfTagPb(
 ): Promise<string[]> {
   if (!pbEligible(result)) return [];
   return await mutateUser(uid, (user) => {
+    const profile = clientProfile(user, result.client);
     const updated: string[] = [];
     for (const tag of user.tags ?? []) {
       if (!result.tags?.includes(tag._id)) continue;
       const pb = checkAndUpdatePb(
-        tag.personalBests ?? emptyPb(),
+        (result.client === "tui"
+          ? profile.tagPersonalBests?.[tag._id]
+          : tag.personalBests) ?? emptyPb(),
         undefined,
         result,
       );
       if (pb.isPb) {
-        tag.personalBests = pb.personalBests;
+        if (result.client === "tui") {
+          (profile.tagPersonalBests ??= {})[tag._id] = pb.personalBests;
+        } else {
+          tag.personalBests = pb.personalBests;
+        }
         updated.push(tag._id);
       }
     }
@@ -433,50 +507,62 @@ export async function updateTypingStats(
   uid: string,
   restartCount: number,
   timeTyping: number,
+  client: Client = "web",
 ): Promise<void> {
   await mutateUser(uid, (user) => {
-    user.startedTests = (user.startedTests ?? 0) + restartCount + 1;
-    user.completedTests = (user.completedTests ?? 0) + 1;
-    user.timeTyping = (user.timeTyping ?? 0) + timeTyping;
+    const profile = clientProfile(user, client);
+    profile.startedTests = (profile.startedTests ?? 0) + restartCount + 1;
+    profile.completedTests = (profile.completedTests ?? 0) + 1;
+    profile.timeTyping = (profile.timeTyping ?? 0) + timeTyping;
   });
 }
 export async function incrementBananas(
   uid: string,
   wpm: number,
+  client: Client = "web",
 ): Promise<void> {
   await mutateUser(uid, (user) => {
-    const pbs = user.personalBests?.time[60];
+    const profile = clientProfile(user, client);
+    const pbs = profile.personalBests?.time[60];
     if (
       pbs !== undefined &&
       pbs.length > 0 &&
       wpm >= Math.max(...pbs.map((pb) => pb.wpm)) * 0.75
     ) {
-      user.bananas = (user.bananas ?? 0) + 1;
+      profile.bananas = (profile.bananas ?? 0) + 1;
     }
   });
 }
-export async function incrementXp(uid: string, xp: number): Promise<void> {
+export async function incrementXp(
+  uid: string,
+  xp: number,
+  client: Client = "web",
+): Promise<void> {
   await mutateUser(uid, (user) => {
-    user.xp = (user.xp ?? 0) + (Number.isFinite(xp) ? Math.trunc(xp) : 0);
+    const profile = clientProfile(user, client);
+    profile.xp = (profile.xp ?? 0) + (Number.isFinite(xp) ? Math.trunc(xp) : 0);
   });
 }
 export async function incrementTestActivity(
   user: DBUser,
   timestamp: number,
+  client: Client = "web",
 ): Promise<void> {
-  if (user.testActivity === undefined) return;
+  if (clientProfile(user, client).testActivity === undefined) return;
   await mutateUser(user.uid, async (current) => {
     const date = new UTCDate(timestamp),
       year = date.getFullYear(),
       index = getDayOfYear(date) - 1;
-    current.testActivity ??= {};
-    const days = (current.testActivity[year] ??= []);
+    const profile = clientProfile(current, client);
+    profile.testActivity ??= {};
+    const days = (profile.testActivity[year] ??= []);
     while (days.length <= index) days.push(0);
     days[index] = (days[index] ?? 0) + 1;
     await stage(
       statement(
-        "INSERT INTO user_activity(uid,day,count) VALUES(?,?,1) ON CONFLICT(uid,day) DO UPDATE SET count=count+1",
+        "INSERT INTO user_activity(uid,client,day,count) VALUES(?,?,?,1) ON CONFLICT(uid,client,day) DO UPDATE SET count=count+1",
         user.uid,
+        client,
         Math.floor(timestamp / 86400000),
       ),
     );
@@ -523,24 +609,28 @@ export async function getPersonalBests(
   uid: string,
   mode: string,
   mode2?: string,
+  client: Client = "web",
 ): Promise<PersonalBest> {
   const user = await getUser(uid, "get personal bests");
+  const profile = clientProfile(user, client);
   return (mode2 === undefined
-    ? (user.personalBests as Record<string, Record<string, PersonalBest[]>>)[
+    ? (profile.personalBests as Record<string, Record<string, PersonalBest[]>>)[
         mode
       ]
-    : (user.personalBests as Record<string, Record<string, PersonalBest[]>>)[
+    : (profile.personalBests as Record<string, Record<string, PersonalBest[]>>)[
         mode
       ]?.[mode2]) as unknown as PersonalBest;
 }
 export async function getStats(
   uid: string,
+  client: Client = "web",
 ): Promise<Pick<DBUser, "startedTests" | "completedTests" | "timeTyping">> {
-  return await getPartialUser(uid, "get stats", [
-    "startedTests",
-    "completedTests",
-    "timeTyping",
-  ]);
+  return await getPartialUser(
+    uid,
+    "get stats",
+    ["startedTests", "completedTests", "timeTyping"],
+    client,
+  );
 }
 export async function getFavoriteQuotes(
   uid: string,
@@ -722,7 +812,8 @@ export async function updateInbox(
       const rewards = (grant.data["rewards"] ?? []) as MonkeyMail["rewards"];
       for (const reward of rewards) {
         if (reward.type === "xp") {
-          user.xp = (user.xp ?? 0) + reward.item;
+          const profile = clientProfile(user, reward.client);
+          profile.xp = (profile.xp ?? 0) + reward.item;
         } else if (
           reward.type === "badge" &&
           !badges.some((badge) => badge.id === reward.item.id)
@@ -754,35 +845,47 @@ export async function updateInbox(
 export async function updateStreak(
   uid: string,
   timestamp: number,
+  client: Client = "web",
 ): Promise<number> {
   return await mutateUser(uid, async (user) => {
+    const profile = clientProfile(user, client);
     const streak: UserStreak = {
-      lastResultTimestamp: user.streak?.lastResultTimestamp ?? 0,
-      length: user.streak?.length ?? 0,
-      maxLength: user.streak?.maxLength ?? 0,
-      hourOffset: user.streak?.hourOffset,
+      lastResultTimestamp: profile.streak?.lastResultTimestamp ?? 0,
+      length: profile.streak?.length ?? 0,
+      maxLength: profile.streak?.maxLength ?? 0,
+      hourOffset: profile.streak?.hourOffset,
     };
-    if (isYesterday(streak.lastResultTimestamp, streak.hourOffset ?? 0)) {
+    // Delayed/out-of-order uploads must not move a streak backwards.
+    if (timestamp <= streak.lastResultTimestamp) return streak.length;
+    const offset = (streak.hourOffset ?? 0) * 3600000;
+    const day = getStartOfDayTimestamp(timestamp, offset);
+    const previousDay = getStartOfDayTimestamp(
+      streak.lastResultTimestamp,
+      offset,
+    );
+    if (day - previousDay === MILLISECONDS_IN_DAY) {
       streak.length++;
-    } else if (!isToday(streak.lastResultTimestamp, streak.hourOffset ?? 0)) {
+    } else if (day !== previousDay || streak.length === 0) {
       await addImportantLog("streak_lost", streak, uid);
       streak.length = 1;
     }
     streak.maxLength = Math.max(streak.length, streak.maxLength);
     streak.lastResultTimestamp = timestamp;
     if (streak.hourOffset === 0) delete streak.hourOffset;
-    user.streak = streak;
+    profile.streak = streak;
     return streak.length;
   });
 }
 export async function setStreakHourOffset(
   uid: string,
   hourOffset: number,
+  client: Client = "web",
 ): Promise<void> {
   await mutateUser(uid, (user) => {
-    user.streak ??= { length: 0, maxLength: 0, lastResultTimestamp: 0 };
-    user.streak.hourOffset = hourOffset;
-    user.streak.lastResultTimestamp = Date.now();
+    const profile = clientProfile(user, client);
+    profile.streak ??= { length: 0, maxLength: 0, lastResultTimestamp: 0 };
+    profile.streak.hourOffset = hourOffset;
+    profile.streak.lastResultTimestamp = Date.now();
   });
 }
 export async function setBanned(uid: string, banned: boolean): Promise<void> {
@@ -794,6 +897,9 @@ export async function setBanned(uid: string, banned: boolean): Promise<void> {
 export async function clearStreakHourOffset(uid: string): Promise<void> {
   await mutateUser(uid, (user) => {
     if (user.streak) delete user.streak.hourOffset;
+    for (const profile of Object.values(user.clientProfiles ?? {})) {
+      if (profile.streak) delete profile.streak.hourOffset;
+    }
   });
 }
 export async function checkIfUserIsPremium(
