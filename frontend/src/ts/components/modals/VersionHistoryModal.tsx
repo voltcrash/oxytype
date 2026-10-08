@@ -63,7 +63,7 @@ function ReleaseItem(props: {
       </div>
       <div
         class={cn(
-          "grid min-w-0 gap-4 [overflow-wrap:anywhere]",
+          "grid min-w-0 gap-4 break-words [&_*]:min-w-0 [&_a]:inline",
           "[&_h3]:mt-4 [&_h3]:text-lg [&_h3]:text-sub sm:[&_h3]:text-xl [&_h3:first-child]:mt-0",
           "[&_ul]:grid [&_ul]:gap-1",
           "[&_li]:relative [&_li]:pl-[2ch] [&_li]:before:absolute [&_li]:before:left-0 [&_li]:before:content-['-']",
