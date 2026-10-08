@@ -102,7 +102,8 @@ export function SearchableAutoSetting<T extends ConfigKey>(props: {
             options.length === 4 && "grid-cols-2",
             // labels stay on one line; rows fill up and stretch to full width
             hasManyOptions() && !props.wide && "flex flex-wrap",
-            props.wide && "grid-cols-[repeat(auto-fit,minmax(13.5rem,1fr))]",
+            props.wide &&
+              "grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(13.5rem,1fr))]",
           )}
         >
           <For each={options}>
