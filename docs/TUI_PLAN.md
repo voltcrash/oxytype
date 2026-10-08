@@ -179,6 +179,20 @@ migration, test and documentation commits.
 
 ## Stage C — Web frontend additions
 
+Completed C1–C3 in one PR stacked on Stage B, with separate implementation,
+regression-test and documentation commits.
+
+- `/device` reviews a query-prefilled code after sign-in, then requires explicit
+  approval or denial. Browser + curl flow verified against ephemeral D1.
+- Account/profile selectors switch PBs, stats, XP, streaks, activity, history,
+  detailed tables, charts and exports. Client caches and history mutations stay
+  independent; web typing continues to use web data.
+- All-time/daily/weekly leaderboard selectors switch entries, ranks, eligibility
+  and rank memory. URLs retain the client and reset pagination on selection.
+- Verification: 1,823 frontend tests, 98 D1 integration tests, frontend
+  lint/typecheck, formatting, production build and browser smoke pass.
+  Details and OAuth smoke scope: [TUI_WEB.md](TUI_WEB.md).
+
 ### C1. `/device` page
 
 - Code entry (prefilled from query), approve/deny, requires login.
