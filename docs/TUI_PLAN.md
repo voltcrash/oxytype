@@ -27,7 +27,7 @@ Terminal client for oxytype. Same backend, same accounts. OpenTUI + Solid.
 ### A1. Scaffold `packages/typing-core`
 
 - Package w/ tsdown-config, typescript-config, oxlint-config, vitest.
-- Empty `index.ts`. Registered in pnpm + turbo.
+- Empty `index.ts`. Registered in pnpm workspace.
 - Done: `pnpm build-pkg` + `test-pkg` pass.
 
 ### A2. Parity fixture harness
@@ -166,7 +166,7 @@ Terminal client for oxytype. Same backend, same accounts. OpenTUI + Solid.
 
 ### D1. Scaffold `tui/`
 
-- Bun + `@opentui/solid`, Solid JSX transform, lint/typecheck/test wiring, turbo tasks.
+- Bun + `@opentui/solid`, Solid JSX transform, lint/typecheck/test wiring, root `vp run` scripts.
 - Hello-world screen.
 - Create `tui/MISSING.md`: intro + table `Feature | Status (missing/approximated) | Reason | Approximation`. Seed w/ known: TTS, sounds, custom fonts, background images, screenshots, visual funboxes.
 - Done: `pnpm --filter @voltcrash/oxytype dev` renders; `tui/MISSING.md` exists.
