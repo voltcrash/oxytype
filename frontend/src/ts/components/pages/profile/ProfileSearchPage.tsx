@@ -54,7 +54,7 @@ export function ProfileSearchPage(): JSXElement {
     <Page id="profileSearch">
       <div class="grid min-h-full place-items-center">
         <form
-          class="inline-grid w-96 gap-2"
+          class="inline-grid w-full max-w-[24rem] gap-2"
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
