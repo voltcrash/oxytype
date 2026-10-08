@@ -22,7 +22,10 @@ export function Notice(
 
   const ButtonNotice = () => (
     <Button
-      class={cn("gap-3", props.class)}
+      class={cn(
+        "max-w-full gap-3 text-center [overflow-wrap:anywhere]",
+        props.class,
+      )}
       variant="text"
       onClick={
         props.onClick ??
@@ -38,7 +41,12 @@ export function Notice(
   );
 
   const DivNotice = () => (
-    <div class={cn("flex items-center gap-2", props.class)}>
+    <div
+      class={cn(
+        "flex max-w-full items-center gap-2 text-center [overflow-wrap:anywhere]",
+        props.class,
+      )}
+    >
       <Show when={props.icon !== undefined}>
         <Fa icon={props.icon as FaSolidIcon} />
       </Show>
