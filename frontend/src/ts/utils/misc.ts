@@ -74,45 +74,6 @@ export function findGetParameter(
   return result;
 }
 
-export function checkIfGetParameterExists(
-  parameterName: string,
-  getOverride?: string,
-): boolean {
-  let result = false;
-  let tmp = [];
-
-  let search = location.search;
-  if (getOverride !== undefined && getOverride !== "") {
-    search = getOverride;
-  }
-
-  search
-    .slice(1)
-    .split("&")
-    .forEach(function (item) {
-      tmp = item.split("=");
-      if (tmp[0] === parameterName) result = true;
-    });
-  return result;
-}
-
-export function objectToQueryString<T extends string | number | boolean>(
-  obj: Record<string, T | T[]>,
-): string {
-  const str = [];
-  for (const p in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, p)) {
-      // Arrays get encoded as a comma(%2C)-separated list
-      str.push(
-        `${encodeURIComponent(p)}=${encodeURIComponent(
-          obj[p] as unknown as T,
-        )}`,
-      );
-    }
-  }
-  return str.join("&");
-}
-
 export function escapeRegExp(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -142,16 +103,6 @@ export function clearTimeouts(timeouts: (number | NodeJS.Timeout)[]): void {
   });
 }
 
-//https://stackoverflow.com/questions/273789/is-there-a-version-of-javascripts-string-indexof-that-allows-for-regular-expr
-export function regexIndexOf(
-  string: string,
-  regex: RegExp,
-  startpos: number,
-): number {
-  const indexOf = string.substring(startpos || 0).search(regex);
-  return indexOf >= 0 ? indexOf + (startpos || 0) : indexOf;
-}
-
 type LastIndex = {
   lastIndexOfRegex(regex: RegExp): number;
 } & string;
@@ -162,8 +113,6 @@ type LastIndex = {
   const match = this.match(regex);
   return match ? this.lastIndexOf(lastElementFromArray(match) as string) : -1;
 };
-
-export const trailingComposeChars = /[\u02B0-\u02FF`´^¨~]+$|⎄.*$/;
 
 export function getMode2<M extends keyof PersonalBests>(
   config: Config,

@@ -74,34 +74,6 @@ export function normalizeName(name: string): string {
 }
 
 /**
- * @param text String to split
- * @param delimiters Single character delimiters.
- */
-export function splitByAndKeep(text: string, delimiters: string[]): string[] {
-  const splitString: string[] = [];
-  let currentToken: string[] = [];
-  const delimiterSet = new Set<string>(delimiters);
-
-  for (const char of text) {
-    if (delimiterSet.has(char)) {
-      if (currentToken.length > 0) {
-        splitString.push(currentToken.join(""));
-      }
-      splitString.push(char);
-      currentToken = [];
-    } else {
-      currentToken.push(char);
-    }
-  }
-
-  if (currentToken.length > 0) {
-    splitString.push(currentToken.join(""));
-  }
-
-  return splitString;
-}
-
-/**
  * Highlights all occurrences of specified words within a given text.
  * Each match is wrapped in a <span class="highlight"> element.
  * Matches are ignored if they appear as part of a larger word
