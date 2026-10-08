@@ -15,6 +15,7 @@ export function SupportModal(): JSXElement {
           variant="button"
           href="https://github.com/voltcrash/oxytype"
           text="Contribute on GitHub"
+          class="min-h-10 w-full sm:w-auto sm:min-h-0"
           fa={{ icon: "fa-code", fixedWidth: true }}
         />
       </div>
