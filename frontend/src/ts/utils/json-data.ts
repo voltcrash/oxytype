@@ -41,7 +41,7 @@ async function fetchJson<T>(url: string): Promise<T> {
  * @param getKey Optional function to compute a cache key from the function arguments. If omitted, the first argument is used as the key.
  * @returns A memoized version of the async function with the same signature.
  */
-export function memoizeAsync<P, Args extends unknown[], R>(
+function memoizeAsync<P, Args extends unknown[], R>(
   fn: (...args: Args) => Promise<R>,
   getKey?: (...args: Args) => P,
 ): (...args: Args) => Promise<R> {

@@ -49,7 +49,7 @@ export function getTimerBoundaryLabels(
 // that want smooth per-second buckets unaffected by timer drift or catchup
 // bursts. For the real fire-time boundaries (drift/catchup-affected), use
 // getLaggedTimerBoundaries.
-export function getTimerBoundaries(eventLog: EventLog): number[] {
+function getTimerBoundaries(eventLog: EventLog): number[] {
   let endMs: number | undefined;
   let tickCount = 0;
   for (const event of eventLog.events) {
@@ -88,7 +88,7 @@ export function getTimerBoundaries(eventLog: EventLog): number[] {
 
 // Real fire-time step boundaries: positions reflect when steps actually
 // fired (drift, catchup, etc.). For ideal grid positions, use getTimerBoundaries.
-export function getLaggedTimerBoundaries(eventLog: EventLog): number[] {
+function getLaggedTimerBoundaries(eventLog: EventLog): number[] {
   const { events } = eventLog;
   const boundaries: number[] = [];
   let endMs: number | undefined;

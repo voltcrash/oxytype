@@ -42,7 +42,7 @@ const customThemeUrlDataSchema = z.object({
   f: CustomBackgroundFilterSchema.optional(),
 });
 
-export function loadCustomThemeFromUrl(getOverride?: string): void {
+function loadCustomThemeFromUrl(getOverride?: string): void {
   const getValue = Misc.findGetParameter("customTheme", getOverride);
   if (getValue === null) return;
 
@@ -269,9 +269,7 @@ const challengeNameLookup = Object.fromEntries(
   getChallenges().map((it) => [it.name.toLowerCase(), it.name]),
 );
 
-export async function loadChallengeFromUrl(
-  getOverride?: string,
-): Promise<void> {
+async function loadChallengeFromUrl(getOverride?: string): Promise<void> {
   const getValue =
     Misc.findGetParameter("challenge", getOverride)?.toLowerCase() ?? "";
   if (getValue === "") return;

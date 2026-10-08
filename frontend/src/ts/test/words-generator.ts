@@ -42,7 +42,7 @@ function shouldCapitalize(lastChar: string): boolean {
 }
 
 let spanishSentenceTracker = "";
-export async function punctuateWord(
+async function punctuateWord(
   previousWord: string | undefined,
   currentWord: string,
   index: number,
@@ -417,7 +417,7 @@ function applyLazyModeToWord(word: string, language: LanguageObject): string {
   return word;
 }
 
-export function getWordOrder(): FunboxWordOrder {
+function getWordOrder(): FunboxWordOrder {
   const wordOrderProperty = getActiveFunboxes()
     .flatMap((fb) => fb.properties ?? [])
     .find((prop) => prop.startsWith("wordOrder:"));
@@ -425,7 +425,7 @@ export function getWordOrder(): FunboxWordOrder {
   return (wordOrderProperty?.split(":")[1] as FunboxWordOrder) ?? "normal";
 }
 
-export function getLimit(): number {
+function getLimit(): number {
   if (Config.mode === "zen") {
     return 0;
   }
@@ -733,8 +733,8 @@ export async function generateWords(
   return ret;
 }
 
-export let sectionIndex = 0;
-export let currentSection: string[] = [];
+let sectionIndex = 0;
+let currentSection: string[] = [];
 let sectionHistory: string[] = [];
 
 let previousGetNextWordReturns: GetNextWordReturn[] = [];

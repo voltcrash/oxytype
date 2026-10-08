@@ -63,7 +63,7 @@ async function getLatest(): Promise<PSA[] | null> {
   return response.body.data;
 }
 
-export async function show(): Promise<void> {
+async function show(): Promise<void> {
   const latest = await getLatest();
   if (latest === null) return;
   if (latest.length === 0) {

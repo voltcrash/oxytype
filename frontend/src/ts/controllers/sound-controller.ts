@@ -259,7 +259,7 @@ const defaultScaleData: ScaleData = {
 
 type ScaleConfigurationType = Partial<Record<PlaySoundOnClick, ScaleMeta>>;
 
-export const scaleConfigurations: ScaleConfigurationType =
+const scaleConfigurations: ScaleConfigurationType =
   extractScaleSounds(soundsConfig);
 
 function playScale(validNotes: ValidNotes[], scaleMeta: ScaleData): void {

@@ -66,7 +66,7 @@ const commands: Command[] = [
   },
 ];
 
-export function update(themes: ThemeWithName[]): void {
+function update(themes: ThemeWithName[]): void {
   // clear the current list
   subgroup.list = [];
 

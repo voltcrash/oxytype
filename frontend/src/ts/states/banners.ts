@@ -34,7 +34,7 @@ export function removeBanner(bannerId: number): void {
   setBanners((prev) => prev.filter((banner) => banner.id !== bannerId));
 }
 
-export function getBanner(bannerId: number): Banner | undefined {
+function getBanner(bannerId: number): Banner | undefined {
   return banners.find((banner) => banner.id === bannerId);
 }
 

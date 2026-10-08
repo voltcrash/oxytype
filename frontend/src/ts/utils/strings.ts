@@ -247,17 +247,16 @@ export function isWordRightToLeft(
     : [result[0], result[1] === word.length];
 }
 
-export const CHAR_EQUIVALENCE_SETS = [
+const CHAR_EQUIVALENCE_SETS = [
   new Set(["’", "‘", "'", "ʼ", "׳", "ʻ", "᾽", "᾽"]),
   new Set([`"`, "”", "“", "„"]),
   new Set(["–", "—", "-", "‐", "‑"]),
   new Set([",", "‚"]),
 ];
 
-export const LANGUAGE_EQUIVALENCE_SETS: Partial<Record<Language, Set<string>>> =
-  {
-    russian: new Set(["ё", "е", "e"]),
-  };
+const LANGUAGE_EQUIVALENCE_SETS: Partial<Record<Language, Set<string>>> = {
+  russian: new Set(["ё", "е", "e"]),
+};
 
 /**
  * Checks if two characters are visually/typographically equivalent for typing purposes.

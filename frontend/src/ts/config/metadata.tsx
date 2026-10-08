@@ -24,7 +24,7 @@ import { canSetFunboxWithConfig } from "./funbox-validation";
 //   [K in keyof ConfigSchemas.Config]?: ConfigSchemas.Config[K];
 // };
 
-export type OptionMetadata = {
+type OptionMetadata = {
   displayString?: string;
   fa?: FaObject;
   visible?: boolean;
@@ -1347,7 +1347,7 @@ export const configMetadata: ConfigMetadataObject = {
 };
 
 // typed accessor for a single option's metadata, avoiding per-callsite casts
-export function getOptionMetadata<K extends keyof ConfigSchemas.Config>(
+function getOptionMetadata<K extends keyof ConfigSchemas.Config>(
   key: K,
   option: ConfigSchemas.Config[K],
 ): OptionMetadata | undefined {

@@ -33,9 +33,9 @@ for (const [name, data] of Object.entries(metadata)) {
   };
 }
 
-export function get(funboxName: FunboxName): FunboxMetadataWithFunctions;
-export function get(funboxNames: FunboxName[]): FunboxMetadataWithFunctions[];
-export function get(
+function get(funboxName: FunboxName): FunboxMetadataWithFunctions;
+function get(funboxNames: FunboxName[]): FunboxMetadataWithFunctions[];
+function get(
   funboxNameOrNames: FunboxName | FunboxName[],
 ): FunboxMetadataWithFunctions | FunboxMetadataWithFunctions[] {
   if (Array.isArray(funboxNameOrNames)) {

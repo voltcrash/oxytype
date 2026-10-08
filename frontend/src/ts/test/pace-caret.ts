@@ -141,7 +141,7 @@ export async function init(): Promise<void> {
   setPaceCaretWpm(wpm);
 }
 
-export async function update(expectedStepEnd: number): Promise<void> {
+async function update(expectedStepEnd: number): Promise<void> {
   const currentSettings = settings;
   if (currentSettings === null || !isTestActive() || getResultVisible()) {
     return;
