@@ -772,9 +772,6 @@ importers:
         specifier: workspace:*
         version: link:../util
     devDependencies:
-      '@oxytype/tsdown-config':
-        specifier: workspace:*
-        version: link:../tsdown-config
       '@oxytype/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
