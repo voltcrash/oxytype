@@ -70,6 +70,7 @@ export type CharStats = z.infer<typeof CharStatsSchema>;
 
 const ResultBaseSchema = z.object({
   client: ClientSchema.optional(),
+  offline: z.boolean().optional(),
   wpm: WpmSchema,
   rawWpm: WpmSchema,
   charStats: CharStatsSchema,

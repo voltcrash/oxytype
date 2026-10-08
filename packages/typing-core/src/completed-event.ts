@@ -30,6 +30,7 @@ import {
  */
 export type CompletedEventContext = {
   client?: Client;
+  offline?: boolean;
   config: Pick<
     Config,
     | "mode"
@@ -128,6 +129,7 @@ export function buildCompletedEvent(
     keyOverlap: getKeypressOverlap(eventLog),
   };
 
+  if (ctx.offline !== undefined) completedEvent.offline = ctx.offline;
   if (completedEvent.mode !== "custom") delete completedEvent.customText;
   if (completedEvent.mode !== "quote") delete completedEvent.quoteLength;
 
