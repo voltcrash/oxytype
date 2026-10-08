@@ -91,7 +91,7 @@ import {
 import { getFunbox } from "@oxytype/funbox";
 import * as CompositionState from "../states/composition";
 import { SnapshotResult } from "../constants/default-snapshot";
-import { WordGenError } from "../utils/word-gen-error";
+import { WordGenError } from "@oxytype/typing-core/errors";
 import { tryCatch } from "@oxytype/util/trycatch";
 import * as Sentry from "../sentry";
 import { showLoaderBar, hideLoaderBar } from "../states/loader-bar";

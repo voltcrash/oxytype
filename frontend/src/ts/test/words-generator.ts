@@ -25,7 +25,7 @@ import {
   isFunboxActiveWithFunction,
   isFunboxActiveWithProperty,
 } from "./funbox/list";
-import { WordGenError } from "../utils/word-gen-error";
+import { WordGenError } from "@oxytype/typing-core/errors";
 
 import { showLoaderBar, hideLoaderBar } from "../states/loader-bar";
 import { PolyglotWordset } from "./funbox/funbox-functions";

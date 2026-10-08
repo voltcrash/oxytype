@@ -31,7 +31,7 @@ import { getSection } from "../wikipedia";
 import * as WeakSpot from "../weak-spot";
 import * as IPAddresses from "../../utils/ip-addresses";
 import { getActiveWordIndex } from "../../states/test";
-import { WordGenError } from "../../utils/word-gen-error";
+import { WordGenError } from "@oxytype/typing-core/errors";
 import { FunboxName, KeymapLayout, Layout } from "@oxytype/schemas/configs";
 import { Language, LanguageObject } from "@oxytype/schemas/languages";
 
