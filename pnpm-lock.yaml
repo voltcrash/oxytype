@@ -844,6 +844,9 @@ importers:
       madge:
         specifier: 8.0.0
         version: 8.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      playwright:
+        specifier: 1.63.0
+        version: 1.63.0
       typescript:
         specifier: 7.0.2
         version: 7.0.2
