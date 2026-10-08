@@ -7,7 +7,10 @@ import {
 import * as Numbers from "@oxytype/util/numbers";
 import * as Strings from "../utils/strings";
 import * as Misc from "../utils/misc";
-import { calculateWpm } from "../utils/numbers";
+import {
+  calculateConsistency,
+  calculateWpm,
+} from "@oxytype/typing-core/stats-math";
 import { EventLog } from "./events/types";
 import {
   getAccuracy,
@@ -68,34 +71,14 @@ export function buildCompletedEvent(
 
   const rawPerSecond = getBurstHistory(eventLog);
   const afkDuration = getAfkDuration(eventLog);
-  const stddev = Numbers.stdDev(rawPerSecond);
-  const avg = Numbers.mean(rawPerSecond);
-  let consistency = Numbers.roundTo2(Numbers.kogasa(stddev / avg));
-  if (!consistency || isNaN(consistency)) {
-    consistency = 0;
-  }
+  const consistency = calculateConsistency(rawPerSecond);
 
   const keypressSpacing = getKeypressSpacing(eventLog);
-
-  let keyConsistencyArray = [...keypressSpacing];
-  if (keypressSpacing.length > 0) {
-    keyConsistencyArray = keyConsistencyArray.slice(
-      0,
-      keyConsistencyArray.length - 1,
-    );
-  }
-  const keyStddev = Numbers.stdDev(keyConsistencyArray);
-  const keyAvg = Numbers.mean(keyConsistencyArray);
-  let keyConsistency = Numbers.roundTo2(Numbers.kogasa(keyStddev / keyAvg));
-  if (!keyConsistency || isNaN(keyConsistency)) {
-    keyConsistency = 0;
-  }
+  // the last spacing leads into the test end, not into another key
+  const keyConsistency = calculateConsistency(keypressSpacing.slice(0, -1));
 
   const wpmHistory = getWpmHistory(eventLog);
-  const wpmCons = Numbers.roundTo2(
-    Numbers.kogasa(Numbers.stdDev(wpmHistory) / Numbers.mean(wpmHistory)),
-  );
-  const wpmConsistency = isNaN(wpmCons) ? 0 : wpmCons;
+  const wpmConsistency = calculateConsistency(wpmHistory);
 
   const chartData = {
     wpm: wpmHistory,
