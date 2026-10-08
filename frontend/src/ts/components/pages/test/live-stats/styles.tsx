@@ -16,7 +16,7 @@ export const liveStatsBgColor = (): Record<string, boolean> => ({
 });
 
 export const TEXT_DISPLAY_CLASS = cn(
-  "text-[4rem] sm:text-[6rem] md:text-[7rem] lg:text-[8rem] xl:text-[10rem]",
+  "text-[2.5rem] xs:text-[4rem] sm:text-[6rem] md:text-[7rem] lg:text-[8rem] xl:text-[10rem]",
   "pointer-events-none relative z-[-1] grid h-0 text-center",
 );
 
