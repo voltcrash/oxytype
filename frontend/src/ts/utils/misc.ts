@@ -204,22 +204,6 @@ export async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function zipfyRandomArrayIndex(dictLength: number): number {
-  /**
-   * get random index based on probability distribution of Zipf's law,
-   * where PMF is (1/n)/H_N,
-   * where H_N is the Harmonic number of (N), where N is dictLength
-   * and the harmonic number is approximated using the formula:
-   * H_n = ln(n + 0.5) + gamma
-   */
-  const gamma = 0.5772156649015329; // Euler–Mascheroni constant
-  const H_N = Math.log(dictLength + 0.5) + gamma; // approximation of H_N
-  const r = Math.random();
-  /* inverse of CDF where CDF is H_n/H_N */
-  const inverseCDF = Math.exp(r * H_N - gamma) - 0.5;
-  return Math.floor(inverseCDF);
-}
-
 export function reloadAfter(seconds: number): void {
   setTimeout(() => {
     window.location.reload();
