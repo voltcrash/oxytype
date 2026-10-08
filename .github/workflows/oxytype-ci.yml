@@ -387,9 +387,6 @@ jobs:
       - name: Check lint
         run: npm run lint-fast-pkg && npm run lint-pkg
 
-      - name: Build
-        run: npm run build-pkg
-
       - name: Check workspace root lint
         run: pnpm exec vp lint . --type-aware --type-check --format agent
 

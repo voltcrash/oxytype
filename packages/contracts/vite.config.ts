@@ -1,6 +1,4 @@
 import { sharedLint } from "../oxlint-config/config";
-import { extendConfig } from "@oxytype/tsdown-config";
-
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({
@@ -11,7 +9,6 @@ export default defineConfig({
     // https://vitest.dev/guide/migration/#clearmocks-is-enabled-by-default
     clearMocks: false,
   },
-  pack: extendConfig(),
   lint: {
     ignorePatterns: ["node_modules", "dist"],
     extends: [sharedLint],

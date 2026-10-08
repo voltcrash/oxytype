@@ -1,7 +1,6 @@
 {
   "extends": "@oxytype/typescript-config/base.json",
   "compilerOptions": {
-    "outDir": "./dist",
     "rootDir": "./src",
     "moduleResolution": "NodeNext",
     "module": "NodeNext",
@@ -9,5 +8,5 @@
     "lib": ["es2016"]
   },
   "include": ["src"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules"]
 }

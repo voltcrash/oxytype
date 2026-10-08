@@ -11,12 +11,13 @@ Package versions come from the workspace manifests and lockfile.
 | `packages/contracts/` | Shared typed API contracts |
 | `packages/schemas/` | Shared Zod schemas and domain types |
 | `packages/util/`, `packages/funbox/`, `packages/challenges/` | Shared helpers and typing features |
-| `packages/oxlint-config/`, `packages/typescript-config/`, `packages/tsdown-config/` | Shared tooling configuration |
+| `packages/oxlint-config/`, `packages/typescript-config/` | Shared tooling configuration |
 | `packages/release/` | Daily production release helpers |
 | `.github/workflows/` | CI, production releases, labeling, and repository automation |
 
-The root is a private pnpm workspace. Node, TypeScript and Vite+ (`vp run`) coordinate
-package builds. Internal packages use the `@oxytype` scope.
+The root is a private pnpm workspace. Vite+ (`vp run`) runs workspace tasks.
+Internal packages use the `@oxytype` scope and export TypeScript source; Vite,
+Vitest, wrangler and tsx compile it, so packages have no build step.
 
 ## Frontend
 
