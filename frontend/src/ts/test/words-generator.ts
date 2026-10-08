@@ -16,7 +16,7 @@ import * as PractiseWords from "./practise-words";
 import * as Numerals from "@oxytype/typing-core/numerals";
 import * as Strings from "../utils/strings";
 import * as Arrays from "../utils/arrays";
-import * as GetText from "../utils/generate";
+import * as GetText from "@oxytype/typing-core/generate";
 import { FunboxWordOrder } from "@oxytype/typing-core/languages";
 import {
   findSingleActiveFunboxWithFunction,

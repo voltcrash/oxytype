@@ -5,7 +5,7 @@ import {
   setWordsWrapperVisible,
 } from "../../states/funbox";
 import { FunboxWordsFrequency, Wordset } from "@oxytype/typing-core/wordset";
-import * as GetText from "../../utils/generate";
+import * as GetText from "@oxytype/typing-core/generate";
 import { Config } from "../../config/store";
 import { setConfig, toggleFunbox } from "../../config/setters";
 import * as Numerals from "@oxytype/typing-core/numerals";
