@@ -119,6 +119,9 @@ describe("client-scoped account progression", () => {
       expect(
         await Users.getPersonalBests(user.uid, "time", "15", "tui"),
       ).toMatchObject([{ wpm: 70 }]);
+      expect(await Users.getUser(user.uid, "test", "tui")).not.toHaveProperty(
+        "tagPersonalBests",
+      );
       expect((await Users.getTags(user.uid, "tui"))[0]).toMatchObject({
         name: "shared",
         personalBests: { time: { "15": [{ wpm: 70 }] } },

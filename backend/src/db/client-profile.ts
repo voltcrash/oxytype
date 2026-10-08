@@ -93,7 +93,7 @@ export function projectClientUser(
   client: Client = "web",
 ): DBUser {
   if (client === "web") return user;
-  const profile = clientProfile(user, client);
+  const { tagPersonalBests, ...profile } = clientProfile(user, client);
   return {
     ...user,
     ...profile,
@@ -112,8 +112,7 @@ export function projectClientUser(
     lbMemory: profile.lbMemory ?? {},
     tags: user.tags?.map((tag) => ({
       ...tag,
-      personalBests:
-        profile.tagPersonalBests?.[tag._id] ?? emptyPersonalBests(),
+      personalBests: tagPersonalBests?.[tag._id] ?? emptyPersonalBests(),
     })),
   };
 }
