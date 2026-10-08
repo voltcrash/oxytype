@@ -1,3 +1,4 @@
+import { safeParse } from "zod-urlsearchparams";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 const { replaceUrl } = vi.hoisted(() => ({
@@ -12,6 +13,57 @@ afterEach(() => {
 });
 
 describe("global leaderboard selection", () => {
+  it("round-trips client links for all-time, daily and weekly leaderboards", async () => {
+    const state = await import("../../src/ts/states/leaderboard-selection");
+    for (const type of ["allTime", "daily", "weekly"] as const) {
+      for (const client of ["web", "tui"] as const) {
+        state.readLeaderboardGetParameters({
+          type,
+          client,
+          yesterday: true,
+          lastWeek: true,
+          page: 2,
+        });
+        expect(state.getSelection().client).toBe(client);
+        expect(state.getPage()).toBe(1);
+        state.updateGetParameters(state.getSelection(), state.getPage());
+        const url = new URL(
+          replaceUrl.mock.calls.at(-1)?.[0] ?? "",
+          "https://oxytype.test",
+        );
+        expect(
+          safeParse({
+            schema: state.LeaderboardUrlParamsSchema,
+            input: url.searchParams,
+          }),
+        ).toMatchObject({ success: true, data: { client, type, page: 2 } });
+      }
+    }
+  });
+  it("defaults legacy web links to web after browsing TUI", async () => {
+    const state = await import("../../src/ts/states/leaderboard-selection");
+    state.readLeaderboardGetParameters({ type: "daily", client: "tui" });
+    state.readLeaderboardGetParameters({ type: "daily" });
+    expect(state.getSelection().client).toBe("web");
+  });
+  it("applies a client-only link and resets pagination", async () => {
+    const state = await import("../../src/ts/states/leaderboard-selection");
+    state.setPage(3);
+    state.readLeaderboardGetParameters({ client: "tui" });
+    expect(state.getSelection().client).toBe("tui");
+    expect(state.getPage()).toBe(0);
+  });
+  it("rejects unknown clients in stored selections and links", async () => {
+    localStorage.setItem(
+      "leaderboardSelector",
+      JSON.stringify({ type: "weekly", previous: false, client: "mobile" }),
+    );
+    const state = await import("../../src/ts/states/leaderboard-selection");
+    expect(state.getSelection().client ?? "web").toBe("web");
+    expect(
+      state.LeaderboardUrlParamsSchema.safeParse({ client: "mobile" }).success,
+    ).toBe(false);
+  });
   it.each([
     {
       type: "allTime",
@@ -55,6 +107,7 @@ describe("global leaderboard selection", () => {
     });
     state.readLeaderboardGetParameters(params);
     expect(state.getSelection()).toEqual({
+      client: "web",
       type: "allTime",
       mode: "time",
       mode2: "60",
