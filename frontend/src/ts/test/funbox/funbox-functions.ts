@@ -8,7 +8,7 @@ import { FunboxWordsFrequency, Wordset } from "@oxytype/typing-core/wordset";
 import * as GetText from "../../utils/generate";
 import { Config } from "../../config/store";
 import { setConfig, toggleFunbox } from "../../config/setters";
-import * as Misc from "../../utils/misc";
+import * as Numerals from "@oxytype/typing-core/numerals";
 import * as Strings from "../../utils/strings";
 import { randomIntFromRange } from "@oxytype/util/numbers";
 import * as Arrays from "../../utils/arrays";
@@ -184,9 +184,9 @@ const list: Partial<Record<FunboxName, FunboxFunctions>> = {
     getWord(): string {
       let num = GetText.getNumbers(7);
       if (Config.language.startsWith("kurdish")) {
-        num = Misc.convertNumberToArabic(num);
+        num = Numerals.convertNumberToArabic(num);
       } else if (Config.language.startsWith("nepali")) {
-        num = Misc.convertNumberToNepali(num);
+        num = Numerals.convertNumberToNepali(num);
       }
       return num;
     },

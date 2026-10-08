@@ -13,7 +13,7 @@ import QuotesController, {
 import * as LazyMode from "./lazy-mode";
 import * as EnglishPunctuation from "./english-punctuation";
 import * as PractiseWords from "./practise-words";
-import * as Misc from "../utils/misc";
+import * as Numerals from "@oxytype/typing-core/numerals";
 import * as Strings from "../utils/strings";
 import * as Arrays from "../utils/arrays";
 import * as GetText from "../utils/generate";
@@ -963,13 +963,13 @@ export async function getNextWord(
       randomWord = GetText.getNumbers(4);
 
       if (Config.language.startsWith("kurdish")) {
-        randomWord = Misc.convertNumberToArabic(randomWord);
+        randomWord = Numerals.convertNumberToArabic(randomWord);
       } else if (Config.language.startsWith("nepali")) {
-        randomWord = Misc.convertNumberToNepali(randomWord);
+        randomWord = Numerals.convertNumberToNepali(randomWord);
       } else if (Config.language.startsWith("bangla")) {
-        randomWord = Misc.convertNumberToBangla(randomWord);
+        randomWord = Numerals.convertNumberToBangla(randomWord);
       } else if (Config.language.startsWith("hindi")) {
-        randomWord = Misc.convertNumberToHindi(randomWord);
+        randomWord = Numerals.convertNumberToHindi(randomWord);
       }
     }
   }
