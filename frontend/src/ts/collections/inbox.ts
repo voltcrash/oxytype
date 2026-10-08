@@ -103,7 +103,7 @@ function claimRewards(pendingRewards: AllRewards[]): void {
   let totalXp = 0;
   const badgeNames: string[] = [];
   for (const reward of pendingRewards) {
-    if (reward.type === "xp") {
+    if (reward.type === "xp" && (reward.client ?? "web") === "web") {
       totalXp += reward.item;
     } else if (reward.type === "badge") {
       const badge = BadgeController.getById(reward.item.id);
