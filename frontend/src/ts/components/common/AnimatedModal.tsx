@@ -361,7 +361,7 @@ export function AnimatedModal(props: AnimatedModalProps): JSXElement {
           onScroll={(e) => props.onScroll?.(e)}
         >
           <Show when={props.title !== undefined && props.title !== ""}>
-            <div class="text-2xl text-sub">{props.title}</div>
+            <div class="text-xl text-sub sm:text-2xl">{props.title}</div>
           </Show>
           {props.children}
         </div>
