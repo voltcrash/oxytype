@@ -29,7 +29,6 @@ packages:
 "local dev":
   - changed-files:
       - any-glob-to-any-file:
-          - "**/turbo.json"
           - "**/tsconfig.json"
           - "**/knip.json"
           - "**/vite.config.ts"
