@@ -1,3 +1,4 @@
+import { detectPlatform } from "@tanstack/solid-hotkeys";
 import { createResource, JSXElement, Show } from "solid-js";
 
 import { resetConfig } from "../../../config/lifecycle";
@@ -27,6 +28,7 @@ import { cn } from "../../../utils/cn";
 import fileStorage from "../../../utils/file-storage";
 import { Button } from "../../common/Button";
 import { H2 } from "../../common/Headers";
+import { Kbd } from "../../common/Kbd";
 import { Page } from "../../common/Page";
 import { SidebarLayout } from "../../common/SidebarLayout";
 import { CommandPaletteHotkey } from "../../hotkeys/CommandPaletteHotkey";
@@ -88,9 +90,18 @@ export function SettingsPage(): JSXElement {
             <>
               {/* padded like the buttons: inset to line up with the item icons,
                     and space below to match the gap above the tip */}
-              <div class="px-2 pb-2 text-em-xs text-sub">
-                tip: you can also change all these settings quickly via the
-                command palette (<CommandPaletteHotkey />)
+              <div class="grid gap-2 px-2 pb-2 text-em-xs text-sub">
+                <div>
+                  tip: you can also change all these settings quickly via the
+                  command palette (<CommandPaletteHotkey />)
+                </div>
+                <div>
+                  tip: press{" "}
+                  <Kbd
+                    text={`${detectPlatform() === "mac" ? "cmd" : "ctrl"} + 1-9`}
+                  />{" "}
+                  to jump to a section
+                </div>
               </div>
             </>
           ) : undefined
