@@ -2,7 +2,7 @@ import { expect, vi } from "vite-plus/test";
 import type { createAuth } from "../../src/init/auth";
 import type { buildApp } from "../../src/app";
 
-export function cookies(response: Response): string {
+function cookies(response: Response): string {
   return response.headers
     .getSetCookie()
     .map((value) => value.split(";")[0])
