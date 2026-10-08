@@ -10,7 +10,7 @@ import {
   getTimingFingerprint,
   getTimingReview,
 } from "../../../../backend/src/anticheat";
-import { calculateWpm } from "../../../src/ts/utils/numbers";
+import { calculateWpm } from "@oxytype/typing-core/stats-math";
 import type {
   EventLog,
   TestEventNoMs,
