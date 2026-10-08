@@ -18,7 +18,6 @@ and the `Fa` icon component.
 pnpm oxlint --type-aware --type-check --format agent
 pnpm build-fe
 pnpm build-be
-pnpm build-pkg
 ```
 
 Run a single test from its package with `pnpm vitest run path/to/test.ts`.
@@ -26,7 +25,7 @@ Run a single test from its package with `pnpm vitest run path/to/test.ts`.
 
 ## Key files
 
-- Root `package.json` scripts: `vp run` tasks; `build-pkg` builds shared packages first.
+- Root `package.json` scripts: `vp run` tasks. Shared packages export TS source; no build step.
 - `frontend/src/ts/config/metadata.tsx`: config validation rules.
 - `packages/contracts/src/index.ts`: API contracts.
 - `packages/funbox/src/list.ts`: funbox definitions.
