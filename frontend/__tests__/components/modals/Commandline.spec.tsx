@@ -254,4 +254,21 @@ describe("theme picker lifecycle", () => {
       expect(command.exec).toHaveBeenCalledTimes(cycle + 1);
     }
   });
+
+  it("closes when the command palette hotkey is pressed inside it", async () => {
+    const view = render(() => <Commandline />);
+    const dialog = view.container.querySelector("dialog") as HTMLDialogElement;
+
+    show({ subgroupOverride: { title: "Font family...", list: [command] } });
+    await waitFor(() => expect(dialog.open).toBe(true));
+
+    fireEvent.keyDown(view.getByRole("textbox"), {
+      key: "k",
+      code: "KeyK",
+      // jsdom isn't mac, so mod is ctrl
+      ctrlKey: true,
+    });
+    await waitFor(() => expect(commandlineState.open).toBe(false));
+    expect(command.exec).not.toHaveBeenCalled();
+  });
 });

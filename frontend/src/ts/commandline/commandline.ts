@@ -21,6 +21,7 @@ import {
 import { areUnsortedArraysEqual } from "../utils/arrays";
 import { parseIntOptional } from "../utils/numbers";
 import { debounce } from "throttle-debounce";
+import { matchesKeyboardEvent } from "@tanstack/solid-hotkeys";
 import { intersect } from "@oxytype/util/arrays";
 import { useInputValidation } from "../hooks/useInputValidation";
 import { isInputElementFocused } from "../input/input-element";
@@ -31,6 +32,7 @@ import {
 } from "../states/modals";
 import { setTestFocusState } from "../states/test";
 import { commandlineState, type InputModeParams } from "../states/commandline";
+import { hotkeys } from "../states/hotkeys";
 
 const MODAL_STORE_ID = "Commandline";
 
@@ -528,6 +530,16 @@ export function onCommandlineInput(e: Event): void {
 export async function onCommandlineKeyDown(e: KeyboardEvent): Promise<void> {
   if (commandlineState.isAnimating) {
     e.preventDefault();
+    return;
+  }
+  // the command palette hotkey also closes it. keys without ctrl / cmd (esc,
+  // tab) keep their meaning inside the palette
+  if (
+    (e.ctrlKey || e.metaKey) &&
+    matchesKeyboardEvent(e, hotkeys.commandPalette)
+  ) {
+    e.preventDefault();
+    hide();
     return;
   }
   commandlineState.mouseMode = false;
