@@ -84,29 +84,7 @@ export function getLanguageDisplayString(
  * @param textToClean
  * @returns Cleaned text.
  */
-export function cleanTypographySymbols(textToClean: string): string {
-  const specials = {
-    "“": '"', // &ldquo;	&#8220;
-    "”": '"', // &rdquo;	&#8221;
-    "„": '"', // &bdquo;	&#8222;
-    "’": "'", // &lsquo;	&#8216;
-    "‘": "'", // &rsquo;	&#8217;
-    ",": ",", // &sbquo;	&#8218;
-    "—": "-", // &mdash;  &#8212;
-    "…": "...", // &hellip; &#8230;
-    "«": "<<",
-    "»": ">>",
-    "–": "-",
-    " ": " ",
-    " ": " ",
-    " ": " ",
-    "᾽": "'",
-  };
-  return textToClean.replace(
-    /[“”’‘—,…«»–\u2007\u202F\u00A0]/g,
-    (char) => specials[char as keyof typeof specials] || "",
-  );
-}
+export { cleanTypographySymbols } from "@oxytype/typing-core/strings";
 
 /**
  * Split a string into characters. This supports multi-byte characters outside of the [Basic Multilinugal Plane](https://en.wikipedia.org/wiki/Plane_(Unicode).
