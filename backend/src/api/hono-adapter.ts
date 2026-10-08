@@ -15,7 +15,7 @@ import type { Hono } from "hono";
 import type { ContentfulStatusCode, StatusCode } from "hono/utils/http-status";
 import type { ApiContext, ApiEnv, ApiMiddleware, HttpRequest } from "./http";
 
-export type RouteImplementation<T extends AppRoute> = {
+type RouteImplementation<T extends AppRoute> = {
   middleware?: ApiMiddleware[];
   handler: (
     input: ServerInferRequest<T> & { req: HttpRequest },

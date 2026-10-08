@@ -33,10 +33,7 @@ export async function stage(query: D1PreparedStatement): Promise<void> {
   else await query.run();
 }
 
-export function userStatement(
-  user: DBUser,
-  version: number,
-): D1PreparedStatement {
+function userStatement(user: DBUser, version: number): D1PreparedStatement {
   return statement(
     `UPDATE users SET name=?,name_key=?,email=?,xp=?,time_typing=?,completed_tests=?,started_tests=?,banned=?,lb_opt_out=?,needs_to_change_name=?,data=?,version=version+1 WHERE uid=? AND version=?`,
     user.name,

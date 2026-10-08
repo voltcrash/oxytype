@@ -13,7 +13,7 @@ export type KeyDataFailure =
   | "key-consistency-mismatch";
 // Duration is rounded to 10ms; browser clocks may also be coarsened. Do not
 // demand sub-millisecond equality from independently rounded endpoint fields.
-export const KEY_TIMELINE_TOLERANCE_MS = 100;
+const KEY_TIMELINE_TOLERANCE_MS = 100;
 
 export function getKeyDataFailure(
   result: CompletedEvent,
