@@ -386,6 +386,7 @@ export const usersContract = c.router(
       }),
     },
     updateLeaderboardMemory: {
+      query: ClientQuerySchema.strict(),
       summary: "update lbMemory",
       description: "Updates a user's cached leaderboard state",
       method: "PATCH",

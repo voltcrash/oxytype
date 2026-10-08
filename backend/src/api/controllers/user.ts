@@ -208,6 +208,7 @@ export async function clearPb(
   await purgeUserFromDailyLeaderboards(
     uid,
     req.ctx.configuration.dailyLeaderboards,
+    req.query?.client ?? "web",
   );
   void addImportantLog("user_cleared_pbs", "", uid);
 
@@ -417,13 +418,20 @@ export async function getTags(
 }
 
 export async function updateLbMemory(
-  req: MonkeyRequest<undefined, UpdateLeaderboardMemoryRequest>,
+  req: MonkeyRequest<ClientQuery, UpdateLeaderboardMemoryRequest>,
 ): Promise<MonkeyResponse> {
   const { uid } = req.ctx.decodedToken;
   const { mode, language, rank } = req.body;
   const mode2 = req.body.mode2;
 
-  await UserDAL.updateLbMemory(uid, mode, mode2, language, rank);
+  await UserDAL.updateLbMemory(
+    uid,
+    mode,
+    mode2,
+    language,
+    rank,
+    req.query?.client,
+  );
   return new MonkeyResponse("Leaderboard memory updated", null);
 }
 

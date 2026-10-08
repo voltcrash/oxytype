@@ -1,7 +1,11 @@
 import type { Client, PersonalBests } from "@oxytype/schemas/shared";
 import type { DBUser } from "../dal/user";
 import type { LbPersonalBests } from "../utils/pb";
-import type { CountByYearAndDay, UserStreak } from "@oxytype/schemas/users";
+import type {
+  CountByYearAndDay,
+  UserStreak,
+  UserLbMemory,
+} from "@oxytype/schemas/users";
 import { statement } from "./client";
 
 export type ClientProfile = {
@@ -14,6 +18,7 @@ export type ClientProfile = {
   testActivity?: CountByYearAndDay;
   xp?: number;
   bananas?: number;
+  lbMemory?: UserLbMemory;
   tagPersonalBests?: Record<string, PersonalBests>;
 };
 export function emptyPersonalBests(): PersonalBests {
@@ -32,6 +37,8 @@ export function clientProfile(
     startedTests: 0,
     timeTyping: 0,
     xp: 0,
+    bananas: 0,
+    lbMemory: {},
     testActivity: {},
     streak: { length: 0, maxLength: 0, lastResultTimestamp: 0 },
   });
@@ -47,6 +54,7 @@ export function extractClientProfile(user: DBUser): ClientProfile {
     testActivity,
     xp,
     bananas,
+    lbMemory,
   } = user;
   return {
     personalBests,
@@ -58,6 +66,7 @@ export function extractClientProfile(user: DBUser): ClientProfile {
     testActivity,
     xp,
     bananas,
+    lbMemory,
     tagPersonalBests: Object.fromEntries(
       (user.tags ?? []).map((tag) => [
         tag._id,
@@ -88,6 +97,19 @@ export function projectClientUser(
   return {
     ...user,
     ...profile,
+    personalBests: profile.personalBests ?? emptyPersonalBests(),
+    completedTests: profile.completedTests ?? 0,
+    startedTests: profile.startedTests ?? 0,
+    timeTyping: profile.timeTyping ?? 0,
+    xp: profile.xp ?? 0,
+    bananas: profile.bananas ?? 0,
+    streak: profile.streak ?? {
+      length: 0,
+      maxLength: 0,
+      lastResultTimestamp: 0,
+    },
+    testActivity: profile.testActivity ?? {},
+    lbMemory: profile.lbMemory ?? {},
     tags: user.tags?.map((tag) => ({
       ...tag,
       personalBests:

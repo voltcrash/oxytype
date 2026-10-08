@@ -144,8 +144,17 @@ export class DailyLeaderboard {
 export async function purgeUserFromDailyLeaderboards(
   uid: string,
   _config: Configuration["dailyLeaderboards"],
+  client?: Client,
 ): Promise<void> {
-  await stage(statement("DELETE FROM daily_entries WHERE uid=?", uid));
+  await stage(
+    statement(
+      "DELETE FROM daily_entries WHERE uid=? AND (? IS NULL OR (?='web' AND board NOT LIKE 'tui:%') OR (?='tui' AND board LIKE 'tui:%'))",
+      uid,
+      client ?? null,
+      client ?? null,
+      client ?? null,
+    ),
+  );
 }
 function isValidModeRule(
   modeRule: ValidModeRule,

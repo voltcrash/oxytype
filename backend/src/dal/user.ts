@@ -401,12 +401,14 @@ export async function updateLbMemory(
   mode2: Mode2<Mode>,
   language: string,
   rank: number,
+  client: Client = "web",
 ): Promise<void> {
   await mutateUser(uid, (user) => {
-    user.lbMemory ??= {};
-    user.lbMemory[mode] ??= {};
-    user.lbMemory[mode][mode2] ??= {};
-    user.lbMemory[mode][mode2][language] = rank;
+    const profile = clientProfile(user, client);
+    profile.lbMemory ??= {};
+    profile.lbMemory[mode] ??= {};
+    profile.lbMemory[mode][mode2] ??= {};
+    profile.lbMemory[mode][mode2][language] = rank;
   });
 }
 function pbEligible(result: Result): boolean {
