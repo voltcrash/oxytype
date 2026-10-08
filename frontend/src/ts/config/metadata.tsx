@@ -332,6 +332,15 @@ export const configMetadata: ConfigMetadataObject = {
     description:
       "When enabled, it will show the command palette with all commands in a single list instead of submenu arrangements. Selecting 'manual' will expose all commands only after typing >.",
   },
+  commandPaletteHotkey: {
+    key: "commandPaletteHotkey",
+    fa: { icon: "fa-terminal" },
+    displayString: "command palette shortcut",
+    changeRequiresRestart: false,
+    group: "behavior",
+    description:
+      "Keyboard shortcut that opens the command palette. Shortcuts used by the browser, the operating system or quick restart are not allowed.",
+  },
   minWpm: {
     key: "minWpm",
     fa: { icon: "fa-bomb" },
