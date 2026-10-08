@@ -25,4 +25,17 @@ Run a single test with `pnpm vitest run path/to/test.ts` from its package. Backe
 checks. Frontend imperative DOM work belongs in component refs/lifecycles; styling
 uses Tailwind classes, `cn` and configured colors; icons use `Fa`.
 
+Check unused code and dependencies after building shared packages:
+
+```sh
+pnpm build-pkg
+TURNSTILE_SITE_KEY=1x00000000000000000000AA pnpm knip
+```
+
+Knip loads the production Vite config, which requires a Turnstile site key.
+The test key above is sufficient for analysis. Its workspace graph includes
+tests, build plugins, CSS and maintenance scripts; review callers before removing
+reported exports. Generated font CSS modules and the manual debug utility have
+intentional ignores in `knip.json`.
+
 See [contribution guidelines](CONTRIBUTING.md) and [architecture](ARCHITECTURE.md).
