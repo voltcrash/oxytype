@@ -1,28 +1,19 @@
+import { FunboxWordFunctions } from "@oxytype/typing-core/active-funboxes";
+import { createFunboxWordFunctions } from "@oxytype/typing-core/funbox-word-functions";
 import {
   setCrt,
   setReadAheadDisabled,
   setWordsVisible,
   setWordsWrapperVisible,
 } from "../../states/funbox";
-import {
-  FunboxWordsFrequency,
-  PolyglotWordset,
-  Wordset,
-} from "@oxytype/typing-core/wordset";
-import * as GetText from "@oxytype/typing-core/generate";
 import { Config } from "../../config/store";
 import { setConfig, toggleFunbox } from "../../config/setters";
-import * as Numerals from "@oxytype/typing-core/numerals";
-import * as Strings from "../../utils/strings";
-import { randomIntFromRange } from "@oxytype/util/numbers";
-import * as Arrays from "../../utils/arrays";
 import { save } from "./funbox-memory";
 import { ttsEvent } from "../../events/tts";
 import {
   showNoticeNotification,
   showErrorNotification,
 } from "../../states/notifications";
-import * as DDR from "../../utils/ddr";
 import * as TestWords from "../test-words";
 import { getCurrentInput, getInputForWord } from "../events/data";
 import * as LayoutfluidFunboxTimer from "./layoutfluid-funbox-timer";
@@ -30,26 +21,17 @@ import { highlight } from "../../events/keymap";
 import * as MemoryTimer from "./memory-funbox-timer";
 import { getPoem } from "../poetry";
 import * as JSONData from "../../utils/json-data";
-import { Section } from "@oxytype/typing-core/languages";
 import { getSection } from "../wikipedia";
 import * as WeakSpot from "../weak-spot";
-import * as IPAddresses from "../../utils/ip-addresses";
 import { getActiveWordIndex } from "../../states/test";
-import { WordGenError } from "@oxytype/typing-core/errors";
 import { FunboxName, KeymapLayout, Layout } from "@oxytype/schemas/configs";
-import { Language, LanguageObject } from "@oxytype/schemas/languages";
 
-export type FunboxFunctions = {
-  getWord?: (wordset?: Wordset, wordIndex?: number) => string;
-  punctuateWord?: (word: string) => string;
-  withWords?: (words?: string[]) => Promise<Wordset | PolyglotWordset>;
-  alterText?: (word: string, wordIndex: number, wordsBound: number) => string;
+export type FunboxFunctions = FunboxWordFunctions & {
   applyConfig?: () => void;
   applyGlobalCSS?: () => void;
   clearGlobal?: () => void;
   rememberSettings?: () => void;
   toggleScript?: (params: string[]) => void;
-  pullSection?: (language?: Language) => Promise<Section | false>;
   handleSpace?: () => void;
   getEmulatedChar?: (event: KeyboardEvent) => string | null;
   handleKeydown?: (event: KeyboardEvent) => Promise<void>;
@@ -57,7 +39,6 @@ export type FunboxFunctions = {
   start?: () => void;
   restart?: () => void;
   getWordHtml?: (char: string, letterTag?: boolean) => string;
-  getWordsFrequencyMode?: () => FunboxWordsFrequency;
 };
 
 async function readAheadHandleKeydown(event: KeyboardEvent): Promise<void> {
@@ -89,117 +70,8 @@ async function readAheadHandleKeydown(event: KeyboardEvent): Promise<void> {
   }
 }
 
-//todo move to its own file
-class CharDistribution {
-  public chars: Record<string, number>;
-  public count: number;
-  constructor() {
-    this.chars = {};
-    this.count = 0;
-  }
-
-  public addChar(char: string): void {
-    this.count++;
-    if (char in this.chars) {
-      (this.chars[char] as number) += 1;
-    } else {
-      this.chars[char] = 1;
-    }
-  }
-
-  public randomChar(): string {
-    const randomIndex = randomIntFromRange(0, this.count - 1);
-    let runningCount = 0;
-    for (const [char, charCount] of Object.entries(this.chars)) {
-      runningCount += charCount;
-      if (runningCount > randomIndex) {
-        return char;
-      }
-    }
-
-    return Object.keys(this.chars)[0] as string;
-  }
-}
-const prefixSize = 2;
-class PseudolangWordGenerator extends Wordset {
-  public ngrams: Record<string, CharDistribution> = {};
-  constructor(words: string[]) {
-    super(words);
-    // Can generate an unbounded number of words in theory.
-    this.length = Infinity;
-
-    for (let word of words) {
-      // Mark the end of each word with a space.
-      word += " ";
-      let prefix = "";
-      for (const c of word) {
-        // Add `c` to the distribution of chars that can come after `prefix`.
-        if (!(prefix in this.ngrams)) {
-          this.ngrams[prefix] = new CharDistribution();
-        }
-        (this.ngrams[prefix] as CharDistribution).addChar(c);
-        prefix = (prefix + c).slice(-prefixSize);
-      }
-    }
-  }
-
-  public override randomWord(): string {
-    let word = "";
-    for (;;) {
-      const prefix = word.slice(-prefixSize);
-      const charDistribution = this.ngrams[prefix];
-      if (!charDistribution) {
-        // This shouldn't happen if this.ngrams is complete. If it does
-        // somehow, start generating a new word.
-        word = "";
-        continue;
-      }
-      // Pick a random char from the distribution that comes after `prefix`.
-      const nextChar = charDistribution.randomChar();
-      if (nextChar === " ") {
-        // A space marks the end of the word, so stop generating and return.
-        break;
-      }
-      word += nextChar;
-    }
-    return word;
-  }
-}
-
 const list: Partial<Record<FunboxName, FunboxFunctions>> = {
   "58008": {
-    getWord(): string {
-      let num = GetText.getNumbers(7);
-      if (Config.language.startsWith("kurdish")) {
-        num = Numerals.convertNumberToArabic(num);
-      } else if (Config.language.startsWith("nepali")) {
-        num = Numerals.convertNumberToNepali(num);
-      }
-      return num;
-    },
-    punctuateWord(word: string): string {
-      if (word.length > 3) {
-        if (Math.random() < 0.5) {
-          word = Strings.replaceCharAt(
-            word,
-            randomIntFromRange(1, word.length - 2),
-            ".",
-          );
-        }
-        if (Math.random() < 0.75) {
-          const index = randomIntFromRange(1, word.length - 2);
-          if (
-            word[index - 1] !== "." &&
-            word[index + 1] !== "." &&
-            word[index + 1] !== "0"
-          ) {
-            const special = Arrays.randomElementFromArray(["/", "*", "-", "+"]);
-            word = Strings.replaceCharAt(word, index, special);
-          }
-        }
-      }
-      return word;
-    },
     rememberSettings(): void {
       save("numbers", Config.numbers);
     },
@@ -238,9 +110,6 @@ const list: Partial<Record<FunboxName, FunboxFunctions>> = {
     },
   },
   arrows: {
-    getWord(_wordset, wordIndex): string {
-      return DDR.chart2Word(wordIndex === 0);
-    },
     rememberSettings(): void {
       save("highlightMode", Config.highlightMode);
     },
@@ -285,70 +154,11 @@ const list: Partial<Record<FunboxName, FunboxFunctions>> = {
       return retval;
     },
   },
-  rAnDoMcAsE: {
-    alterText(word: string): string {
-      let randomCaseWord = "";
-
-      for (let letter of word) {
-        if (Math.random() < 0.5) {
-          randomCaseWord += letter.toUpperCase();
-        } else {
-          randomCaseWord += letter.toLowerCase();
-        }
-      }
-
-      return randomCaseWord;
-    },
-  },
-  sPoNgEcAsE: {
-    alterText(word: string): string {
-      let spongeCaseWord = "";
-
-      for (let i = 0; i < word.length; i++) {
-        if (i % 2 === 0) {
-          spongeCaseWord += word[i]?.toLowerCase();
-        } else {
-          spongeCaseWord += word[i]?.toUpperCase();
-        }
-      }
-
-      return spongeCaseWord;
-    },
-  },
-  rot13: {
-    alterText(word: string): string {
-      let alphabet = "abcdefghijklmnopqrstuvwxyz";
-
-      let rot13Word = "";
-
-      for (let ch of word) {
-        let chIndex = alphabet.indexOf(ch.toLowerCase());
-        if (chIndex === -1) {
-          rot13Word += ch;
-          continue;
-        }
-
-        let rot13Ch = (chIndex + 13) % 26;
-        if (ch.toUpperCase() === ch) {
-          rot13Word += alphabet[rot13Ch]?.toUpperCase();
-        } else {
-          rot13Word += alphabet[rot13Ch];
-        }
-      }
-
-      return rot13Word;
-    },
-  },
-  backwards: {
-    alterText(word: string): string {
-      return word.split("").reverse().join("");
-    },
-  },
-  capitals: {
-    alterText(word: string): string {
-      return Strings.capitalizeFirstLetterOfEachWord(word);
-    },
-  },
+  rAnDoMcAsE: {},
+  sPoNgEcAsE: {},
+  rot13: {},
+  backwards: {},
+  capitals: {},
   layout_mirror: {
     applyConfig(): void {
       let layout = Config.layout;
@@ -425,21 +235,9 @@ const list: Partial<Record<FunboxName, FunboxFunctions>> = {
       return Config.customLayoutfluid.join(" ");
     },
   },
-  gibberish: {
-    getWord(): string {
-      return GetText.getGibberish();
-    },
-  },
-  ascii: {
-    getWord(): string {
-      return GetText.getASCII();
-    },
-  },
-  specials: {
-    getWord(): string {
-      return GetText.getSpecials();
-    },
-  },
+  gibberish: {},
+  ascii: {},
+  specials: {},
   read_ahead_easy: {
     rememberSettings(): void {
       save("highlightMode", Config.highlightMode);
@@ -500,108 +298,31 @@ const list: Partial<Record<FunboxName, FunboxFunctions>> = {
       save("highlightMode", Config.highlightMode);
     },
   },
-  poetry: {
-    async pullSection(): Promise<Section | false> {
-      return getPoem();
-    },
-  },
-  wikipedia: {
-    async pullSection(lang?: Language): Promise<Section | false> {
-      return getSection((lang ?? "") || "english");
-    },
-  },
-  weakspot: {
-    getWord(wordset?: Wordset): string {
-      if (wordset !== undefined) return WeakSpot.getWord(wordset);
-      else return "";
-    },
-  },
-  pseudolang: {
-    async withWords(words?: string[]): Promise<Wordset> {
-      if (words !== undefined) return new PseudolangWordGenerator(words);
-      return new Wordset([]);
-    },
-  },
+  poetry: {},
+  wikipedia: {},
+  weakspot: {},
+  pseudolang: {},
   IPv4: {
-    getWord(): string {
-      return IPAddresses.getRandomIPv4address();
-    },
-    punctuateWord(word: string): string {
-      let w = word;
-      if (Math.random() < 0.25) {
-        w = IPAddresses.addressToCIDR(word);
-      }
-      return w;
-    },
     rememberSettings(): void {
       save("numbers", Config.numbers);
     },
   },
   IPv6: {
-    getWord(): string {
-      return IPAddresses.getRandomIPv6address();
-    },
-    punctuateWord(word: string): string {
-      let w = word;
-      if (Math.random() < 0.25) {
-        w = IPAddresses.addressToCIDR(word);
-      }
-      // Compress
-      if (w.includes(":")) {
-        w = IPAddresses.compressIpv6(w);
-      }
-      return w;
-    },
     rememberSettings(): void {
       save("numbers", Config.numbers);
     },
   },
-  binary: {
-    getWord(): string {
-      return GetText.getBinary();
-    },
-  },
+  binary: {},
   hexadecimal: {
-    getWord(): string {
-      return GetText.getHexadecimal();
-    },
-    punctuateWord(word: string): string {
-      return `0x${word}`;
-    },
     rememberSettings(): void {
       save("punctuation", Config.punctuation);
     },
   },
-  zipf: {
-    getWordsFrequencyMode(): FunboxWordsFrequency {
-      return "zipf";
-    },
-  },
-  ddoouubblleedd: {
-    alterText(word: string): string {
-      return word.replace(/./gu, "$&$&");
-    },
-  },
-  instant_messaging: {
-    alterText(word: string): string {
-      return word
-        .toLowerCase()
-        .replace(/[.!?]$/g, "\n") //replace .?! with enter
-        .replace(/[().'"]/g, "") //remove special characters
-        .replace(/\n+/g, "\n"); //make sure there is only one enter
-    },
-  },
-  morse: {
-    alterText(word: string): string {
-      return GetText.getMorse(word);
-    },
-  },
-  underscore_spaces: {
-    alterText(word: string, wordIndex: number, limit: number): string {
-      if (wordIndex === limit - 1) return word; // don't add underscore to the last word
-      return `${word}_`;
-    },
-  },
+  zipf: {},
+  ddoouubblleedd: {},
+  instant_messaging: {},
+  morse: {},
+  underscore_spaces: {},
   crt: {
     applyGlobalCSS(): void {
       const isSafari = /^((?!chrome|android).)*safari/i.test(
@@ -633,95 +354,29 @@ const list: Partial<Record<FunboxName, FunboxFunctions>> = {
       setCrt(null);
     },
   },
-  ALL_CAPS: {
-    alterText(word: string): string {
-      return word.toUpperCase();
-    },
-  },
-  polyglot: {
-    async withWords(_words) {
-      const promises = Config.customPolyglot.map(async (language) =>
-        JSONData.getLanguage(language).catch(() => {
-          showNoticeNotification(
-            `Failed to load language: ${language}. It will be ignored.`,
-          );
-          return null;
-        }),
-      );
-
-      const languages = (await Promise.all(promises)).filter(
-        (lang): lang is LanguageObject => lang !== null,
-      );
-
-      if (languages.length === 0) {
-        toggleFunbox("polyglot");
-        throw new Error(
-          `No valid languages found. Please check your polyglot languages config (${Config.customPolyglot.join(
-            ", ",
-          )}).`,
-        );
-      }
-
-      if (languages.length === 1) {
-        const lang = languages[0] as LanguageObject;
-        setConfig("language", lang.name, {
-          nosave: true,
-        });
-        toggleFunbox("polyglot", true);
-        showNoticeNotification(
-          `Disabled polyglot funbox because only one valid language was found. Check your polyglot languages config (${Config.customPolyglot.join(
-            ", ",
-          )}).`,
-          {
-            durationMs: 7000,
-          },
-        );
-        throw new WordGenError("");
-      }
-
-      // direction conflict check
-      const allRightToLeft = languages.every((lang) => lang.rightToLeft);
-      const allLeftToRight = languages.every((lang) => !lang.rightToLeft);
-      const mainLanguage = await JSONData.getLanguage(Config.language);
-      const mainLanguageIsRTL = mainLanguage?.rightToLeft ?? false;
-      if (
-        (mainLanguageIsRTL && allLeftToRight) ||
-        (!mainLanguageIsRTL && allRightToLeft)
-      ) {
-        const fallbackLanguage =
-          languages[0]?.name ?? (allRightToLeft ? "arabic" : "english");
-        setConfig("language", fallbackLanguage);
-        showNoticeNotification(
-          `Language direction conflict: switched to ${fallbackLanguage} for consistency.`,
-          { durationMs: 5000 },
-        );
-        throw new WordGenError("");
-      }
-
-      // build languageProperties
-      const languageProperties = new Map(
-        languages.map((lang) => [
-          lang.name,
-          {
-            noLazyMode: lang.noLazyMode,
-            joiningScript: lang.joiningScript,
-            rightToLeft: lang.rightToLeft,
-            additionalAccents: lang.additionalAccents,
-          },
-        ]),
-      );
-
-      const wordsWithLanguage = new Map(
-        languages.flatMap((lang) =>
-          lang.words.map((word) => [word, lang.name]),
-        ),
-      );
-
-      return new PolyglotWordset(wordsWithLanguage, languageProperties);
-    },
-  },
+  ALL_CAPS: {},
+  polyglot: {},
 };
 
 export function getFunboxFunctions(): Record<FunboxName, FunboxFunctions> {
-  return list as Record<FunboxName, FunboxFunctions>;
+  const wordFunctions = createFunboxWordFunctions({
+    getConfig: () => Config,
+    getLanguage: JSONData.getLanguage,
+    getPoem,
+    getSection,
+    getWeakSpotWord: (wordset) => WeakSpot.getWord(wordset),
+    notify: showNoticeNotification,
+    disableFunbox: (name, noRestart) => {
+      toggleFunbox(name, noRestart);
+    },
+    setLanguage: (language, noSave) => {
+      setConfig("language", language, { nosave: noSave });
+    },
+  });
+  const merged = { ...list } as Record<FunboxName, FunboxFunctions>;
+  for (const [name, hooks] of Object.entries(wordFunctions)) {
+    const key = name as FunboxName;
+    merged[key] = { ...merged[key], ...hooks };
+  }
+  return merged;
 }
