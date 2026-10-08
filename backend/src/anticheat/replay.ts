@@ -25,5 +25,9 @@ export function getTimingFingerprint(
   ) {
     return undefined;
   }
-  return objectHash([gaps, keyDuration.map(Math.round)]);
+  // Traditional terminals report presses, without trustworthy release times.
+  return objectHash([
+    gaps,
+    result.client === "tui" ? [] : keyDuration.map(Math.round),
+  ]);
 }

@@ -35,7 +35,7 @@ export function getBotFailure(result: CompletedEvent): BotFailure | undefined {
   // be estimated. Both channels must be fixed across at least 100 samples.
   if (
     fixedPositiveTimings(keySpacing.slice(1, -1)) &&
-    fixedPositiveTimings(keyDuration.slice(1, -1))
+    (result.client === "tui" || fixedPositiveTimings(keyDuration.slice(1, -1)))
   ) {
     return "uniform-key-timing";
   }
