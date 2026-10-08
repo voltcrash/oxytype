@@ -1,38 +1,36 @@
 {
   "workspaces": {
+    ".": {
+      "entry": ["vitest.config.ts"],
+      "vitest": false
+    },
     "backend": {
-      "entry": ["src/worker.ts", "scripts/*.ts"],
-      "project": ["src/**/*.ts", "scripts/**/*.ts"],
-      "ignoreDependencies": ["@oxytype/oxlint-config"],
-      "ignoreBinaries": ["dist"]
+      "entry": ["scripts/*.ts"],
+      "project": ["src/**/*.ts", "scripts/**/*.ts", "__tests__/**/*.ts"],
+      "ignoreDependencies": ["@oxytype/oxlint-config"]
     },
     "frontend": {
       "entry": [
-        "src/ts/index.ts",
         "src/ts/{oauth-callback,not-found,legal-page,standalone-renderer}.tsx",
-        "src/ts/types/*.d.ts"
+        "src/ts/types/*.d.ts",
+        "src/styles/{tailwind,standalone}.css",
+        "scripts/*.{ts,cjs}"
       ],
-      "project": "src/ts/**/*.{ts,tsx}",
-      "ignore": [
-        "src/ts/constants/ignored-keys.ts",
-        "src/ts/utils/async-modules.ts",
-        "src/ts/utils/debug.ts"
+      "project": [
+        "src/**/*.{ts,tsx,css}",
+        "vite-plugins/**/*.ts",
+        "scripts/**/*.{ts,cjs}",
+        "__tests__/**/*.{ts,tsx}"
       ],
+      "ignore": ["src/ts/utils/debug.ts"],
       "ignoreDependencies": [
         "@oxytype/oxlint-config",
         "@tanstack/eslint-plugin-query",
         "eslint-plugin-compat",
         "eslint-plugin-solid",
-        "normalize.css",
-        "balloon-css",
-        "tailwindcss",
-        "virtual:env-config",
-        "virtual:language-hashes"
+        "oxytype-fontawesome.css",
+        "oxytype-fonts.css"
       ]
-    },
-    "packages/*": {
-      "entry": ["src/index.ts"],
-      "project": "src/**/*.ts"
     },
     "frontend/storybook": {
       "storybook": false,
@@ -40,8 +38,11 @@
         ".storybook/*.{ts,tsx}",
         "stories/**/*.{stories.ts,stories.tsx,mdx}"
       ],
-      "project": [".storybook/**/*.{ts,tsx}", "stories/**/*.{ts,tsx}"],
-      "ignoreDependencies": ["@storybook/addon-links", "@vitest/coverage-v8"]
+      "project": [".storybook/**/*.{ts,tsx}", "stories/**/*.{ts,tsx,css}"],
+      "ignoreDependencies": ["@storybook/addon-links"]
+    },
+    "packages/release": {
+      "entry": ["src/production-release.js", "__tests__/*.spec.js"]
     },
     "packages/oxlint-config": {
       "entry": ["plugins/*.js"],
@@ -49,12 +50,9 @@
     }
   },
   "$schema": "https://unpkg.com/knip@6.39.0/schema.json",
-  "entry": ["commitlint.config.cjs", "stylelint.config.mjs"],
   "ignoreDependencies": [
-    "@commitlint/cli",
     "@commitlint/config-conventional",
     "caniuse-lite",
     "yaml"
-  ],
-  "ignoreBinaries": ["tsx"]
+  ]
 }
