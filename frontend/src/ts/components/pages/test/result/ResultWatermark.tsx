@@ -8,7 +8,7 @@ export function ResultWatermark(): JSXElement {
   return (
     <Show when={getIsScreenshotting() && getScreenshotWatermark()}>
       {(watermark) => (
-        <div class="ssWatermark col-[1/3] flex flex-wrap justify-end gap-x-[1em] text-[1.25rem] text-sub">
+        <div class="ssWatermark col-[1/-1] flex flex-wrap justify-end gap-x-[1em] text-[1.25rem] text-sub">
           <Show when={watermark().user}>
             {(user) => (
               <>

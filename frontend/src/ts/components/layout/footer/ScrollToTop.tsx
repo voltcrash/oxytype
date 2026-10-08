@@ -37,7 +37,7 @@ export function ScrollToTop(): JSXElement {
     <div class="content-grid ScrollToTop pointer-events-none fixed top-0 left-0 z-999999 h-full w-full">
       <button
         class={cn(
-          "breakout pointer-events-auto mb-8 grid h-16 w-16 place-self-end rounded-full bg-sub-alt text-[2rem] text-sub ring-8 ring-bg hover:bg-text hover:text-bg",
+          "breakout pointer-events-auto mb-8 grid h-12 w-12 place-self-end rounded-full bg-sub-alt text-[1.5rem] text-sub ring-4 ring-bg hover:bg-text hover:text-bg sm:h-16 sm:w-16 sm:text-[2rem] sm:ring-8",
           (getActivePage() === "test" || !visible()) &&
             "pointer-events-none opacity-0",
         )}

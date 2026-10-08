@@ -41,6 +41,7 @@ export function VersionHistoryModal(): JSXElement {
           href="https://github.com/voltcrash/oxytype/releases"
           text="Older releases on GitHub"
           fa={{ icon: "fa-arrow-up-right-from-square" }}
+          class="w-full py-3 sm:w-auto sm:py-[0.5em]"
         />
       </div>
     </AnimatedModal>
@@ -53,23 +54,26 @@ function ReleaseItem(props: {
   bodyHTML: string;
 }): JSXElement {
   return (
-    <div class="grid gap-4">
-      <div class="flex place-items-center justify-between">
-        <div class="text-4xl text-main">{props.name}</div>
+    <div class="grid min-w-0 gap-4">
+      <div class="flex flex-col gap-1 sm:flex-row sm:place-items-center sm:justify-between">
+        <div class="min-w-0 break-words text-2xl text-main sm:text-4xl">
+          {props.name}
+        </div>
         <div class="text-sub">{props.publishedAt}</div>
       </div>
       <div
         class={cn(
-          "grid gap-4",
-          "[&_h3]:mt-4 [&_h3]:text-xl [&_h3]:text-sub [&_h3:first-child]:mt-0",
+          "grid min-w-0 gap-4 break-words [&_*]:min-w-0 [&_a]:inline",
+          "[&_h3]:mt-4 [&_h3]:text-lg [&_h3]:text-sub sm:[&_h3]:text-xl [&_h3:first-child]:mt-0",
           "[&_ul]:grid [&_ul]:gap-1",
           "[&_li]:relative [&_li]:pl-[2ch] [&_li]:before:absolute [&_li]:before:left-0 [&_li]:before:content-['-']",
           "[&_code]:rounded [&_code]:bg-sub-alt [&_code]:px-1",
+          "[&_pre]:max-w-full [&_pre]:overflow-x-auto",
         )}
         // oxlint-disable-next-line solid/no-innerhtml
         innerHTML={props.bodyHTML}
       ></div>
-      <div class="mt-4 mb-16 h-1 w-full rounded bg-sub-alt"></div>
+      <div class="mt-4 mb-8 h-1 w-full rounded bg-sub-alt sm:mb-16"></div>
     </div>
   );
 }

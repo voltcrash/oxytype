@@ -118,3 +118,10 @@
     @apply rounded-t;
   }
 }
+
+/* Taller option rows on touch for easier tapping (~44px). */
+@media (pointer: coarse) {
+  .ss-content .ss-list .ss-option:not(.ss-disabled) {
+    padding-block: 0.75em;
+  }
+}

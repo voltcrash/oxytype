@@ -160,7 +160,7 @@ function QuoteApproveItem(props: {
           />
         </Show>
       </div>
-      <div class="flex gap-4 text-xs text-sub">
+      <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-sub">
         <form.Field
           name="text"
           children={(field) => (

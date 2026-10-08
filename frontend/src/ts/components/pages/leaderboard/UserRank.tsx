@@ -36,7 +36,7 @@ export function UserRank(props: {
     }
 
     return (
-      <div class="text-[1em]">
+      <div class="text-[1em] whitespace-normal">
         <div>You ({percentileString})</div>
         <div class="hidden text-em-xs text-sub sm:block sm:text-em-sm">
           {" "}
@@ -65,7 +65,7 @@ export function UserRank(props: {
   };
 
   return (
-    <div class="flex h-18 rounded bg-sub-alt">
+    <div class="flex min-h-18 min-w-0 rounded bg-sub-alt">
       <Show
         when={props.data !== undefined && props.total !== undefined}
         fallback={<LoadingCircle class="w-full text-center text-2xl" />}
@@ -107,12 +107,14 @@ export function UserRank(props: {
             </div>
           }
         >
-          <Table
-            type={props.type}
-            entries={[props.data as TableEntry]}
-            userOverride={userOverride}
-            hideHeader={true}
-          />
+          <div class="w-full min-w-0 overflow-x-auto">
+            <Table
+              type={props.type}
+              entries={[props.data as TableEntry]}
+              userOverride={userOverride}
+              hideHeader={true}
+            />
+          </div>
         </Show>
       </Show>
     </div>

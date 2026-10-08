@@ -134,7 +134,7 @@ export function Setting(props: SettingProps): JSXElement {
 function DeepLinkButton(props: { key: string }) {
   return (
     <Button
-      class="-m-2 p-2 opacity-0 group-hover:opacity-100"
+      class="-m-2 p-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
       variant="text"
       fa={{ icon: "fa-link" }}
       onClick={() => {

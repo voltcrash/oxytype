@@ -10,7 +10,7 @@ export function StandaloneNotFound() {
           class="page page404 grid h-full content-center justify-center"
           id="page404"
         >
-          <div class="content grid grid-flow-col grid-cols-[300px_300px] gap-16">
+          <div class="content grid w-full max-w-[300px] gap-8 md:max-w-none md:grid-flow-col md:grid-cols-[300px_300px] md:gap-16">
             <img
               src="/images/oxytype-404.svg"
               alt="Oxytype typing keys"

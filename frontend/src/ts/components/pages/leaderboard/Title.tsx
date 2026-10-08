@@ -79,7 +79,7 @@ export function Title(props: {
         class="p-0 text-2xl text-text md:text-3xl xl:text-4xl"
       />
       <Show when={subTitle() !== null}>
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
           <div
             class="text-sub"
             data-balloon-pos="down"

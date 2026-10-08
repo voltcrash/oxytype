@@ -46,7 +46,12 @@ export function LoadingPage(): JSXElement {
           respectReducedMotion={false}
         />
       </div>
-      <div class={cn("h-[1.25em]", !isTextVisible() && "hidden")}>
+      <div
+        class={cn(
+          "min-h-[1.25em] wrap-break-word",
+          !isTextVisible() && "hidden",
+        )}
+      >
         {getText()}
       </div>
     </div>

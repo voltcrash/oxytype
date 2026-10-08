@@ -126,14 +126,17 @@ function PbCard<M extends "time" | "words">(props: {
 
   return (
     <div class="grid grid-cols-[1fr_minmax(0,2rem)] rounded bg-sub-alt">
-      <div class="grid grid-cols-2 gap-8 p-4 md:grid-cols-4">
+      <div class="grid grid-cols-2 gap-4 p-4 sm:gap-8 md:grid-cols-4">
         <For each={bests()}>
           {(item) => (
-            <div class="group grid items-center">
+            <div
+              class="group grid items-center"
+              tabIndex={item.pb !== undefined ? 0 : undefined}
+            >
               <div
                 class={
                   item.pb !== undefined
-                    ? "col-start-1 row-start-1 text-center transition-opacity group-hover:opacity-0"
+                    ? "col-start-1 row-start-1 text-center transition-opacity group-hover:opacity-0 pointer-coarse:group-focus:opacity-0"
                     : "col-start-1 row-start-1 text-center"
                 }
               >
@@ -153,7 +156,7 @@ function PbCard<M extends "time" | "words">(props: {
               </div>
 
               <Show when={item.pb !== undefined}>
-                <div class="col-start-1 row-start-1 grid bg-sub-alt text-center text-xs opacity-0 transition-opacity group-hover:opacity-100">
+                <div class="col-start-1 row-start-1 grid bg-sub-alt text-center text-xs opacity-0 transition-opacity group-hover:opacity-100 pointer-coarse:group-focus:opacity-100">
                   <div class="text-sub">
                     {item.mode2} {props.mode === "time" ? "seconds" : "words"}
                   </div>

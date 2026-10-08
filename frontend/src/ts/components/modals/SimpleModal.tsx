@@ -304,7 +304,7 @@ export function SimpleModal(): JSXElement {
                             />
                           }
                         >
-                          <label class="grid w-full grid-cols-[1fr_2fr] items-center gap-2 text-sub">
+                          <label class="grid w-full grid-cols-1 items-center gap-2 text-sub sm:grid-cols-[1fr_2fr]">
                             <div>{input.label}</div>
 
                             <FieldInput

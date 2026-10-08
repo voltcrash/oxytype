@@ -164,17 +164,19 @@ export function PbTablesModal(): JSXElement {
   return (
     <AnimatedModal
       id="PbTables"
-      modalClass="max-w-full gap-0 p-8"
+      modalClass="max-w-full gap-0 p-4 sm:p-8"
       beforeShow={() => {
         setRows(buildRows(pbTablesMode()));
       }}
     >
-      <DataTable
-        id="pbTables"
-        columns={columns()}
-        data={rows()}
-        class="[&>thead]:sticky [&>thead]:-top-8 [&>thead]:z-3 [&>thead]:bg-bg [&>thead]:text-xs"
-      />
+      <div class="overflow-x-auto sm:overflow-visible">
+        <DataTable
+          id="pbTables"
+          columns={columns()}
+          data={rows()}
+          class="[&>thead]:sticky [&>thead]:-top-8 [&>thead]:z-3 [&>thead]:bg-bg [&>thead]:text-xs"
+        />
+      </div>
     </AnimatedModal>
   );
 }

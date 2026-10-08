@@ -21,18 +21,21 @@ export function ContactModal(): JSXElement {
           href="https://github.com/voltcrash/oxytype/issues/new/choose"
           text="Report a bug"
           fa={{ icon: "fa-bug", fixedWidth: true }}
+          class="min-h-10 md:min-h-0"
         />
         <Button
           variant="button"
           href="https://github.com/voltcrash/oxytype/discussions"
           text="Ask a question"
           fa={{ icon: "fa-comments", fixedWidth: true }}
+          class="min-h-10 md:min-h-0"
         />
         <Button
           variant="button"
           href="https://github.com/voltcrash/oxytype/security/policy"
           text="Security policy"
           fa={{ icon: "fa-shield-alt", fixedWidth: true }}
+          class="min-h-10 md:min-h-0"
         />
       </div>
     </AnimatedModal>

@@ -308,7 +308,7 @@ export function ResultChart(props: {
         resultState.noStress && "hidden",
       )}
     >
-      <div class="chartLegend pointer-events-none absolute right-0 bottom-[-0.75em] flex cursor-pointer rounded bg-bg p-[0.25em] text-[0.75em] opacity-0 transition-[opacity] duration-125 ease-[ease] group-hover/chart:pointer-events-auto group-hover/chart:opacity-100">
+      <div class="chartLegend pointer-events-none absolute right-0 bottom-[-0.75em] flex cursor-pointer max-sm:flex-wrap max-sm:justify-end rounded bg-bg p-[0.25em] text-[0.75em] opacity-0 transition-[opacity] duration-125 ease-[ease] group-hover/chart:pointer-events-auto group-hover/chart:opacity-100">
         <For each={legendButtons}>
           {(button) => (
             <button

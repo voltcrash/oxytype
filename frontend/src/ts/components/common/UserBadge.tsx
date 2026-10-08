@@ -34,7 +34,8 @@ export function UserBadge(props: {
     <Show when={badge() !== undefined}>
       <Balloon
         class={cn(
-          "rounded-[0.5em] px-[0.5em] py-[0.25em] text-em-xs whitespace-nowrap",
+          "max-w-full rounded-[0.5em] px-[0.5em] py-[0.25em] text-em-xs whitespace-nowrap",
+          !props.iconOnly && "flex items-center",
           props.class,
         )}
         text={props.hideDescription ? "" : (badge()?.description ?? "")}
@@ -53,7 +54,7 @@ export function UserBadge(props: {
           <Show when={!props.iconOnly}>
             <span
               class={cn(
-                "pl-[0.75em]",
+                "min-w-0 truncate pl-[0.75em]",
                 props.hideTextOnWidth !== false
                   ? hideClasses[props.hideTextOnWidth ?? "md"]
                   : "",

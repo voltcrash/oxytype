@@ -114,14 +114,14 @@ function Entry(props: {
   mutate: (args: { id: string; status: InboxItem["status"] }) => void;
 }): JSXElement {
   return (
-    <div class="grid grid-cols-[0.25rem_auto_max-content] gap-x-2 gap-y-4 [&>div>button]:opacity-0 hover:[&>div>button]:opacity-100">
+    <div class="grid grid-cols-[0.25rem_minmax(0,1fr)_max-content] gap-x-2 gap-y-4 [&>div>button]:opacity-0 hover:[&>div>button]:opacity-100 pointer-coarse:[&>div>button]:opacity-100">
       <div
         class={cn("rounded-full", {
           "bg-main": props.entry.status !== "read",
           "bg-sub-alt": props.entry.status === "read",
         })}
       ></div>
-      <div class="flex flex-col gap-1">
+      <div class="flex flex-col gap-1 wrap-break-word">
         <div class="text-em-sm text-sub opacity-50">
           {formatDistanceToNowStrict(props.entry.timestamp)} ago
         </div>
@@ -143,6 +143,7 @@ function Entry(props: {
         <Show when={props.entry.status === "unclaimed"}>
           <Button
             variant="text"
+            class="pointer-coarse:min-h-9 pointer-coarse:min-w-9"
             fa={{ icon: "fa-gift", fixedWidth: true }}
             balloon={{ text: "Claim", position: "left" }}
             onClick={() => {
@@ -154,6 +155,7 @@ function Entry(props: {
         <Show when={props.entry.status !== "unclaimed"}>
           <Button
             variant="text"
+            class="pointer-coarse:min-h-9 pointer-coarse:min-w-9"
             fa={{ icon: "fa-trash", fixedWidth: true }}
             balloon={{ text: "Delete", position: "left" }}
             onClick={() =>

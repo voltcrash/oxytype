@@ -28,11 +28,13 @@ export function Presets(): JSXElement {
             {(preset) => (
               <div class="grid grid-cols-[1fr_auto_auto] gap-2">
                 <Button
-                  text={preset.name}
+                  class="min-w-0"
                   onClick={() => {
                     void apply(preset._id);
                   }}
-                />
+                >
+                  <span class="min-w-0 truncate">{preset.name}</span>
+                </Button>
                 <Button
                   fa={{
                     icon: "fa-pen",

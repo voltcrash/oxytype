@@ -122,7 +122,7 @@ function Item(props: {
 
   return (
     <div
-      class="grid cursor-pointer gap-2 rounded p-4 transition-[background-color] duration-125 select-none hover:bg-sub-alt"
+      class="grid min-w-0 cursor-pointer gap-2 rounded p-4 transition-[background-color] duration-125 select-none [overflow-wrap:anywhere] hover:bg-sub-alt"
       onClick={() => props.onSelect()}
     >
       <div
@@ -150,8 +150,8 @@ function Item(props: {
           <div class="opacity-50">length</div>
           {getLengthDesc(props.quote)}
         </div>
-        <div class="col-span-2 flex sm:col-span-1">
-          <div class="grow text-xs text-sub">
+        <div class="col-span-2 flex min-w-0 sm:col-span-1">
+          <div class="min-w-0 grow text-xs text-sub">
             <div class="opacity-50">source</div>
             <span
               class="[&_.highlight]:text-main"
@@ -166,6 +166,7 @@ function Item(props: {
             <div class="flex shrink">
               <Button
                 variant="text"
+                class="min-h-9 min-w-9 sm:min-h-0 sm:min-w-0"
                 fa={{ icon: "fa-flag" }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -178,6 +179,7 @@ function Item(props: {
               />
               <Button
                 variant="text"
+                class="min-h-9 min-w-9 sm:min-h-0 sm:min-w-0"
                 fa={{
                   icon: "fa-heart",
                   variant: isFav() ? "solid" : "regular",
@@ -526,7 +528,7 @@ export function QuoteSearchModal(): JSXElement {
           </Show>
         </div>
         <div
-          class="grid content-baseline gap-2 overflow-y-auto"
+          class="grid grid-cols-[minmax(0,1fr)] content-baseline gap-2 overflow-y-auto"
           dir={isRtl() ? "rtl" : undefined}
         >
           <For each={pageQuotes()}>

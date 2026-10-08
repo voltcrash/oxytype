@@ -6,12 +6,12 @@ export function NotFoundPage() {
   return (
     <Page id="404">
       <div class="flex h-full items-center justify-center">
-        <div class="flex flex-col gap-16 md:flex-row">
+        <div class="flex flex-col gap-8 md:flex-row md:gap-16">
           <div class="place-self-center">
             <img
               src="/images/oxytype-404.svg"
               alt="Oxytype typing keys"
-              class="rounded-xl"
+              class="max-w-full rounded-xl"
             />
           </div>
           <div class="flex max-w-md flex-col items-center gap-4">

@@ -4,7 +4,7 @@ export function SecurityPolicy() {
   return (
     <>
       <StandaloneHeader label="Security Policy" />
-      <main class="grid gap-6">
+      <main class="grid min-w-0 gap-6 wrap-break-word">
         <h1 class="text-3xl text-main">Security Policy</h1>
         <p>
           Oxytype handles security reports through its own repository. Please

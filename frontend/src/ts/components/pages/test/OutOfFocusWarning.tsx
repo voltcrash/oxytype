@@ -16,7 +16,7 @@ export function OutOfFocusWarning() {
   return (
     <Show when={showOutOfFocusWarning()}>
       <div
-        class="pointer-events-none absolute z-999 flex h-full w-full place-content-center items-center gap-2 text-center text-base select-none"
+        class="pointer-events-none absolute z-999 flex h-full w-full place-content-center items-center gap-2 px-4 text-center text-base select-none"
         style={{
           "max-height":
             outOfFocusMaxHeight() !== undefined

@@ -110,7 +110,12 @@ function Value(props: {
   class?: string;
 }) {
   return (
-    <div class={cn("flex flex-col text-sm", props.class)}>
+    <div
+      class={cn(
+        "flex min-w-0 flex-col text-sm [overflow-wrap:anywhere]",
+        props.class,
+      )}
+    >
       <span class="text-em-xs text-sub">{props.label}</span>
       <span>{props.value}</span>
     </div>

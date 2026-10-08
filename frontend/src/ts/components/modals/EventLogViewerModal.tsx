@@ -2000,7 +2000,7 @@ function DistributionChart(props: {
   });
 
   return (
-    <div class="flex min-w-80 flex-1 flex-col gap-1">
+    <div class="flex min-w-0 flex-1 flex-col gap-1 sm:min-w-80">
       <div class="flex items-baseline justify-between gap-2">
         <div class="font-mono text-xs text-text">{props.label}</div>
         <Show when={props.note}>

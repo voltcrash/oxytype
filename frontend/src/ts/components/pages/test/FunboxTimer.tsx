@@ -30,7 +30,7 @@ function FunboxTimer(props: {
     <div
       ref={(e) => (el = e)}
       id={props.id}
-      class="pointer-events-none absolute -top-24 left-1/2 col-[content] w-max -translate-x-1/2 rounded-(--roundness) bg-main p-4 text-center text-[1rem] text-bg opacity-0 select-none"
+      class="pointer-events-none absolute -top-24 left-1/2 col-[content] w-max max-w-full -translate-x-1/2 rounded-(--roundness) bg-main p-4 text-center text-[1rem] text-bg opacity-0 select-none"
     >
       {props.text}
     </div>

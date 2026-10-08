@@ -143,7 +143,7 @@ export function QuoteRateModal(): JSXElement {
         <div class="text-xl text-text" dir="auto">
           {selectedQuote()?.text ?? "-"}
         </div>
-        <div class="grid grid-cols-[1fr_1fr_3fr] gap-2">
+        <div class="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_1fr_3fr]">
           <div class="text-xs text-sub">
             <div class="text-sub opacity-50">id</div>
             {selectedQuote()?.id ?? "-"}
@@ -152,7 +152,7 @@ export function QuoteRateModal(): JSXElement {
             <div class="text-sub opacity-50">length</div>
             {getLengthDesc()}
           </div>
-          <div class="text-xs text-sub">
+          <div class="col-span-2 min-w-0 text-xs text-sub [overflow-wrap:anywhere] sm:col-span-1">
             <div class="text-sub opacity-50">source</div>
             {selectedQuote()?.source ?? "-"}
           </div>
@@ -160,7 +160,7 @@ export function QuoteRateModal(): JSXElement {
       </div>
       <Separator />
       <div class="flex items-center gap-4">
-        <div class="grid flex-1 grid-cols-4 gap-4">
+        <div class="grid flex-1 grid-cols-2 gap-4 sm:grid-cols-4">
           <div>
             <div class="text-sub">ratings</div>
             <div class="text-4xl text-text">
@@ -173,7 +173,7 @@ export function QuoteRateModal(): JSXElement {
               {quoteStats()?.average?.toFixed(1) ?? "-"}
             </div>
           </div>
-          <div>
+          <div class="col-span-2 sm:col-span-1">
             <div class="text-sub">your rating</div>
             <div class="flex gap-1 text-2xl">
               <For each={[1, 2, 3, 4, 5]}>
@@ -181,7 +181,7 @@ export function QuoteRateModal(): JSXElement {
                   <Button
                     variant="text"
                     class={cn(
-                      "p-0 text-2xl",
+                      "min-h-9 min-w-9 p-0 text-2xl sm:min-h-0 sm:min-w-0",
                       displayRating() >= star
                         ? "[--themable-button-text:var(--main-color)]"
                         : "",

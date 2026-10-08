@@ -12,7 +12,7 @@ import { VersionButton } from "./VersionButton";
 export function Footer(): JSXElement {
   return (
     <footer
-      class={cn("relative text-xs text-sub", getFocus() && "focus", {
+      class={cn("relative text-sm text-sub sm:text-xs", getFocus() && "focus", {
         "opacity-0": getIsScreenshotting(),
       })}
     >
@@ -24,7 +24,7 @@ export function Footer(): JSXElement {
           getFocus() && "opacity-0",
         )}
       >
-        <div class="grid grid-cols-1 justify-items-start xs:grid-cols-2 sm:grid-cols-4 lg:flex lg:flex-wrap">
+        <div class="grid grid-cols-1 justify-items-start [&>*]:min-h-9 xs:grid-cols-2 sm:grid-cols-4 sm:[&>*]:min-h-0 lg:flex lg:flex-wrap">
           <Button
             variant="text"
             text="contact"
@@ -86,7 +86,7 @@ export function Footer(): JSXElement {
             }}
           />
         </div>
-        <div class="flex flex-col items-end text-right lg:flex-row">
+        <div class="flex flex-col items-end text-right [&>*]:min-h-9 lg:flex-row sm:[&>*]:min-h-0">
           <ThemeIndicator />
           <VersionButton />
         </div>

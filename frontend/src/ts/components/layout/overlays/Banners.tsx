@@ -60,13 +60,15 @@ function Banner(props: BannerType): JSXElement {
           />
           <Fa {...fa()} class="self-center xl:hidden" />
         </Show>
-        <div class="self-center p-2">{props.customContent ?? props.text}</div>
+        <div class="min-w-0 grow self-center p-2 [overflow-wrap:anywhere]">
+          {props.customContent ?? props.text}
+        </div>
         <Show
           when={props.important === true}
           fallback={
             <button
               type="button"
-              class="text -mr-2 self-center text-bg hover:text-text"
+              class="text -mr-2 min-h-9 min-w-9 items-center self-center text-bg hover:text-text sm:min-h-0 sm:min-w-0 sm:items-baseline"
               onClick={() => {
                 remove();
               }}

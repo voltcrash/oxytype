@@ -87,11 +87,11 @@ export function AccountPage(): JSXElement {
             />
             <TestStats queryState={queryState} />
 
-            <div class="grid grid-cols-3">
+            <div class="grid grid-cols-1 sm:grid-cols-3">
               <Button
                 text="Export CSV"
                 fa={{ icon: "fa-file-csv" }}
-                class="col-start-3 w-full"
+                class="w-full sm:col-start-3"
                 disabled={isExporting()}
                 onClick={() => {
                   setIsExporting(true);

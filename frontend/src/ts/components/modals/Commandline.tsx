@@ -128,11 +128,13 @@ function Suggestion(props: {
   return (
     <div
       class={cn(
-        "command grid cursor-pointer grid-cols-[auto_1fr] px-4 py-2 text-xs leading-3 text-sub select-none [&_i]:text-sub",
+        "command grid cursor-pointer grid-cols-[auto_minmax(0,1fr)] px-4 py-2 text-xs leading-3 text-sub select-none [&_i]:text-sub",
         "last:rounded-b-[var(--roundness)] [&>div]:pointer-events-none",
+        "min-h-10 items-center [overflow-wrap:anywhere] sm:min-h-0",
         commandlineState.activeIndex === props.index &&
           "active bg-text text-bg [&_i]:text-bg!",
-        theme() && "changeThemeCommand grid-cols-[auto_1fr_auto_auto]",
+        theme() &&
+          "changeThemeCommand grid-cols-[auto_minmax(0,1fr)_auto_auto]",
       )}
       data-command-id={props.command.id}
       data-index={props.index}
@@ -216,7 +218,7 @@ export function Commandline(): JSXElement {
       onEscape={onCommandlineEscape}
       onBackdropClick={onCommandlineBackdropClick}
       wrapperClass={cn(
-        "items-start px-8 py-24 transition-[background-color] duration-125",
+        "items-start px-2 pt-12 pb-2 transition-[background-color] duration-125 xs:px-4 sm:px-8 sm:py-24",
         commandlineState.noBackground && "bg-transparent",
       )}
       modalClass={cn(
@@ -253,7 +255,7 @@ export function Commandline(): JSXElement {
         />
       </div>
       <Show when={commandlineState.warning !== null}>
-        <div class="grid grid-cols-[auto_1fr] bg-sub-alt py-2 text-xs text-error">
+        <div class="grid grid-cols-[auto_minmax(0,1fr)] bg-sub-alt py-2 text-xs text-error [overflow-wrap:anywhere]">
           <div class="mx-[1.15rem]">
             <Fa icon="fa-exclamation-triangle" fixedWidth />
           </div>
@@ -262,7 +264,7 @@ export function Commandline(): JSXElement {
       </Show>
       <div
         class={cn(
-          "suggestions ffscroll grid max-h-[calc(100vh-15rem)] cursor-pointer overflow-y-scroll select-none",
+          "suggestions ffscroll grid max-h-[calc(100dvh-12rem)] cursor-pointer overflow-y-scroll select-none sm:max-h-[calc(100dvh-15rem)]",
           commandlineState.suggestions.length > 0 && "pb-2",
         )}
         ref={(el) => {

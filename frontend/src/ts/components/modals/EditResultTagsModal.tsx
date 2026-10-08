@@ -40,7 +40,7 @@ export function EditResultTagsModal() {
           {(tag) => (
             <Button
               text={tag.name}
-              class="w-full"
+              class="w-full min-h-10 min-w-0 [overflow-wrap:anywhere] sm:min-h-0"
               active={selectedTagIds().has(tag._id)}
               onClick={() => {
                 const current = new Set(selectedTagIds());

@@ -41,12 +41,12 @@ export function ResultReplay(): JSXElement {
     // left out of screenshots; own wrapper since slideDown/Up manage #resultReplay classes
     <div class={cn("contents", getIsScreenshotting() && "hidden")}>
       <div id="resultReplay" class="mb-4 hidden text-sub" ref={ref}>
-        <div class="title mb-1 flex items-center select-none">
+        <div class="title mb-1 flex flex-wrap items-center gap-y-1 select-none">
           watch replay
           <button
             type="button"
             id="playpauseReplayButton"
-            class="textButton ml-[0.5em] inline-block px-[0.25em] py-0"
+            class="textButton ml-[0.5em] inline-block px-[0.25em] py-0 max-sm:min-h-9 max-sm:min-w-9 max-sm:items-center"
             aria-label={playbackLabels[replay().playback]}
             data-balloon-pos="up"
             tabIndex={-1}
@@ -73,7 +73,7 @@ export function ResultReplay(): JSXElement {
               {(word, wordIndex) => (
                 <div
                   class={cn(
-                    "word relative m-[0.18rem_0.6rem_0.15rem_0]",
+                    "word relative m-[0.18rem_0.6rem_0.15rem_0] min-w-0",
                     word.error && "error",
                     resultState.joiningScript &&
                       "pb-[2px] [overflow-wrap:anywhere]",

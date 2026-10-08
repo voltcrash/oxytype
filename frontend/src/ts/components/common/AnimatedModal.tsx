@@ -338,9 +338,9 @@ export function AnimatedModal(props: AnimatedModalProps): JSXElement {
       id={props.domId ?? `${props.id as string}Modal`}
       ref={dialogRef}
       class={cn(
-        "fixed top-0 left-0 z-1000 m-0 hidden h-screen max-h-screen w-screen max-w-screen border-none bg-[rgba(0,0,0,0.5)] p-8 backdrop:bg-transparent",
+        "fixed top-0 left-0 z-1000 m-0 hidden max-h-dvh max-w-screen border-none bg-[rgba(0,0,0,0.5)] p-2 xs:p-4 sm:p-8 backdrop:bg-transparent",
         // Native open state survives reactive wrapperClass updates after hide.
-        "h-full w-full items-center justify-center open:flex",
+        "h-dvh w-full items-center justify-center open:flex",
         props.wrapperClass,
       )}
       onKeyDown={handleKeyDown}
@@ -361,7 +361,7 @@ export function AnimatedModal(props: AnimatedModalProps): JSXElement {
           onScroll={(e) => props.onScroll?.(e)}
         >
           <Show when={props.title !== undefined && props.title !== ""}>
-            <div class="text-2xl text-sub">{props.title}</div>
+            <div class="text-xl text-sub sm:text-2xl">{props.title}</div>
           </Show>
           {props.children}
         </div>

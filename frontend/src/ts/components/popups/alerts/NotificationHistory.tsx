@@ -64,18 +64,21 @@ function NotificationEntry(props: {
   notification: NotificationHistoryEntry;
 }): JSXElement {
   return (
-    <div class="grid h-min w-full grid-cols-[0.25rem_auto_max-content] gap-x-2 gap-y-1 [&_.buttons]:opacity-0 focus-within:[&_.buttons]:opacity-100 hover:[&_.buttons]:opacity-100">
+    <div class="grid h-min w-full grid-cols-[0.25rem_minmax(0,1fr)_max-content] gap-x-2 gap-y-1 [&_.buttons]:opacity-0 focus-within:[&_.buttons]:opacity-100 hover:[&_.buttons]:opacity-100 pointer-coarse:[&_.buttons]:opacity-100">
       <div
         class={cn(
           "row-span-2 h-full w-1 rounded-sm transition-colors duration-125",
           levelClass(props.notification.level),
         )}
       ></div>
-      <div class="text-xs text-sub">{props.notification.title}</div>
+      <div class="text-xs wrap-break-word text-sub">
+        {props.notification.title}
+      </div>
       <div class="buttons row-span-2 grid content-center gap-2 transition-opacity duration-125">
         <Show when={props.notification.details !== undefined}>
           <Button
             variant="text"
+            class="pointer-coarse:min-h-9 pointer-coarse:min-w-9"
             fa={{ icon: "fa-clipboard", fixedWidth: true }}
             balloon={{
               text: "Copy details to clipboard",

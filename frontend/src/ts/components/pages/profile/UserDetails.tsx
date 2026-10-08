@@ -59,7 +59,7 @@ export function UserDetails(props: {
     <div class="grid grid-cols-[1fr_minmax(0,2rem)] rounded bg-sub-alt">
       <div
         class={cn(
-          "grid items-center gap-4 p-4",
+          "grid grid-cols-[minmax(0,1fr)] items-center gap-4 p-4",
           variant() === "basic" && "md:grid-cols-[17.5rem_auto_1fr]",
           variant() === "hasBioOrKeyboard" &&
             "sm:grid-cols-2 md:grid-cols-[17.5rem_auto_auto_auto_1fr] lg:grid-cols-[17.5rem_auto_1fr_auto_2fr]",
@@ -241,7 +241,7 @@ function AvatarAndName(props: {
       {/* the avatar box is 1.25em, so 4rem fills the 5rem column */}
       <UserAvatar class="h-auto w-full place-self-center text-[4rem]" />
 
-      <div class="flex h-min flex-col gap-1 text-xs [&>div]:w-fit">
+      <div class="flex h-min min-w-0 flex-col gap-1 text-xs [&>div]:w-fit">
         <AutoShrink upperLimitRem={2} class="flex text-text">
           {props.profile.name}
 
@@ -346,7 +346,7 @@ function BioAndKeyboard(props: {
       ></div>
       <div
         class={cn(
-          "flex h-full flex-col content-center justify-around gap-2 overflow-hidden text-sm whitespace-pre-line",
+          "flex h-full flex-col content-center justify-around gap-2 overflow-hidden text-sm whitespace-pre-line [overflow-wrap:anywhere]",
           props.variant === "hasBioOrKeyboard" && "md:order-4",
           props.variant === "full" && "md:col-span-2 lg:order-4 lg:col-span-1",
         )}
@@ -477,7 +477,7 @@ function Socials(props: {
         </Show>
         <div
           class={cn(
-            "flex gap-2 text-2xl text-text md:flex-col lg:h-full lg:flex-col lg:justify-around [&>a]:p-0 [&>a]:text-text [&>a]:hover:text-main",
+            "flex gap-2 text-2xl text-text md:flex-col lg:h-full lg:flex-col lg:justify-around [&>a]:p-2 [&>a]:text-text [&>a]:hover:text-main md:[&>a]:p-0",
             props.variant === "full" && "md:flex-row",
           )}
         >

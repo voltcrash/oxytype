@@ -275,14 +275,17 @@ export function ResultWordsHistory(): JSXElement {
       class="relative mb-4 hidden text-sub"
       ref={ref}
     >
-      <div class="title mb-1 flex items-center select-none">
+      <div class="title mb-1 flex flex-wrap items-center gap-y-1 select-none">
         <span>input history</span>
         <For each={titleButtons}>
           {(button) => (
             <button
               type="button"
               id={button.id}
-              class={cn("textButton px-[0.25em] py-0", button.class)}
+              class={cn(
+                "textButton px-[0.25em] py-0 max-sm:min-h-9 max-sm:min-w-9 max-sm:items-center",
+                button.class,
+              )}
               aria-label={button.label}
               data-balloon-pos="up"
               tabIndex={-1}
@@ -329,7 +332,7 @@ export function ResultWordsHistory(): JSXElement {
           {(item, index) => (
             <div
               class={cn(
-                "word relative m-[0.18rem_0.6rem_0.15rem_0]",
+                "word relative m-[0.18rem_0.6rem_0.15rem_0] min-w-0",
                 item.typed && "nocursor",
                 item.error && "error",
                 wordHeat(item)?.inherit && "heatmapInherit",
