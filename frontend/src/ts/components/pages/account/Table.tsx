@@ -51,34 +51,36 @@ export function Table<M extends Mode>(props: {
       <Show when={selectedResult() !== undefined}>
         <MiniResultChart resultId={selectedResult() as string} />
       </Show>
-      <DataTable
-        id="resultList"
-        ref={props.ref}
-        onSortingChange={(val) => {
-          if (val.length === 0) {
-            props.onSortingChange({ field: "timestamp", direction: "desc" });
-          } else {
-            props.onSortingChange({
-              field: val[0]?.id as keyof SnapshotResult<Mode>,
-              direction: val[0]?.desc ? "desc" : "asc",
-            });
-          }
-        }}
-        class={cn("table-auto", "text-xs md:text-sm lg:text-base")}
-        // headerCellClass="p-1"
-        // bodyCellClass="p-1"
-        data={props.data}
-        columns={columns()}
-        fallback=<span>No data found. Check your filters.</span>
-        rowSelection={{
-          getRowId: (row) => row._id,
-          activeRow: props.selectedRowId,
-          class: cn(
-            "text-main [&>td>div]:text-main [&>td>div>a]:text-main",
-            "**:data-[ui-element='button']:[--themable-button-text:var(--text-main)]",
-          ),
-        }}
-      />
+      <div class="w-full overflow-x-auto">
+        <DataTable
+          id="resultList"
+          ref={props.ref}
+          onSortingChange={(val) => {
+            if (val.length === 0) {
+              props.onSortingChange({ field: "timestamp", direction: "desc" });
+            } else {
+              props.onSortingChange({
+                field: val[0]?.id as keyof SnapshotResult<Mode>,
+                direction: val[0]?.desc ? "desc" : "asc",
+              });
+            }
+          }}
+          class={cn("table-auto", "text-xs md:text-sm lg:text-base")}
+          // headerCellClass="p-1"
+          // bodyCellClass="p-1"
+          data={props.data}
+          columns={columns()}
+          fallback=<span>No data found. Check your filters.</span>
+          rowSelection={{
+            getRowId: (row) => row._id,
+            activeRow: props.selectedRowId,
+            class: cn(
+              "text-main [&>td>div]:text-main [&>td>div>a]:text-main",
+              "**:data-[ui-element='button']:[--themable-button-text:var(--text-main)]",
+            ),
+          }}
+        />
+      </div>
     </>
   );
 }
