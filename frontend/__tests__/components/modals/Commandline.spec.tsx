@@ -65,7 +65,7 @@ vi.mock("../../../src/ts/states/test", () => ({
   wordsHaveTab: () => false,
 }));
 vi.mock("../../../src/ts/states/hotkeys", () => ({
-  hotkeys: { commandline: "Escape", quickRestart: "Tab" },
+  hotkeys: { commandPalette: "Mod+K", quickRestart: "Tab" },
   quickRestartHotkeyMap: { off: "", esc: "Escape", tab: "Tab", enter: "Enter" },
 }));
 vi.mock("../../../src/ts/input/hotkeys/utils", () => ({
@@ -95,7 +95,7 @@ import {
 } from "../../../src/ts/states/core";
 import { hideModalAndClearChain } from "../../../src/ts/states/modals";
 import { isAnyPopupVisible } from "../../../src/ts/states/overlay-visibility";
-import "../../../src/ts/input/hotkeys/commandline";
+import "../../../src/ts/input/hotkeys/command-palette";
 import "../../../src/ts/input/hotkeys/quickrestart";
 
 describe("theme picker lifecycle", () => {
@@ -220,8 +220,8 @@ describe("theme picker lifecycle", () => {
           new KeyboardEvent("keydown", { key: "Tab" }),
         );
         expect(restart).toHaveBeenCalledWith({ isQuickRestart: true });
-        hotkeyHandlers.get("Escape")?.(
-          new KeyboardEvent("keydown", { key: "Escape" }),
+        hotkeyHandlers.get("Mod+K")?.(
+          new KeyboardEvent("keydown", { key: "k", ctrlKey: true }),
         );
         await waitFor(() => expect(dialog.open).toBe(true));
       } finally {
@@ -253,5 +253,22 @@ describe("theme picker lifecycle", () => {
       expect(isAnyPopupVisible()).toBe(false);
       expect(command.exec).toHaveBeenCalledTimes(cycle + 1);
     }
+  });
+
+  it("closes when the command palette hotkey is pressed inside it", async () => {
+    const view = render(() => <Commandline />);
+    const dialog = view.container.querySelector("dialog") as HTMLDialogElement;
+
+    show({ subgroupOverride: { title: "Font family...", list: [command] } });
+    await waitFor(() => expect(dialog.open).toBe(true));
+
+    fireEvent.keyDown(view.getByRole("textbox"), {
+      key: "k",
+      code: "KeyK",
+      // jsdom isn't mac, so mod is ctrl
+      ctrlKey: true,
+    });
+    await waitFor(() => expect(commandlineState.open).toBe(false));
+    expect(command.exec).not.toHaveBeenCalled();
   });
 });

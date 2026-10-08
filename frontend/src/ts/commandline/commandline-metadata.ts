@@ -31,6 +31,7 @@ type ConfigKeysWithoutCommands =
   | "themeLight"
   | "themeDark"
   | "burstHeatmap"
+  | "commandPaletteHotkey" //recorded via the settings page
   | "monkey";
 
 type SkippedConfigKeys =

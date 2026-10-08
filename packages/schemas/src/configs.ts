@@ -11,6 +11,15 @@ export type SmoothCaret = z.infer<typeof SmoothCaretSchema>;
 export const QuickRestartSchema = z.enum(["off", "esc", "tab", "enter"]);
 export type QuickRestart = z.infer<typeof QuickRestartSchema>;
 
+export const CommandPaletteHotkeySchema = z
+  .string()
+  .max(64)
+  .regex(/^(?:(?:Mod|Control|Alt|Shift|Meta)\+)*\S+$/, "Invalid hotkey")
+  .describe(
+    "Hotkey that opens the command palette, e.g. `Mod+K`. `Mod` is cmd on macOS and ctrl elsewhere.",
+  );
+export type CommandPaletteHotkey = z.infer<typeof CommandPaletteHotkeySchema>;
+
 export const QuoteLengthSchema = z.union([
   z.literal(-3),
   z.literal(-2),
@@ -418,6 +427,7 @@ export const ConfigSchema = z
     blindMode: z.boolean(),
     alwaysShowWordsHistory: z.boolean(),
     singleListCommandLine: SingleListCommandLineSchema,
+    commandPaletteHotkey: CommandPaletteHotkeySchema,
     minWpm: MinimumWordsPerMinuteSchema,
     minWpmCustomSpeed: MinWpmCustomSpeedSchema,
     minAcc: MinimumAccuracySchema,

@@ -6,6 +6,10 @@ import { getConfig } from "../config/store";
 import { wordsHaveNewline, wordsHaveTab, isLongTest } from "./test";
 import { getActivePage } from "./core";
 import { NoKey } from "../input/hotkeys/utils";
+import {
+  DEFAULT_COMMAND_PALETTE_HOTKEY,
+  getCommandPaletteHotkeyError,
+} from "../input/hotkeys/command-palette-hotkey";
 
 export const quickRestartHotkeyMap: Record<QuickRestart, Hotkey> = {
   off: NoKey,
@@ -16,7 +20,7 @@ export const quickRestartHotkeyMap: Record<QuickRestart, Hotkey> = {
 
 type Hotkeys = {
   quickRestart: Hotkey;
-  commandline: Hotkey;
+  commandPalette: Hotkey;
 };
 
 export const [hotkeys, setHotkeys] = createStore<Hotkeys>(updateHotkeys());
@@ -31,10 +35,7 @@ function updateHotkeys(): Hotkeys {
 
   const quickRestartIsTab = getConfig.quickRestart === "tab";
   const quickRestartIsEnter = getConfig.quickRestart === "enter";
-  // const quickRestartIsEsc = getConfig.quickRestart === "esc";
-
-  const commandlineIsTab = getConfig.quickRestart === "esc";
-  // const commandlineIsEsc = getConfig.quickRestart !== "esc";
+  const commandPalette = getCommandPaletteHotkey();
 
   return {
     quickRestart: shiftHotkey(
@@ -45,11 +46,23 @@ function updateHotkeys(): Hotkeys {
             quickRestartIsEnter) ||
           isLongTest()),
     ),
-    commandline: shiftHotkey(
-      commandlineIsTab ? "Tab" : "Escape",
-      isOnTestPage && wordsHaveTab() && commandlineIsTab,
+    commandPalette: shiftHotkey(
+      commandPalette,
+      isOnTestPage && wordsHaveTab() && commandPalette === "Tab",
     ),
   };
+}
+
+// the config can come from another platform (or an older client), so fall back
+// to the default instead of hijacking a shortcut that is reserved here
+function getCommandPaletteHotkey(): Hotkey {
+  const hotkey = getConfig.commandPaletteHotkey as Hotkey;
+  if (
+    getCommandPaletteHotkeyError(hotkey, getConfig.quickRestart) !== undefined
+  ) {
+    return DEFAULT_COMMAND_PALETTE_HOTKEY;
+  }
+  return hotkey;
 }
 
 function shiftHotkey(hotkey: Hotkey, shift: boolean): Hotkey {

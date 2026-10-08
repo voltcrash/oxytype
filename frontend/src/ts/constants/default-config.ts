@@ -65,6 +65,7 @@ const obj: Config = {
   alwaysShowDecimalPlaces: false,
   alwaysShowWordsHistory: false,
   singleListCommandLine: "on",
+  commandPaletteHotkey: "Mod+K",
   capsLockWarning: true,
   playSoundOnError: "off",
   playSoundOnClick: "off",

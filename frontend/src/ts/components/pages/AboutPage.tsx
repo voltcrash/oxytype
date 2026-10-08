@@ -15,7 +15,7 @@ import { Button } from "../common/Button";
 import { ChartJs } from "../common/ChartJs";
 import { H2, H3 } from "../common/Headers";
 import { Page } from "../common/Page";
-import { CommandlineHotkey } from "../hotkeys/CommandlineHotkey";
+import { CommandPaletteHotkey } from "../hotkeys/CommandPaletteHotkey";
 import { QuickRestartHotkey } from "../hotkeys/QuickRestartHotkey";
 
 export function AboutPage(): JSXElement {
@@ -207,8 +207,9 @@ export function AboutPage(): JSXElement {
           <H3 fa={{ icon: "fa-keyboard" }} text="keybinds" />
           <p>
             You can use <QuickRestartHotkey /> to restart the typing test. Open
-            the command line by pressing <CommandlineHotkey /> - there you can
-            access all the functionality you need without touching your mouse.
+            the command palette by pressing <CommandPaletteHotkey /> - there you
+            can access all the functionality you need without touching your
+            mouse.
           </p>
         </section>
         <section>
