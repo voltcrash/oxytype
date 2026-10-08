@@ -32,11 +32,3 @@ export function encode(value: unknown): string {
   }
   return data;
 }
-
-export function chunks<T>(items: T[], size = 50): T[][] {
-  const result: T[][] = [];
-  for (let offset = 0; offset < items.length; offset += size) {
-    result.push(items.slice(offset, offset + size));
-  }
-  return result;
-}

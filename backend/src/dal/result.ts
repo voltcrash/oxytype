@@ -38,12 +38,6 @@ export async function addResult(
   );
   return { insertedId: result._id };
 }
-export async function deleteAll(
-  uid: string,
-): Promise<{ acknowledged: boolean; deletedCount: number }> {
-  const result = await database().delete(results).where(eq(results.uid, uid));
-  return { acknowledged: true, deletedCount: result.meta.changes };
-}
 export async function updateTags(
   uid: string,
   resultId: string,
@@ -96,17 +90,6 @@ export async function getLastResultTimestamp(uid: string): Promise<number> {
     .get();
   if (!row) throw new MonkeyError(404, "No last result found");
   return row.timestamp;
-}
-export async function getResultByTimestamp(
-  uid: string,
-  timestamp: number,
-): Promise<DBResult | null> {
-  const row = await database()
-    .select()
-    .from(results)
-    .where(and(eq(results.uid, uid), eq(results.timestamp, timestamp)))
-    .get();
-  return row ? unpack(row) : null;
 }
 type GetResultsOpts = {
   onOrAfterTimestamp?: number;

@@ -110,6 +110,3 @@ export async function update(
   ]);
   return { message: "Successfully updated leaderboard" };
 }
-export async function createIndicies(): Promise<void> {
-  /* Applied by migrations. */
-}

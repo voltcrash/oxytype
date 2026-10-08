@@ -69,6 +69,3 @@ export async function removePreset(
     .where(and(eq(presets.id, presetId), eq(presets.uid, uid)));
   if (!result.meta.changes) throw new MonkeyError(404, "Preset not found");
 }
-export async function deleteAllPresets(uid: string): Promise<void> {
-  await database().delete(presets).where(eq(presets.uid, uid));
-}
