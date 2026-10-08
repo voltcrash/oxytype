@@ -53,18 +53,19 @@ function ReleaseItem(props: {
   bodyHTML: string;
 }): JSXElement {
   return (
-    <div class="grid gap-4">
+    <div class="grid min-w-0 gap-4">
       <div class="flex place-items-center justify-between">
         <div class="text-4xl text-main">{props.name}</div>
         <div class="text-sub">{props.publishedAt}</div>
       </div>
       <div
         class={cn(
-          "grid gap-4",
+          "grid min-w-0 gap-4 [overflow-wrap:anywhere]",
           "[&_h3]:mt-4 [&_h3]:text-xl [&_h3]:text-sub [&_h3:first-child]:mt-0",
           "[&_ul]:grid [&_ul]:gap-1",
           "[&_li]:relative [&_li]:pl-[2ch] [&_li]:before:absolute [&_li]:before:left-0 [&_li]:before:content-['-']",
           "[&_code]:rounded [&_code]:bg-sub-alt [&_code]:px-1",
+          "[&_pre]:max-w-full [&_pre]:overflow-x-auto",
         )}
         // oxlint-disable-next-line solid/no-innerhtml
         innerHTML={props.bodyHTML}
