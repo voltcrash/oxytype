@@ -168,7 +168,7 @@ export function LeaderboardPage(): JSXElement {
 
   return (
     <Page id="leaderboards">
-      <div class="content-grid flex flex-col gap-8 lg:flex-row">
+      <div class="content-grid flex flex-col gap-6 lg:flex-row lg:gap-8">
         <div class="w-full shrink-0 lg:w-60 2xl:w-75">
           <AsyncContent queries={{ serverConfigurationQuery }}>
             {({ serverConfigurationQueryData }) => (
@@ -184,7 +184,7 @@ export function LeaderboardPage(): JSXElement {
           </AsyncContent>
         </div>
 
-        <div class="flex w-full flex-1 flex-col gap-8">
+        <div class="flex w-full flex-1 flex-col gap-6 lg:gap-8">
           <Title
             selection={getSelection()}
             onPreviousSelect={() =>
