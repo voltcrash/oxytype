@@ -14,7 +14,7 @@
     }
   },
   "scripts": {
-    "dev": "vp pack --watch",
+    "dev": "vp pack --watch --no-clean",
     "build": "npm run madge && vp pack",
     "test": "vp test run",
     "madge": " madge --circular --extensions ts ./src",
