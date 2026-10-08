@@ -9,7 +9,7 @@ const conventionalSubject = /^(\w+)(?:\(([^)]+)\))?!?:\s+(.+)$/;
 const pullRequestSuffix = /\s+\(#(\d+)\)$/;
 const mergeSubject = /^Merge (?:pull request|branch|remote-tracking branch) /;
 
-export function escapeMarkdown(value) {
+function escapeMarkdown(value) {
   return value.replace(/[\\`*_[\]<>]/g, "\\$&");
 }
 
