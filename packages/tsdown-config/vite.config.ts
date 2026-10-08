@@ -11,7 +11,7 @@ export default defineConfig({
     dts: false,
   },
   lint: {
-    ignorePatterns: ["node_modules", "dist", ".turbo"],
+    ignorePatterns: ["node_modules", "dist"],
     extends: [sharedLint],
     options: {
       typeAware: false,
