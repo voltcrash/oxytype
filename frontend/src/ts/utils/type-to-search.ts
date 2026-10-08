@@ -8,3 +8,11 @@ export function isEditableElement(el: Element | null): boolean {
     el instanceof HTMLSelectElement
   );
 }
+
+// single printable characters, so shortcuts, navigation and space (which
+// activates the focused button) keep their default behavior
+export function isTypeToSearchKey(e: KeyboardEvent): boolean {
+  if (e.isComposing || [...e.key].length !== 1 || e.key === " ") return false;
+  // ctrl+alt is how AltGr characters arrive on windows
+  return !e.metaKey && (!e.ctrlKey || e.getModifierState("AltGraph"));
+}
