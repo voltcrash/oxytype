@@ -41,6 +41,7 @@ export function VersionHistoryModal(): JSXElement {
           href="https://github.com/voltcrash/oxytype/releases"
           text="Older releases on GitHub"
           fa={{ icon: "fa-arrow-up-right-from-square" }}
+          class="w-full py-3 sm:w-auto sm:py-[0.5em]"
         />
       </div>
     </AnimatedModal>
