@@ -156,8 +156,8 @@ function SettingsSection(props: {
   return (
     <label
       class={cn(
-        "grid grid-cols-[auto_1fr] items-center gap-2",
-        props.hideCheckbox && "grid-cols-1",
+        "grid grid-cols-[1fr_auto] items-center gap-2 sm:grid-cols-[auto_1fr]",
+        props.hideCheckbox && "grid-cols-1 sm:grid-cols-1",
       )}
     >
       <div class="grid gap-1">
