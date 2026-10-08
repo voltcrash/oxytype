@@ -361,9 +361,6 @@ export function debounceUntilResolved<TArgs extends unknown[], TResult>(
   };
 }
 
-export type RequiredProperties<T, K extends keyof T> = Omit<T, K> &
-  Required<Pick<T, K>>;
-
 function isPlatform(searchTerm: string | RegExp): boolean {
   // oxlint-disable-next-line no-deprecated
   const platform = navigator.platform;
