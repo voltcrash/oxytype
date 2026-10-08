@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vite-plus/test";
-import * as generate from "../../src/ts/utils/generate";
+import * as generate from "../src/generate";
 
 describe("hexadecimal", () => {
   it("should generate a random hexadecimal string", () => {
