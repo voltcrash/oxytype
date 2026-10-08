@@ -9,7 +9,7 @@ import {
   WpmSchema,
 } from "./util";
 import { LanguageSchema } from "./languages";
-import { Mode, Mode2, Mode2Schema, ModeSchema } from "./shared";
+import { ClientSchema, Mode, Mode2, Mode2Schema, ModeSchema } from "./shared";
 import { DifficultySchema, FunboxSchema } from "./configs";
 import { ChallengeNameSchema } from "./challenges";
 
@@ -69,6 +69,7 @@ export const CharStatsSchema = z.tuple([
 export type CharStats = z.infer<typeof CharStatsSchema>;
 
 const ResultBaseSchema = z.object({
+  client: ClientSchema.optional(),
   wpm: WpmSchema,
   rawWpm: WpmSchema,
   charStats: CharStatsSchema,
@@ -137,6 +138,7 @@ export const CompletedEventSchema = ResultBaseSchema.required({
   punctuation: true,
 })
   .extend({
+    client: ClientSchema.default("web"),
     charTotal: z.number().int().nonnegative(),
     challenge: ChallengeNameSchema.optional(),
     customText: CompletedEventCustomTextSchema.optional(),
