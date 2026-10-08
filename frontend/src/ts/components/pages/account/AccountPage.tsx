@@ -7,6 +7,8 @@ import {
   useResultsLiveQuery,
 } from "../../../collections/results";
 import { SnapshotResult } from "../../../constants/default-snapshot";
+import { createEffectOn } from "../../../hooks/effects";
+import { useClientSelection } from "../../../hooks/useClientSelection";
 import { useRef } from "../../../hooks/useRef";
 import { getActivePage, isAuthenticated } from "../../../states/core";
 import { hideLoaderBar, showLoaderBar } from "../../../states/loader-bar";
@@ -14,6 +16,7 @@ import { filters, setFilters } from "../../../states/result-filters";
 import { downloadResultsCSV } from "../../../utils/misc";
 import AsyncContent from "../../common/AsyncContent";
 import { Button } from "../../common/Button";
+import { ClientToggle } from "../../common/ClientToggle";
 import { Page } from "../../common/Page";
 import { Charts } from "./Charts";
 import { Filters } from "./Filters";
@@ -22,6 +25,7 @@ import { Table } from "./Table";
 import { TestStats } from "./TestStats";
 
 export function AccountPage(): JSXElement {
+  const [client, setClient] = useClientSelection();
   const [tableRef, tableElement] = useRef<HTMLTableElement>();
   const [limit, setLimit] = createSignal(10);
 
@@ -36,13 +40,17 @@ export function AccountPage(): JSXElement {
   const queryState = createMemo(() => {
     if (getActivePage() !== "account" || !isAuthenticated()) return undefined;
 
-    return createResultsQueryState(filters);
+    return createResultsQueryState(filters, client());
   });
 
   const [selectedResultId, setSelectedResultId] = createSignal<null | string>(
     null,
   );
   const [isExporting, setIsExporting] = createSignal(false);
+  createEffectOn(client, () => {
+    setLimit(10);
+    setSelectedResultId(null);
+  });
 
   const resultsQuery = useResultsLiveQuery({
     queryState,
@@ -53,7 +61,8 @@ export function AccountPage(): JSXElement {
   return (
     <Page id="account" needsAuthentication>
       <div class="flex flex-col gap-8">
-        <MyProfile />
+        <ClientToggle value={client()} onChange={setClient} />
+        <MyProfile client={client()} />
 
         <Filters filters={filters} onChangeFilters={setFilters} />
 
