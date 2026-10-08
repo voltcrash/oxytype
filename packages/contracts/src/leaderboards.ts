@@ -87,6 +87,7 @@ export type GetDailyLeaderboardResponse = z.infer<
 
 //--------------------------------------------------------------------------
 
+/** @alias */
 export const GetDailyLeaderboardRankQuerySchema = DailyLeaderboardQuerySchema;
 
 export type GetDailyLeaderboardRankQuery = z.infer<
