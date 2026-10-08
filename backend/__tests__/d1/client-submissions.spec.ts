@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
 import objectHash from "object-hash";
 import type { ExecutionContext } from "@cloudflare/workers-types";
@@ -207,5 +209,59 @@ describe("web, terminal and offline result submissions", () => {
     );
     expect((await submit(result)).status).toBe(200);
     expect((await submit(result)).status).toBe(466);
+  });
+  it("saves the recorded terminal transport fixture through production anticheat", async () => {
+    await test.env.DB.prepare(
+      "UPDATE results SET timestamp=timestamp-120000 WHERE uid=?",
+    )
+      .bind(uid)
+      .run();
+    const fixture = JSON.parse(
+      readFileSync(
+        resolve(__dirname, "../__testData__/terminal-words-10.json"),
+        "utf8",
+      ),
+    ) as { result: CompletedEvent };
+    const response = await submit({
+      ...fixture.result,
+      uid,
+      timestamp: Date.now(),
+    });
+    expect(response.status, await response.clone().text()).toBe(200);
+  });
+  it("applies terminal bot detection at high speeds without needing key releases", async () => {
+    await test.env.DB.prepare(
+      "UPDATE results SET timestamp=timestamp-120000 WHERE uid=?",
+    )
+      .bind(uid)
+      .run();
+    const result = completedEvent({
+      uid,
+      client: "tui",
+      wpm: 160,
+      rawWpm: 160,
+      acc: 100,
+      charStats: [400, 0, 0, 0],
+      charTotal: 400,
+      keySpacing: Array.from({ length: 399 }, () => 75),
+      keyDuration: Array.from({ length: 400 }, () => 0),
+      keyOverlap: 0,
+      keyConsistency: 100,
+      lastKeyToEnd: 75,
+    });
+    expect((await submit(result)).status).toBe(465);
+    await test.env.DB.prepare(
+      "UPDATE results SET timestamp=timestamp-120000 WHERE uid=?",
+    )
+      .bind(uid)
+      .run();
+    const keySpacing = Array.from({ length: 399 }, (_, i) => 60 + (i % 7) * 4);
+    const response = await submit({
+      ...result,
+      keySpacing,
+      keyConsistency: consistency(keySpacing.slice(0, -1)),
+      lastKeyToEnd: 30_000 - keySpacing.reduce((sum, value) => sum + value, 0),
+    });
+    expect(response.status, await response.clone().text()).toBe(200);
   });
 });
