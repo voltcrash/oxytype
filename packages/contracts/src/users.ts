@@ -30,6 +30,8 @@ import {
   UserNameSchema,
 } from "@oxytype/schemas/users";
 import {
+  ClientSchema,
+  ClientQuerySchema,
   Mode2Schema,
   ModeSchema,
   PersonalBestSchema,
@@ -83,6 +85,7 @@ export type UpdateLeaderboardMemoryRequest = z.infer<
 >;
 
 export const GetPersonalBestsQuerySchema = z.object({
+  client: ClientSchema.optional(),
   mode: ModeSchema,
   mode2: Mode2Schema.optional(),
 });
@@ -212,6 +215,7 @@ export type GetProfilePathParams = z.infer<typeof GetProfilePathParamsSchema>;
 
 //TODO test?!
 export const GetProfileQuerySchema = z.object({
+  client: ClientSchema.optional(),
   isUid: z
     .string()
     .length(0)
@@ -300,6 +304,7 @@ export const usersContract = c.router(
       description: "Get a user's data.",
       method: "GET",
       path: "",
+      query: ClientQuerySchema.strict(),
       responses: {
         200: GetUserResponseSchema,
       },
@@ -413,6 +418,7 @@ export const usersContract = c.router(
       method: "DELETE",
       path: "/personalBests",
       body: c.noBody(),
+      query: ClientQuerySchema.strict(),
       responses: {
         200: MonkeyResponseSchema,
       },
@@ -477,6 +483,7 @@ export const usersContract = c.router(
       description: "Get the users tags",
       method: "GET",
       path: "/tags",
+      query: ClientQuerySchema.strict(),
       responses: {
         200: GetTagsResponseSchema,
       },
@@ -526,6 +533,7 @@ export const usersContract = c.router(
       }),
     },
     deleteTagPersonalBest: {
+      query: ClientQuerySchema.strict(),
       summary: "delete tag PBs",
       description: "Delete personal bests of a tag",
       method: "DELETE",
@@ -595,6 +603,7 @@ export const usersContract = c.router(
       description: "Gets a user's typing stats data",
       method: "GET",
       path: "/stats",
+      query: ClientQuerySchema.strict(),
       responses: {
         200: GetStatsResponseSchema,
       },
@@ -609,6 +618,7 @@ export const usersContract = c.router(
       method: "POST",
       path: "/setStreakHourOffset",
       body: SetStreakHourOffsetRequestSchema.strict(),
+      query: ClientQuerySchema.strict(),
       responses: {
         200: MonkeyResponseSchema,
       },
@@ -761,6 +771,7 @@ export const usersContract = c.router(
       description: "Get user's test activity",
       method: "GET",
       path: "/testActivity",
+      query: ClientQuerySchema.strict(),
       responses: {
         200: GetTestActivityResponseSchema,
       },
@@ -774,6 +785,7 @@ export const usersContract = c.router(
         "Get test activity for the last up to 372 days for the current user ",
       method: "GET",
       path: "/currentTestActivity",
+      query: ClientQuerySchema.strict(),
       responses: {
         200: GetCurrentTestActivityResponseSchema,
       },
@@ -787,6 +799,7 @@ export const usersContract = c.router(
       description: "Get user's streak data",
       method: "GET",
       path: "/streak",
+      query: ClientQuerySchema.strict(),
       responses: {
         200: GetStreakResponseSchema,
       },
