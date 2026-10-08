@@ -1,3 +1,4 @@
+import { shouldBlockInsertion } from "@oxytype/typing-core/input/engine";
 import { Config } from "../../config/store";
 import * as TestUI from "../../test/test-ui";
 import * as TestWords from "../../test/test-words";
@@ -14,7 +15,6 @@ import {
 import { shouldGoToNextWord } from "../helpers/validation";
 import { getCommitCharacterType, normalizeData } from "../helpers/util";
 import { getCurrentInput } from "../../test/events/data";
-import { isSpace } from "../../utils/strings";
 
 /**
  * Handles logic before inserting text into the input element.
@@ -34,16 +34,6 @@ export function onBeforeInsertText(data: string): boolean {
     return true;
   }
 
-  //only allow newlines if the test has newlines or in zen mode
-  if (data === "\n" && !wordsHaveNewline() && Config.mode !== "zen") {
-    return true;
-  }
-
-  //prevent space in nospace funbox
-  if (isSpace(data) && isFunboxActiveWithProperty("nospace")) {
-    return true;
-  }
-
   const { inputValue } = getInputElementValue();
   const currentWordObj = TestWords.words.getCurrent();
   const currentWordTextWithCommit = currentWordObj?.textWithCommit ?? "";
@@ -59,36 +49,23 @@ export function onBeforeInsertText(data: string): boolean {
     targetWord: currentWordTextWithCommit,
   });
 
-  //prevent separator from being inserted if input is empty
-  //some conditions may override this
-  //the hard delete on error variants need the separator to reach onInsertText
-  //so it can be counted as a mistake and send the user back a word - it can
-  //never be a mistake in zen, so dont let it through there
-  const deleteOnErrorIsHard =
-    Config.mode !== "zen" &&
-    (Config.deleteOnError === "letter_hard" ||
-      Config.deleteOnError === "word_hard");
-  const allowFirstSeparator =
-    Config.strictSpace || Config.difficulty !== "normal" || deleteOnErrorIsHard;
-  if (isSpace(data) && inputValue === "" && !allowFirstSeparator) {
+  if (
+    shouldBlockInsertion(Config, {
+      data,
+      inputValue,
+      targetWord: currentWordTextWithCommit,
+      nospace: isFunboxActiveWithProperty("nospace"),
+      hasNewline: wordsHaveNewline(),
+    })
+  ) {
     return true;
   }
-
-  // block input if the word is too long
-  const inputLimit =
-    Config.mode === "zen" ? 30 : currentWordTextWithCommit.length + 20;
-  const overLimit = inputValue.length >= inputLimit;
   const goingToNextWord = shouldGoToNextWord({
     data,
     inputValue,
     targetWord: currentWordTextWithCommit,
     commitCharacterType,
   });
-
-  if (overLimit && !goingToNextWord) {
-    console.error("Hitting word limit");
-    return true;
-  }
 
   // prevent the word from jumping to the next line if the word is too long
   // this will not work for the first word of each line, but that has a low chance of happening
