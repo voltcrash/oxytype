@@ -24,9 +24,8 @@ export type Mark = { id: string; videoMs: number; sync?: SyncKind };
 
 export const [getStage, setStage] = createSignal<Stage>("input");
 export const [getRaw, setRaw] = createSignal("");
-export const [getEventLog, setEventLogSignal] = createSignal<EventLog | null>(
-  null,
-);
+const [getEventLog, setEventLogSignal] = createSignal<EventLog | null>(null);
+export { getEventLog };
 export const [getError, setError] = createSignal<string | null>(null);
 
 export const [getCurrentMs, setCurrentMs] = createSignal(0);
@@ -41,9 +40,8 @@ export const [getEventToMark, setEventToMark] = createSignal<
 >({});
 export const [getSyncEnabled, setSyncEnabled] = createSignal(false);
 
-export const [getVideoUrl, setVideoUrlSignal] = createSignal<string | null>(
-  null,
-);
+const [getVideoUrl, setVideoUrlSignal] = createSignal<string | null>(null);
+export { getVideoUrl };
 
 export const [getDistributionOpen, setDistributionOpen] = createSignal(true);
 export const [getScatterOpen, setScatterOpen] = createSignal(true);
@@ -53,7 +51,7 @@ export function nextMarkId(): string {
   return `mark-${++markSerial}`;
 }
 
-export function getEventLogMaxMs(log: EventLog): number {
+function getEventLogMaxMs(log: EventLog): number {
   return Math.ceil(
     log.events.reduce(
       (max, event) => (event.testMs > max ? event.testMs : max),
