@@ -23,7 +23,6 @@
     "madge": "8.0.0",
     "typescript": "7.0.2",
     "vite-plus": "catalog:",
-    "vitest": "catalog:",
     "zod": "4.6.5"
   }
 }

@@ -886,9 +886,6 @@ importers:
       vite-plus:
         specifier: 'catalog:'
         version: 1.0.0(@opentelemetry/api@1.9.1)(@types/node@24.19.0)(@vitest/browser-playwright@5.0.3)(@vitest/coverage-v8@5.0.3)(@vitest/ui@5.0.3)(esbuild@0.27.7)(happy-dom@20.8.9)(jiti@2.7.0)(jsdom@27.4.0(@noble/hashes@1.8.0)(supports-color@10.2.2))(sass@1.98.0)(terser@5.49.1)(tsx@4.21.0)(typescript@7.0.2)(yaml@2.9.1)
-      vitest:
-        specifier: 'catalog:'
-        version: 5.0.3(@opentelemetry/api@1.9.1)(@types/node@24.19.0)(@vitest/browser-playwright@5.0.3)(@vitest/browser-preview@5.0.3)(@vitest/coverage-v8@5.0.3)(@vitest/ui@5.0.3)(@voidzero-dev/vite-plus-core@1.0.0(@types/node@24.19.0)(esbuild@0.27.7)(jiti@2.7.0)(sass@1.98.0)(terser@5.49.1)(tsx@4.21.0)(typescript@7.0.2)(yaml@2.9.1))(esbuild@0.27.7)(happy-dom@20.8.9)(jiti@2.7.0)(jsdom@27.4.0(@noble/hashes@1.8.0)(supports-color@10.2.2))(sass@1.98.0)(terser@5.49.1)(tsx@4.21.0)(typescript@7.0.2)(yaml@2.9.1)
       zod:
         specifier: 4.6.5
         version: 4.6.5
