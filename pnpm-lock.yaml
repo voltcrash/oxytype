@@ -833,6 +833,24 @@ importers:
 
   packages/typescript-config: {}
 
+  packages/typing-core:
+    devDependencies:
+      '@oxytype/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: 24.19.0
+        version: 24.19.0
+      madge:
+        specifier: 8.0.0
+        version: 8.0.0(supports-color@10.2.2)(typescript@7.0.2)
+      typescript:
+        specifier: 7.0.2
+        version: 7.0.2
+      vite-plus:
+        specifier: 'catalog:'
+        version: 1.0.0(@opentelemetry/api@1.9.1)(@types/node@24.19.0)(@vitest/coverage-v8@5.0.3)(@vitest/ui@5.0.3)(esbuild@0.27.7)(happy-dom@20.14.5)(jiti@2.7.0)(jsdom@30.1.1(@noble/hashes@1.8.0))(sass@1.105.1)(terser@5.49.1)(tsx@4.23.15)(typescript@7.0.2)(yaml@2.9.1)
+
   packages/util:
     devDependencies:
       '@oxytype/typescript-config':
