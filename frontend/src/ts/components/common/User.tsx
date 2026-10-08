@@ -119,7 +119,7 @@ export function User(props: Props): JSXElement {
         </div>
       </Show>
       <div
-        class={cn(props.fontClass, {
+        class={cn("min-w-0 truncate", props.fontClass, {
           "hidden sm:block": props.hideNameOnSmallScreens,
         })}
       >
