@@ -36,7 +36,7 @@ export function UserRank(props: {
     }
 
     return (
-      <div class="text-[1em]">
+      <div class="text-[1em] whitespace-normal">
         <div>You ({percentileString})</div>
         <div class="hidden text-em-xs text-sub sm:block sm:text-em-sm">
           {" "}
