@@ -10,7 +10,7 @@ if [ "$(git symbolic-ref --short HEAD)" = "master" ]; then
   esac
   nvm install
   echo "Running a full check before pushing to master..."
-  pnpm run full-check
+  vp run full-check
   if [ $? -ne 0 ]; then
     echo "Full check failed, aborting push."
     exit 1

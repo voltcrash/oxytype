@@ -8,4 +8,4 @@ fi
 
 
 nvm install
-pnpm i
+vp install
