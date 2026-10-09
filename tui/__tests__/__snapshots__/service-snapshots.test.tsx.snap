@@ -4,9 +4,7 @@ exports[`guest and authenticated account snapshots: guest account 1`] = `
 "
  oxytype   test   settings   account   leaderboards   history       serika dark
 
- account
- not logged in · guest
- enter log in  r reconnect  l log out
+ not logged in  guest
  config local · 0 queued uploads
 
 
@@ -23,6 +21,8 @@ exports[`guest and authenticated account snapshots: guest account 1`] = `
 
 
 
+
+ enter log in  r reconnect
  esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 
 "
@@ -32,17 +32,16 @@ exports[`guest and authenticated account snapshots: authenticated account 1`] = 
 "
  oxytype   test   settings   account   leaderboards   history       serika dark
 
- account
- Tester · authenticated
- enter log in  r reconnect  l log out
+ Tester  authenticated
  config synced · 0 queued uploads
 
- tui stats · tab switch client · ↑↓ PB pages
- Tester · 100 xp · streak 2 (max 3)
- 7 completed · 8 started · 0.0 hours
- personal bests · 0 · page 1/1
+  tui stats   web stats
+
+ xp     streak       completed    started    time typing
+ 100    2 (max 3)    7            8          0.0h
+
+ personal bests  0 · page 1/1
  no personal bests yet
- h history  t tags  p presets
 
 
 
@@ -51,6 +50,7 @@ exports[`guest and authenticated account snapshots: authenticated account 1`] = 
 
 
 
+ r reconnect  l log out  tab client  ↑↓ PB pages  h history  t tags  p presets
  esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 
 "

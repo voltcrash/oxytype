@@ -115,12 +115,12 @@ describe("connected account screens", () => {
       expect(frame).not.toContain("private-session-token");
       await app.escape();
       release(token);
-      await app.waitForFrame((next) => next.includes("not logged in · guest"));
+      await app.waitForFrame((next) => next.includes("not logged in  guest"));
       app.mockInput.pressEnter();
       await app.waitForFrame((next) => next.includes("code ABCD-1234"));
       release(token);
       await app.waitForFrame((next) => next.includes("config synced"));
-      expect(await app.frame()).toContain("Tester · authenticated");
+      expect(await app.frame()).toContain("Tester  authenticated");
       app.mockInput.pressKey("l");
       await app.waitForFrame((next) => next.includes("Logged out"));
       expect(

@@ -10,6 +10,8 @@ import { KeyHints, parseHints } from "../ui/key-hints";
 import { ProfileStats } from "../ui/profile-stats";
 import { createRemote, dataOrThrow } from "../ui/remote";
 import { RemoteStatus } from "../ui/remote-status";
+import { StyledLine } from "../ui/styled";
+import { Tabs } from "../ui/tabs";
 
 export function AccountScreen() {
   const auth = useAuth();
@@ -64,8 +66,7 @@ export function AccountScreen() {
     }
   });
   return (
-    <box flexDirection="column" width="100%" gap={0}>
-      <text fg={theme().colors.main}>account</text>
+    <box flexDirection="column" width="100%" gap={1} flexGrow={1}>
       <Show
         when={auth}
         fallback={
@@ -73,33 +74,16 @@ export function AccountScreen() {
         }
       >
         {(store) => (
-          <>
-            <text fg={theme().colors.text}>
-              {store().user()?.name ?? "not logged in"} · {store().state()}
-            </text>
-            <Show when={store().device()}>
-              {(device) => (
-                <>
-                  <text fg={theme().colors.main}>
-                    code {device().user_code}
-                  </text>
-                  <text fg={theme().colors.text} wrapMode="char">
-                    {device().verification_uri_complete ??
-                      device().verification_uri}
-                  </text>
-                  <text fg={theme().colors.sub}>
-                    approve this code in your browser
-                  </text>
-                  <KeyHints hints={parseHints("esc cancel")} />
-                </>
-              )}
-            </Show>
-            <Show when={store().notice()}>
-              {(notice) => <text fg={theme().colors.error}>{notice()}</text>}
-            </Show>
-            <KeyHints
-              wrap
-              hints={parseHints("enter log in · r reconnect · l log out")}
+          <box flexDirection="column" flexShrink={0}>
+            <StyledLine
+              chunks={[
+                {
+                  text: store().user()?.name ?? "not logged in",
+                  fg: theme().colors.text,
+                  bold: true,
+                },
+                { text: `  ${store().state()}`, fg: theme().colors.sub },
+              ]}
             />
             <Show when={account}>
               {(service) => (
@@ -113,33 +97,90 @@ export function AccountScreen() {
                     }{" "}
                     queued uploads
                   </text>
-                  <text fg={theme().colors.error}>
-                    {service().sync.notice() ??
+                  <Show
+                    when={
+                      service().sync.notice() ??
                       service().uploads.notice() ??
-                      service().queue.notice() ??
-                      ""}
-                  </text>
+                      service().queue.notice()
+                    }
+                  >
+                    {(notice) => (
+                      <text fg={theme().colors.error}>{notice()}</text>
+                    )}
+                  </Show>
                 </>
               )}
             </Show>
-          </>
+            <Show when={store().notice()}>
+              {(notice) => <text fg={theme().colors.error}>{notice()}</text>}
+            </Show>
+            <Show when={store().device()}>
+              {(device) => (
+                <box
+                  flexDirection="column"
+                  border
+                  borderStyle="rounded"
+                  borderColor={theme().colors.main}
+                  title=" sign in "
+                  titleColor={theme().colors.main}
+                  paddingLeft={1}
+                  paddingRight={1}
+                  marginTop={1}
+                  flexShrink={0}
+                >
+                  <StyledLine
+                    chunks={[
+                      { text: "code ", fg: theme().colors.sub },
+                      {
+                        text: device().user_code,
+                        fg: theme().colors.main,
+                        bold: true,
+                      },
+                    ]}
+                  />
+                  <text fg={theme().colors.text} wrapMode="char">
+                    {device().verification_uri_complete ??
+                      device().verification_uri}
+                  </text>
+                  <text fg={theme().colors.sub}>
+                    approve this code in your browser
+                  </text>
+                  <KeyHints hints={parseHints("esc cancel")} />
+                </box>
+              )}
+            </Show>
+          </box>
         )}
       </Show>
       <Show when={auth?.user()}>
-        <text fg={theme().colors.main}>
-          {client()} stats · tab switch client · ↑↓ PB pages
-        </text>
+        <Tabs
+          tabs={(["tui", "web"] as const).map((it) => ({
+            label: `${it} stats`,
+            active: client() === it,
+          }))}
+        />
         <RemoteStatus loading={profile.loading()} error={profile.error()} />
         <Show when={profile.data()}>
           {(value) => (
             <ProfileStats
               profile={value()}
-              height={Math.max(1, dimensions().height - 20)}
+              hideName
+              height={Math.max(1, dimensions().height - 24)}
               page={page()}
             />
           )}
         </Show>
-        <KeyHints wrap hints={parseHints("h history · t tags · p presets")} />
+      </Show>
+      <box flexGrow={1} />
+      <Show when={auth}>
+        <KeyHints
+          wrap
+          hints={parseHints(
+            auth?.user() === undefined
+              ? "enter log in · r reconnect"
+              : "r reconnect · l log out · tab client · ↑↓ PB pages · h history · t tags · p presets",
+          )}
+        />
       </Show>
     </box>
   );

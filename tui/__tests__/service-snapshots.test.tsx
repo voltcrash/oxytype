@@ -117,7 +117,7 @@ test("guest and authenticated account snapshots", async () => {
   );
   expect(snapshot(await app.frame())).toMatchSnapshot("guest account");
   await service.account.auth.login();
-  await app.waitForFrame((frame) => frame.includes("100 xp"));
+  await app.waitForFrame((frame) => frame.includes("time typing"));
   expect(snapshot(await app.frame())).toMatchSnapshot("authenticated account");
 });
 

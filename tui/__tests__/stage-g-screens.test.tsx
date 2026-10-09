@@ -96,9 +96,10 @@ describe("Stage G screens", () => {
     );
     await client.account.auth.login();
     const app = await renderApp({ ...client, initialScreen: "account" });
-    await app.waitForFrame((frame) => frame.includes("100 xp"));
+    // The stat grid puts xp first: its value starts the row under the labels.
+    await app.waitForFrame((frame) => /^ +100 {2,}/m.test(frame));
     app.mockInput.pressTab();
-    await app.waitForFrame((frame) => frame.includes("200 xp"));
+    await app.waitForFrame((frame) => /^ +200 {2,}/m.test(frame));
     expect([
       ...new Set(
         client.requests
