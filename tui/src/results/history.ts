@@ -35,6 +35,9 @@ export type HistoryEntry = {
 export type HistoryStore = {
   entries: Accessor<readonly HistoryEntry[]>;
   notice: Accessor<string | undefined>;
+  lastSave: Accessor<
+    { result: LocalResult; state: "saving" | "saved" | "error" } | undefined
+  >;
   add: (test: FinishedTest) => Promise<boolean>;
   flush: () => Promise<void>;
 };
@@ -48,24 +51,39 @@ export function createHistoryStore(
     initial.sort((a, b) => b.result.timestamp - a.result.timestamp),
   );
   const [notice, setNotice] = createSignal<string | undefined>(warning);
+  const [lastSave, setLastSave] = createSignal<{
+    result: LocalResult;
+    state: "saving" | "saved" | "error";
+  }>();
   let pending = Promise.resolve();
   return {
     entries,
     notice,
+    lastSave,
     add: async (test) => {
       if (test.invalid !== undefined || test.result.client !== "tui") {
         return false;
       }
-      const entry = entrySchema.parse({
+      const parsed = entrySchema.safeParse({
         id: crypto.randomUUID(),
         result: test.result,
         rawHistory: test.rawHistory,
       });
+      if (!parsed.success) {
+        setNotice("Result could not be stored: invalid result data");
+        setLastSave({ result: test.result, state: "error" });
+        return false;
+      }
+      const entry = parsed.data;
       setEntries((previous) =>
         [entry, ...previous].sort(
           (a, b) => b.result.timestamp - a.result.timestamp,
         ),
       );
+      setLastSave({
+        result: test.result,
+        state: file === undefined ? "saved" : "saving",
+      });
       if (file === undefined) return true;
       const snapshot = { version: 1, entries: entries() };
       const write = async (): Promise<void> => {
@@ -76,8 +94,14 @@ export function createHistoryStore(
       try {
         await pending;
         setNotice(undefined);
+        if (lastSave()?.result === test.result) {
+          setLastSave({ result: test.result, state: "saved" });
+        }
         return true;
       } catch (error) {
+        if (lastSave()?.result === test.result) {
+          setLastSave({ result: test.result, state: "error" });
+        }
         setNotice(
           error instanceof Error
             ? error.message

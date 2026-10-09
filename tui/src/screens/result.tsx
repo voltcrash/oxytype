@@ -18,6 +18,15 @@ export function ResultScreen() {
   const { config } = useConfig();
   const dimensions = useTerminalDimensions();
   const format = (): Formatting => new Formatting(config);
+  const saveMessage = (): string => {
+    const save = history.lastSave();
+    if (save === undefined || save.result !== test.result()?.result) {
+      return "result saving disabled";
+    }
+    if (save.state === "saving") return "saving locally…";
+    if (save.state === "error") return "local save failed";
+    return "saved locally · offline";
+  };
   const next = (repeat = false): void => {
     void test.restart(repeat);
     router.replace("test");
@@ -72,11 +81,7 @@ export function ResultScreen() {
               </text>
             </Show>
             <Show when={finished().invalid === undefined}>
-              <text fg={theme().colors.sub}>
-                {config.resultSaving
-                  ? "saved locally · offline"
-                  : "result saving disabled"}
-              </text>
+              <text fg={theme().colors.sub}>{saveMessage()}</text>
             </Show>
             <Show when={history.notice()}>
               {(notice) => <text fg={theme().colors.error}>{notice()}</text>}
