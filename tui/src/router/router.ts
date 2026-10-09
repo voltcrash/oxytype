@@ -8,6 +8,8 @@ import type { ScreenStack } from "./stack";
 import { currentScreen, popScreen, pushScreen, replaceScreen } from "./stack";
 
 export type Router = {
+  profileName: Accessor<string>;
+  openProfile: (name: string) => void;
   stack: Accessor<ScreenStack>;
   current: Accessor<ScreenId>;
   push: (screen: ScreenId) => void;
@@ -18,9 +20,15 @@ export type Router = {
 };
 
 export function createRouter(initial: ScreenId): Router {
+  const [profileName, setProfileName] = createSignal("");
   const [stack, setStack] = createSignal<ScreenStack>([initial]);
 
   return {
+    profileName,
+    openProfile: (name) => {
+      setProfileName(name);
+      setStack((it) => pushScreen(it, "profile"));
+    },
     stack,
     current: () => currentScreen(stack()),
     push: (screen) => setStack((it) => pushScreen(it, screen)),
