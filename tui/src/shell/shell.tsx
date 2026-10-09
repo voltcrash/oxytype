@@ -1,6 +1,6 @@
 import type { ParentProps } from "solid-js";
 
-import { useKeyboard, usePaste } from "@opentui/solid";
+import { useKeyboard, usePaste, useTerminalDimensions } from "@opentui/solid";
 import { For, Show, useContext } from "solid-js";
 
 import type { GlobalAction } from "./keymap";
@@ -33,6 +33,7 @@ export function Shell(props: ParentProps<{ onQuit: () => void }>) {
   const notifications = useNotifications();
   const palette = usePalette();
   const colors = () => theme().colors;
+  const dimensions = useTerminalDimensions();
   usePaste((event) => {
     if (palette?.isOpen() !== true) return;
     event.preventDefault();
@@ -95,59 +96,73 @@ export function Shell(props: ParentProps<{ onQuit: () => void }>) {
       padding={1}
       backgroundColor={colors().bg}
     >
-      <box flexDirection="row" gap={2}>
-        <text fg={colors().main} flexShrink={0}>
-          oxytype
-        </text>
-        <For each={navScreens}>
-          {(screen) => (
+      <Show
+        when={dimensions().width >= 80 && dimensions().height >= 20}
+        fallback={
+          <box flexDirection="column" gap={1}>
+            <text fg={colors().main}>oxytype</text>
+            <text fg={colors().text} wrapMode="word">
+              Resize terminal to at least 80×20. Current: {dimensions().width}×
+              {dimensions().height}.
+            </text>
+            <text fg={colors().sub}>Ctrl+C quit</text>
+          </box>
+        }
+      >
+        <box flexDirection="row" gap={2}>
+          <text fg={colors().main} flexShrink={0}>
+            oxytype
+          </text>
+          <For each={navScreens}>
+            {(screen) => (
+              <text
+                fg={router.current() === screen ? colors().text : colors().sub}
+                flexShrink={0}
+              >
+                {router.current() === screen
+                  ? `[${screenTitles[screen]}]`
+                  : screenTitles[screen]}
+              </text>
+            )}
+          </For>
+          <box flexGrow={1} />
+          <text fg={colors().sub} flexShrink={0}>
+            {theme().name.replaceAll("_", " ")}
+          </text>
+        </box>
+        <box flexGrow={1} paddingTop={1}>
+          {props.children}
+        </box>
+        <Show when={palette?.isOpen() === true && palette}>
+          {(open) => <PaletteView palette={open()} />}
+        </Show>
+        <For each={notifications.entries()}>
+          {(entry) => (
             <text
-              fg={router.current() === screen ? colors().text : colors().sub}
+              fg={
+                entry.level === "error"
+                  ? colors().error
+                  : entry.level === "success"
+                    ? colors().main
+                    : colors().text
+              }
+              wrapMode="word"
               flexShrink={0}
             >
-              {router.current() === screen
-                ? `[${screenTitles[screen]}]`
-                : screenTitles[screen]}
+              {entry.message}
             </text>
           )}
         </For>
-        <box flexGrow={1} />
-        <text fg={colors().sub} flexShrink={0}>
-          {theme().name.replaceAll("_", " ")}
-        </text>
-      </box>
-      <box flexGrow={1} paddingTop={1}>
-        {props.children}
-      </box>
-      <Show when={palette?.isOpen() === true && palette}>
-        {(open) => <PaletteView palette={open()} />}
+        <box flexDirection="row" gap={2}>
+          <For each={hintBindings}>
+            {(binding) => (
+              <text fg={colors().sub} flexShrink={0}>
+                {formatKey(binding.key)} {binding.label}
+              </text>
+            )}
+          </For>
+        </box>
       </Show>
-      <For each={notifications.entries()}>
-        {(entry) => (
-          <text
-            fg={
-              entry.level === "error"
-                ? colors().error
-                : entry.level === "success"
-                  ? colors().main
-                  : colors().text
-            }
-            wrapMode="word"
-            flexShrink={0}
-          >
-            {entry.message}
-          </text>
-        )}
-      </For>
-      <box flexDirection="row" gap={2}>
-        <For each={hintBindings}>
-          {(binding) => (
-            <text fg={colors().sub} flexShrink={0}>
-              {formatKey(binding.key)} {binding.label}
-            </text>
-          )}
-        </For>
-      </box>
     </box>
   );
 }

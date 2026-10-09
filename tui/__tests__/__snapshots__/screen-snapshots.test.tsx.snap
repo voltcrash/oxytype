@@ -84,13 +84,13 @@ exports[`OpenTUI screen snapshots ready, typing and result at 80x24: replay 1`] 
 "
 `;
 
-exports[`OpenTUI screen snapshots ready, typing and result at 80x24: history details 1`] = `
+exports[`OpenTUI screen snapshots ready, typing and result at 80x24: empty history 1`] = `
 "
  oxytype  test  settings  account  leaderboards  [history]          serika dark
 
  local history · 0 tests
 
- loading…
+ no saved tests match
 
  ↑↓ select · enter details · tab local/TUI/web · f filters · x clear · r reload
 
@@ -112,42 +112,70 @@ exports[`OpenTUI screen snapshots ready, typing and result at 80x24: history det
 "
 `;
 
-exports[`OpenTUI screen snapshots compact ready and result at 40x16: compact ready 1`] = `
+exports[`OpenTUI screen snapshots compact ready and result at 80x20: compact ready 1`] = `
 "
- oxytype  [test]  settings  account  lea
+ oxytype  [test]  settings  account  leaderboards  history          serika dark
 
  typing test
- time  [words]  quote  zen  custom
 
-
- punctuation  numbers
+ time  [words]  quote  zen  custom  punctuation  numbers
 
  2 words · english
+
  0/2
 
  cat dog
- F2 mode · F3 punctuation · F4 numbers
- escrbackrt^t testep^stsettingsni^a acct
+
+
+ F2 mode · F3 punctuation · F4 numbers · F5/F6 amount
+
+ ^r restart · F7 repeat · F8 finish
+
+ esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 
 "
 `;
 
-exports[`OpenTUI screen snapshots compact ready and result at 40x16: compact result 1`] = `
+exports[`OpenTUI screen snapshots compact ready and result at 80x20: compact result 1`] = `
 "
- oxytype  test  settings  account  leade
+ oxytype  test  settings  account  leaderboards  history            serika dark
 
  result
+
  28 wpm · 100% acc
 
  raw 28 · consistency 80%
- characters 7/0/0/0 · correct/
- incorrect/extra/missed
+
+ characters 7/0/0/0 · correct/incorrect/extra/missed
 
  time 3.00s · words 2 · english
+
  not saved: too short
 
- enter next test · F7 repeat · r replay
- escobackto^t test  ^s settings  ^a acct
+ enter next test · F7 repeat · r replay · ^o history
+
+
+ esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
+
+"
+`;
+
+exports[`OpenTUI screen snapshots resize prompt at 40x16: resize prompt 1`] = `
+"
+ oxytype
+
+ Resize terminal to at least 80×20.
+ Current: 40×16.
+
+ Ctrl+C quit
+
+
+
+
+
+
+
+
 
 "
 `;

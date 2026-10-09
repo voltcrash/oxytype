@@ -62,15 +62,20 @@ describe("OpenTUI screen snapshots", () => {
     app.mockInput.pressKey("r");
     expect(await app.snapshot()).toMatchSnapshot("replay");
     app.mockInput.pressKey("o", { ctrl: true });
-    app.mockInput.pressEnter();
-    expect(await app.snapshot()).toMatchSnapshot("history details");
+    await app.waitForFrame((frame) => frame.includes("no saved tests match"));
+    expect(await app.snapshot()).toMatchSnapshot("empty history");
   });
 
-  test("compact ready and result at 40x16", async () => {
-    const app = await screen("test", { width: 40, height: 16 });
+  test("compact ready and result at 80x20", async () => {
+    const app = await screen("test", { width: 80, height: 20 });
     expect(await app.snapshot()).toMatchSnapshot("compact ready");
     await app.finish();
     expect(await app.snapshot()).toMatchSnapshot("compact result");
+  });
+
+  test("resize prompt at 40x16", async () => {
+    const app = await screen("test", { width: 40, height: 16 });
+    expect(await app.snapshot()).toMatchSnapshot("resize prompt");
   });
 
   test("settings and palette search", async () => {
