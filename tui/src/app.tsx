@@ -9,6 +9,7 @@ import { ConfigContext } from "./config/store";
 import {
   createHistoryStore,
   HistoryContext,
+  localPaceSpeed,
   type HistoryStore,
 } from "./results/history";
 import { createRouter, RouterContext } from "./router/router";
@@ -37,13 +38,15 @@ export function App(props: AppProps) {
   const router = createRouter(initialScreen ?? "test");
   const dispatcher = createKeyDispatcher();
   const theme = createTheme(config.config);
+  // oxlint-disable-next-line solid/reactivity -- app-owned store initialized once
+  const history = props.history ?? createHistoryStore();
   const test = createTypingTest({
     store: config,
     sources: createTestSources(createAssetSource()),
+    getPaceSpeed: (settings, mode2) =>
+      localPaceSpeed(history.entries(), settings, mode2),
     ...testOptions,
   });
-  // oxlint-disable-next-line solid/reactivity -- app-owned store initialized once
-  const history = props.history ?? createHistoryStore();
   createEffect(
     on(test.result, (finished) => {
       if (finished !== undefined && config.config.resultSaving) {

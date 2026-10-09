@@ -7,7 +7,7 @@ import type {
 
 import { StyledText, TextAttributes } from "@opentui/core";
 import { useRenderer } from "@opentui/solid";
-import { createEffect, createMemo, Index, onCleanup } from "solid-js";
+import { createEffect, createMemo, Index, onCleanup, Show } from "solid-js";
 
 import type { TerminalTheme } from "../theme/theme";
 import type { Cell, LineWindow, Position, WordsLayout } from "./layout";
@@ -22,6 +22,7 @@ export type WordsProps = {
   layout: WordsLayout;
   window: LineWindow;
   caret?: Position;
+  pace?: Position;
 };
 
 type CellStyle = { fg: RGBA; attributes: number };
@@ -65,6 +66,13 @@ export function Words(props: WordsProps) {
   const lines = createMemo(() =>
     props.layout.lines.slice(props.window.start, props.window.end),
   );
+  const visiblePace = createMemo(
+    () =>
+      props.pace !== undefined &&
+      config.paceCaretStyle !== "off" &&
+      props.pace.line >= props.window.start &&
+      props.pace.line < props.window.end,
+  );
 
   const paintCaret = (): void => {
     const caret = props.caret;
@@ -96,6 +104,21 @@ export function Words(props: WordsProps) {
       renderAfter={() => paintCaret()}
     >
       <Index each={lines()}>{(cells) => <WordLine cells={cells()} />}</Index>
+      <Show when={visiblePace()}>
+        <text
+          position="absolute"
+          left={props.pace?.column ?? 0}
+          top={((props.pace?.line ?? 0) - props.window.start) * 2 + 1}
+          fg={theme().colors.sub}
+        >
+          {config.paceCaretStyle === "block" ||
+          config.paceCaretStyle === "outline"
+            ? "▣"
+            : config.paceCaretStyle === "underline"
+              ? "_"
+              : "▏"}
+        </text>
+      </Show>
     </box>
   );
 }

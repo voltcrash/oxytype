@@ -45,6 +45,12 @@ export function TestScreen() {
     const count = Math.max(1, Math.floor((dimensions().height - 12) / 2));
     return { start: view.start, end: Math.min(view.end, view.start + count) };
   });
+  const pace = createMemo(() => {
+    const position = test.pace();
+    return position === undefined
+      ? undefined
+      : caretSlot(layout(), position.wordIndex, position.letterIndex);
+  });
   const amount = (): string => {
     if (store.config.mode === "time") {
       return store.config.time === 0
@@ -130,6 +136,7 @@ export function TestScreen() {
         <Words
           layout={layout()}
           window={window()}
+          pace={pace()}
           caret={
             test.status() === "ready" || test.status() === "running"
               ? caret()

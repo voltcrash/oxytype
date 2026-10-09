@@ -13,6 +13,13 @@ import {
 } from "@oxytype/typing-core/events/stats";
 import type { EventLog } from "@oxytype/typing-core/events/types";
 import { canQuickRestart } from "@oxytype/typing-core/quick-restart";
+import { getMode2 } from "@oxytype/typing-core/mode";
+import {
+  advancePace,
+  correctPace,
+  createPaceState,
+  type PaceState,
+} from "@oxytype/typing-core/pace-caret";
 import type { QuoteWithTextSplit } from "@oxytype/typing-core/quotes";
 import { getInvalidResultReason } from "@oxytype/typing-core/result-validity";
 import {
@@ -55,6 +62,7 @@ export type TypingTestOptions = {
   dateNow?: () => number;
   /** Test harnesses drive advance themselves. */
   schedule?: boolean;
+  getPaceSpeed?: (config: Config, mode2: string) => number;
 };
 export type TypingTest = {
   status: Accessor<TestStatus>;
@@ -75,6 +83,9 @@ export type TypingTest = {
   restart: (repeat?: boolean, quick?: boolean) => Promise<void>;
   cancel: () => void;
   session: () => TestSession;
+  pace: Accessor<
+    { wordIndex: number; letterIndex: number; wpm: number } | undefined
+  >;
 };
 
 export function createTypingTest(options: TypingTestOptions): TypingTest {
@@ -99,6 +110,13 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
   });
   const [stats, setStats] = createSignal(emptyStats());
   const [result, setResult] = createSignal<FinishedTest>();
+  const [pace, setPace] = createSignal<{
+    wordIndex: number;
+    letterIndex: number;
+    wpm: number;
+  }>();
+  let paceState: PaceState | null = null;
+  let paceSteps = 0;
   let currentQuote: QuoteWithTextSplit | null = null;
   let generator: WordsGenerator | undefined;
   let session: TestSession;
@@ -146,11 +164,24 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
       customLimit: () => customText.limit,
       getCurrentQuote: () => currentQuote,
     });
+    session.on("input", (input) => {
+      if (input.inputType === "insertText" && input.commitsWord) {
+        const word = session.getWords()[input.wordIndex] ?? "";
+        correctPace(
+          paceState,
+          input.wordIndex,
+          input.inputValue === word,
+          word,
+          config().blindMode,
+        );
+      }
+    });
     session.on("tick", (tick) =>
       setStats((previous) => ({ ...previous, ...tick })),
     );
     session.on("finish", ({ reason }) => {
       stopTimer();
+      setPace(undefined);
       if (abandoning) return;
       session.recorder.cleanupData();
       const eventLog = session.buildEventLog();
@@ -206,6 +237,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
     setStatus("loading");
     setNotice(undefined);
     setStats(emptyStats());
+    setPace(undefined);
     bailedOut = false;
     repeated = repeat && previousWords !== undefined;
     try {
@@ -247,6 +279,19 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
       }
       if (version !== generation || disposed) return;
       refresh();
+      paceState =
+        config().mode === "zen"
+          ? null
+          : createPaceState(
+              options.getPaceSpeed?.(
+                config(),
+                getMode2(config(), currentQuote),
+              ) ??
+                (config().paceCaret === "custom"
+                  ? config().paceCaretCustomSpeed
+                  : 0),
+            );
+      paceSteps = 0;
       setStatus("ready");
     } catch (error) {
       if (version !== generation || disposed) return;
@@ -261,9 +306,41 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
     setStatus("running");
     if (timer === undefined && options.schedule !== false) {
       timer = setInterval(() => {
-        session.advance(now());
+        advance(now());
       }, 50);
     }
+  }
+  function advance(timestamp: number): void {
+    session?.advance(timestamp);
+    const start = session?.liveCache.getLiveCachedTimerStartMs();
+    if (
+      !session?.isActive() ||
+      paceState === null ||
+      start === null ||
+      start === undefined
+    ) {
+      return;
+    }
+    const steps = Math.floor((timestamp - start) / (paceState.spc * 1000));
+    while (paceSteps < steps) {
+      if (
+        !advancePace(
+          paceState,
+          (index) => session.getWords()[index],
+          config().blindMode,
+        )
+      ) {
+        paceState = null;
+        setPace(undefined);
+        return;
+      }
+      paceSteps++;
+    }
+    setPace({
+      wordIndex: paceState.currentWordIndex,
+      letterIndex: paceState.currentLetterIndex,
+      wpm: paceState.wpm,
+    });
   }
   async function insert(text: string, timestamp: number): Promise<void> {
     if (status() !== "ready" && status() !== "running") return;
@@ -314,6 +391,8 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
   }
   function cancel(): void {
     stopTimer();
+    paceState = null;
+    setPace(undefined);
     generation++;
     session?.reset();
     if (!disposed && session !== undefined) {
@@ -344,9 +423,8 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
       return session?.recorder.getInputForWord(index) ?? "";
     },
     insert,
-    advance: (timestamp) => {
-      session?.advance(timestamp);
-    },
+    advance,
+    pace,
     finish,
     restart,
     cancel,
