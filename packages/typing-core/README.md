@@ -30,6 +30,11 @@ commit separators; omit the last separator for a finite test), or call
   `complete(log, context)` to build the result. `hashResult({...result, uid})`
   preserves the web payload hash.
 
+`config/default-config` and `config/migrate` provide the web default config and
+`migrateConfig` (legacy values, schema repair, default merge). `themes` holds the
+built-in palettes and custom-theme colour conversion. The frontend re-exports
+these modules.
+
 The web uses this facade for event state, word generation and results. Its input
 handlers use the same pure insertion/deletion/validation rules; rendering,
 composition lifecycle, scrolling and browser key handling stay with the web.
