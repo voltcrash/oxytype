@@ -35,6 +35,12 @@ commit separators; omit the last separator for a finite test), or call
 built-in palettes and custom-theme colour conversion. The frontend re-exports
 these modules.
 
+`format`, `typing-speed-units` and `live-stats` share the web's number/unit,
+timer/progress and blind-mode display rules. `quick-restart` shares long-test
+protection; `result-validity` shares save eligibility. `custom-text` supplies the
+default text, and `strings` supplies character splitting. Duration formatting
+lives in `@oxytype/util/date-and-time`. The web re-exports these helpers too.
+
 The web uses this facade for event state, word generation and results. Its input
 handlers use the same pure insertion/deletion/validation rules; rendering,
 composition lifecycle, scrolling and browser key handling stay with the web.

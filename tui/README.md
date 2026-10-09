@@ -8,6 +8,7 @@ pnpm dev-tui
 pnpm lint-tui
 pnpm test-tui
 bun test __tests__/app.test.tsx # from tui/, after `bun run assets`
+python3 tui/scripts/smoke-pty.py # from root; Unix PTY CLI smoke
 ```
 
 `bunfig.toml` preloads the OpenTUI Solid JSX transform for the app and tests.
@@ -32,5 +33,32 @@ engine checks reject on the repository's Node 24 toolchain.
 - `theme/`: shared palettes resolved to opaque RGB. OpenTUI emits truecolor
   or downsamples to xterm-256 based on its terminal detection.
 - `assets/`: core `FetchJson` adapter for packaged, then cached, assets.
+- `test/`: shared-session input, offline word generation, wrapped letter/caret
+  rendering, live stats, mode selectors and local pace.
+- `results/`: atomic `history.json` storage, matching local PB/average pace
+  queries and terminal result charts.
+
+## Typing
+
+Start typing to begin. Backspace and Ctrl+Backspace follow the core's confidence,
+freedom and stop-on-error rules. Paste is disabled during tests.
+
+- F2 cycles time/words/quote/zen/custom; F3/F4 toggle punctuation/numbers.
+- F5/F6 change time, word count, quote length or custom limit. F9 changes custom
+  word/time/section limits. Custom starts with the shared default text; its editor
+  arrives in Stage G.
+- Ctrl+R restarts; F7 repeats; F8 finishes zen or bails out of an unlimited test.
+  The configured Tab/Esc/Enter quick restart also applies. Long tests require
+  Shift plus that key, or explicit Ctrl+R. Literal tabs/newlines retain their
+  input meaning; use F7/F8 when the terminal cannot distinguish modified keys.
+- Enter on results starts the next test. Ctrl+O opens local history; up/down
+  change history pages. Valid results save when `resultSaving` is enabled.
+
+The bundled English sources work offline. Missing languages fall back to
+English without changing the stored preference. PB, average, daily and last
+pace use matching local history; custom pace uses the configured WPM.
+
+Stage E verification and terminal approximations:
+[TUI_TYPING_TEST.md](../docs/TUI_TYPING_TEST.md).
 
 Terminal gaps and approximations are tracked in [MISSING.md](MISSING.md).
