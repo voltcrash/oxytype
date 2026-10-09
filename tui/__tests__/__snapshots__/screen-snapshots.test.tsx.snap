@@ -216,18 +216,18 @@ exports[`OpenTUI screen snapshots settings and palette search: theme palette 1`]
   ╭─ commands ───────────────────────────────────────────────────────────────╮
  t│ > theme                                                                  │─
  ▌│ ──────────────────────────────────────────────────────────────────────── │
-  │ ▌  Theme › 8008                                                          │
-  │    Theme › 80s after dark                                                │
-  │    Theme › 9009                                                          │
-  │    Theme › aether                                                        │
-  │    Theme › alduin                                                        │
-  │    Theme › alpine                                                        │
- s│    Theme › anti hero                                                     │─
-  │    Theme › arch                                                          │
-  │    Theme › aurora                                                        │
-  │    Theme › beach                                                         │
- l│    Theme › bento                                                         │─
- N│    Theme › bingsu                                                        │
+  │ ▌   Theme › 8008                                                         │
+  │     Theme › 80s after dark                                               │
+  │     Theme › 9009                                                         │
+  │     Theme › aether                                                       │
+  │     Theme › alduin                                                       │
+  │     Theme › alpine                                                       │
+ s│     Theme › anti hero                                                    │─
+  │     Theme › arch                                                         │
+  │     Theme › aurora                                                       │
+  │     Theme › beach                                                        │
+ l│     Theme › bento                                                        │─
+ N│     Theme › bingsu                                                       │
  s│ 1/197                                                                    │
  i│ enter select  tab/↑↓ move  esc back                                      │
  ↑╰──────────────────────────────────────────────────────────────────────────╯
@@ -272,7 +272,7 @@ exports[`OpenTUI screen snapshots funboxes screen: funboxes 1`] = `
   search funboxes
 
 
- › [ ] 58008 · shared words
+ ▌ [ ] 58008 · shared words
    [ ] mirror · browser only
    [ ] upside down · browser only
    [ ] nausea · browser only
@@ -300,7 +300,7 @@ exports[`OpenTUI screen snapshots challenges screen: challenges 1`] = `
   search challenges
 
 
- › 6969696969 · other
+ ▌ 6969696969 · other
    One Hour Warrior · endurance
    Double Down · endurance
    Triple Trouble · endurance

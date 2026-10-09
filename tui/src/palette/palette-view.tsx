@@ -2,7 +2,6 @@ import { RGBA } from "@opentui/core";
 import { useTerminalDimensions } from "@opentui/solid";
 import { Show } from "solid-js";
 
-import type { Chunk } from "../ui/styled";
 import type { Palette, PaletteItem } from "./palette";
 
 import { useTheme } from "../theme/theme";
@@ -25,23 +24,15 @@ export function PaletteView(props: { palette: Palette }) {
   const inner = (): number => width() - 4;
   const row = (item: PaletteItem, selected: boolean) => {
     const label = props.palette.usingSingleList() ? item.path : item.display;
-    const bg = selected ? colors().subAlt : undefined;
-    const chunks: Chunk[] = [
-      { text: selected ? "▌" : " ", fg: colors().main, bg },
-      { text: item.active?.() === true ? "● " : "  ", fg: colors().main, bg },
-      { text: label, fg: selected ? colors().text : colors().sub, bg },
-      ...(item.note === undefined
-        ? []
-        : [{ text: `  ${item.note}`, fg: colors().sub, bg }]),
-    ];
-    const used = chunks.reduce((sum, it) => sum + it.text.length, 0);
     return (
       <StyledLine
-        chunks={
-          selected && used < inner()
-            ? [...chunks, { text: " ".repeat(inner() - used), bg }]
-            : chunks
-        }
+        chunks={[
+          { text: item.active?.() === true ? "● " : "  ", fg: colors().main },
+          { text: label, fg: selected ? colors().text : colors().sub },
+          ...(item.note === undefined
+            ? []
+            : [{ text: `  ${item.note}`, fg: colors().sub }]),
+        ]}
       />
     );
   };

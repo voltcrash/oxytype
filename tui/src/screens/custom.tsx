@@ -209,10 +209,9 @@ export function CustomScreen() {
         selected={selection.index()}
         height={Math.max(1, dimensions().height - 17)}
         empty="no saved texts"
-        render={(text, active) => (
-          <text fg={active ? theme().colors.main : theme().colors.text}>
-            {active ? "›" : " "} {text.name} ·{" "}
-            {text.settings.text.join(" ").length} characters
+        render={(text) => (
+          <text fg={theme().colors.text}>
+            {text.name} · {text.settings.text.join(" ").length} characters
           </text>
         )}
       />

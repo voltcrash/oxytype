@@ -180,9 +180,8 @@ export function HistoryScreen() {
             selected={selection.index()}
             height={height()}
             empty="no saved tests match"
-            render={(entry, active) => (
-              <text fg={active ? theme().colors.main : theme().colors.text}>
-                {active ? "›" : " "}{" "}
+            render={(entry) => (
+              <text fg={theme().colors.text}>
                 {new Date(entry.result.timestamp).toLocaleDateString()} ·{" "}
                 {new Formatting(config).typingSpeed(entry.result.wpm)}{" "}
                 {config.typingSpeedUnit} · {entry.result.acc.toFixed(1)}% ·{" "}

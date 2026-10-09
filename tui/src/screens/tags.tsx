@@ -140,9 +140,8 @@ export function TagsScreen() {
           selected={selection.index()}
           height={Math.max(1, dimensions().height - 10)}
           empty="no tags yet"
-          render={(tag, active) => (
-            <text fg={active ? theme().colors.main : theme().colors.text}>
-              {active ? "›" : " "}{" "}
+          render={(tag) => (
+            <text fg={theme().colors.text}>
               {account?.tags.active().includes(tag._id) ? "[x]" : "[ ]"}{" "}
               {tag.name}
             </text>

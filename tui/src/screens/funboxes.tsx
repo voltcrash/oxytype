@@ -65,9 +65,8 @@ export function FunboxesScreen() {
         items={items()}
         selected={selection.index()}
         height={Math.max(1, dimensions().height - 15)}
-        render={(box, active) => (
-          <text fg={active ? theme().colors.main : theme().colors.text}>
-            {active ? "›" : " "}{" "}
+        render={(box) => (
+          <text fg={theme().colors.text}>
             {store.config.funbox.includes(box.name) ? "[x]" : "[ ]"}{" "}
             {box.name.replaceAll("_", " ")} ·{" "}
             {wordFunboxes.has(box.name)

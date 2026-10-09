@@ -57,9 +57,9 @@ export function ChallengesScreen() {
         items={items()}
         selected={selection.index()}
         height={Math.max(1, dimensions().height - 15)}
-        render={(challenge, active) => (
-          <text fg={active ? theme().colors.main : theme().colors.text}>
-            {active ? "›" : " "} {challenge.display} · {challenge.category}
+        render={(challenge) => (
+          <text fg={theme().colors.text}>
+            {challenge.display} · {challenge.category}
           </text>
         )}
       />

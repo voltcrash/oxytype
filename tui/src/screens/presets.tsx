@@ -213,10 +213,9 @@ export function PresetsScreen() {
           selected={selection.index()}
           height={Math.max(1, dimensions().height - 10)}
           empty="no presets yet"
-          render={(preset, active) => (
-            <text fg={active ? theme().colors.main : theme().colors.text}>
-              {active ? "›" : " "} {preset.name} ·{" "}
-              {preset.settingGroups?.join(", ") ?? "full"}
+          render={(preset) => (
+            <text fg={theme().colors.text}>
+              {preset.name} · {preset.settingGroups?.join(", ") ?? "full"}
             </text>
           )}
         />

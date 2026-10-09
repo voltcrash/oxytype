@@ -160,9 +160,8 @@ export function QuotesScreen() {
         selected={selection.index()}
         height={Math.max(1, dimensions().height - 15)}
         empty="no quotes match"
-        render={(quote, active) => (
-          <text fg={active ? theme().colors.main : theme().colors.text}>
-            {active ? "›" : " "}{" "}
+        render={(quote) => (
+          <text fg={theme().colors.text}>
             {isFavorite(quote.id, quote.language) ? "★" : " "} #{quote.id}{" "}
             {quote.source} ·{" "}
             {quote.text

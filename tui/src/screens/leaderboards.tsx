@@ -207,10 +207,10 @@ export function LeaderboardsScreen() {
           selected={selection.index()}
           height={Math.max(1, dimensions().height - 12)}
           empty="no entries"
-          render={(entry, active) => (
-            <text fg={active ? theme().colors.main : theme().colors.text}>
-              {active ? "›" : " "} {entry.rank + 1}. {entry.name.padEnd(16)}{" "}
-              {entry.score} · {entry.details}
+          render={(entry) => (
+            <text fg={theme().colors.text}>
+              {entry.rank + 1}. {entry.name.padEnd(16)} {entry.score} ·{" "}
+              {entry.details}
             </text>
           )}
         />
