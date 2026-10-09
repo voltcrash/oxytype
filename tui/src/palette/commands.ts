@@ -436,6 +436,12 @@ export function rootCommands(context: CommandContext): CommandGroup {
       alias: "navigate go to results",
       exec: navigate("history"),
     },
+    ...(["tags", "presets", "profile"] as const).map((screen): Command => ({
+      id: `view${screen}`,
+      display: `View ${screen}`,
+      alias: "navigate go to",
+      exec: navigate(screen),
+    })),
     ...configTools(context),
     {
       id: "clearNotifications",
