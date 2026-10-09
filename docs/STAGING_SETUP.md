@@ -57,12 +57,12 @@ Once all placeholders are replaced, run from the repo root:
 set -a
 . frontend/.env.staging.local
 set +a
-BACKEND_URL=/api AUTH_PROVIDERS=google,github pnpm build-fe
-pnpm build-be
-pnpm --filter @oxytype/backend db:migrate:remote
-pnpm --filter @oxytype/backend deploy:staging-site --secrets-file .dev.vars.staging
-pnpm --filter @oxytype/backend exec wrangler secret list
-pnpm --filter @oxytype/backend exec wrangler d1 execute oxytype-staging --remote \
+BACKEND_URL=/api AUTH_PROVIDERS=google,github vp run build-fe
+vp run build-be
+vp run --filter @oxytype/backend db:migrate:remote
+vp run --filter @oxytype/backend deploy:staging-site --secrets-file .dev.vars.staging
+vp exec --filter @oxytype/backend -- wrangler secret list
+vp exec --filter @oxytype/backend -- wrangler d1 execute oxytype-staging --remote \
   --command "UPDATE configuration SET data=json_set(data,
     '$.users.signUp',json('true'),
     '$.users.profiles.enabled',json('true'),
@@ -95,6 +95,6 @@ and retry.
 Use the hosted URL for staging auth checks. Localhost calling the remote API can
 lose OAuth cookies under browser privacy protections; `SameSite=None` alone does
 not prevent partitioning/blocking. See [Better Auth's cookie guidance](https://better-auth.com/docs/concepts/cookies).
-Return to local backend testing with `pnpm dev-be` and `pnpm dev-fe`.
+Return to local backend testing with `vp run dev-be` and `vp run dev-fe`.
 See [operations](CLOUDFLARE_OPERATIONS.md)
 and [anticheat limits](ANTICHEAT.md) for deployment and monitoring.

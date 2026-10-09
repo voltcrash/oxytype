@@ -54,9 +54,9 @@ Parity tests retain eight real web keystroke recordings and 61 seeded generator
 snapshots. Core tests run in Node. From the root:
 
 ```sh
-pnpm lint-pkg
-pnpm test-pkg
-pnpm vitest run packages/typing-core/__test__/session.spec.ts
+vp run lint-pkg
+vp run test-pkg
+vp test run packages/typing-core/__test__/session.spec.ts
 ```
 
 `__fixtures__/keystrokes` contains raw input/timings, event logs and result

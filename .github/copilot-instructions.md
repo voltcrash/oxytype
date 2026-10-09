@@ -15,13 +15,13 @@ and the `Fa` icon component.
 ## Checks
 
 ```sh
-pnpm oxlint --type-aware --type-check --format agent
-pnpm build-fe
-pnpm build-be
+vp lint --type-aware --type-check --format agent
+vp run build-fe
+vp run build-be
 ```
 
-Run a single test from its package with `pnpm vitest run path/to/test.ts`.
-`pnpm dev-fe` and `pnpm dev-be` start the frontend and backend.
+Run a single test from its package with `vp test run path/to/test.ts`.
+`vp run dev-fe` and `vp run dev-be` start the frontend and backend.
 
 ## Key files
 

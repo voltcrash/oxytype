@@ -1,7 +1,7 @@
 # TUI account and API integration
 
 Stage F connects the terminal client to the Stage B backend and Stage C device
-consent page. Run with Bun (`pnpm dev-tui`); npm packaging remains Stage H.
+consent page. Run with Bun (`vp run dev-tui`); npm packaging remains Stage H.
 
 ## Connection settings
 
@@ -22,7 +22,7 @@ For local development:
 
 ```sh
 OXYTYPE_API_URL=http://localhost:5005/api \
-OXYTYPE_ASSET_URL=http://localhost:3000 pnpm dev-tui
+OXYTYPE_ASSET_URL=http://localhost:3000 vp run dev-tui
 ```
 
 Base URLs accept HTTP(S), without embedded credentials, query or fragment.
@@ -131,9 +131,9 @@ The remaining display/browser approximations are in [MISSING.md](../tui/MISSING.
   the D1 test independently covers the backend. No real account is used.
 - `python3 tui/scripts/smoke-pty.py` retains the Stage E offline CLI smoke.
 
-Full repository checks: `pnpm lint`, `pnpm test`, `pnpm build` and
-`pnpm format-check`. TUI rendering tests require Bun; the D1 test runs with
-`pnpm vitest run __tests__/d1/tui-client.spec.ts` from `backend/`.
+Full repository checks: `vp run lint`, `vp run test`, `vp run build` and
+`vp run format-check`. TUI rendering tests require Bun; the D1 test runs with
+`vp test run __tests__/d1/tui-client.spec.ts` from `backend/`.
 
 Verified: 114 TUI, 486 package, 721 backend unit, 99 D1 integration and 1,697
 frontend tests. The initial combined test/typecheck run exceeded unrelated

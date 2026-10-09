@@ -1,6 +1,6 @@
 # Offline terminal typing
 
-Stage E completes E1–E10 above the Stage D foundation. Run `pnpm dev-tui`.
+Stage E completes E1–E10 above the Stage D foundation. Run `vp run dev-tui`.
 Controls and package layout: [tui/README.md](../tui/README.md).
 
 ## Engine and rendering

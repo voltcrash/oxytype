@@ -77,8 +77,8 @@ basic dashboard connection requires no database migration.
 On a **new, empty** production D1 only:
 
 ```sh
-pnpm --filter @oxytype/backend db:migrate:production
-pnpm --filter @oxytype/backend db:bootstrap:production
+vp run --filter @oxytype/backend db:migrate:production
+vp run --filter @oxytype/backend db:bootstrap:production
 ```
 
 The atomic bootstrap refuses any existing application data. It enables signup,
@@ -92,12 +92,12 @@ submission/publication. Do not rerun bootstrap during updates.
 From the repo root, with Node/pnpm versions in `package.json`:
 
 ```sh
-pnpm install --frozen-lockfile
-pnpm --filter @oxytype/backend build:production-site
-pnpm --filter @oxytype/backend deploy:production-dry-run
+vp install --frozen-lockfile
+vp run --filter @oxytype/backend build:production-site
+vp run --filter @oxytype/backend deploy:production-dry-run
 # Apply any newly added migrations before compatible code is deployed.
-pnpm --filter @oxytype/backend db:migrate:production
-pnpm --filter @oxytype/backend deploy:production-site
+vp run --filter @oxytype/backend db:migrate:production
+vp run --filter @oxytype/backend deploy:production-site
 ```
 
 Production builds run `vp run --no-cache build-fe`, then `vp run --no-cache build-be`.

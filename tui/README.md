@@ -23,12 +23,12 @@ Feature status: [MISSING.md](MISSING.md).
 ## Development
 
 ```sh
-pnpm dev-tui
-pnpm lint-tui
-pnpm test-tui
-pnpm build-tui
-pnpm --filter @voltcrash/oxytype package-check # isolated npm install + PTY smoke
-bun test __tests__/app.test.tsx # from tui/, after `bun run assets`
+vp run dev-tui
+vp run lint-tui
+vp run test-tui
+vp run build-tui
+vp run --filter @voltcrash/oxytype package-check # isolated npm install + PTY smoke
+bun test __tests__/app.test.tsx # from tui/, after `vp run assets`
 python3 tui/scripts/smoke-pty.py # from root; Unix PTY CLI smoke
 python3 tui/scripts/smoke-account-pty.py # device/API/queue/cached-assets PTY smoke
 python3 tui/scripts/smoke-screens-pty.py # replay/editor/export/handoff PTY smoke

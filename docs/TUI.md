@@ -148,18 +148,18 @@ optional dependencies enabled and a supported Bun release.
 ## Development and release
 
 ```sh
-pnpm install
-pnpm dev-tui
-pnpm lint-tui
-pnpm test-tui
-pnpm build-tui
-pnpm --filter @voltcrash/oxytype package-check
+vp install
+vp run dev-tui
+vp run lint-tui
+vp run test-tui
+vp run build-tui
+vp run --filter @voltcrash/oxytype package-check
 ```
 
 TUI tests use Bun/OpenTUI, including checked-in screen snapshots. To run one
 file, use `bun test __tests__/screen-snapshots.test.tsx` from `tui/`. Intentional
 snapshot changes use `-u` and require reviewing the generated frames.
-Typecheck uses `pnpm oxlint --type-aware --type-check --format agent`.
+Typecheck uses `vp lint --type-aware --type-check --format agent`.
 
 The build produces **`tui/dist/npm`**, an isolated publishable package with a
 Bun bin entry, compiled Solid UI/shared code, source maps, offline assets,

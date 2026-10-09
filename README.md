@@ -18,18 +18,18 @@ bunx @voltcrash/oxytype login
 ```
 
 Requires Bun 1.3.0+ and an 80×20 terminal. See [terminal setup and controls](./docs/TUI.md)
-and the [feature audit](./tui/MISSING.md). Develop locally with `pnpm dev-tui`.
+and the [feature audit](./tui/MISSING.md). Develop locally with `vp run dev-tui`.
 
 ## Development
 
-Use Node 24.21.0 and pnpm 12.8.1. Follow [the development setup guide](./docs/CONTRIBUTING_ADVANCED.md) for Better Auth and backend configuration. See [the architecture overview](./docs/ARCHITECTURE.md) for the codebase and stack.
+Use Node 24.21.0 and [Vite+](https://viteplus.dev/guide/) (`vp`) for every command; pnpm 12.8.1 is the package manager under the hood. Follow [the development setup guide](./docs/CONTRIBUTING_ADVANCED.md) for Better Auth and backend configuration. See [the architecture overview](./docs/ARCHITECTURE.md) for the codebase and stack.
 
 ```sh
-pnpm install
-pnpm dev-fe
+vp install
+vp run dev-fe
 ```
 
-The frontend runs at `http://localhost:3000` without opening a browser. Set `SERVER_OPEN=true` in `frontend/.env` or run `SERVER_OPEN=true pnpm dev-fe` to open your default browser on startup. Run `pnpm dev` for the full workspace after applying local D1 migrations and copying `backend/.dev.vars.example` to `.dev.vars`.
+The frontend runs at `http://localhost:3000` without opening a browser. Set `SERVER_OPEN=true` in `frontend/.env` or run `SERVER_OPEN=true vp run dev-fe` to open your default browser on startup. Run `vp run dev` for the full workspace after applying local D1 migrations and copying `backend/.dev.vars.example` to `.dev.vars`.
 
 ## Contributing
 

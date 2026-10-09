@@ -40,7 +40,7 @@ colour otherwise. Settings switches themes with left/right during this stage.
 
 ## Assets
 
-`bun run assets` copies `languages/english.json` (200 words) and
+`vp run assets` copies `languages/english.json` (200 words) and
 `quotes/english.json` from `frontend/static`; the generated copy is not
 committed. The asset source serves core loader URLs from packaged assets, then
 the cache directory. Missing assets raise a 404-style error, which core quote
