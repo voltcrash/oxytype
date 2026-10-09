@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vite-plus/test";
-import { getDefaultConfig } from "../../src/ts/constants/default-config";
-import { Formatting } from "../../src/ts/utils/format";
+import { getDefaultConfig } from "../src/config/default-config";
+import { Formatting } from "../src/format";
 import { Config } from "@oxytype/schemas/configs";
 
 describe("format.ts", () => {
