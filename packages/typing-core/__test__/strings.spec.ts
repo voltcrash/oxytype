@@ -5,6 +5,7 @@ import {
   removeLanguageSize,
   replaceCharAt,
   replaceSpecialChars,
+  splitIntoCharacters,
 } from "../src/strings";
 
 describe("strings", () => {
@@ -32,5 +33,10 @@ describe("strings", () => {
     expect(removeLanguageSize("english_10k")).toBe("english");
     expect(removeLanguageSize("english")).toBe("english");
     expect(removeLanguageSize("code_c++")).toBe("code_c++");
+  });
+
+  it("splits characters outside of the bmp", () => {
+    expect(splitIntoCharacters("abc")).toEqual(["a", "b", "c"]);
+    expect(splitIntoCharacters("t𐑩e")).toEqual(["t", "𐑩", "e"]);
   });
 });
