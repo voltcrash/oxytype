@@ -136,7 +136,7 @@ describe("Stage G screens", () => {
     await app.waitForFrame((frame) => frame.includes("page 1/2"));
     app.mockInput.pressArrow("right");
     await app.waitForFrame(
-      (frame) => frame.includes("page 2/2") && frame.includes("51."),
+      (frame) => frame.includes("page 2/2") && /^ *▌ 51 /m.test(frame),
     );
     expect(
       client.requests

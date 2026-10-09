@@ -131,7 +131,7 @@ test("populated leaderboard snapshot", async () => {
     },
     size,
   );
-  await app.waitForFrame((frame) => frame.includes("100 wpm"));
+  await app.waitForFrame((frame) => frame.includes("Tester"));
   expect(snapshot(await app.frame())).toMatchSnapshot("leaderboard");
 });
 

@@ -352,7 +352,7 @@ exports[`OpenTUI screen snapshots leaderboards screen: leaderboards 1`] = `
 "
  oxytype   test   settings   account   leaderboards   history       serika dark
 
- leaderboards · all-time · tui · english · time 15
+ tab  all-time    c  tui    l  english    m  time 15
 
  API service unavailable
 

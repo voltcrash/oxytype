@@ -60,25 +60,25 @@ exports[`populated leaderboard snapshot: leaderboard 1`] = `
 "
  oxytype   test   settings   account   leaderboards   history       serika dark
 
- leaderboards · all-time · tui · english · time 15
+ tab  all-time    c  tui    l  english    m  time 15
 
- ▌ 1. Tester           100 wpm · 100.0% · raw 101
+   #     name                wpm       acc      raw
+ ▌ 1     Tester              100       100.0%   101
 
  page 1/1 · your rank unranked
 
+
+
+
+
+
+
+
+
+
+
+
  ↑↓ select  ←→ pages  tab board  c client  l language  m test  enter profile
-
-
-
-
-
-
-
-
-
-
-
-
  esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 
 "
