@@ -8,18 +8,20 @@ import type { GlobalAction } from "./keymap";
 import { formatKey, matchesKey } from "../keys";
 import { useRouter } from "../router/router";
 import { screenTitles } from "../router/screens";
+import { useTheme } from "../theme/theme";
 import { globalBindings, quitBinding } from "./keymap";
 import { KeyDispatcherContext } from "./screen-keys";
 
-const navBindings = globalBindings.filter((it) => it.action.type === "open");
-const hintBindings = [
-  ...globalBindings.filter((it) => it.action.type !== "open"),
-  quitBinding,
-];
+const navScreens = globalBindings.flatMap((it) =>
+  it.action.type === "open" ? [it.action.screen] : [],
+);
+const hintBindings = [...globalBindings, quitBinding];
 
 export function Shell(props: ParentProps<{ onQuit: () => void }>) {
   const router = useRouter();
   const dispatcher = useContext(KeyDispatcherContext);
+  const theme = useTheme();
+  const colors = () => theme().colors;
 
   const run = (action: GlobalAction): void => {
     if (action.type === "quit") props.onQuit();
@@ -42,29 +44,41 @@ export function Shell(props: ParentProps<{ onQuit: () => void }>) {
   });
 
   return (
-    <box flexDirection="column" width="100%" height="100%" padding={1}>
+    <box
+      flexDirection="column"
+      width="100%"
+      height="100%"
+      padding={1}
+      backgroundColor={colors().bg}
+    >
       <box flexDirection="row" gap={2}>
-        <text>oxytype</text>
-        <For each={navBindings}>
-          {(binding) => (
-            <text>
-              {binding.action.type === "open" &&
-              router.current() === binding.action.screen
-                ? `[${binding.label}]`
-                : binding.label}{" "}
-              ({formatKey(binding.key)})
+        <text fg={colors().main} flexShrink={0}>
+          oxytype
+        </text>
+        <For each={navScreens}>
+          {(screen) => (
+            <text
+              fg={router.current() === screen ? colors().text : colors().sub}
+              flexShrink={0}
+            >
+              {router.current() === screen
+                ? `[${screenTitles[screen]}]`
+                : screenTitles[screen]}
             </text>
           )}
         </For>
+        <box flexGrow={1} />
+        <text fg={colors().sub} flexShrink={0}>
+          {theme().name.replaceAll("_", " ")}
+        </text>
       </box>
       <box flexGrow={1} paddingTop={1}>
         {props.children}
       </box>
       <box flexDirection="row" gap={2}>
-        <text>{screenTitles[router.current()]}</text>
         <For each={hintBindings}>
           {(binding) => (
-            <text>
+            <text fg={colors().sub} flexShrink={0}>
               {formatKey(binding.key)} {binding.label}
             </text>
           )}

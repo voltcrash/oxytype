@@ -1,9 +1,11 @@
 import { useRouter } from "../router/router";
 import { useScreenKeys } from "../shell/screen-keys";
+import { useTheme } from "../theme/theme";
 import { Placeholder } from "./placeholder";
 
 export function ResultScreen() {
   const router = useRouter();
+  const theme = useTheme();
 
   useScreenKeys((event) => {
     if (event.name !== "return") return;
@@ -13,7 +15,7 @@ export function ResultScreen() {
 
   return (
     <Placeholder title="result">
-      <text>press enter to start the next test</text>
+      <text fg={theme().colors.text}>press enter to start the next test</text>
     </Placeholder>
   );
 }

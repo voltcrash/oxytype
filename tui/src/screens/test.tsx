@@ -1,10 +1,12 @@
 import { useConfig } from "../config/store";
 import { useRouter } from "../router/router";
 import { useScreenKeys } from "../shell/screen-keys";
+import { useTheme } from "../theme/theme";
 import { Placeholder } from "./placeholder";
 
 export function TestScreen() {
   const router = useRouter();
+  const theme = useTheme();
   const { config } = useConfig();
   const amount = (): string => {
     if (config.mode === "time") return `${config.time}s`;
@@ -20,10 +22,12 @@ export function TestScreen() {
 
   return (
     <Placeholder title="typing test">
-      <text>
+      <text fg={theme().colors.text}>
         {amount()} · {config.language}
       </text>
-      <text>press enter to finish the placeholder test</text>
+      <text fg={theme().colors.text}>
+        press enter to finish the placeholder test
+      </text>
     </Placeholder>
   );
 }
