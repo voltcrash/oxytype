@@ -1,11 +1,13 @@
 import { Show } from "solid-js";
 
+import { useAccount } from "../account";
 import { useAuth } from "../auth/store";
 import { useScreenKeys } from "../shell/screen-keys";
 import { useTheme } from "../theme/theme";
 
 export function AccountScreen() {
   const auth = useAuth();
+  const account = useAccount();
   const theme = useTheme();
   useScreenKeys((event) => {
     if (auth === undefined || event.eventType === "release") return;
@@ -59,6 +61,27 @@ export function AccountScreen() {
             <text fg={theme().colors.sub}>
               enter log in · r reconnect · l log out
             </text>
+            <Show when={account}>
+              {(service) => (
+                <>
+                  <text fg={theme().colors.sub}>
+                    config {service().sync.state()} ·{" "}
+                    {
+                      service()
+                        .queue.entries()
+                        .filter((entry) => entry.state === "pending").length
+                    }{" "}
+                    queued uploads
+                  </text>
+                  <text fg={theme().colors.error}>
+                    {service().sync.notice() ??
+                      service().uploads.notice() ??
+                      service().queue.notice() ??
+                      ""}
+                  </text>
+                </>
+              )}
+            </Show>
           </>
         )}
       </Show>

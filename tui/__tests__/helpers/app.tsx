@@ -22,6 +22,7 @@ export async function renderApp(
       testOptions={props.testOptions}
       history={props.history}
       auth={props.auth}
+      account={props.account}
       onQuit={props.onQuit ?? (() => undefined)}
     />
   ));

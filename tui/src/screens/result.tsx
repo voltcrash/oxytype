@@ -5,6 +5,7 @@ import { Show } from "solid-js";
 import { useConfig } from "../config/store";
 import { ResultChart } from "../results/chart";
 import { useHistory } from "../results/history";
+import { useUploads } from "../results/upload";
 import { useRouter } from "../router/router";
 import { useScreenKeys } from "../shell/screen-keys";
 import { useTypingTest } from "../test/typing-test";
@@ -15,6 +16,7 @@ export function ResultScreen() {
   const theme = useTheme();
   const test = useTypingTest();
   const history = useHistory();
+  const uploads = useUploads();
   const { config } = useConfig();
   const dimensions = useTerminalDimensions();
   const format = (): Formatting => new Formatting(config);
@@ -82,6 +84,18 @@ export function ResultScreen() {
             </Show>
             <Show when={finished().invalid === undefined}>
               <text fg={theme().colors.sub}>{saveMessage()}</text>
+              <Show when={uploads?.last()?.result === finished().result}>
+                <text
+                  fg={
+                    uploads?.last()?.state === "error"
+                      ? theme().colors.error
+                      : theme().colors.main
+                  }
+                >
+                  {uploads?.last()?.message}
+                  {uploads?.last()?.isPb === true ? " · new TUI PB" : ""}
+                </text>
+              </Show>
             </Show>
             <Show when={history.notice()}>
               {(notice) => <text fg={theme().colors.error}>{notice()}</text>}
