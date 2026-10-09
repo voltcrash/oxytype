@@ -6,6 +6,7 @@ import { For, useContext } from "solid-js";
 import type { GlobalAction } from "./keymap";
 
 import { formatKey, matchesKey } from "../keys";
+import { useNotifications } from "../notifications";
 import { useRouter } from "../router/router";
 import { screenTitles } from "../router/screens";
 import { useTypingTest } from "../test/typing-test";
@@ -23,6 +24,7 @@ export function Shell(props: ParentProps<{ onQuit: () => void }>) {
   const dispatcher = useContext(KeyDispatcherContext);
   const theme = useTheme();
   const test = useTypingTest();
+  const notifications = useNotifications();
   const colors = () => theme().colors;
 
   const run = (action: GlobalAction): void => {
@@ -91,6 +93,23 @@ export function Shell(props: ParentProps<{ onQuit: () => void }>) {
       <box flexGrow={1} paddingTop={1}>
         {props.children}
       </box>
+      <For each={notifications.entries()}>
+        {(entry) => (
+          <text
+            fg={
+              entry.level === "error"
+                ? colors().error
+                : entry.level === "success"
+                  ? colors().main
+                  : colors().text
+            }
+            wrapMode="word"
+            flexShrink={0}
+          >
+            {entry.message}
+          </text>
+        )}
+      </For>
       <box flexDirection="row" gap={2}>
         <For each={hintBindings}>
           {(binding) => (

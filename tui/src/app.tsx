@@ -9,6 +9,11 @@ import { createAssetSource } from "./assets/source";
 import { AuthContext, type AuthStore } from "./auth/store";
 import { ConfigContext } from "./config/store";
 import {
+  createNotifications,
+  NotificationsContext,
+  type Notifications,
+} from "./notifications";
+import {
   createHistoryStore,
   HistoryContext,
   localPaceSpeed,
@@ -35,6 +40,7 @@ export type AppProps = {
   history?: HistoryStore;
   auth?: AuthStore;
   account?: Account;
+  notifications?: Notifications;
 };
 
 export function App(props: AppProps) {
@@ -53,6 +59,13 @@ export function App(props: AppProps) {
     getIdentity: account?.identity,
     ...testOptions,
   });
+  // oxlint-disable-next-line solid/reactivity -- app-owned store initialized once
+  const notifications = props.notifications ?? createNotifications();
+  config.setTestActive(() => test.status() === "running");
+  onCleanup(
+    config.onReject((failure) => notifications.notify(failure.message)),
+  );
+  onCleanup(() => notifications.dispose());
   createEffect(
     on(test.result, (finished) => {
       if (finished !== undefined && config.config.resultSaving) {
@@ -74,9 +87,11 @@ export function App(props: AppProps) {
                 <KeyDispatcherContext.Provider value={dispatcher}>
                   <HistoryContext.Provider value={history}>
                     <TypingTestContext.Provider value={test}>
-                      <Shell onQuit={props.onQuit}>
-                        <Dynamic component={screens[router.current()]} />
-                      </Shell>
+                      <NotificationsContext.Provider value={notifications}>
+                        <Shell onQuit={props.onQuit}>
+                          <Dynamic component={screens[router.current()]} />
+                        </Shell>
+                      </NotificationsContext.Provider>
                     </TypingTestContext.Provider>
                   </HistoryContext.Provider>
                 </KeyDispatcherContext.Provider>
