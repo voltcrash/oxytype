@@ -1,4 +1,4 @@
-import type { Config } from "@oxytype/schemas/configs";
+import type { Config, PartialConfig } from "@oxytype/schemas/configs";
 import { getDefaultConfig } from "@oxytype/typing-core/config/default-config";
 import {
   migrateConfig,
@@ -26,6 +26,9 @@ export type ConfigStore = {
   /** Returns false and keeps the current value when validation fails. */
   set: <K extends keyof Config>(key: K, value: Config[K]) => boolean;
   reset: () => void;
+  /** Server wins; applying a remote snapshot never emits a local edit. */
+  replace: (config: PartialConfig | null) => void;
+  subscribe: (listener: (patch: PartialConfig) => void) => () => void;
   /** Resolves once queued writes reach disk. */
   flush: () => Promise<void>;
 };
@@ -56,10 +59,14 @@ export async function openConfigStore(file: string): Promise<ConfigStore> {
 
   const [config, setConfig] = createStore<Config>(initial);
   let pending = Promise.resolve();
+  const listeners = new Set<(patch: PartialConfig) => void>();
   const save = (): void => {
     const snapshot = structuredClone(unwrap(config));
     // Serialize writes so an older snapshot can never land last.
-    pending = pending.then(async () => writeJson(file, snapshot));
+    const write = async (): Promise<void> => writeJson(file, snapshot);
+    pending = pending.then(write, write);
+    // The caller observes failures through flush; later writes can recover.
+    void pending.catch(() => undefined);
   };
 
   if (status !== "ok") save();
@@ -75,11 +82,27 @@ export async function openConfigStore(file: string): Promise<ConfigStore> {
       if (isDeepStrictEqual(config[key], next)) return true;
       setConfig(key, reconcile(next));
       save();
+      for (const listener of listeners) {
+        listener({ [key]: structuredClone(unwrap(next)) });
+      }
       return true;
     },
     reset: () => {
       setConfig(reconcile(getDefaultConfig()));
       save();
+      for (const listener of listeners) {
+        listener(structuredClone(unwrap(config)));
+      }
+    },
+    replace: (remote) => {
+      setConfig(reconcile(migrateConfig(structuredClone(remote ?? {}))));
+      save();
+    },
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
     },
     flush: async () => pending,
   };
