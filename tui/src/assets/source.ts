@@ -1,11 +1,16 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { FetchJson } from "@oxytype/typing-core/languages";
 import { tryCatch } from "@oxytype/util/trycatch";
 import { createRemoteAssets, type RemoteAssetOptions } from "./download";
 
 /** Shipped with the package: English 200 and English quotes. */
-const bundledAssetsDir = join(import.meta.dir, "..", "..", "assets");
+declare const __OXYTYPE_PACKAGED__: boolean | undefined;
+const bundledAssetsDir =
+  typeof __OXYTYPE_PACKAGED__ !== "undefined" && __OXYTYPE_PACKAGED__
+    ? fileURLToPath(new URL("../assets", import.meta.url))
+    : join(import.meta.dir, "..", "..", "assets");
 
 // Core requests `/languages/<name>.json` and `quotes/<name>.json`.
 const assetPattern =
