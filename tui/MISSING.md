@@ -23,3 +23,5 @@ browser.
 | Modified restart/finish keys | approximated | Legacy terminals may encode Shift+Enter/Esc like the plain key | Ctrl+R restart, F7 repeat and F8 finish alternatives |
 | Tagged pace PBs | missing | Tags arrive with Stage G | Local PB, average, daily, last and custom pace |
 | Word funboxes | missing | Funbox controls arrive in G16 | Explicit notice and a standard test; never label results with inactive effects |
+| Browser launch on headless terminals | approximated | A local browser launcher may be unavailable | Always show the device URL/code; keep polling while the user approves in another browser |
+| Bidirectional and joining-script shaping | approximated | Terminal cell order and shaping vary; the word renderer lays out logical characters | Downloaded languages retain their text; terminal handles glyph shaping, without a separate bidi layout engine |
