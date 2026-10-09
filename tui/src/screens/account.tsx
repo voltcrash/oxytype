@@ -30,6 +30,7 @@ export function AccountScreen() {
   });
   useScreenKeys((event) => {
     if (auth === undefined || event.eventType === "release") return;
+    if (event.ctrl || event.meta) return;
     if (event.name === "escape" && auth.state() === "authorizing") {
       event.preventDefault();
       auth.cancel();

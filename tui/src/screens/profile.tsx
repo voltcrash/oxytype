@@ -32,6 +32,7 @@ export function ProfileScreen() {
   });
   useScreenKeys((event) => {
     if (event.eventType === "release") return;
+    if (event.ctrl || event.meta) return;
     if (event.name === "tab") {
       event.preventDefault();
       setClient((value) => (value === "tui" ? "web" : "tui"));

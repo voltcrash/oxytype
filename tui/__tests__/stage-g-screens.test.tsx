@@ -106,6 +106,8 @@ describe("Stage G screens", () => {
           .map((url) => query(url, "client")),
       ),
     ]).toEqual(["tui", "web"]);
+    app.mockInput.pressKey("t", { ctrl: true });
+    expect(await app.frame()).toContain("typing test");
   });
   test("paginates zero-based boards and opens the selected public profile", async () => {
     const client = await server((url) => {
@@ -195,6 +197,8 @@ describe("Stage G screens", () => {
     await app.mockInput.typeText("renamed");
     app.mockInput.pressEnter();
     await app.waitForFrame((frame) => frame.includes("renamed"));
+    app.mockInput.pressKey("a", { ctrl: true });
+    expect(await app.frame()).toContain("[account]");
   });
   test("saves bracketed multiline paste, then pastes a browser handoff command", async () => {
     const library = createTextLibrary();
@@ -211,6 +215,8 @@ describe("Stage G screens", () => {
     await app.renderOnce();
     await app.waitForFrame((frame) => frame.includes("pasted"));
     expect(library.texts()[0]?.settings.text).toEqual(["first\nsecond\tline"]);
+    app.mockInput.pressKey("s", { ctrl: true });
+    expect(await app.frame()).toContain("[settings]");
     app.mockInput.pressKey("p", { ctrl: true });
     await app.mockInput.pasteBracketedText("Sign up in browser");
     app.mockInput.pressEnter();
@@ -241,6 +247,8 @@ describe("Stage G screens", () => {
     expect(await app.frame()).toContain("paused · 2×");
     app.mockInput.pressArrow("left");
     expect(await app.frame()).toContain("2.0 / 3.0s");
+    app.mockInput.pressKey("s", { ctrl: true });
+    expect(await app.frame()).toContain("[settings]");
     await config.flush();
   });
   test("loads public announcements with a retry after a server error", async () => {

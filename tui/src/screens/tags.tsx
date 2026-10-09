@@ -64,6 +64,10 @@ export function TagsScreen() {
   };
   useScreenKeys((event) => {
     if (event.eventType === "release") return;
+    if (event.ctrl || event.meta) {
+      selection.handleKey(event);
+      return;
+    }
     if (event.name === "a") {
       event.preventDefault();
       edit(false);

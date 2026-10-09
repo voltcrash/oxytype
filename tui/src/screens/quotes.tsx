@@ -71,6 +71,10 @@ export function QuotesScreen() {
       }
       return;
     }
+    if (event.ctrl || event.meta) {
+      selection.handleKey(event);
+      return;
+    }
     if (event.name === "/") {
       event.preventDefault();
       setEditing(true);

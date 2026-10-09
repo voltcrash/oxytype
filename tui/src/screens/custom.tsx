@@ -95,6 +95,10 @@ export function CustomScreen() {
       }
       return;
     }
+    if (event.ctrl || event.meta) {
+      selection.handleKey(event);
+      return;
+    }
     if (event.name === "e") {
       event.preventDefault();
       setEditing(true);

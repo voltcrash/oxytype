@@ -110,6 +110,10 @@ export function LeaderboardsScreen() {
   const pages = () => Math.max(1, Math.ceil((board.data()?.count ?? 0) / 50));
   useScreenKeys((event) => {
     if (event.eventType === "release") return;
+    if (event.ctrl || event.meta) {
+      selection.handleKey(event);
+      return;
+    }
     if (event.name === "tab") {
       event.preventDefault();
       setKind((value) =>

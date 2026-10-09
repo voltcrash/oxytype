@@ -94,6 +94,10 @@ export function PresetsScreen() {
   };
   useScreenKeys((event) => {
     if (event.eventType === "release") return;
+    if (event.ctrl || event.meta) {
+      selection.handleKey(event);
+      return;
+    }
     const preset = selected();
     const uid = account?.auth.user()?.uid;
     if (event.name === "a") {

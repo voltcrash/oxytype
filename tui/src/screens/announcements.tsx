@@ -27,6 +27,7 @@ export function AnnouncementsScreen() {
     Math.min(offset(), Math.max(0, lines().length - height()));
   useScreenKeys((event) => {
     if (event.eventType === "release") return;
+    if (event.ctrl || event.meta) return;
     const step =
       event.name === "up"
         ? -1

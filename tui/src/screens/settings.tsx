@@ -137,6 +137,7 @@ export function SettingsScreen() {
       if (search.handleKey(event)) setRowIndex(0);
       return;
     }
+    if (event.ctrl || event.meta) return;
     const step =
       event.name === "up" || event.name === "k"
         ? -1

@@ -76,6 +76,7 @@ export function ReplayScreen() {
   onCleanup(() => clearInterval(timer));
   useScreenKeys((event) => {
     if (event.eventType === "release") return;
+    if (event.ctrl || event.meta) return;
     if (event.name === "space" || event.name === "return") {
       event.preventDefault();
       if (position() >= duration()) setPosition(0);
