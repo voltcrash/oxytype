@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { FetchJson } from "@oxytype/typing-core/languages";
 import { tryCatch } from "@oxytype/util/trycatch";
+import { createRemoteAssets, type RemoteAssetOptions } from "./download";
 
 /** Shipped with the package: English 200 and English quotes. */
 const bundledAssetsDir = join(import.meta.dir, "..", "..", "assets");
@@ -24,14 +25,20 @@ export type AssetSourceOptions = {
   bundledDir?: string;
   /** Downloaded assets; searched after the bundled directory. */
   cacheDir?: string;
+  /** Absent in offline-only tests; production downloads on cache misses. */
+  remote?: RemoteAssetOptions;
 };
 
-/** Core `FetchJson` adapter that reads local files only. */
+/** Core adapter: bundled assets, legacy local cache, then versioned downloads. */
 export function createAssetSource(options: AssetSourceOptions = {}): FetchJson {
   const directories = [
     options.bundledDir ?? bundledAssetsDir,
     ...(options.cacheDir === undefined ? [] : [options.cacheDir]),
   ];
+  const remote =
+    options.remote !== undefined && options.cacheDir !== undefined
+      ? createRemoteAssets(options.cacheDir, options.remote)
+      : undefined;
 
   return async (url) => {
     const match = assetPattern.exec(url);
@@ -44,6 +51,10 @@ export function createAssetSource(options: AssetSourceOptions = {}): FetchJson {
       if (!("code" in read.error) || read.error.code !== "ENOENT") {
         throw read.error;
       }
+    }
+    if (remote !== undefined) {
+      const downloaded = await tryCatch(remote(asset));
+      if (downloaded.error === null) return downloaded.data;
     }
     throw new AssetUnavailableError(asset);
   };
