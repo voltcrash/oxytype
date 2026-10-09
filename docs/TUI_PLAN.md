@@ -388,6 +388,9 @@ session, queue, sync, asset, regression-test and documentation commits.
 
 ## Stage G — Screens (parity)
 
+Implemented. Controls and validation: [TUI_SCREENS.md](TUI_SCREENS.md).
+Browser handoffs and terminal approximations: [MISSING.md](../tui/MISSING.md).
+
 ### G1. Command palette
 
 - Same command list as web where applicable; own hotkey.

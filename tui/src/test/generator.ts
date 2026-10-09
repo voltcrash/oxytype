@@ -81,11 +81,9 @@ export function createGenerator(options: GeneratorOptions): WordsGenerator {
         BritishEnglish.replace(word, previous, options.getConfig().mode),
     },
     isRepeated: options.isRepeated,
-    // Practice modes arrive with the practice screens.
     isPractiseWordsActive: options.isPractice,
     getCurrentQuote: options.getCurrentQuote,
     setCurrentQuote: options.setCurrentQuote,
-    // Quote search arrives with the quote screens.
     getSelectedQuoteId: options.getSelectedQuoteId ?? (() => 1),
     getWordsLength: options.getWordsLength,
     setMode: (mode) => store.set("mode", mode),

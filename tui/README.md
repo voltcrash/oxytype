@@ -14,7 +14,7 @@ python3 tui/scripts/smoke-account-pty.py # device/API/queue/cached-assets PTY sm
 
 `bunfig.toml` preloads the OpenTUI Solid JSX transform for the app and tests.
 Tests run with `bun test`; Node cannot load the renderer. The `dev` and `test`
-scripts first run `assets`, which copies English 200 and English quotes from
+scripts first run `assets`, which copies English 200, English quotes and QWERTY from
 `frontend/static` into the generated `assets/` directory.
 
 Typecheck uses the root oxlint flow. The tsconfig includes the DOM lib because
@@ -48,24 +48,48 @@ freedom and stop-on-error rules. Paste is disabled during tests.
 
 - F2 cycles time/words/quote/zen/custom; F3/F4 toggle punctuation/numbers.
 - F5/F6 change time, word count, quote length or custom limit. F9 changes custom
-  word/time/section limits. Custom starts with the shared default text; its editor
-  arrives in Stage G.
+  word/time/section limits. Custom starts with the shared default text; use the
+  palette's `View custom` command to edit or load saved text.
 - Ctrl+R restarts; F7 repeats; F8 finishes zen or bails out of an unlimited test.
   The configured Tab/Esc/Enter quick restart also applies. Long tests require
   Shift plus that key, or explicit Ctrl+R. Literal tabs/newlines retain their
   input meaning; use F7/F8 when the terminal cannot distinguish modified keys.
-- Enter on results starts the next test. Ctrl+O opens local history; up/down
-  change history pages. Valid results save when `resultSaving` is enabled.
+- Enter on results starts the next test; `r` opens replay. Ctrl+O opens history;
+  up/down select, Enter shows details, Tab switches local/TUI/web, `f` edits
+  filters and `x` clears them. Valid results save when `resultSaving` is enabled.
 
 The bundled English sources work offline. Missing languages fall back to
 English without changing the stored preference. PB, average, daily and last
-pace use matching local history; custom pace uses the configured WPM.
+pace use matching local history; tag PB uses active tags, custom pace uses the configured WPM.
 
 Ctrl+A opens account: Enter logs in through browser device consent, `r`
 reconnects, `l` revokes/logs out and Esc cancels pending consent. Online results
 show upload/PB feedback; delayed uploads count toward history/stats only.
 Login pulls server config; validated changes sync back. Settings F2/F3 change
 languages; downloads cache for offline use.
+
+Ctrl+P/Ctrl+K open the searchable command palette. Settings have behavior,
+input, sound, caret, appearance, theme, visibility and danger sections. Reset
+and deletion actions open confirmation lists; config import/export accepts
+JSON or file paths. Synced settings without terminal effects show `web only`.
+
+The palette opens tags, presets, public profiles, quotes, custom texts,
+challenges, funboxes and announcements. Screen footers show their keys. Custom
+text editing accepts bracketed paste and Enter/Tab; Escape finishes editing.
+Practice commands on results select missed words, pairs and slow words.
+Practice/challenge settings are temporary, and practice results are not saved.
+
+Signup, quote submission and report commands show a browser URL, with Enter
+to open it and `c` to copy. Quote/profile screens offer `b` to report the selected
+item. Complete captcha in the browser; sign in there when requested.
+
+`custom-texts.json` stores drafts and saved texts. `active-tags.json` and
+`quote-favorites.json` isolate cached selections by account and API origin.
+Layouts, quote/language assets and challenge scripts download into the asset
+cache. Shared weak-spot learning and the latest replay last for this process.
+
+Stage G screens, controls, verification and shared-code changes:
+[TUI_SCREENS.md](../docs/TUI_SCREENS.md).
 
 Connection settings live in `network.json` beside `config.json`; environment
 overrides are `OXYTYPE_API_URL`, `OXYTYPE_ASSET_URL`, `OXYTYPE_TIMEOUT_MS`.
