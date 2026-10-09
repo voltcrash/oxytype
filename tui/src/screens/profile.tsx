@@ -88,7 +88,7 @@ export function ProfileScreen() {
         {(value) => (
           <ProfileStats
             profile={value()}
-            height={Math.max(1, dimensions().height - 14)}
+            height={Math.max(1, dimensions().height - 20)}
             page={page()}
           />
         )}
