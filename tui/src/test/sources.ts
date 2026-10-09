@@ -1,6 +1,11 @@
 import type { Language, LanguageObject } from "@oxytype/schemas/languages";
 import type { FetchJson } from "@oxytype/typing-core/languages";
 import { createLanguageLoader } from "@oxytype/typing-core/languages";
+import {
+  LayoutObjectSchema,
+  type LayoutName,
+  type LayoutObject,
+} from "@oxytype/schemas/layouts";
 import { getPoem } from "@oxytype/typing-core/poetry";
 import { getSection } from "@oxytype/typing-core/wikipedia";
 import { QuotesController } from "@oxytype/typing-core/quote-source";
@@ -24,6 +29,7 @@ export type TestSources = {
     quoteLengths?: number[],
   ) => Promise<LoadedLanguage>;
   quotes: QuotesController;
+  getLayout: (name: LayoutName) => Promise<LayoutObject>;
   getPoem: () => ReturnType<typeof getPoem>;
   getSection: (language: Language) => ReturnType<typeof getSection>;
   getScript: (name: string) => Promise<string>;
@@ -77,6 +83,8 @@ export function createTestSources(
       };
     },
     quotes,
+    getLayout: async (name) =>
+      LayoutObjectSchema.parse(await fetchJson(`layouts/${name}.json`)),
     getPoem: async () => getPoem(externalJson),
     getSection: async (language) =>
       getSection(language, {

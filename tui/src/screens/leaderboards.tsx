@@ -168,8 +168,8 @@ export function LeaderboardsScreen() {
       event.preventDefault();
       setPage((value) =>
         Math.max(
-          1,
-          Math.min(pages(), value + (event.name === "left" ? -1 : 1)),
+          0,
+          Math.min(pages() - 1, value + (event.name === "left" ? -1 : 1)),
         ),
       );
       selection.set(0);

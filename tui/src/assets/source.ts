@@ -9,7 +9,7 @@ const bundledAssetsDir = join(import.meta.dir, "..", "..", "assets");
 
 // Core requests `/languages/<name>.json` and `quotes/<name>.json`.
 const assetPattern =
-  /^\/?(?:(languages|quotes)\/([a-z0-9_]+)\.json|challenges\/([a-zA-Z0-9_-]+)\.txt)$/;
+  /^\/?(?:(languages|quotes|layouts)\/([a-zA-Z0-9_-]+)\.json|challenges\/([a-zA-Z0-9_-]+)\.txt)$/;
 
 export class AssetUnavailableError extends Error {
   readonly asset: string;

@@ -21,11 +21,7 @@ const webOnly = new Set<keyof Config>([
   "compositionDisplay",
   "oppositeShiftMode",
   "accountChart",
-  "keymapMode",
-  "keymapLayout",
   "keymapStyle",
-  "keymapLegendStyle",
-  "keymapKeys",
   "keymapSize",
 ]);
 

@@ -12,6 +12,7 @@ import {
 import { useConfig } from "../config/store";
 import { useRouter } from "../router/router";
 import { useScreenKeys } from "../shell/screen-keys";
+import { Keymap } from "../test/keymap";
 import { caretSlot, layoutWords, lineWindow, tapeWindow } from "../test/layout";
 import { LiveStatsBar } from "../test/live-stats";
 import { changeAmount, cycleMode, ModeBar } from "../test/mode-bar";
@@ -227,6 +228,7 @@ export function TestScreen() {
         fallback={<text fg={theme().colors.sub}>loading words…</text>}
       >
         <box
+          flexDirection="column"
           paddingLeft={Math.max(
             0,
             Math.floor((dimensions().width - 3 - lineWidth()) / 2),
@@ -261,6 +263,7 @@ export function TestScreen() {
           />
         </box>
       </Show>
+      <Keymap />
       <text fg={theme().colors.sub}>
         F2 mode · F3 punctuation · F4 numbers · F5/F6 amount
       </text>

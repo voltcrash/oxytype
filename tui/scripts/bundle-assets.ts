@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 const bundledAssets = [
   "languages/english.json",
   "quotes/english.json",
+  "layouts/qwerty.json",
 ] as const;
 
 const root = fileURLToPath(new URL("..", import.meta.url));

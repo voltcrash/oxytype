@@ -49,6 +49,8 @@ import type { ChallengeName } from "@oxytype/schemas/challenges";
 import type { ConfigStore } from "../config/store";
 import type { TestSources } from "./sources";
 import type { UploadIdentity } from "../auth/identity";
+import type { LayoutObject } from "@oxytype/schemas/layouts";
+import { emulateTerminalChar } from "./layout-emulator";
 import { terminalFunboxes } from "./funboxes";
 import { createGenerator } from "./generator";
 import { inputAction, keyData } from "./input";
@@ -141,6 +143,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
   }>();
   let paceState: PaceState | null = null;
   let paceSteps = 0;
+  let inputLayout: LayoutObject | undefined;
   let currentQuote: QuoteWithTextSplit | null = null;
   let generator: WordsGenerator | undefined;
   let sectionIndexes: number[] = [];
@@ -297,6 +300,17 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
     try {
       if (!repeated) {
         const snapshot = snapshotConfig();
+        inputLayout = undefined;
+        if (snapshot.layout !== "default") {
+          try {
+            inputLayout = await sources.getLayout(snapshot.layout);
+          } catch {
+            snapshot.layout = "default";
+            setNotice(
+              "Layout unavailable offline; emulation disabled for this test",
+            );
+          }
+        }
         const loaded = await sources.loadLanguage(
           snapshot.language,
           snapshot.mode === "quote" ? snapshot.quoteLength : undefined,
@@ -645,7 +659,15 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
           }
           session.record("keydown", timestamp, keyData(event));
           if (action.type === "insert") {
-            await insert(action.text, timestamp);
+            const text =
+              inputLayout === undefined ||
+              config().funbox.includes("arrows") ||
+              action.text.length !== 1 ||
+              action.text === "\n" ||
+              action.text === "\t"
+                ? action.text
+                : emulateTerminalChar(event, action.text, inputLayout);
+            if (text !== null) await insert(text, timestamp);
           } else {
             session.delete(action.inputType, timestamp);
             refresh();

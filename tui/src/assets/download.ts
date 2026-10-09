@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { join } from "node:path";
+import { LayoutObjectSchema } from "@oxytype/schemas/layouts";
 import { LanguageObjectSchema } from "@oxytype/schemas/languages";
 import { QuoteDataSchema } from "@oxytype/schemas/quotes";
 import { z } from "zod/v3";
@@ -24,6 +25,7 @@ function validate(asset: string, value: unknown): unknown {
   if (asset.startsWith("challenges/")) {
     return z.string().min(1).max(1_000_000).parse(value);
   }
+  if (asset.startsWith("layouts/")) return LayoutObjectSchema.parse(value);
   const name = asset.split("/")[1]?.replace(/\.json$/, "");
   if (asset.startsWith("languages/")) {
     const data = LanguageObjectSchema.parse(value);
