@@ -101,7 +101,11 @@ export function ResultScreen() {
               {(notice) => <text fg={theme().colors.error}>{notice()}</text>}
             </Show>
             <Show when={dimensions().height >= 22}>
-              <ResultChart test={finished()} width={dimensions().width - 2} />
+              <ResultChart
+                test={finished()}
+                width={dimensions().width - 2}
+                startAtZero={config.startGraphsAtZero}
+              />
             </Show>
           </>
         )}

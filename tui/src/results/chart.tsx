@@ -9,6 +9,7 @@ export function sparkline(
   width: number,
   maximum: number,
   peaks = false,
+  minimum = 0,
 ): string {
   if (values.length === 0) return "no samples";
   const columns = Math.max(1, Math.min(Math.floor(width), values.length));
@@ -21,12 +22,24 @@ export function sparkline(
       : bucket.reduce((sum, sample) => sum + sample, 0) / bucket.length;
     return (
       blocks[
-        Math.min(7, Math.max(0, Math.round((value / Math.max(1, maximum)) * 7)))
+        Math.min(
+          7,
+          Math.max(
+            0,
+            Math.round(
+              ((value - minimum) / Math.max(1, maximum - minimum)) * 7,
+            ),
+          ),
+        )
       ] ?? "▁"
     );
   }).join("");
 }
-export function ResultChart(props: { test: FinishedTest; width: number }) {
+export function ResultChart(props: {
+  test: FinishedTest;
+  width: number;
+  startAtZero?: boolean;
+}) {
   const theme = useTheme();
   const wpm = (): number[] =>
     props.test.result.chartData === "toolong"
@@ -37,20 +50,31 @@ export function ResultChart(props: { test: FinishedTest; width: number }) {
       ? []
       : props.test.result.chartData.err;
   const maximum = (): number => Math.max(1, ...wpm(), ...props.test.rawHistory);
+  const minimum = (): number =>
+    props.startAtZero === false
+      ? Math.floor(Math.min(...wpm(), ...props.test.rawHistory, maximum()))
+      : 0;
   return (
     <box flexDirection="column" flexShrink={0}>
       <text fg={theme().colors.main}>
-        wpm {sparkline(wpm(), props.width - 10, maximum())}
+        wpm {sparkline(wpm(), props.width - 10, maximum(), false, minimum())}
       </text>
       <text fg={theme().colors.sub}>
-        raw {sparkline(props.test.rawHistory, props.width - 10, maximum())}
+        raw{" "}
+        {sparkline(
+          props.test.rawHistory,
+          props.width - 10,
+          maximum(),
+          false,
+          minimum(),
+        )}
       </text>
       <text fg={theme().colors.error}>
         err{" "}
         {sparkline(errors(), props.width - 10, Math.max(1, ...errors()), true)}
       </text>
       <text fg={theme().colors.sub}>
-        0s → {props.test.result.testDuration.toFixed(1)}s · speed 0–
+        0s → {props.test.result.testDuration.toFixed(1)}s · speed {minimum()}–
         {Math.ceil(maximum())}
       </text>
     </box>

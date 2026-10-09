@@ -12,6 +12,8 @@ describe("result chart", () => {
     expect(sparkline([0, 10, 20, 30], 4, 30)).toBe("▁▃▆█");
     expect(sparkline([0, 10, 0, 0], 2, 10, true)).toBe("█▁");
     expect(sparkline([], 10, 10)).toBe("no samples");
+    expect(sparkline([60, 70, 80], 3, 80, false, 60)).toBe("▁▅█");
+    expect(sparkline([60, 60], 2, 60, false, 60)).toBe("▁▁");
   });
   for (const seconds of [15, 120]) {
     test(`renders ${seconds} second charts within 80 columns`, async () => {
@@ -29,10 +31,11 @@ describe("result chart", () => {
       const theme = createTheme(getDefaultConfig());
       const app = await renderTui(() => (
         <ThemeContext.Provider value={theme}>
-          <ResultChart test={finished} width={78} />
+          <ResultChart test={finished} width={78} startAtZero={false} />
         </ThemeContext.Provider>
       ));
       expect(await app.frame()).toContain(`0s → ${seconds}.0s`);
+      expect(await app.frame()).toContain("speed 60–");
       expect(
         (await app.frame()).split("\n")[0]?.trimEnd().length,
       ).toBeLessThanOrEqual(78);
