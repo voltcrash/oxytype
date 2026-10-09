@@ -1,0 +1,30 @@
+{
+  "name": "@voltcrash/oxytype",
+  "private": true,
+  "license": "GPL-3.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/index.tsx",
+    "test": "bun test",
+    "madge": "madge --circular --extensions ts,tsx ./src",
+    "ts-check": "vp lint . --type-aware --type-check --format agent",
+    "lint": "npm run madge && vp lint . --type-aware --type-check --format agent",
+    "lint-fast": "vp lint . --format agent"
+  },
+  "dependencies": {
+    "@opentui/core": "0.5.10",
+    "@opentui/solid": "0.5.10",
+    "solid-js": "1.9.12"
+  },
+  "devDependencies": {
+    "@oxytype/typescript-config": "workspace:*",
+    "@types/bun": "1.4.2",
+    "eslint-plugin-solid": "0.18.0",
+    "madge": "8.0.0",
+    "typescript": "7.0.2",
+    "vite-plus": "catalog:"
+  },
+  "engines": {
+    "bun": ">=1.3.0"
+  }
+}
