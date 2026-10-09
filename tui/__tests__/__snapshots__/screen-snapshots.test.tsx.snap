@@ -184,25 +184,25 @@ exports[`OpenTUI screen snapshots settings and palette search: behavior settings
 "
  oxytype   test   settings   account   leaderboards   history       serika dark
 
- [behavior]  input   sound   caret   appearance   hide elements   theme   dange
+  behavior  input  sound  caret  appearance  hide elements  theme  danger zone
 
- test behavior
-   difficulty                   [normal]  expert   master
-   quick restart                [off]  esc   tab   enter
-   repeat quotes                [off]  typing
-   blind mode                   [off]  on
-   always show words history    [off]  on   web only
-   single list command palette   manual  [on]
-   command palette shortcut     Mod+K · terminal ^p  web only
- speed & accuracy
-   min speed                    [off]  custom   100 wpm
-   min accuracy                 [off]  custom   90%
-   min word burst               [off]  fixed   flex   100 wpm
- language
+ test behavior ────────────────────────────────────────────────────────────────
+ ▌  difficulty                    normal   expert   master
+    quick restart                 off   esc   tab   enter
+    repeat quotes                 off   typing
+    blind mode                    off   on
+    always show words history     off   on   web only
+    single list command palette   manual   on
+    command palette shortcut     Mod+K · terminal ^p  web only
+ speed & accuracy ─────────────────────────────────────────────────────────────
+    min speed                     off   custom   100 wpm
+    min accuracy                  off   custom   90%
+    min word burst                off   fixed   flex   100 wpm
+ language ─────────────────────────────────────────────────────────────────────
  Normal is the classic typing test experience. Expert fails the test if you
  submit (press space) an incorrect word. Master fails if you press a single
  incorrect key (meaning you have to achieve 100% accuracy).
- ↑↓ select · ←→ change · enter edit · r reset · / search · tab section
+ ↑↓ select  ←→ change  enter edit  r reset  / search  tab section
  esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 
 "
@@ -212,25 +212,25 @@ exports[`OpenTUI screen snapshots settings and palette search: theme palette 1`]
 "
  oxytype   test   settings   account   leaderboards   history       serika dark
   ┌──────────────────────────────────────────────────────────────────────────┐
- [│ > theme                                                                  │e
+  │ > theme                                                                  │
   │   Theme › 8008                                                           │
- t│   Theme › 80s after dark                                                 │
-  │   Theme › 9009                                                           │
+ t│   Theme › 80s after dark                                                 │─
+ ▌│   Theme › 9009                                                           │
   │   Theme › aether                                                         │
   │   Theme › alduin                                                         │
   │   Theme › alpine                                                         │
   │   Theme › anti hero                                                      │
   │   Theme › arch                                                           │
   │   Theme › aurora                                                         │
- s│   Theme › beach                                                          │
+ s│   Theme › beach                                                          │─
   │   Theme › bento                                                          │
   │   Theme › bingsu                                                         │
   │   Theme › bliss                                                          │
- l│   Theme › blue dolphin                                                   │
+ l│   Theme › blue dolphin                                                   │─
  N│ 1/197                                                                    │
  s│ enter select · tab/arrows move · esc back                                │
  i└──────────────────────────────────────────────────────────────────────────┘
- ↑↓ select · ←→ change · enter edit · r reset · / search · tab section
+ ↑↓ select  ←→ change  enter edit  r reset  / search  tab section
  esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 
 "

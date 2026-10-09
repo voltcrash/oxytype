@@ -13,10 +13,13 @@ import { useNotifications } from "../notifications";
 import { usePalette } from "../palette/palette";
 import { isDefault } from "../settings/rows";
 import { settingSections } from "../settings/sections";
+import { contentWidth } from "../shell/layout";
 import { useScreenKeys } from "../shell/screen-keys";
 import { useTheme } from "../theme/theme";
+import { KeyHints } from "../ui/key-hints";
 import { listWindow } from "../ui/selection";
 import { StyledLine } from "../ui/styled";
+import { Tabs } from "../ui/tabs";
 import { createTextField } from "../ui/text-field";
 import { TextInput } from "../ui/text-input";
 
@@ -194,20 +197,22 @@ export function SettingsScreen() {
     }
   });
 
+  const width = (): number => contentWidth(dimensions().width);
   const rowChunks = (row: SettingRow, active: boolean): Chunk[] => {
     const bg = active ? colors().subAlt : undefined;
     const title = row.title.padEnd(28).slice(0, 28);
     const choices = row.choices?.() ?? [];
     const modified = !isDefault(store, row.resetKeys ?? []);
-    return [
+    const chunks: Chunk[] = [
+      { text: active ? "▌" : " ", fg: colors().main, bg },
       { text: modified ? "•" : " ", fg: colors().main, bg },
       { text: ` ${title} `, fg: active ? colors().text : colors().sub, bg },
       ...choices.flatMap((choice, index): Chunk[] => [
         ...(index === 0 ? [] : [{ text: " ", bg }]),
         {
-          text: choice.active ? `[${choice.label}]` : ` ${choice.label} `,
-          fg: choice.active ? colors().main : colors().sub,
-          bg,
+          text: ` ${choice.label} `,
+          fg: choice.active ? colors().bg : colors().sub,
+          bg: choice.active ? colors().main : bg,
         },
       ]),
       ...(row.value === undefined
@@ -223,24 +228,29 @@ export function SettingsScreen() {
         ? []
         : [{ text: `  ${row.note}`, fg: colors().sub, bg }]),
     ];
+    const used = chunks.reduce((sum, it) => sum + it.text.length, 0);
+    return active && used < width()
+      ? [...chunks, { text: " ".repeat(width() - used), bg }]
+      : chunks;
   };
+  const groupChunks = (title: string): Chunk[] => [
+    { text: `${title} `, fg: colors().main },
+    {
+      text: "─".repeat(Math.max(0, width() - title.length - 1)),
+      fg: colors().subAlt,
+    },
+  ];
+  const wide = (): boolean => dimensions().width >= 100;
 
   return (
-    <box flexDirection="column" width="100%">
-      <StyledLine
-        chunks={visibleSections().flatMap((it, index): Chunk[] => [
-          ...(index === 0 ? [] : [{ text: " " }]),
-          {
-            text:
-              search.value() === "" && it === section()
-                ? `[${it.title}]`
-                : ` ${it.title} `,
-            fg:
-              search.value() === "" && it === section()
-                ? colors().main
-                : colors().sub,
-          },
-        ])}
+    <box flexDirection="column" width="100%" flexGrow={1}>
+      <Tabs
+        gap={wide() ? 1 : 0}
+        tabs={visibleSections().map((it, index) => ({
+          label: it.title,
+          active: search.value() === "" && it === section(),
+          hint: wide() ? String(index + 1) : undefined,
+        }))}
       />
       <Show
         when={searching() || search.value() !== ""}
@@ -267,7 +277,7 @@ export function SettingsScreen() {
               <StyledLine
                 chunks={
                   line.kind === "group"
-                    ? [{ text: line.title, fg: colors().main }]
+                    ? groupChunks(line.title)
                     : rowChunks(line.row, line.index === selectedIndex())
                 }
               />
@@ -280,9 +290,16 @@ export function SettingsScreen() {
           {selected()?.description ?? ""}
         </text>
       </box>
-      <text fg={colors().sub}>
-        ↑↓ select · ←→ change · enter edit · r reset · / search · tab section
-      </text>
+      <KeyHints
+        hints={[
+          { key: "↑↓", label: "select" },
+          { key: "←→", label: "change" },
+          { key: "enter", label: "edit" },
+          { key: "r", label: "reset" },
+          { key: "/", label: "search" },
+          { key: "tab", label: "section" },
+        ]}
+      />
     </box>
   );
 }
