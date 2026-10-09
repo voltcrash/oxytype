@@ -28,9 +28,14 @@ export async function runUi(runtime: Runtime): Promise<void> {
     if (quitting) return;
     quitting = true;
     if (error !== undefined) logger.error("ui.failed", error);
-    account.stop();
     // oxlint-disable-next-line promise/no-promise-in-callback -- renderer callbacks must flush pending writes before teardown
-    const writes = await Promise.allSettled([history.flush(), texts.flush()]);
+    const writes = await Promise.allSettled([
+      account.flush(),
+      config.flush(),
+      history.flush(),
+      texts.flush(),
+    ]);
+    account.stop();
     renderer.destroy();
     for (const write of writes) {
       if (write.status === "rejected") {
