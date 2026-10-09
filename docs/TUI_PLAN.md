@@ -262,6 +262,21 @@ extraction, feature, test and documentation commits.
 
 ## Stage E — Typing test (offline)
 
+Completed E1–E10 in one PR stacked on Stage D, with separate shared-code,
+rendering, session, result, history, pace, test and documentation commits.
+
+- Offline English time/words/quote/zen/custom tests use the shared generator,
+  input, timer and completed-event engine. Rendering wraps and follows the active
+  line, including all-line scrolling, native caret and a core-driven pace marker.
+- Mode/amount selectors, quick/explicit restarts, repeat, configurable live stats,
+  result numbers, block charts and atomic local history are functional. PB/average
+  pace use matching local results. Terminal approximations are in `tui/MISSING.md`.
+- Verification: 84 TUI, 486 package and 1,697 frontend tests; lint/typecheck,
+  formatting, circular-dependency checks and frontend production build. The web
+  time-15 fixture matches every live tick and final metrics. A raw 80x24 PTY saves
+  a completed test, reopens history on cold startup and quits cleanly.
+  Details: [TUI_TYPING_TEST.md](TUI_TYPING_TEST.md).
+
 ### E1. Word rendering
 
 - Render words w/ correct/incorrect/extra colors. Line wrapping, scroll to active line.
