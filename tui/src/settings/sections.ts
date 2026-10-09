@@ -34,7 +34,7 @@ function replaceUnderscores(value: unknown): string {
   return String(value).replace(/_/g, " ");
 }
 
-function behavior(context: SectionContext): SettingSection {
+function behaviorSection(context: SectionContext): SettingSection {
   const { store } = context;
   return {
     id: "behavior",
@@ -131,9 +131,51 @@ function behavior(context: SectionContext): SettingSection {
   };
 }
 
+function inputSection(context: SectionContext): SettingSection {
+  return {
+    id: "input",
+    title: "input",
+    groups: [
+      {
+        title: "editing",
+        rows: [
+          configRow(context, "freedomMode"),
+          configRow(context, "strictSpace"),
+          configRow(context, "confidenceMode"),
+          configRow(context, "codeUnindentOnBackspace"),
+        ],
+      },
+      {
+        title: "errors & corrections",
+        rows: [
+          configRow(context, "stopOnError"),
+          configRow(context, "deleteOnError", {
+            optionDisplay: replaceUnderscores,
+          }),
+          configRow(context, "quickEnd"),
+          configRow(context, "indicateTypos"),
+          configRow(context, "hideExtraLetters"),
+        ],
+      },
+      {
+        title: "keyboard & composition",
+        rows: [
+          configRow(context, "layout", {
+            optionDisplay: (layout) =>
+              layout === "default" ? "off" : replaceUnderscores(layout),
+          }),
+          configRow(context, "oppositeShiftMode"),
+          configRow(context, "compositionDisplay"),
+          configRow(context, "lazyMode"),
+        ],
+      },
+    ],
+  };
+}
+
 /** Settings sections in the web's order. */
 export function settingSections(context: SectionContext): SettingSection[] {
-  return [behavior(context)];
+  return [behaviorSection(context), inputSection(context)];
 }
 
 /** Rows in display order, for search across every section. */

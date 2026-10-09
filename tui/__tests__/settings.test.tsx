@@ -86,4 +86,25 @@ describe("settings screen", () => {
     expect(await app.frame()).toContain("Mod+K · terminal ^p  web only");
     await config.flush();
   });
+
+  test("switches sections and applies input rules", async () => {
+    const { app, config } = await setup();
+    app.mockInput.pressKey("2");
+    let frame = await app.frame();
+    expect(frame).toContain("[input]");
+    expect(frame).toContain("freedom mode");
+    // Freedom mode turns confidence mode off, like the web.
+    config.set("confidenceMode", "on");
+    app.mockInput.pressArrow("right");
+    expect(config.config.freedomMode).toBe(true);
+    expect(config.config.confidenceMode).toBe("off");
+    app.mockInput.pressTab();
+    expect(await app.frame()).toContain("[behavior]");
+    app.mockInput.pressTab({ shift: true });
+    await search(app, "opposite shift");
+    frame = await app.frame();
+    expect(frame).toContain("opposite shift mode");
+    expect(frame).toContain("web only");
+    await config.flush();
+  });
 });

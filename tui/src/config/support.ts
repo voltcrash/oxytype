@@ -19,6 +19,7 @@ const webOnly = new Set<keyof Config>([
   "monkeyPowerLevel",
   "commandPaletteHotkey",
   "compositionDisplay",
+  "oppositeShiftMode",
   "accountChart",
   "keymapMode",
   "keymapLayout",
