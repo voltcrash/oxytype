@@ -40,6 +40,7 @@ import { unwrap } from "solid-js/store";
 
 import type { ConfigStore } from "../config/store";
 import type { TestSources } from "./sources";
+import type { UploadIdentity } from "../auth/identity";
 import { createGenerator } from "./generator";
 import { inputAction, keyData } from "./input";
 
@@ -51,6 +52,7 @@ export type FinishedTest = {
   rawHistory: number[];
   invalid?: string;
   failure?: string;
+  owner?: UploadIdentity;
 };
 export type TypingTestOptions = {
   store: ConfigStore;
@@ -63,6 +65,7 @@ export type TypingTestOptions = {
   /** Test harnesses drive advance themselves. */
   schedule?: boolean;
   getPaceSpeed?: (config: Config, mode2: string) => number;
+  getIdentity?: () => UploadIdentity | undefined;
 };
 export type TypingTest = {
   status: Accessor<TestStatus>;
@@ -131,6 +134,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
   let restartCount = 0;
   let incompleteTests: IncompleteTest[] = [];
   let pending = Promise.resolve();
+  let owner: UploadIdentity | undefined;
 
   function snapshotConfig(): Config {
     // Word/visual funboxes are Stage G. Never attribute an unimplemented effect.
@@ -224,6 +228,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
           rawHistory: getRawHistory(eventLog),
           invalid,
           failure: reason,
+          owner,
         });
         setStatus("finished");
       });
@@ -242,6 +247,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
     setPace(undefined);
     bailedOut = false;
     repeated = repeat && previousWords !== undefined;
+    owner = undefined;
     try {
       if (!repeated) {
         const snapshot = snapshotConfig();
@@ -363,6 +369,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
     if (status() !== "ready" && status() !== "running") return;
     const version = generation;
     const wordIndex = session.getActiveWordIndex();
+    if (!session.isActive()) owner = options.getIdentity?.();
     await session.insert(text, timestamp);
     if (version !== generation || disposed) return;
     if (
