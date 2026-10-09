@@ -36,7 +36,7 @@ export function LeaderboardsScreen() {
   const [language, setLanguage] = createSignal<Language>(config.language);
   const [mode, setMode] = createSignal<Mode>("time");
   const [amount, setAmount] = createSignal("15");
-  const [page, setPage] = createSignal(1);
+  const [page, setPage] = createSignal(0);
   const board = createRemote(async () => {
     if (account === undefined) return undefined;
     const query = {
@@ -119,12 +119,12 @@ export function LeaderboardsScreen() {
             ? "weekly xp"
             : "all-time",
       );
-      setPage(1);
+      setPage(0);
       selection.set(0);
     } else if (event.name === "c") {
       event.preventDefault();
       setClient((value) => (value === "tui" ? "web" : "tui"));
-      setPage(1);
+      setPage(0);
       selection.set(0);
     } else if (event.name === "l" && !event.ctrl) {
       event.preventDefault();
@@ -137,7 +137,7 @@ export function LeaderboardsScreen() {
             active: () => language() === value,
             exec: () => {
               setLanguage(value);
-              setPage(1);
+              setPage(0);
               selection.set(0);
             },
           })),
@@ -156,7 +156,7 @@ export function LeaderboardsScreen() {
                 exec: () => {
                   setMode(value);
                   setAmount(String(count));
-                  setPage(1);
+                  setPage(0);
                   selection.set(0);
                 },
               }),
@@ -211,7 +211,7 @@ export function LeaderboardsScreen() {
           )}
         />
         <text fg={theme().colors.sub}>
-          page {page()}/{pages()} · your rank{" "}
+          page {page() + 1}/{pages()} · your rank{" "}
           {rank.data() === undefined ? "unranked" : (rank.data() ?? 0) + 1}
         </text>
         <RemoteStatus loading={rank.loading()} error={rank.error()} />
