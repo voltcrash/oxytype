@@ -13,12 +13,17 @@ import { useRouter } from "../router/router";
 import { screenTitles } from "../router/screens";
 import { useTypingTest } from "../test/typing-test";
 import { useTheme } from "../theme/theme";
+import { KeyHints } from "../ui/key-hints";
+import { StyledLine } from "../ui/styled";
+import { Tabs } from "../ui/tabs";
 import { globalBindings, paletteBindings, quitBinding } from "./keymap";
 import { KeyDispatcherContext } from "./screen-keys";
 
 const navScreens = globalBindings.flatMap((it) =>
   it.action.type === "open" ? [it.action.screen] : [],
 );
+/** Wide enough for settings rows; wider terminals centre the column. */
+const maxContentWidth = 120;
 const hintBindings = [
   ...globalBindings,
   ...paletteBindings.slice(0, 1),
@@ -88,18 +93,27 @@ export function Shell(props: ParentProps<{ onQuit: () => void }>) {
     { release: true },
   );
 
+  /** Like the web's focus mode: chrome steps back while typing. */
+  const focused = (): boolean =>
+    router.current() === "test" && test.status() === "running";
+  const sidePadding = (): number => (dimensions().width >= 100 ? 3 : 1);
+
   return (
     <box
       flexDirection="column"
       width="100%"
       height="100%"
-      padding={1}
+      paddingTop={1}
+      paddingBottom={1}
+      paddingLeft={sidePadding()}
+      paddingRight={sidePadding()}
+      alignItems="center"
       backgroundColor={colors().bg}
     >
       <Show
         when={dimensions().width >= 80 && dimensions().height >= 20}
         fallback={
-          <box flexDirection="column" gap={1}>
+          <box flexDirection="column" gap={1} width="100%">
             <text fg={colors().main}>oxytype</text>
             <text fg={colors().text} wrapMode="word">
               Resize terminal to at least 80×20. Current: {dimensions().width}×
@@ -109,59 +123,77 @@ export function Shell(props: ParentProps<{ onQuit: () => void }>) {
           </box>
         }
       >
-        <box flexDirection="row" gap={2}>
-          <text fg={colors().main} flexShrink={0}>
-            oxytype
-          </text>
-          <For each={navScreens}>
-            {(screen) => (
-              <text
-                fg={router.current() === screen ? colors().text : colors().sub}
-                flexShrink={0}
-              >
-                {router.current() === screen
-                  ? `[${screenTitles[screen]}]`
-                  : screenTitles[screen]}
+        <box
+          flexDirection="column"
+          flexGrow={1}
+          width="100%"
+          maxWidth={maxContentWidth}
+        >
+          <box flexDirection="row" gap={2} flexShrink={0}>
+            <StyledLine
+              chunks={[
+                {
+                  text: "oxytype",
+                  fg: focused() ? colors().sub : colors().main,
+                  bold: true,
+                },
+              ]}
+            />
+            <Show when={!focused()}>
+              <Tabs
+                tabs={navScreens.map((screen) => ({
+                  label: screenTitles[screen],
+                  active:
+                    router.current() === screen ||
+                    (screen === "test" &&
+                      (router.current() === "result" ||
+                        router.current() === "replay")),
+                }))}
+              />
+              <box flexGrow={1} />
+              <text fg={colors().sub} flexShrink={0}>
+                {theme().name.replaceAll("_", " ")}
               </text>
+            </Show>
+          </box>
+          <box flexGrow={1} paddingTop={1}>
+            {props.children}
+          </box>
+          <For each={notifications.entries()}>
+            {(entry) => (
+              <StyledLine
+                wrap
+                chunks={[
+                  {
+                    text: "▌ ",
+                    fg:
+                      entry.level === "error"
+                        ? colors().error
+                        : entry.level === "success"
+                          ? colors().main
+                          : colors().sub,
+                  },
+                  {
+                    text: entry.message,
+                    fg:
+                      entry.level === "error" ? colors().error : colors().text,
+                  },
+                ]}
+              />
             )}
           </For>
-          <box flexGrow={1} />
-          <text fg={colors().sub} flexShrink={0}>
-            {theme().name.replaceAll("_", " ")}
-          </text>
-        </box>
-        <box flexGrow={1} paddingTop={1}>
-          {props.children}
+          <Show when={!focused()} fallback={<text> </text>}>
+            <KeyHints
+              hints={hintBindings.map((binding) => ({
+                key: formatKey(binding.key),
+                label: binding.label,
+              }))}
+            />
+          </Show>
         </box>
         <Show when={palette?.isOpen() === true && palette}>
           {(open) => <PaletteView palette={open()} />}
         </Show>
-        <For each={notifications.entries()}>
-          {(entry) => (
-            <text
-              fg={
-                entry.level === "error"
-                  ? colors().error
-                  : entry.level === "success"
-                    ? colors().main
-                    : colors().text
-              }
-              wrapMode="word"
-              flexShrink={0}
-            >
-              {entry.message}
-            </text>
-          )}
-        </For>
-        <box flexDirection="row" gap={2}>
-          <For each={hintBindings}>
-            {(binding) => (
-              <text fg={colors().sub} flexShrink={0}>
-                {formatKey(binding.key)} {binding.label}
-              </text>
-            )}
-          </For>
-        </box>
       </Show>
     </box>
   );

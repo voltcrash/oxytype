@@ -15,7 +15,11 @@ export async function renderTui(
   // The narrowest common terminal width.
   size = { width: 80, height: 20 },
 ): Promise<
-  Setup & { frame: () => Promise<string>; escape: () => Promise<void> }
+  Setup & {
+    frame: () => Promise<string>;
+    escape: () => Promise<void>;
+    active: (label: string) => Promise<boolean>;
+  }
 > {
   const setup = await testRender(node, size);
   active.push(setup);
@@ -24,6 +28,17 @@ export async function renderTui(
     frame: async () => {
       await setup.renderOnce();
       return setup.captureCharFrame();
+    },
+    // Pills, tabs and selections mark the active label with a raised background.
+    active: async (label: string) => {
+      await setup.renderOnce();
+      const frame = setup.captureSpans();
+      const canvas = frame.lines[0]?.spans[0]?.bg;
+      return frame.lines.some((line) =>
+        line.spans.some(
+          (span) => span.text.trim() === label && !span.bg.equals(canvas),
+        ),
+      );
     },
     // A lone ESC byte resolves after the escape-sequence timeout.
     escape: async () => {

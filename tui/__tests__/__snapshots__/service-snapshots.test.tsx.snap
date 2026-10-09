@@ -2,7 +2,7 @@
 
 exports[`guest and authenticated account snapshots: guest account 1`] = `
 "
- oxytype  test  settings  [account]  leaderboards  history          serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
  account
  not logged in · guest
@@ -30,7 +30,7 @@ exports[`guest and authenticated account snapshots: guest account 1`] = `
 
 exports[`guest and authenticated account snapshots: authenticated account 1`] = `
 "
- oxytype  test  settings  [account]  leaderboards  history          serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
  account
  Tester · authenticated
@@ -58,7 +58,7 @@ exports[`guest and authenticated account snapshots: authenticated account 1`] = 
 
 exports[`populated leaderboard snapshot: leaderboard 1`] = `
 "
- oxytype  test  settings  account  [leaderboards]  history          serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
  leaderboards · all-time · tui · english · time 15
 
@@ -86,7 +86,7 @@ exports[`populated leaderboard snapshot: leaderboard 1`] = `
 
 exports[`saved history detail snapshot: history details 1`] = `
 "
- oxytype  test  settings  account  leaderboards  [history]          serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
  local history · 1 tests
 

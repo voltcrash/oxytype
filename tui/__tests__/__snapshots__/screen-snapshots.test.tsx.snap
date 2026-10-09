@@ -2,7 +2,7 @@
 
 exports[`OpenTUI screen snapshots ready, typing and result at 80x24: ready 1`] = `
 "
- oxytype  [test]  settings  account  leaderboards  history          serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
  typing test
 
@@ -30,7 +30,7 @@ exports[`OpenTUI screen snapshots ready, typing and result at 80x24: ready 1`] =
 
 exports[`OpenTUI screen snapshots ready, typing and result at 80x24: result with chart 1`] = `
 "
- oxytype  test  settings  account  leaderboards  history            serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
  result
 
@@ -58,7 +58,7 @@ exports[`OpenTUI screen snapshots ready, typing and result at 80x24: result with
 
 exports[`OpenTUI screen snapshots ready, typing and result at 80x24: replay 1`] = `
 "
- oxytype  test  settings  account  leaderboards  history            serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
  last test replay · paused · 1×
 
@@ -86,7 +86,7 @@ exports[`OpenTUI screen snapshots ready, typing and result at 80x24: replay 1`] 
 
 exports[`OpenTUI screen snapshots ready, typing and result at 80x24: empty history 1`] = `
 "
- oxytype  test  settings  account  leaderboards  [history]          serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
  local history · 0 tests
 
@@ -114,7 +114,7 @@ exports[`OpenTUI screen snapshots ready, typing and result at 80x24: empty histo
 
 exports[`OpenTUI screen snapshots compact ready and result at 80x20: compact ready 1`] = `
 "
- oxytype  [test]  settings  account  leaderboards  history          serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
  typing test
 
@@ -138,7 +138,7 @@ exports[`OpenTUI screen snapshots compact ready and result at 80x20: compact rea
 
 exports[`OpenTUI screen snapshots compact ready and result at 80x20: compact result 1`] = `
 "
- oxytype  test  settings  account  leaderboards  history            serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
  result
 
@@ -182,7 +182,7 @@ exports[`OpenTUI screen snapshots resize prompt at 40x16: resize prompt 1`] = `
 
 exports[`OpenTUI screen snapshots settings and palette search: behavior settings 1`] = `
 "
- oxytype  test  [settings]  account  leaderboards  history          serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
  [behavior]  input   sound   caret   appearance   hide elements   theme   dange
 
@@ -210,7 +210,7 @@ exports[`OpenTUI screen snapshots settings and palette search: behavior settings
 
 exports[`OpenTUI screen snapshots settings and palette search: theme palette 1`] = `
 "
- oxytype  test  [settings]  account  leaderboards  history          serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
   ┌──────────────────────────────────────────────────────────────────────────┐
  [│ > theme                                                                  │e
   │   Theme › 8008                                                           │
@@ -238,7 +238,7 @@ exports[`OpenTUI screen snapshots settings and palette search: theme palette 1`]
 
 exports[`OpenTUI screen snapshots custom screen: custom 1`] = `
 "
- oxytype  test  settings  account  leaderboards  history            serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
  custom text · repeat · 9 word · pipe off
 
@@ -266,7 +266,7 @@ exports[`OpenTUI screen snapshots custom screen: custom 1`] = `
 
 exports[`OpenTUI screen snapshots funboxes screen: funboxes 1`] = `
 "
- oxytype  test  settings  account  leaderboards  history            serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
  funboxes · type to search
   search funboxes
@@ -294,7 +294,7 @@ exports[`OpenTUI screen snapshots funboxes screen: funboxes 1`] = `
 
 exports[`OpenTUI screen snapshots challenges screen: challenges 1`] = `
 "
- oxytype  test  settings  account  leaderboards  history            serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
  challenges · type to search
   search challenges
@@ -322,7 +322,7 @@ exports[`OpenTUI screen snapshots challenges screen: challenges 1`] = `
 
 exports[`OpenTUI screen snapshots account screen: account 1`] = `
 "
- oxytype  test  settings  [account]  leaderboards  history          serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
  account
  account service unavailable
@@ -350,7 +350,7 @@ exports[`OpenTUI screen snapshots account screen: account 1`] = `
 
 exports[`OpenTUI screen snapshots leaderboards screen: leaderboards 1`] = `
 "
- oxytype  test  settings  account  [leaderboards]  history          serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
  leaderboards · all-time · tui · english · time 15
 

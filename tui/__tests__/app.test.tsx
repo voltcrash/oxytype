@@ -11,7 +11,10 @@ describe("app shell", () => {
     const frame = await app.frame();
     expect(frame).toContain("typing test");
     // Header and hints fit an 80-column terminal without wrapping.
-    expect(frame).toContain("oxytype  [test]  settings  account  leaderboards");
+    expect(frame).toContain(
+      "oxytype   test   settings   account   leaderboards",
+    );
+    expect(await app.active("test")).toBe(true);
     expect(frame).toContain(
       "esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit",
     );
@@ -20,13 +23,13 @@ describe("app shell", () => {
   test("opens screens with global keys and goes back with escape", async () => {
     const app = await renderApp();
     app.mockInput.pressKey("s", { ctrl: true });
-    expect(await app.frame()).toContain("[settings]");
+    expect(await app.active("settings")).toBe(true);
 
     app.mockInput.pressKey("l", { ctrl: true });
-    expect(await app.frame()).toContain("[leaderboards]");
+    expect(await app.active("leaderboards")).toBe(true);
 
     await app.escape();
-    expect(await app.frame()).toContain("[settings]");
+    expect(await app.active("settings")).toBe(true);
 
     await app.escape();
     expect(await app.frame()).toContain("typing test");
@@ -63,7 +66,7 @@ describe("app shell", () => {
   test("ctrl+c quits from any screen", async () => {
     const onQuit = mock(() => undefined);
     const app = await renderApp({ initialScreen: "account", onQuit });
-    expect(await app.frame()).toContain("[account]");
+    expect(await app.active("account")).toBe(true);
     app.mockInput.pressCtrlC();
     expect(onQuit).toHaveBeenCalledTimes(1);
   });
