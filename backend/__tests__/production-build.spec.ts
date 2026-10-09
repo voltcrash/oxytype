@@ -205,7 +205,7 @@ if (process.env.FIXTURE_FAIL_BUILD === target) process.exit(1);
     30_000,
   );
 
-  it("fails closed when pnpm cannot start", () => {
+  it("fails closed when vp cannot start", () => {
     const result = run({ PATH: root });
     expect(result.error).toBeUndefined();
     expect(result.status).toBe(1);

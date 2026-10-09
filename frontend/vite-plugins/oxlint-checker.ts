@@ -108,7 +108,7 @@ export function oxlintChecker(options: OxlintCheckerOptions = {}): Plugin {
    * Runs an oxlint process with the given arguments and captures its combined output.
    *
    * This function is responsible for managing the lifecycle of the current lint process:
-   * - It spawns a new child process via `pnpm exec vp lint . ...args`.
+   * - It spawns a new child process via `vp lint . ...args`.
    * - It assigns the spawned process to the shared {@link currentProcess} variable so that
    *   other parts of the plugin can cancel or track the active lint run.
    * - On process termination (either "error" or "close"), it clears {@link currentProcess}
@@ -125,8 +125,8 @@ export function oxlintChecker(options: OxlintCheckerOptions = {}): Plugin {
   ): Promise<{ code: number | null; output: string }> => {
     return new Promise((resolve) => {
       const childProcess = spawn(
-        "pnpm",
-        ["exec", "vp", "lint", ".", "--format", "agent", ...args],
+        "vp",
+        ["lint", ".", "--format", "agent", ...args],
         {
           cwd: process.cwd(),
           env: process.env,
@@ -287,10 +287,8 @@ export function oxlintChecker(options: OxlintCheckerOptions = {}): Plugin {
 
       try {
         const output = execFileSync(
-          "pnpm",
+          "vp",
           [
-            "exec",
-            "vp",
             "lint",
             ".",
             "--format",
