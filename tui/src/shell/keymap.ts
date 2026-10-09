@@ -4,6 +4,7 @@ import type { ScreenId } from "../router/screens";
 export type GlobalAction =
   | { type: "quit" }
   | { type: "back" }
+  | { type: "palette" }
   | { type: "open"; screen: ScreenId };
 
 export type GlobalBinding = {
@@ -18,6 +19,12 @@ export const quitBinding: GlobalBinding = {
   label: "quit",
   action: { type: "quit" },
 };
+
+/** Toggles the command palette; ctrl+k matches the web default. */
+export const paletteBindings: GlobalBinding[] = [
+  { key: { name: "p", ctrl: true }, label: "cmd", action: { type: "palette" } },
+  { key: { name: "k", ctrl: true }, label: "cmd", action: { type: "palette" } },
+];
 
 /** Handled after the active screen declines the key. */
 export const globalBindings: GlobalBinding[] = [

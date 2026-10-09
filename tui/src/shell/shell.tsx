@@ -1,23 +1,29 @@
 import type { ParentProps } from "solid-js";
 
 import { useKeyboard } from "@opentui/solid";
-import { For, useContext } from "solid-js";
+import { For, Show, useContext } from "solid-js";
 
 import type { GlobalAction } from "./keymap";
 
 import { formatKey, matchesKey } from "../keys";
 import { useNotifications } from "../notifications";
+import { usePalette } from "../palette/palette";
+import { PaletteView } from "../palette/palette-view";
 import { useRouter } from "../router/router";
 import { screenTitles } from "../router/screens";
 import { useTypingTest } from "../test/typing-test";
 import { useTheme } from "../theme/theme";
-import { globalBindings, quitBinding } from "./keymap";
+import { globalBindings, paletteBindings, quitBinding } from "./keymap";
 import { KeyDispatcherContext } from "./screen-keys";
 
 const navScreens = globalBindings.flatMap((it) =>
   it.action.type === "open" ? [it.action.screen] : [],
 );
-const hintBindings = [...globalBindings, quitBinding];
+const hintBindings = [
+  ...globalBindings,
+  ...paletteBindings.slice(0, 1),
+  quitBinding,
+];
 
 export function Shell(props: ParentProps<{ onQuit: () => void }>) {
   const router = useRouter();
@@ -25,6 +31,7 @@ export function Shell(props: ParentProps<{ onQuit: () => void }>) {
   const theme = useTheme();
   const test = useTypingTest();
   const notifications = useNotifications();
+  const palette = usePalette();
   const colors = () => theme().colors;
 
   const run = (action: GlobalAction): void => {
@@ -32,6 +39,9 @@ export function Shell(props: ParentProps<{ onQuit: () => void }>) {
       props.onQuit();
     } else if (action.type === "back") {
       router.back();
+    } else if (action.type === "palette") {
+      if (palette?.isOpen() === true) palette.close();
+      else palette?.open();
     } else {
       if (action.screen === "test" && test.status() === "finished") {
         void test.restart();
@@ -49,6 +59,16 @@ export function Shell(props: ParentProps<{ onQuit: () => void }>) {
       if (matchesKey(event, quitBinding.key)) {
         event.preventDefault();
         run(quitBinding.action);
+        return;
+      }
+      const toggle = paletteBindings.find((it) => matchesKey(event, it.key));
+      if (toggle !== undefined && palette !== undefined) {
+        event.preventDefault();
+        run(toggle.action);
+        return;
+      }
+      if (palette?.isOpen() === true) {
+        palette.handleKey(event);
         return;
       }
       dispatcher?.dispatch(event);
@@ -93,6 +113,9 @@ export function Shell(props: ParentProps<{ onQuit: () => void }>) {
       <box flexGrow={1} paddingTop={1}>
         {props.children}
       </box>
+      <Show when={palette?.isOpen() === true && palette}>
+        {(open) => <PaletteView palette={open()} />}
+      </Show>
       <For each={notifications.entries()}>
         {(entry) => (
           <text

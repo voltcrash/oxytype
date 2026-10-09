@@ -1,4 +1,4 @@
-import { Dynamic } from "@opentui/solid";
+import { Dynamic, useRenderer } from "@opentui/solid";
 import { createEffect, on, onCleanup, onMount } from "solid-js";
 
 import type { ConfigStore } from "./config/store";
@@ -6,6 +6,7 @@ import type { ScreenId } from "./router/screens";
 
 import { AccountContext, type Account } from "./account";
 import { createAssetSource } from "./assets/source";
+import { openBrowser } from "./auth/browser";
 import { AuthContext, type AuthStore } from "./auth/store";
 import { ConfigContext } from "./config/store";
 import {
@@ -13,6 +14,8 @@ import {
   NotificationsContext,
   type Notifications,
 } from "./notifications";
+import { rootCommands } from "./palette/commands";
+import { createPalette, PaletteContext } from "./palette/palette";
 import {
   createHistoryStore,
   HistoryContext,
@@ -66,6 +69,21 @@ export function App(props: AppProps) {
     config.onReject((failure) => notifications.notify(failure.message)),
   );
   onCleanup(() => notifications.dispose());
+  const renderer = useRenderer();
+  const palette = createPalette({
+    root: () =>
+      rootCommands({
+        store: config,
+        router,
+        test,
+        notifications,
+        account,
+        copy: (text) => renderer.copyToClipboardOSC52(text),
+        openUrl: openBrowser,
+      }),
+    singleList: () => config.config.singleListCommandLine,
+    onError: (message) => notifications.notify(message, "error"),
+  });
   createEffect(
     on(test.result, (finished) => {
       if (finished !== undefined && config.config.resultSaving) {
@@ -88,9 +106,11 @@ export function App(props: AppProps) {
                   <HistoryContext.Provider value={history}>
                     <TypingTestContext.Provider value={test}>
                       <NotificationsContext.Provider value={notifications}>
-                        <Shell onQuit={props.onQuit}>
-                          <Dynamic component={screens[router.current()]} />
-                        </Shell>
+                        <PaletteContext.Provider value={palette}>
+                          <Shell onQuit={props.onQuit}>
+                            <Dynamic component={screens[router.current()]} />
+                          </Shell>
+                        </PaletteContext.Provider>
                       </NotificationsContext.Provider>
                     </TypingTestContext.Provider>
                   </HistoryContext.Provider>

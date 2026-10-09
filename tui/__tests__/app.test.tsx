@@ -13,7 +13,7 @@ describe("app shell", () => {
     // Header and hints fit an 80-column terminal without wrapping.
     expect(frame).toContain("oxytype  [test]  settings  account  leaderboards");
     expect(frame).toContain(
-      "esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^c quit",
+      "esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit",
     );
   });
 
