@@ -20,6 +20,7 @@ import type { TestSources } from "./sources";
 
 export type GeneratorOptions = {
   store: ConfigStore;
+  isPractice: () => boolean;
   getWeakSpotWord: (wordset: Wordset) => string;
   notify: (message: string) => void;
   getSelectedQuoteId?: () => number;
@@ -81,7 +82,7 @@ export function createGenerator(options: GeneratorOptions): WordsGenerator {
     },
     isRepeated: options.isRepeated,
     // Practice modes arrive with the practice screens.
-    isPractiseWordsActive: () => false,
+    isPractiseWordsActive: options.isPractice,
     getCurrentQuote: options.getCurrentQuote,
     setCurrentQuote: options.setCurrentQuote,
     // Quote search arrives with the quote screens.

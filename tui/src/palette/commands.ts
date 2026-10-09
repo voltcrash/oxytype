@@ -387,6 +387,40 @@ export function rootCommands(context: CommandContext): CommandGroup {
       available: resultVisible,
       exec: () => copy(test.words().join(""), "Copied to clipboard"),
     },
+    {
+      id: "practiceWords",
+      display: "Practice words...",
+      available: resultVisible,
+      subgroup: () => ({
+        title: "Practice words",
+        list: (
+          [
+            ["words", false, "missed words"],
+            ["biwords", false, "missed word pairs"],
+            ["off", true, "slow words"],
+            ["words", true, "missed and slow words"],
+            ["biwords", true, "missed pairs and slow words"],
+          ] as const
+        ).map(([missed, slow, display]) => ({
+          id: `practice${missed}${slow}`,
+          display,
+          exec: async () => {
+            await test.practiceWords(missed, slow);
+            router.replace("test");
+          },
+        })),
+      }),
+    },
+    {
+      id: "stopPractice",
+      display: "Stop practice/challenge",
+      available: () => test.practice() || test.challenge() !== undefined,
+      exec: async () => {
+        test.clearChallenge();
+        await test.restart();
+        router.replace("test");
+      },
+    },
     ...settings.slice(0, 7),
     {
       id: "bailOut",

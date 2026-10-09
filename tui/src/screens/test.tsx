@@ -6,7 +6,6 @@ import {
   createSignal,
   onCleanup,
   Show,
-  untrack,
 } from "solid-js";
 
 import { useConfig } from "../config/store";
@@ -46,7 +45,9 @@ export function TestScreen() {
     onCleanup(() => clearInterval(timer));
   });
   const shownConfig = (): typeof store.config =>
-    test.status() === "running" || test.challenge() !== undefined
+    test.status() === "running" ||
+    test.challenge() !== undefined ||
+    test.practice()
       ? test.config()
       : store.config;
   const tape = (): boolean => store.config.tapeMode !== "off";
@@ -121,37 +122,10 @@ export function TestScreen() {
       return config.words === 0 ? "unlimited words" : `${config.words} words`;
     }
     if (config.mode === "custom") {
-      return `${test.customText.limit.value} ${test.customText.limit.mode} · default custom text`;
+      return `${test.customText.limit.value} ${test.customText.limit.mode} · custom text`;
     }
     return config.mode;
   };
-  const signature = createMemo(() =>
-    JSON.stringify([
-      store.config.mode,
-      store.config.time,
-      store.config.words,
-      store.config.language,
-      store.config.quoteLength,
-      store.config.punctuation,
-      store.config.numbers,
-      store.config.lazyMode,
-      store.config.britishEnglish,
-      store.config.funbox,
-    ]),
-  );
-  let previous = untrack(signature);
-  let previousRemote = untrack(store.remoteRevision);
-  createEffect(() => {
-    const next = signature();
-    const remote = store.remoteRevision();
-    const fromServer = remote !== previousRemote;
-    previousRemote = remote;
-    if (next === previous) return;
-    previous = next;
-    if (fromServer && untrack(test.status) === "running") return;
-    test.clearChallenge();
-    void test.restart();
-  });
   createEffect(() => {
     if (test.status() === "finished") router.replace("result");
   });

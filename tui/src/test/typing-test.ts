@@ -20,6 +20,9 @@ import {
   type PaceState,
 } from "@oxytype/typing-core/pace-caret";
 import type { QuoteWithTextSplit } from "@oxytype/typing-core/quotes";
+import { buildPracticeWords } from "@oxytype/typing-core/practise-words";
+import { createWeakSpot } from "@oxytype/typing-core/weak-spot";
+import { sharedConfigMetadata } from "@oxytype/typing-core/config/metadata";
 import { getInvalidResultReason } from "@oxytype/typing-core/result-validity";
 import {
   createTestSession,
@@ -31,6 +34,8 @@ import type { Accessor } from "solid-js";
 import {
   batch,
   createContext,
+  createEffect,
+  untrack,
   createSignal,
   onCleanup,
   useContext,
@@ -85,6 +90,11 @@ export type TypingTest = {
   sources: TestSources;
   loadChallenge: (name: ChallengeName) => Promise<void>;
   challenge: Accessor<Challenge | undefined>;
+  practice: Accessor<boolean>;
+  practiceWords: (
+    missed: "off" | "words" | "biwords",
+    slow: boolean,
+  ) => Promise<void>;
   clearChallenge: () => void;
   texts: TextLibrary;
   setCustomText: (settings: CustomTextSettings) => Promise<void>;
@@ -117,6 +127,9 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
   const { store, sources } = options;
   const texts = options.texts ?? createTextLibrary();
   const customText = structuredClone(options.customText ?? texts.current());
+  let baseCustomText = structuredClone(customText);
+  const weakSpot = createWeakSpot();
+  const [practice, setPractice] = createSignal(false);
   const now = options.now ?? (() => performance.now());
   const dateNow = options.dateNow ?? (() => Date.now());
   const [status, setStatus] = createSignal<TestStatus>("loading");
@@ -193,6 +206,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
   function makeSession(): void {
     session = createTestSession(config, {
       dateNow,
+      weakSpot,
       generator: config().mode === "zen" ? undefined : generator,
       allWordsGenerated: () =>
         options.words !== undefined
@@ -258,15 +272,17 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
         loadedChallenge === undefined
           ? undefined
           : `${loadedChallenge.display}: ${challengeFailures.length === 0 ? "passed" : challengeFailures.join(", ")}`;
-      const invalid = getInvalidResultReason({
-        result: completed,
-        eventLog,
-        bailedOut,
-        failed: reason !== undefined,
-        repeated,
-        lbOptOut: false,
-        customLimit: customText.limit,
-      });
+      const invalid = practice()
+        ? "practice mode"
+        : getInvalidResultReason({
+            result: completed,
+            eventLog,
+            bailedOut,
+            failed: reason !== undefined,
+            repeated,
+            lbOptOut: false,
+            customLimit: customText.limit,
+          });
       batch(() => {
         refresh();
         setResult({
@@ -333,6 +349,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
         sectionIndexes = [];
         const baseGenerator = createGenerator({
           store,
+          isPractice: practice,
           getWeakSpotWord: (wordset) => session.weakSpot.getWord(wordset),
           notify: (message) => setNotice(message),
           getSelectedQuoteId: () => selectedQuoteId,
@@ -542,13 +559,64 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
     stopTimer();
     generation++;
   });
+  function clearSpecial(): void {
+    const active = challenge() !== undefined || practice();
+    setChallenge(undefined);
+    setPractice(false);
+    challengeConfig = {};
+    if (active) Object.assign(customText, structuredClone(baseCustomText));
+  }
   const ready = load();
+  const restartKeys = (
+    Object.keys(sharedConfigMetadata) as (keyof Config)[]
+  ).filter((key) => sharedConfigMetadata[key].changeRequiresRestart);
+  const signature = (): string =>
+    JSON.stringify(restartKeys.map((key) => store.config[key]));
+  let previousSignature = untrack(signature);
+  let previousRemote = untrack(store.remoteRevision);
+  createEffect(() => {
+    const next = signature();
+    const remote = store.remoteRevision();
+    const fromServer = remote !== previousRemote;
+    previousRemote = remote;
+    if (next === previousSignature) return;
+    previousSignature = next;
+    if (fromServer && untrack(status) === "running") return;
+    untrack(() => {
+      clearSpecial();
+      void restart();
+    });
+  });
   return {
     sources,
     challenge,
-    clearChallenge: () => {
-      setChallenge(undefined);
-      challengeConfig = {};
+    clearChallenge: clearSpecial,
+    practice,
+    practiceWords: async (missed, slow) => {
+      const finished = result();
+      if (finished === undefined) throw new Error("Finish a test first");
+      let message = "No practice words available";
+      const selected = buildPracticeWords(
+        finished.eventLog,
+        [...session.getWords()],
+        missed,
+        slow,
+        (practiceNotice) => {
+          message = practiceNotice;
+        },
+      );
+      if (selected === null) throw new Error(message);
+      clearSpecial();
+      setPractice(true);
+      challengeConfig = { mode: "custom", funbox: [] };
+      Object.assign(customText, {
+        text: selected.text,
+        mode: "repeat",
+        limit: { mode: "section", value: selected.sectionLimit },
+        pipeDelimiter: false,
+      });
+      await restart();
+      setNotice("Practice mode · results are not saved");
     },
     loadChallenge: async (name) => {
       if (name === "wingdings") {
@@ -578,6 +646,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
       } else if (setup.customText !== undefined) {
         Object.assign(customText, structuredClone(setup.customText));
       }
+      setPractice(false);
       challengeConfig = setup.config;
       setChallenge(loaded);
       await restart();
@@ -587,18 +656,17 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
     },
     texts,
     setCustomText: async (settings) => {
-      setChallenge(undefined);
-      challengeConfig = {};
+      clearSpecial();
       const next = CustomTextSettingsSchema.parse(settings);
       Object.assign(customText, structuredClone(next));
+      baseCustomText = structuredClone(next);
       texts.setCurrent(next);
       await texts.flush();
       store.set("mode", "custom");
       await restart();
     },
     selectQuote: async (language, id) => {
-      setChallenge(undefined);
-      challengeConfig = {};
+      clearSpecial();
       selectedQuoteId = id;
       store.set("language", language);
       store.set("quoteLength", [-2]);
