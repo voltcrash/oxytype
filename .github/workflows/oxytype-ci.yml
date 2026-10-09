@@ -1,7 +1,6 @@
 name: Oxytype CI
 
 env:
-  PNPM_VERSION: "12.8.1"
   NODE_VERSION: "24.21.0"
   BUN_VERSION: "1.4.2"
   TURNSTILE_SITE_KEY: "1x00000000000000000000AA"
@@ -80,45 +79,14 @@ jobs:
     needs: [pre-ci]
     if: github.event.pull_request.draft == false || contains(github.event.pull_request.labels.*.name, 'force-ci') || contains(github.event.pull_request.labels.*.name, 'force-full-ci')
     steps:
-      - name: Checkout pnpm-lock
-        uses: actions/checkout@v7.0.1
-        with:
-          sparse-checkout: |
-            pnpm-lock.yaml
+      - uses: actions/checkout@v7.0.1
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6.1.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Cache node modules
-        id: cache-pnpm
-        uses: actions/cache@v6.1.0
-        env:
-          cache-name: node-modules
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-${{ env.NODE_VERSION }}-build-${{ env.cache-name }}-${{ hashFiles('pnpm-lock.yaml') }}
-          lookup-only: true
-
-      - if: ${{ steps.cache-pnpm.outputs.cache-hit != 'true' }}
-        name: Full checkout
-        uses: actions/checkout@v7.0.1
-
-      - if: ${{ steps.cache-pnpm.outputs.cache-hit != 'true' }}
-        name: Set up Node.js
-        uses: actions/setup-node@v7.0.0
+      - name: Set up Vite+ and install dependencies
+        uses: voidzero-dev/setup-vp@v1.21.1
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - if: ${{ steps.cache-pnpm.outputs.cache-hit != 'true' }}
-        name: Install dependencies
-        run: pnpm install
+          # Saves the pnpm store once so parallel jobs only restore it.
+          cache: true
 
   check-format:
     name: check-format
@@ -159,42 +127,18 @@ jobs:
               core.setOutput('has-files', 'true');
             }
 
-      - name: Set up Node.js
+      - name: Set up Vite+ and install dependencies
         if: steps.get-changed-files.outputs.has-files == 'true'
-        uses: actions/setup-node@v7.0.0
+        uses: voidzero-dev/setup-vp@v1.21.1
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Setup pnpm
-        if: steps.get-changed-files.outputs.has-files == 'true'
-        uses: pnpm/action-setup@v6.1.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Get pnpm store directory
-        if: steps.get-changed-files.outputs.has-files == 'true'
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Cache node modules
-        if: steps.get-changed-files.outputs.has-files == 'true'
-        id: cache-pnpm
-        uses: actions/cache@v6.1.0
-        env:
-          cache-name: node-modules
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-${{ env.NODE_VERSION }}-build-${{ env.cache-name }}-${{ hashFiles('pnpm-lock.yaml') }}
-
-      - name: Install dependencies
-        if: steps.get-changed-files.outputs.has-files == 'true'
-        run: pnpm install
+          cache: true
+          cache-save: false
 
       - name: Check formatting (changed files)
         if: steps.get-changed-files.outputs.has-files == 'true'
         run: |
-          xargs -0 pnpm exec vp fmt --check --no-error-on-unmatched-pattern < /tmp/changed-files.txt
+          xargs -0 vp fmt --check --no-error-on-unmatched-pattern < /tmp/changed-files.txt
 
   ci-be:
     name: ci-be
@@ -204,41 +148,22 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v7.0.0
+      - name: Set up Vite+ and install dependencies
+        uses: voidzero-dev/setup-vp@v1.21.1
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6.1.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Cache node modules
-        id: cache-pnpm
-        uses: actions/cache@v6.1.0
-        env:
-          cache-name: node-modules
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-${{ env.NODE_VERSION }}-build-${{ env.cache-name }}-${{ hashFiles('pnpm-lock.yaml') }}
-
-      - name: Install dependencies
-        run: pnpm install
+          # Restores the pnpm store saved by prime-cache.
+          cache: true
+          cache-save: false
 
       - name: Check lint
-        run: npm run lint-fast-be && npm run lint-be
+        run: vp run lint-fast-be && vp run lint-be
 
       - name: Build
-        run: npm run build-be
+        run: vp run build-be
 
       - name: Test
-        run: npm run test-be
+        run: vp run test-be
 
   ci-fe:
     name: ci-fe
@@ -248,41 +173,22 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v7.0.0
+      - name: Set up Vite+ and install dependencies
+        uses: voidzero-dev/setup-vp@v1.21.1
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6.1.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Cache node modules
-        id: cache-pnpm
-        uses: actions/cache@v6.1.0
-        env:
-          cache-name: node-modules
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-${{ env.NODE_VERSION }}-build-${{ env.cache-name }}-${{ hashFiles('pnpm-lock.yaml') }}
-
-      - name: Install dependencies
-        run: pnpm install
+          # Restores the pnpm store saved by prime-cache.
+          cache: true
+          cache-save: false
 
       - name: Check lint
-        run: npm run lint-fast-fe && npm run lint-fe
+        run: vp run lint-fast-fe && vp run lint-fe
 
       - name: Build
-        run: npm run build-fe
+        run: vp run build-fe
 
       - name: Test
-        run: npm run test-fe
+        run: vp run test-fe
 
   ci-assets:
     name: ci-assets
@@ -311,52 +217,33 @@ jobs:
               - 'frontend/static/challenges/**'
               - 'frontend/static/sounds/**'
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v7.0.0
+      - name: Set up Vite+ and install dependencies
+        uses: voidzero-dev/setup-vp@v1.21.1
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6.1.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Cache node modules
-        id: cache-pnpm
-        uses: actions/cache@v6.1.0
-        env:
-          cache-name: node-modules
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-${{ env.NODE_VERSION }}-build-${{ env.cache-name }}-${{ hashFiles('pnpm-lock.yaml') }}
-
-      - name: Install dependencies
-        run: pnpm install
+          # Restores the pnpm store saved by prime-cache.
+          cache: true
+          cache-save: false
 
       - name: Lint styles
         if: steps.filter.outputs.styles == 'true'
-        run: npm run lint-styles
+        run: vp run lint-styles
 
       - name: Lint JSON
         if: steps.filter.outputs.json == 'true'
-        run: npm run lint-json-assets
+        run: vp run lint-json-assets
 
       - name: Validate language assets
         if: steps.filter.outputs.languages == 'true' || needs.pre-ci.outputs.should-build-pkg == 'true'
-        run: npm run check-assets-languages
+        run: vp run check-assets-languages
 
       - name: Validate quote assets
         if: steps.filter.outputs.quotes == 'true'
-        run: npm run check-assets-quotes
+        run: vp run check-assets-quotes
 
       - name: Validate other assets
         if: steps.filter.outputs.others == 'true' || needs.pre-ci.outputs.should-build-pkg == 'true'
-        run: npm run check-assets-others
+        run: vp run check-assets-others
 
   ci-pkg:
     name: ci-pkg
@@ -366,44 +253,25 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v7.0.0
+      - name: Set up Vite+ and install dependencies
+        uses: voidzero-dev/setup-vp@v1.21.1
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6.1.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Cache node modules
-        id: cache-pnpm
-        uses: actions/cache@v6.1.0
-        env:
-          cache-name: node-modules
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-${{ env.NODE_VERSION }}-build-${{ env.cache-name }}-${{ hashFiles('pnpm-lock.yaml') }}
-
-      - name: Install dependencies
-        run: pnpm install
+          # Restores the pnpm store saved by prime-cache.
+          cache: true
+          cache-save: false
 
       - name: Check shared lint configuration
-        run: npm run lint-check-config
+        run: vp run lint-check-config
 
       - name: Check lint
-        run: npm run lint-fast-pkg && npm run lint-pkg
+        run: vp run lint-fast-pkg && vp run lint-pkg
 
       - name: Check workspace root lint
-        run: pnpm exec vp lint . --type-aware --type-check --format agent
+        run: vp lint . --type-aware --type-check --format agent
 
       - name: Test
-        run: npm run test-pkg
+        run: vp run test-pkg
 
   ci-tui:
     name: ci-tui
@@ -413,32 +281,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v7.0.0
+      - name: Set up Vite+ and install dependencies
+        uses: voidzero-dev/setup-vp@v1.21.1
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6.1.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Cache node modules
-        id: cache-pnpm
-        uses: actions/cache@v6.1.0
-        env:
-          cache-name: node-modules
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-${{ env.NODE_VERSION }}-build-${{ env.cache-name }}-${{ hashFiles('pnpm-lock.yaml') }}
-
-      - name: Install dependencies
-        run: pnpm install
+          # Restores the pnpm store saved by prime-cache.
+          cache: true
+          cache-save: false
+          # Bun is the tui runtime, pinned by setup-bun; don't let vp shim it.
+          package-manager: |
+            bun: false
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2.2.0
@@ -446,10 +298,10 @@ jobs:
           bun-version: ${{ env.BUN_VERSION }}
 
       - name: Check lint
-        run: npm run lint-fast-tui && npm run lint-tui
+        run: vp run lint-fast-tui && vp run lint-tui
 
       - name: Test
-        run: npm run test-tui
+        run: vp run test-tui
 
       - name: Build and smoke npm package
-        run: pnpm --filter @voltcrash/oxytype package-check
+        run: vp run --filter @voltcrash/oxytype package-check
