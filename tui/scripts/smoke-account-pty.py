@@ -168,7 +168,7 @@ try:
             assert credentials.stat().st_mode & 0o777 == 0o600
             assert (root / "browser.txt").read_text().strip() == base_url + "/device"
             finish(master, output)
-            assert len(results) == 1 and results[0]["offline"] is False
+            assert len(results) == 1 and results[0]["offline"] is False, bytes(output)[-6000:]
             assert b"new TUI PB" in output, bytes(output)[-2000:]
             stop(child, master, output)
         finally:

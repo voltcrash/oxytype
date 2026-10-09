@@ -10,6 +10,7 @@ pnpm test-tui
 bun test __tests__/app.test.tsx # from tui/, after `bun run assets`
 python3 tui/scripts/smoke-pty.py # from root; Unix PTY CLI smoke
 python3 tui/scripts/smoke-account-pty.py # device/API/queue/cached-assets PTY smoke
+python3 tui/scripts/smoke-screens-pty.py # replay/editor/export/handoff PTY smoke
 ```
 
 `bunfig.toml` preloads the OpenTUI Solid JSX transform for the app and tests.

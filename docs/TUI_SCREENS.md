@@ -81,6 +81,7 @@ pnpm test-pkg
 pnpm build-fe
 python3 tui/scripts/smoke-pty.py
 python3 tui/scripts/smoke-account-pty.py
+python3 tui/scripts/smoke-screens-pty.py
 ```
 
 New regression coverage exercises TUI/web profile switching, zero-based board
