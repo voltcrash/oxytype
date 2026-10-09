@@ -153,4 +153,36 @@ if (process.env.FIXTURE_FAIL_BUILD === target) process.exit(1);
       { target: "backend", args: [] },
     ]);
   }, 30_000);
+
+  it("bypasses enabled task caches on repeated production builds", () => {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const result = run();
+      expect(result.status, result.stdout + result.stderr).toBe(0);
+      expect(result.stdout.match(/cache disabled/g)).toHaveLength(2);
+    }
+    expect(builds().map(({ target }) => target)).toEqual([
+      "frontend",
+      "backend",
+      "frontend",
+      "backend",
+    ]);
+  }, 30_000);
+
+  it("uses production public settings over inherited staging settings without copying backend secrets", () => {
+    const result = run({
+      BACKEND_URL: "https://staging.example.test/api",
+      TURNSTILE_SITE_KEY: "staging-site-key",
+      AUTH_PROVIDERS: "google",
+    });
+    expect(result.status, result.stdout + result.stderr).toBe(0);
+    for (const build of builds()) {
+      expect(build).toMatchObject({
+        backendUrl: "/api",
+        siteKey: "0xproduction-fixture",
+        providers: "github",
+      });
+      expect(build.authSecret).toBeUndefined();
+      expect(build.turnstileSecret).toBeUndefined();
+    }
+  }, 30_000);
 });
