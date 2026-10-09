@@ -19,6 +19,8 @@ export function TestScreen() {
   const store = useConfig();
   const test = useTypingTest();
   const dimensions = useTerminalDimensions();
+  const shownConfig = (): typeof store.config =>
+    test.status() === "running" ? test.config() : store.config;
   const layout = createMemo(() =>
     layoutWords(
       test.words().map((word, index) =>
@@ -58,20 +60,17 @@ export function TestScreen() {
       : caretSlot(layout(), position.wordIndex, position.letterIndex);
   });
   const amount = (): string => {
-    if (store.config.mode === "time") {
-      return store.config.time === 0
-        ? "unlimited time"
-        : `${store.config.time}s`;
+    const config = shownConfig();
+    if (config.mode === "time") {
+      return config.time === 0 ? "unlimited time" : `${config.time}s`;
     }
-    if (store.config.mode === "words") {
-      return store.config.words === 0
-        ? "unlimited words"
-        : `${store.config.words} words`;
+    if (config.mode === "words") {
+      return config.words === 0 ? "unlimited words" : `${config.words} words`;
     }
-    if (store.config.mode === "custom") {
+    if (config.mode === "custom") {
       return `${test.customText.limit.value} ${test.customText.limit.mode} · default custom text`;
     }
-    return store.config.mode;
+    return config.mode;
   };
   const signature = createMemo(() =>
     JSON.stringify([
@@ -88,10 +87,15 @@ export function TestScreen() {
     ]),
   );
   let previous = untrack(signature);
+  let previousRemote = untrack(store.remoteRevision);
   createEffect(() => {
     const next = signature();
+    const remote = store.remoteRevision();
+    const fromServer = remote !== previousRemote;
+    previousRemote = remote;
     if (next === previous) return;
     previous = next;
+    if (fromServer && untrack(test.status) === "running") return;
     void test.restart();
   });
   createEffect(() => {
@@ -155,7 +159,7 @@ export function TestScreen() {
   return (
     <box flexDirection="column" width="100%" gap={1}>
       <text fg={theme().colors.main}>typing test</text>
-      <ModeBar />
+      <ModeBar config={shownConfig()} />
       <text fg={theme().colors.sub}>
         {amount()} · {test.config().language}
       </text>

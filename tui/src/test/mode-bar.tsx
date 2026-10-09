@@ -34,8 +34,9 @@ export function changeAmount(
     );
   }
 }
-export function ModeBar() {
+export function ModeBar(props: { config?: Readonly<Config> }) {
   const store = useConfig();
+  const config = (): Readonly<Config> => props.config ?? store.config;
   const theme = useTheme();
   return (
     <box flexDirection="row" gap={2} flexWrap="wrap" flexShrink={0}>
@@ -43,23 +44,21 @@ export function ModeBar() {
         {(mode) => (
           <text
             fg={
-              store.config.mode === mode
-                ? theme().colors.main
-                : theme().colors.sub
+              config().mode === mode ? theme().colors.main : theme().colors.sub
             }
             onMouseDown={() => {
               store.set("mode", mode);
             }}
           >
             <Show
-              when={store.config.mode === mode}
+              when={config().mode === mode}
               fallback={mode}
             >{`[${mode}]`}</Show>
           </text>
         )}
       </For>
       <text
-        fg={store.config.punctuation ? theme().colors.main : theme().colors.sub}
+        fg={config().punctuation ? theme().colors.main : theme().colors.sub}
         onMouseDown={() => {
           store.set("punctuation", !store.config.punctuation);
         }}
@@ -67,7 +66,7 @@ export function ModeBar() {
         punctuation
       </text>
       <text
-        fg={store.config.numbers ? theme().colors.main : theme().colors.sub}
+        fg={config().numbers ? theme().colors.main : theme().colors.sub}
         onMouseDown={() => {
           store.set("numbers", !store.config.numbers);
         }}

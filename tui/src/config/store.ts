@@ -5,7 +5,13 @@ import {
   supportedConfigSchema,
 } from "@oxytype/typing-core/config/migrate";
 import { isDeepStrictEqual } from "node:util";
-import { createContext, useContext } from "solid-js";
+import {
+  batch,
+  createContext,
+  createSignal,
+  useContext,
+  type Accessor,
+} from "solid-js";
 import { createStore, reconcile, unwrap } from "solid-js/store";
 import type { Schema } from "../storage/json";
 import { readJson, writeJson } from "../storage/json";
@@ -22,6 +28,7 @@ type ConfigLoadStatus =
 
 export type ConfigStore = {
   config: Readonly<Config>;
+  remoteRevision: Accessor<number>;
   status: ConfigLoadStatus;
   /** Returns false and keeps the current value when validation fails. */
   set: <K extends keyof Config>(key: K, value: Config[K]) => boolean;
@@ -58,6 +65,7 @@ export async function openConfigStore(file: string): Promise<ConfigStore> {
           : "repaired";
 
   const [config, setConfig] = createStore<Config>(initial);
+  const [remoteRevision, setRemoteRevision] = createSignal(0);
   let pending = Promise.resolve();
   const listeners = new Set<(patch: PartialConfig) => void>();
   const save = (): void => {
@@ -73,6 +81,7 @@ export async function openConfigStore(file: string): Promise<ConfigStore> {
 
   return {
     config,
+    remoteRevision,
     status,
     set: (key, value) => {
       const parsed = settingSchema.safeParse({ [key]: value });
@@ -95,7 +104,10 @@ export async function openConfigStore(file: string): Promise<ConfigStore> {
       }
     },
     replace: (remote) => {
-      setConfig(reconcile(migrateConfig(structuredClone(remote ?? {}))));
+      batch(() => {
+        setRemoteRevision((revision) => revision + 1);
+        setConfig(reconcile(migrateConfig(structuredClone(remote ?? {}))));
+      });
       save();
     },
     subscribe: (listener) => {
