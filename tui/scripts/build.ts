@@ -1,4 +1,5 @@
 import solidPlugin from "@opentui/solid/bun-plugin";
+import { execFileSync } from "node:child_process";
 import {
   chmod,
   copyFile,
@@ -39,6 +40,10 @@ if (!built.success) {
 const manifest = {
   name: metadata.name,
   version: metadata.version,
+  gitHead: execFileSync("git", ["rev-parse", "HEAD"], {
+    cwd: root,
+    encoding: "utf8",
+  }).trim(),
   description:
     "Oxytype typing tests in your terminal. Same account, offline play, Bun + OpenTUI.",
   license: metadata.license,

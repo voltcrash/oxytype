@@ -1,0 +1,84 @@
+name: Terminal npm release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "UTC date version (YY.M.D); blank uses today. Optional -rc.N suffix."
+        required: false
+        type: string
+      channel:
+        description: npm dist-tag
+        required: true
+        type: choice
+        options: [latest, next]
+        default: latest
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: terminal-npm-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: "24.21.0"
+          registry-url: https://registry.npmjs.org
+
+      - uses: pnpm/action-setup@v6.1.0
+        with:
+          version: "12.8.1"
+
+      - uses: oven-sh/setup-bun@v2.2.0
+        with:
+          bun-version: "1.4.2"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Plan terminal publication
+        id: plan
+        uses: actions/github-script@v9.0.0
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+          RELEASE_CHANNEL: ${{ inputs.channel }}
+        with:
+          script: |
+            const { prepareTerminalRelease } = await import(`${process.env.GITHUB_WORKSPACE}/packages/release/src/terminal-release.js`);
+            const plan = await prepareTerminalRelease({
+              cwd: process.env.GITHUB_WORKSPACE,
+              sha: context.sha,
+              version: process.env.REQUESTED_VERSION,
+              channel: process.env.RELEASE_CHANNEL,
+            });
+            core.setOutput('shouldPublish', String(plan.shouldPublish));
+            core.setOutput('version', plan.version);
+            core.setOutput('channel', plan.channel);
+            if (!plan.shouldPublish) core.notice('This commit/version is already published.');
+
+      - name: Validate terminal source
+        if: steps.plan.outputs.shouldPublish == 'true'
+        run: pnpm lint-tui && pnpm test-tui && pnpm --filter @oxytype/release test
+
+      - name: Build and smoke isolated npm package
+        if: steps.plan.outputs.shouldPublish == 'true'
+        run: pnpm --filter @voltcrash/oxytype package-check
+
+      - name: Publish terminal package
+        if: steps.plan.outputs.shouldPublish == 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          RELEASE_CHANNEL: ${{ steps.plan.outputs.channel }}
+        run: npm publish ./tui/dist/npm --access public --provenance --tag "$RELEASE_CHANNEL"
