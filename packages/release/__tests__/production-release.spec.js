@@ -382,6 +382,20 @@ describe("production releases", () => {
   });
 });
 
+it("runs backend and release CI when the production workflow changes", () => {
+  const path = fileURLToPath(
+    new URL("../../../.github/workflows/oxytype-ci.yml", import.meta.url),
+  );
+  const workflow = parse(readFileSync(path, "utf8"));
+  const filter = workflow.jobs["pre-ci"].steps.find(
+    (step) => step.id === "filter",
+  );
+  const paths = parse(filter.with.filters);
+  for (const key of ["be-src", "pkg-src"]) {
+    expect(paths[key]).toContain(".github/workflows/production-release.yml");
+  }
+});
+
 it("wires scheduled/manual production deployment before publication and always cleans credentials", () => {
   const path = fileURLToPath(
     new URL(
