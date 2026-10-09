@@ -31,6 +31,7 @@ export type AuthState =
 export type AuthStore = {
   user: Accessor<User | undefined>;
   state: Accessor<AuthState>;
+  online: Accessor<boolean>;
   device: Accessor<DeviceCode | undefined>;
   notice: Accessor<string | undefined>;
   login: () => Promise<void>;
@@ -57,6 +58,7 @@ export function createAuthStore(options: AuthOptions): AuthStore {
     user() === undefined ? "guest" : "checking",
   );
   const [device, setDevice] = createSignal<DeviceCode>();
+  const [online, setOnline] = createSignal(false);
   const [notice, setNotice] = createSignal<string>();
   let controller: AbortController | undefined;
   let version = 0;
@@ -74,6 +76,7 @@ export function createAuthStore(options: AuthOptions): AuthStore {
   function invalidate(): void {
     cancel();
     setUser(undefined);
+    setOnline(false);
     setState("guest");
     setNotice("Session expired; log in again");
     void credentials
@@ -124,12 +127,14 @@ export function createAuthStore(options: AuthOptions): AuthStore {
       await credentials.set(verified);
       if (current !== version) return false;
       setUser(verified.user);
+      setOnline(true);
       setState("authenticated");
       setNotice(undefined);
       return true;
     } catch (error) {
       if (current !== version) return false;
       setState(error instanceof TransportError ? "offline" : "error");
+      setOnline(false);
       setNotice(
         error instanceof TransportError
           ? "Offline; session will be checked on reconnect"
@@ -142,6 +147,7 @@ export function createAuthStore(options: AuthOptions): AuthStore {
   return {
     user,
     state,
+    online,
     device,
     notice,
     cancel,
@@ -159,6 +165,7 @@ export function createAuthStore(options: AuthOptions): AuthStore {
       controller = new AbortController();
       const signal = controller.signal;
       setState("authorizing");
+      setOnline(false);
       setNotice(undefined);
       try {
         const code = await requestDeviceCode(api, signal);
@@ -189,6 +196,7 @@ export function createAuthStore(options: AuthOptions): AuthStore {
         await credentials.set(verified);
         if (current !== version) return;
         setUser(verified.user);
+        setOnline(true);
         setDevice(undefined);
         setState("authenticated");
         setNotice(undefined);
@@ -205,6 +213,7 @@ export function createAuthStore(options: AuthOptions): AuthStore {
       const current = version;
       const credential = credentials.get();
       setState("signingOut");
+      setOnline(false);
       try {
         if (credential !== undefined && credential.expiresAt > now()) {
           const response = await api.auth(
