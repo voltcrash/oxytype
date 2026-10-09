@@ -1,15 +1,18 @@
 import { useTerminalDimensions } from "@opentui/solid";
+import { ConfigGroupNameSchema } from "@oxytype/schemas/configs";
 import {
-  ConfigGroupNameSchema,
-  type Config,
-  type ConfigGroupName,
-  type PartialConfig,
-} from "@oxytype/schemas/configs";
-import { PresetNameSchema, type Preset } from "@oxytype/schemas/presets";
-import { sharedConfigMetadata } from "@oxytype/typing-core/config/metadata";
+  PresetNameSchema,
+  PresetSchema,
+  type Preset,
+} from "@oxytype/schemas/presets";
 import { Show } from "solid-js";
 
 import { useAccount } from "../account";
+import {
+  presetConfig,
+  presetIncludesTags,
+  presetSnapshot,
+} from "../config/presets";
 import { useConfig } from "../config/store";
 import { usePalette } from "../palette/palette";
 import { useScreenKeys } from "../shell/screen-keys";
@@ -19,20 +22,6 @@ import { ListView } from "../ui/list-view";
 import { createRemote, dataOrThrow } from "../ui/remote";
 import { RemoteStatus } from "../ui/remote-status";
 import { createSelection } from "../ui/selection";
-
-export function presetConfig(
-  config: Readonly<Config>,
-  groups?: ConfigGroupName[] | null,
-): PartialConfig {
-  return Object.fromEntries(
-    Object.entries(config).filter(
-      ([key]) =>
-        groups === undefined ||
-        groups === null ||
-        groups.includes(sharedConfigMetadata[key as keyof Config]?.group),
-    ),
-  );
-}
 
 export function PresetsScreen() {
   const account = useAccount();
@@ -68,9 +57,9 @@ export function PresetsScreen() {
             const parsedGroups =
               groupInput === undefined
                 ? undefined
-                : ConfigGroupNameSchema.array()
-                    .min(1)
-                    .safeParse(groupInput.split(",").map((it) => it.trim()));
+                : PresetSchema.shape.settingGroups.safeParse(
+                    groupInput.split(",").map((it) => it.trim()),
+                  );
             if (parsedGroups !== undefined && !parsedGroups.success) {
               return `Groups: ${ConfigGroupNameSchema.options.join(", ")}`;
             }
@@ -84,10 +73,11 @@ export function PresetsScreen() {
                       body: {
                         name: parsed.data,
                         settingGroups: groups ?? null,
-                        config: {
-                          ...presetConfig(store.config, groups),
-                          tags: account.tags.active(),
-                        },
+                        config: presetSnapshot(
+                          store.config,
+                          account.tags.active(),
+                          groups,
+                        ),
                       },
                     })
                   : await account.api.client.presets.save({
@@ -130,8 +120,8 @@ export function PresetsScreen() {
             }
           : preset.config,
       );
-      if (preset.config.tags !== undefined) {
-        account?.tags.set(preset.config.tags);
+      if (presetIncludesTags(preset.settingGroups)) {
+        account?.tags.set(preset.config.tags ?? []);
       }
     } else if (event.name === "s" && preset !== undefined) {
       event.preventDefault();
@@ -156,10 +146,11 @@ export function PresetsScreen() {
                       body: {
                         _id: preset._id,
                         name: preset.name,
-                        config: {
-                          ...presetConfig(store.config, preset.settingGroups),
-                          tags: account.tags.active(),
-                        },
+                        config: presetSnapshot(
+                          store.config,
+                          account.tags.active(),
+                          preset.settingGroups,
+                        ),
                       },
                     }),
                   );

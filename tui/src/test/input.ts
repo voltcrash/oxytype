@@ -33,7 +33,9 @@ export function inputAction(
     const literal =
       (event.name === "tab" && words.some((word) => word.includes("\t"))) ||
       (event.name === "return" &&
-        (config.mode === "zen" || words.some((word) => word.includes("\n"))));
+        (config.mode === "zen" ||
+          config.funbox.includes("58008") ||
+          words.some((word) => word.includes("\n"))));
     if (
       !event.ctrl &&
       !event.meta &&
@@ -52,21 +54,49 @@ export function inputAction(
   if (event.ctrl || event.meta || event.super || event.hyper) return undefined;
   if (
     config.funbox.includes("arrows") &&
-    ["left", "down", "up", "right"].includes(event.name)
+    [
+      "left",
+      "down",
+      "up",
+      "right",
+      "a",
+      "s",
+      "w",
+      "d",
+      "j",
+      "k",
+      "i",
+      "l",
+    ].includes(event.name)
   ) {
     return {
       type: "insert",
       text:
         (
-          { left: "←", down: "↓", up: "↑", right: "→" } as Record<
-            string,
-            string
-          >
+          {
+            left: "←",
+            a: "←",
+            j: "←",
+            down: "↓",
+            s: "↓",
+            k: "↓",
+            up: "↑",
+            w: "↑",
+            i: "↑",
+            right: "→",
+            d: "→",
+            l: "→",
+          } as Record<string, string>
         )[event.name] ?? "",
     };
   }
   if (event.name === "space") return { type: "insert", text: " " };
-  if (event.name === "return") return { type: "insert", text: "\n" };
+  if (event.name === "return") {
+    return {
+      type: "insert",
+      text: config.funbox.includes("58008") ? " " : "\n",
+    };
+  }
   if (event.name === "tab" && words.some((word) => word.includes("\t"))) {
     return { type: "insert", text: "\t" };
   }
