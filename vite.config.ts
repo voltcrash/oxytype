@@ -55,6 +55,7 @@ export default defineConfig({
       "logs",
       "coverage",
       "*.md",
+      "tui/assets",
     ],
     overrides: [
       {

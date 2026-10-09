@@ -4,8 +4,9 @@
   "license": "GPL-3.0",
   "type": "module",
   "scripts": {
-    "dev": "bun run src/index.tsx",
-    "test": "bun test",
+    "assets": "bun scripts/bundle-assets.ts",
+    "dev": "bun run assets && bun run src/index.tsx",
+    "test": "bun run assets && bun test",
     "madge": "madge --circular --extensions ts,tsx ./src",
     "ts-check": "vp lint . --type-aware --type-check --format agent",
     "lint": "npm run madge && vp lint . --type-aware --type-check --format agent",
