@@ -331,6 +331,24 @@ rendering, session, result, history, pace, test and documentation commits.
 
 ## Stage F — Account + API
 
+Completed F1–F7 in one PR stacked on Stage E, with separate transport, device,
+session, queue, sync, asset, regression-test and documentation commits.
+
+- Contracts/Bearer client with local/env connection settings, timeouts and
+  response/compatibility checks. Device consent, 0600 server-bound credentials,
+  expiry/offline recovery and token revocation work through the account screen.
+- Online TUI results show PB/error feedback. Durable account-bound retries use
+  offline history/stats semantics, exclude PB/XP/rankings and drop uploads after
+  30 days. Guest results remain local; local history survives queue expiry.
+- Server wins on login; validated local edits sync through debounced PATCHes.
+  Background config pulls preserve active tests. Languages/quotes download into
+  validated versioned caches and fall back to English when unavailable offline.
+- Verification: 114 TUI, 99 D1 integration, 721 backend unit, 486 package and
+  1,697 frontend tests; repository lint/typecheck, formatting and both builds.
+  Actual client/device/result flows pass against D1. Four raw PTYs verify login,
+  online PB, offline queue/cold reconnect, logout and cold offline French.
+  Details and concurrency scope: [TUI_ACCOUNT_API.md](TUI_ACCOUNT_API.md).
+
 ### F1. API client
 
 - Contracts client + Bearer adapter, base URL from env/config, timeouts.
