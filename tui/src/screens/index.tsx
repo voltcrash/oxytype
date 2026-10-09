@@ -15,5 +15,8 @@ export const screens: Record<ScreenId, Component> = {
   result: ResultScreen,
   settings: SettingsScreen,
   account: AccountScreen,
+  tags: () => <Placeholder title="tags" />,
+  presets: () => <Placeholder title="presets" />,
+  profile: () => <Placeholder title="profile" />,
   leaderboards: () => <Placeholder title="leaderboards" />,
 };

@@ -1,14 +1,33 @@
-import { Show } from "solid-js";
+import { useTerminalDimensions } from "@opentui/solid";
+import { createSignal, Show } from "solid-js";
 
 import { useAccount } from "../account";
 import { useAuth } from "../auth/store";
+import { useRouter } from "../router/router";
 import { useScreenKeys } from "../shell/screen-keys";
 import { useTheme } from "../theme/theme";
+import { ProfileStats } from "../ui/profile-stats";
+import { createRemote, dataOrThrow } from "../ui/remote";
+import { RemoteStatus } from "../ui/remote-status";
 
 export function AccountScreen() {
   const auth = useAuth();
   const account = useAccount();
   const theme = useTheme();
+  const dimensions = useTerminalDimensions();
+  const router = useRouter();
+  const [client, setClient] = createSignal<"tui" | "web">("tui");
+  const [page, setPage] = createSignal(0);
+  const profile = createRemote(async () => {
+    const user = auth?.user();
+    if (!user || !account) return undefined;
+    return account.api.client.users
+      .getProfile({
+        params: { uidOrName: user.uid },
+        query: { client: client(), isUid: true },
+      })
+      .then(dataOrThrow);
+  });
   useScreenKeys((event) => {
     if (auth === undefined || event.eventType === "release") return;
     if (event.name === "escape" && auth.state() === "authorizing") {
@@ -19,7 +38,24 @@ export function AccountScreen() {
       void auth.login();
     } else if (event.name === "r" && !event.ctrl) {
       event.preventDefault();
+      profile.reload();
       void auth.check();
+    } else if (event.name === "tab") {
+      event.preventDefault();
+      setClient((value) => (value === "tui" ? "web" : "tui"));
+      setPage(0);
+    } else if (event.name === "down" || event.name === "up") {
+      event.preventDefault();
+      setPage((value) => Math.max(0, value + (event.name === "down" ? 1 : -1)));
+    } else if (event.name === "h") {
+      event.preventDefault();
+      router.push("history");
+    } else if (event.name === "t") {
+      event.preventDefault();
+      router.push("tags");
+    } else if (event.name === "p") {
+      event.preventDefault();
+      router.push("presets");
     } else if (event.name === "l" && !event.ctrl) {
       event.preventDefault();
       void auth.logout();
@@ -84,6 +120,22 @@ export function AccountScreen() {
             </Show>
           </>
         )}
+      </Show>
+      <Show when={auth?.user()}>
+        <text fg={theme().colors.main}>
+          {client()} stats · tab switch client · ↑↓ PB pages
+        </text>
+        <RemoteStatus loading={profile.loading()} error={profile.error()} />
+        <Show when={profile.data()}>
+          {(value) => (
+            <ProfileStats
+              profile={value()}
+              height={Math.max(1, dimensions().height - 20)}
+              page={page()}
+            />
+          )}
+        </Show>
+        <text fg={theme().colors.sub}>h history · t tags · p presets</text>
       </Show>
     </box>
   );
