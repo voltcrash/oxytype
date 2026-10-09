@@ -5,6 +5,7 @@ import {
 } from "./packages/oxlint-config/config";
 import { frontendLint } from "./frontend/lint.config";
 import { backendLint } from "./backend/lint.config";
+import { tuiJsxOverride } from "./tui/lint.config";
 import { defineConfig } from "vite-plus";
 import type { OxlintConfig, OxlintOverride } from "vite-plus/lint";
 
@@ -90,6 +91,7 @@ export default defineConfig({
     overrides: [
       ...applicationOverrides("frontend", frontendLint),
       ...applicationOverrides("backend", backendLint),
+      { ...tuiJsxOverride, files: ["tui/**/*.tsx"] },
     ],
     options: {
       typeAware: true,
