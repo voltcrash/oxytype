@@ -15,9 +15,14 @@ const history = await openHistoryStore(join(paths.data, "history.json"));
 const renderer = await createCliRenderer({ exitOnCtrlC: false });
 
 async function quit(): Promise<void> {
-  await config.flush();
-  await history.flush();
+  const writes = await Promise.allSettled([config.flush(), history.flush()]);
   renderer.destroy();
+  for (const write of writes) {
+    if (write.status === "rejected") {
+      process.exitCode = 1;
+      console.error("Could not save local data:", write.reason);
+    }
+  }
 }
 
 await render(
