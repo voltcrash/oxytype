@@ -65,6 +65,7 @@ export type TypingTestOptions = {
   /** Test harnesses drive advance themselves. */
   schedule?: boolean;
   getPaceSpeed?: (config: Config, mode2: string) => number;
+  getTags?: () => readonly string[];
   getIdentity?: () => UploadIdentity | undefined;
 };
 export type TypingTest = {
@@ -132,6 +133,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
   let bailedOut = false;
   let abandoning = false;
   let restartCount = 0;
+  let activeTags: string[] = [];
   let incompleteTests: IncompleteTest[] = [];
   let pending = Promise.resolve();
   let owner: UploadIdentity | undefined;
@@ -201,7 +203,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
           ...customText,
           textLen: customText.text.join(" ").length,
         },
-        tags: [],
+        tags: activeTags,
         bailedOut,
         restartCount,
         incompleteTests,
@@ -242,6 +244,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
     const previousWords = session?.getWords();
     const previousConfig = config();
     setStatus("loading");
+    activeTags = [...(options.getTags?.() ?? [])];
     setNotice(undefined);
     setStats(emptyStats());
     setPace(undefined);

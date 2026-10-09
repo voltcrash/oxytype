@@ -7,6 +7,7 @@ import { HistoryScreen } from "./history";
 import { Placeholder } from "./placeholder";
 import { ResultScreen } from "./result";
 import { SettingsScreen } from "./settings";
+import { TagsScreen } from "./tags";
 import { TestScreen } from "./test";
 
 export const screens: Record<ScreenId, Component> = {
@@ -15,7 +16,7 @@ export const screens: Record<ScreenId, Component> = {
   result: ResultScreen,
   settings: SettingsScreen,
   account: AccountScreen,
-  tags: () => <Placeholder title="tags" />,
+  tags: TagsScreen,
   presets: () => <Placeholder title="presets" />,
   profile: () => <Placeholder title="profile" />,
   leaderboards: () => <Placeholder title="leaderboards" />,

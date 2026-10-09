@@ -165,10 +165,15 @@ export function localPaceSpeed(
   config: Config,
   mode2: string,
   now = Date.now(),
+  tags: readonly string[] = [],
 ): number {
-  if (config.paceCaret === "off" || config.paceCaret === "tagPb") return 0;
+  if (config.paceCaret === "off") return 0;
   if (config.paceCaret === "custom") return config.paceCaretCustomSpeed;
-  const results = matchingResults(entries, config, mode2);
+  const results = matchingResults(entries, config, mode2).filter(
+    (result) =>
+      config.paceCaret !== "tagPb" ||
+      result.tags.some((id) => tags.includes(id)),
+  );
   if (config.paceCaret === "last") return results[0]?.wpm ?? 0;
   if (config.paceCaret === "average") {
     const last10 = results.slice(0, 10);

@@ -59,8 +59,15 @@ export function App(props: AppProps) {
     store: config,
     sources: createTestSources(createAssetSource()),
     getPaceSpeed: (settings, mode2) =>
-      localPaceSpeed(history.entries(), settings, mode2),
+      localPaceSpeed(
+        history.entries(),
+        settings,
+        mode2,
+        Date.now(),
+        account?.tags.active(),
+      ),
     getIdentity: account?.identity,
+    getTags: account?.tags.active,
     ...testOptions,
   });
   const theme = createTheme(

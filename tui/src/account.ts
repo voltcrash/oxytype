@@ -12,6 +12,7 @@ import {
 } from "./auth/store";
 import type { ConfigStore } from "./config/store";
 import { createConfigSync, type ConfigSync } from "./config/sync";
+import { openActiveTags, type ActiveTags } from "./results/tags";
 import { createResultUploader, type ResultUploader } from "./results/upload";
 import { openUploadQueue, type UploadQueue } from "./results/upload-queue";
 import type { AppPaths } from "./storage/paths";
@@ -22,6 +23,7 @@ export type Account = {
   sync: ConfigSync;
   uploads: ResultUploader;
   queue: UploadQueue;
+  tags: ActiveTags;
   identity: () => UploadIdentity | undefined;
   start: () => void;
   stop: () => void;
@@ -75,6 +77,15 @@ export async function openAccount(options: {
       online: rawAuth.online(),
     };
   };
+  const tags = await openActiveTags(
+    join(options.paths.data, "active-tags.json"),
+    () => {
+      const user = rawAuth.user();
+      return user === undefined
+        ? undefined
+        : `${options.settings.apiUrl}|${user.uid}`;
+    },
+  );
   sync = createConfigSync({ api, store: options.config, identity });
   const uploads = createResultUploader({ api, queue, identity });
   let stopped = false;
@@ -123,6 +134,7 @@ export async function openAccount(options: {
     sync,
     uploads,
     queue,
+    tags,
     identity,
     start: () => {
       if (timer !== undefined || stopped) return;
@@ -141,6 +153,7 @@ export async function openAccount(options: {
         credentials.flush(),
         queue.flush(),
         sync.flush(),
+        tags.flush(),
       ]);
       for (const write of writes) {
         if (write.status === "rejected") throw write.reason;
