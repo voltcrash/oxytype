@@ -34,12 +34,17 @@ export const globalBindings: GlobalBinding[] = [
   },
   {
     key: { name: "a", ctrl: true },
-    label: "account",
+    label: "acct",
     action: { type: "open", screen: "account" },
   },
   {
     key: { name: "l", ctrl: true },
-    label: "leaderboards",
+    label: "ranks",
     action: { type: "open", screen: "leaderboards" },
+  },
+  {
+    key: { name: "o", ctrl: true },
+    label: "history",
+    action: { type: "open", screen: "history" },
   },
 ];

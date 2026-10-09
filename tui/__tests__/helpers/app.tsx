@@ -20,6 +20,7 @@ export async function renderApp(
       config={config}
       initialScreen={props.initialScreen}
       testOptions={props.testOptions}
+      history={props.history}
       onQuit={props.onQuit ?? (() => undefined)}
     />
   ));

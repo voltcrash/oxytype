@@ -8,6 +8,7 @@ import type { GlobalAction } from "./keymap";
 import { formatKey, matchesKey } from "../keys";
 import { useRouter } from "../router/router";
 import { screenTitles } from "../router/screens";
+import { useTypingTest } from "../test/typing-test";
 import { useTheme } from "../theme/theme";
 import { globalBindings, quitBinding } from "./keymap";
 import { KeyDispatcherContext } from "./screen-keys";
@@ -21,16 +22,28 @@ export function Shell(props: ParentProps<{ onQuit: () => void }>) {
   const router = useRouter();
   const dispatcher = useContext(KeyDispatcherContext);
   const theme = useTheme();
+  const test = useTypingTest();
   const colors = () => theme().colors;
 
   const run = (action: GlobalAction): void => {
-    if (action.type === "quit") props.onQuit();
-    else if (action.type === "back") router.back();
-    else router.push(action.screen);
+    if (action.type === "quit") {
+      props.onQuit();
+    } else if (action.type === "back") {
+      router.back();
+    } else {
+      if (action.screen === "test" && test.status() === "finished") {
+        void test.restart();
+      }
+      router.push(action.screen);
+    }
   };
 
   useKeyboard(
     (event) => {
+      if (event.eventType === "release") {
+        dispatcher?.dispatch(event);
+        return;
+      }
       if (matchesKey(event, quitBinding.key)) {
         event.preventDefault();
         run(quitBinding.action);

@@ -1,10 +1,16 @@
 import { Dynamic } from "@opentui/solid";
+import { createEffect, on } from "solid-js";
 
 import type { ConfigStore } from "./config/store";
 import type { ScreenId } from "./router/screens";
 
 import { createAssetSource } from "./assets/source";
 import { ConfigContext } from "./config/store";
+import {
+  createHistoryStore,
+  HistoryContext,
+  type HistoryStore,
+} from "./results/history";
 import { createRouter, RouterContext } from "./router/router";
 import { screens } from "./screens";
 import { createKeyDispatcher, KeyDispatcherContext } from "./shell/screen-keys";
@@ -22,6 +28,7 @@ export type AppProps = {
   initialScreen?: ScreenId;
   onQuit: () => void;
   testOptions?: Partial<Omit<TypingTestOptions, "store">>;
+  history?: HistoryStore;
 };
 
 export function App(props: AppProps) {
@@ -35,17 +42,28 @@ export function App(props: AppProps) {
     sources: createTestSources(createAssetSource()),
     ...testOptions,
   });
+  // oxlint-disable-next-line solid/reactivity -- app-owned store initialized once
+  const history = props.history ?? createHistoryStore();
+  createEffect(
+    on(test.result, (finished) => {
+      if (finished !== undefined && config.config.resultSaving) {
+        void history.add(finished);
+      }
+    }),
+  );
 
   return (
     <ConfigContext.Provider value={config}>
       <ThemeContext.Provider value={theme}>
         <RouterContext.Provider value={router}>
           <KeyDispatcherContext.Provider value={dispatcher}>
-            <TypingTestContext.Provider value={test}>
-              <Shell onQuit={props.onQuit}>
-                <Dynamic component={screens[router.current()]} />
-              </Shell>
-            </TypingTestContext.Provider>
+            <HistoryContext.Provider value={history}>
+              <TypingTestContext.Provider value={test}>
+                <Shell onQuit={props.onQuit}>
+                  <Dynamic component={screens[router.current()]} />
+                </Shell>
+              </TypingTestContext.Provider>
+            </HistoryContext.Provider>
           </KeyDispatcherContext.Provider>
         </RouterContext.Provider>
       </ThemeContext.Provider>
