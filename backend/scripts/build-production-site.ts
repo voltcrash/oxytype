@@ -29,11 +29,16 @@ async function main(): Promise<void> {
   };
   // Shared package builds clean their output directories, so build sequentially.
   for (const script of ["build-fe", "build-be"]) {
-    const result = spawnSync("pnpm", [script, "--force"], {
-      cwd: resolve(backendRoot, ".."),
-      env,
-      stdio: "inherit",
-    });
+    // Runner flags precede the task name; trailing flags reach vp build.
+    const result = spawnSync(
+      "pnpm",
+      ["exec", "vp", "run", "--no-cache", script],
+      {
+        cwd: resolve(backendRoot, ".."),
+        env,
+        stdio: "inherit",
+      },
+    );
     if (result.error !== undefined || result.status !== 0) {
       throw new Error(`${script} failed; production was not deployed`);
     }
