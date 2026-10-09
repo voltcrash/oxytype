@@ -908,6 +908,9 @@ importers:
       '@opentui/solid':
         specifier: 0.5.10
         version: 0.5.10(solid-js@1.9.12)(supports-color@10.2.2)(typescript@7.0.2)(web-tree-sitter@0.25.10)
+      '@oxytype/contracts':
+        specifier: workspace:*
+        version: link:../packages/contracts
       '@oxytype/schemas':
         specifier: workspace:*
         version: link:../packages/schemas
@@ -917,6 +920,9 @@ importers:
       '@oxytype/util':
         specifier: workspace:*
         version: link:../packages/util
+      '@ts-rest/core':
+        specifier: 3.52.1
+        version: 3.52.1(patch_hash=1d87a2612f7f1b57f89a06c50f4f92ae56858711540f5baa09c18e79ee6eca4b)(@types/node@24.19.0)(zod@4.6.5)
       solid-js:
         specifier: 1.9.12
         version: 1.9.12
