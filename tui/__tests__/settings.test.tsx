@@ -99,8 +99,9 @@ describe("settings screen", () => {
     expect(config.config.freedomMode).toBe(true);
     expect(config.config.confidenceMode).toBe("off");
     app.mockInput.pressTab();
-    expect(await app.frame()).toContain("[behavior]");
+    expect(await app.frame()).toContain("[sound]");
     app.mockInput.pressTab({ shift: true });
+    expect(await app.frame()).toContain("[input]");
     await search(app, "opposite shift");
     frame = await app.frame();
     expect(frame).toContain("opposite shift mode");

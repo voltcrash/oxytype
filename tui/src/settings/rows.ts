@@ -95,6 +95,8 @@ export function configRow<K extends Key>(
     inlineMax?: number;
     /** Shown after the options, e.g. the custom speed. */
     detail?: () => string | undefined;
+    /** Replaces the current value text of a picker or input row. */
+    value?: () => string;
     resetKeys?: Key[];
   } = {},
 ): SettingRow {
@@ -103,7 +105,12 @@ export function configRow<K extends Key>(
   const options = spec.options ?? getVisibleOptions(key) ?? [];
   const label = (value: Config[K]): string =>
     spec.optionDisplay?.(value) ?? optionLabel(key, value);
-  const inline = options.length > 0 && options.length <= (spec.inlineMax ?? 6);
+  // Inline options must fit beside the title on an 80-column terminal.
+  const inline =
+    options.length > 0 &&
+    options.length <= (spec.inlineMax ?? 6) &&
+    options.reduce((width, option) => width + label(option).length + 3, 0) <=
+      46;
   const command = (): Command => configCommand(store, key, spec);
   const inputCommand = (): Command | undefined => {
     const built = command();
@@ -151,7 +158,7 @@ export function configRow<K extends Key>(
               }),
         }
       : {
-          value: current,
+          value: spec.value ?? current,
           activate: () => {
             const built = command();
             openCommand(context, built);

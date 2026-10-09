@@ -173,9 +173,197 @@ function inputSection(context: SectionContext): SettingSection {
   };
 }
 
+function soundSection(context: SectionContext): SettingSection {
+  return {
+    id: "sound",
+    title: "sound",
+    groups: [
+      {
+        title: "sound effects",
+        rows: [
+          configRow(context, "soundVolume", {
+            options: [0.1, 0.5, 1],
+            optionDisplay: (value) =>
+              ({ 0.1: "quiet", 0.5: "medium", 1: "loud" })[value] ??
+              String(value),
+            input: { convert: Number },
+          }),
+          configRow(context, "playSoundOnClick"),
+          configRow(context, "playSoundOnError"),
+          configRow(context, "playTimeWarning"),
+        ],
+      },
+    ],
+  };
+}
+
+function caretSection(context: SectionContext): SettingSection {
+  return {
+    id: "caret",
+    title: "caret",
+    groups: [
+      {
+        title: "typing caret",
+        rows: [
+          configRow(context, "smoothCaret"),
+          configRow(context, "caretStyle"),
+        ],
+      },
+      {
+        title: "pace caret",
+        rows: [
+          configRow(context, "paceCaret", {
+            inlineMax: 7,
+            options: [
+              "off",
+              "average",
+              "pb",
+              "tagPb",
+              "last",
+              "daily",
+              "custom",
+            ],
+            detail: () =>
+              context.store.config.paceCaret === "custom"
+                ? speed(context, "paceCaretCustomSpeed")()
+                : undefined,
+            resetKeys: ["paceCaretCustomSpeed", "paceCaret"],
+            input: {
+              value: "custom",
+              secondKey: "paceCaretCustomSpeed",
+              convert: toWpm(context),
+              defaultValue: () =>
+                speed(context, "paceCaretCustomSpeed")().split(" ")[0] ?? "",
+            },
+          }),
+          configRow(context, "repeatedPace"),
+          configRow(context, "paceCaretStyle"),
+        ],
+      },
+    ],
+  };
+}
+
+function appearanceSection(context: SectionContext): SettingSection {
+  const { store } = context;
+  return {
+    id: "appearance",
+    title: "appearance",
+    groups: [
+      {
+        title: "timer",
+        rows: [
+          configRow(context, "timerStyle", {
+            optionDisplay: replaceUnderscores,
+          }),
+          configRow(context, "timerColor"),
+          configRow(context, "timerOpacity"),
+        ],
+      },
+      {
+        title: "speed",
+        rows: [
+          configRow(context, "liveSpeedStyle"),
+          configRow(context, "liveAccStyle"),
+          configRow(context, "liveBurstStyle"),
+          configRow(context, "typingSpeedUnit", {
+            options: ["wpm", "cpm", "wps", "cps"],
+          }),
+        ],
+      },
+      {
+        title: "stats",
+        rows: [
+          configRow(context, "alwaysShowDecimalPlaces"),
+          configRow(context, "startGraphsAtZero"),
+        ],
+      },
+      {
+        title: "text",
+        rows: [
+          configRow(context, "fontSize", { input: { convert: Number } }),
+          configRow(context, "fontFamily"),
+          configRow(context, "highlightMode", {
+            optionDisplay: replaceUnderscores,
+          }),
+          configRow(context, "typedEffect"),
+        ],
+      },
+      {
+        title: "layout",
+        rows: [
+          configRow(context, "tapeMode"),
+          configRow(context, "tapeMargin", {
+            input: { convert: Number },
+            value: () => `${store.config.tapeMargin}%`,
+          }),
+          configRow(context, "smoothLineScroll"),
+          configRow(context, "showAllLines"),
+          configRow(context, "maxLineWidth", { input: { convert: Number } }),
+        ],
+      },
+      {
+        title: "keymap",
+        rows: [
+          configRow(context, "keymapMode"),
+          configRow(context, "keymapLayout", {
+            available: () => store.config.keymapMode !== "off",
+            optionDisplay: (layout) =>
+              layout === "overrideSync"
+                ? "emulator sync"
+                : replaceUnderscores(layout),
+          }),
+          configRow(context, "keymapStyle", {
+            available: () => store.config.keymapMode !== "off",
+            optionDisplay: replaceUnderscores,
+          }),
+          configRow(context, "keymapLegendStyle", {
+            available: () => store.config.keymapMode !== "off",
+          }),
+          configRow(context, "keymapKeys", {
+            available: () => store.config.keymapMode !== "off",
+            optionDisplay: replaceUnderscores,
+          }),
+          configRow(context, "keymapSize", {
+            available: () => store.config.keymapMode !== "off",
+            input: { convert: Number },
+          }),
+        ],
+      },
+    ],
+  };
+}
+
+function hideElementsSection(context: SectionContext): SettingSection {
+  return {
+    id: "hideElements",
+    title: "hide elements",
+    groups: [
+      {
+        title: "interface visibility",
+        rows: [
+          configRow(context, "showKeyTips"),
+          configRow(context, "showOutOfFocusWarning"),
+          configRow(context, "showTestModesNotice"),
+          configRow(context, "capsLockWarning"),
+          configRow(context, "showAverage"),
+          configRow(context, "showPb"),
+        ],
+      },
+    ],
+  };
+}
+
 /** Settings sections in the web's order. */
 export function settingSections(context: SectionContext): SettingSection[] {
-  return [behaviorSection(context), inputSection(context)];
+  return [
+    behaviorSection(context),
+    inputSection(context),
+    soundSection(context),
+    caretSection(context),
+    appearanceSection(context),
+    hideElementsSection(context),
+  ];
 }
 
 /** Rows in display order, for search across every section. */
