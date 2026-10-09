@@ -18,6 +18,7 @@ export async function renderApp(
   return renderTui(() => (
     <App
       config={config}
+      colorDepth={props.colorDepth ?? "truecolor"}
       initialScreen={props.initialScreen}
       onQuit={props.onQuit ?? (() => undefined)}
     />

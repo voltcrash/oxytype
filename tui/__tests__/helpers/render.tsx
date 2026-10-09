@@ -13,7 +13,8 @@ afterEach(() => {
 
 export async function renderTui(
   node: () => JSX.Element,
-  size = { width: 100, height: 20 },
+  // The narrowest common terminal width.
+  size = { width: 80, height: 20 },
 ): Promise<
   Setup & { frame: () => Promise<string>; escape: () => Promise<void> }
 > {

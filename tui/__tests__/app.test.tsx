@@ -6,25 +6,27 @@ import { renderApp } from "./helpers/app";
 import { tempDir } from "./helpers/temp-dir";
 
 describe("app shell", () => {
-  test("starts on the test screen with navigation hints", async () => {
+  test("starts on the test screen with single-line navigation hints", async () => {
     const app = await renderApp();
     const frame = await app.frame();
     expect(frame).toContain("typing test");
-    expect(frame).toContain("[test] (ctrl+t)");
-    expect(frame).toContain("settings (ctrl+s)");
-    expect(frame).toContain("ctrl+c quit");
+    // Header and hints fit an 80-column terminal without wrapping.
+    expect(frame).toContain("oxytype  [test]  settings  account  leaderboards");
+    expect(frame).toContain(
+      "esc back  ^t test  ^s settings  ^a account  ^l leaderboards  ^c quit",
+    );
   });
 
   test("opens screens with global keys and goes back with escape", async () => {
     const app = await renderApp();
     app.mockInput.pressKey("s", { ctrl: true });
-    expect(await app.frame()).toContain("[settings] (ctrl+s)");
+    expect(await app.frame()).toContain("[settings]");
 
     app.mockInput.pressKey("l", { ctrl: true });
-    expect(await app.frame()).toContain("[leaderboards] (ctrl+l)");
+    expect(await app.frame()).toContain("[leaderboards]");
 
     await app.escape();
-    expect(await app.frame()).toContain("[settings] (ctrl+s)");
+    expect(await app.frame()).toContain("[settings]");
 
     await app.escape();
     expect(await app.frame()).toContain("typing test");
@@ -61,7 +63,7 @@ describe("app shell", () => {
   test("ctrl+c quits from any screen", async () => {
     const onQuit = mock(() => undefined);
     const app = await renderApp({ initialScreen: "account", onQuit });
-    expect(await app.frame()).toContain("[account] (ctrl+a)");
+    expect(await app.frame()).toContain("[account]");
     app.mockInput.pressCtrlC();
     expect(onQuit).toHaveBeenCalledTimes(1);
   });

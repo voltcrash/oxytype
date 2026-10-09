@@ -18,7 +18,10 @@ describe("key bindings", () => {
   });
 
   test("format readable hints", () => {
-    expect(formatKey({ name: "s", ctrl: true })).toBe("ctrl+s");
+    expect(formatKey({ name: "s", ctrl: true })).toBe("^s");
+    expect(formatKey({ name: "s", ctrl: true, shift: true })).toBe(
+      "ctrl+shift+s",
+    );
     expect(formatKey({ name: "escape" })).toBe("esc");
     expect(formatKey({ name: "k", meta: true, shift: true })).toBe(
       "alt+shift+k",
