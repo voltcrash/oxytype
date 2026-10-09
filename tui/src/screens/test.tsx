@@ -5,7 +5,7 @@ import { createEffect, createMemo, onCleanup, Show, untrack } from "solid-js";
 import { useConfig } from "../config/store";
 import { useRouter } from "../router/router";
 import { useScreenKeys } from "../shell/screen-keys";
-import { caretSlot, layoutWords, lineWindow } from "../test/layout";
+import { caretSlot, layoutWords, lineWindow, tapeWindow } from "../test/layout";
 import { LiveStatsBar } from "../test/live-stats";
 import { changeAmount, cycleMode, ModeBar } from "../test/mode-bar";
 import { useTypingTest } from "../test/typing-test";
@@ -21,7 +21,18 @@ export function TestScreen() {
   const dimensions = useTerminalDimensions();
   const shownConfig = (): typeof store.config =>
     test.status() === "running" ? test.config() : store.config;
-  const layout = createMemo(() =>
+  const tape = (): boolean => store.config.tapeMode !== "off";
+  /** Columns for words: the terminal width, capped by max line width. */
+  const lineWidth = (): number => {
+    const available = Math.max(
+      1,
+      dimensions().width - (store.config.showAllLines ? 4 : 3),
+    );
+    return store.config.maxLineWidth > 0
+      ? Math.min(available, store.config.maxLineWidth)
+      : available;
+  };
+  const fullLayout = createMemo(() =>
     layoutWords(
       test.words().map((word, index) =>
         buildWordView(word, test.inputFor(index), {
@@ -30,19 +41,33 @@ export function TestScreen() {
           committed: index < test.activeIndex(),
         }),
       ),
-      Math.max(1, dimensions().width - (store.config.showAllLines ? 4 : 3)),
+      lineWidth(),
+      { tape: tape() },
     ),
   );
+  const typedLetters = (): number =>
+    splitIntoCharacters(test.inputFor(test.activeIndex()).replace(/[ \n]$/, ""))
+      .length;
+  const layout = createMemo(() => {
+    if (!tape()) return fullLayout();
+    const word = fullLayout().slots[test.activeIndex()];
+    const anchor =
+      store.config.tapeMode === "word"
+        ? (word?.[0]?.column ?? 0)
+        : (caretSlot(fullLayout(), test.activeIndex(), typedLetters())
+            ?.column ?? 0);
+    return tapeWindow(
+      fullLayout(),
+      anchor,
+      lineWidth(),
+      store.config.tapeMargin,
+    );
+  });
   const caret = createMemo(() =>
-    caretSlot(
-      layout(),
-      test.activeIndex(),
-      splitIntoCharacters(
-        test.inputFor(test.activeIndex()).replace(/[ \n]$/, ""),
-      ).length,
-    ),
+    caretSlot(layout(), test.activeIndex(), typedLetters()),
   );
   const window = createMemo(() => {
+    if (tape()) return { start: 0, end: 1 };
     const view = lineWindow(
       layout().lines.length,
       caret()?.line ?? 0,
@@ -171,21 +196,28 @@ export function TestScreen() {
         when={test.status() !== "loading"}
         fallback={<text fg={theme().colors.sub}>loading words…</text>}
       >
-        <Words
-          layout={layout()}
-          activeIndex={test.activeIndex()}
-          window={window()}
-          pace={pace()}
-          height={Math.min(
-            (window().end - window().start) * 2,
-            Math.max(2, dimensions().height - 12),
+        <box
+          paddingLeft={Math.max(
+            0,
+            Math.floor((dimensions().width - 3 - lineWidth()) / 2),
           )}
-          caret={
-            test.status() === "ready" || test.status() === "running"
-              ? caret()
-              : undefined
-          }
-        />
+        >
+          <Words
+            layout={layout()}
+            activeIndex={test.activeIndex()}
+            window={window()}
+            pace={pace()}
+            height={Math.min(
+              (window().end - window().start) * 2,
+              Math.max(2, dimensions().height - 12),
+            )}
+            caret={
+              test.status() === "ready" || test.status() === "running"
+                ? caret()
+                : undefined
+            }
+          />
+        </box>
       </Show>
       <text fg={theme().colors.sub}>
         F2 mode · F3 punctuation · F4 numbers · F5/F6 amount

@@ -3,7 +3,12 @@ import { describe, expect, test } from "bun:test";
 import type { Cell } from "../src/test/layout";
 import type { WordView } from "../src/test/word-view";
 
-import { caretSlot, layoutWords, lineWindow } from "../src/test/layout";
+import {
+  caretSlot,
+  layoutWords,
+  lineWindow,
+  tapeWindow,
+} from "../src/test/layout";
 import { buildWordView } from "../src/test/word-view";
 
 function view(target: string, input = ""): WordView {
@@ -71,5 +76,25 @@ describe("words layout", () => {
     expect(lineWindow(10, 9, false)).toEqual({ start: 8, end: 10 });
     expect(lineWindow(2, 0, false)).toEqual({ start: 0, end: 2 });
     expect(lineWindow(10, 5, true)).toEqual({ start: 0, end: 10 });
+  });
+});
+
+describe("tape mode", () => {
+  const words = ["the ", "quick ", "brown\n", "fox"].map((it) => view(it));
+
+  test("keeps every word on one line", () => {
+    const layout = layoutWords(words, 5, { tape: true });
+    expect(layout.lines.map(text)).toEqual(["the quick brown↵ fox"]);
+  });
+
+  test("scrolls so the anchor sits at the margin", () => {
+    const layout = layoutWords(words, 5, { tape: true });
+    // Starts padded so the first word begins at the margin.
+    const start = tapeWindow(layout, 0, 10, 50);
+    expect(text(start.lines[0] ?? [])).toBe("     the q");
+    expect(start.slots[0]?.[0]).toEqual({ line: 0, column: 5 });
+    const later = tapeWindow(layout, 10, 10, 50);
+    expect(text(later.lines[0] ?? [])).toBe("uick brown");
+    expect(later.slots[2]?.[0]).toEqual({ line: 0, column: 5 });
   });
 });

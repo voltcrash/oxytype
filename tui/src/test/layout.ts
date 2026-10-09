@@ -28,8 +28,16 @@ export function charWidth(char: string): number {
   return Math.max(1, Bun.stringWidth(char));
 }
 
-/** Wraps words at spaces; words wider than a line break between letters. */
-export function layoutWords(words: WordView[], width: number): WordsLayout {
+/**
+ * Wraps words at spaces; words wider than a line break between letters.
+ * Tape mode keeps every word, including line ends, on one line.
+ */
+export function layoutWords(
+  words: WordView[],
+  width: number,
+  options: { tape?: boolean } = {},
+): WordsLayout {
+  if (options.tape === true) width = Number.POSITIVE_INFINITY;
   const lines: Cell[][] = [[]];
   const slots: Position[][] = [];
   let column = 0;
@@ -79,11 +87,46 @@ export function layoutWords(words: WordView[], width: number): WordsLayout {
         wordIndex,
         error: false,
       });
-      breakLine();
+      if (options.tape === true) column++;
+      else breakLine();
     }
   });
 
   return { lines, slots };
+}
+
+/**
+ * The visible slice of a tape-mode line: `anchor` (the caret, or the active
+ * word's start) sits `margin` percent from the left edge.
+ */
+export function tapeWindow(
+  layout: WordsLayout,
+  anchor: number,
+  width: number,
+  margin: number,
+): WordsLayout {
+  const offset = anchor - Math.floor((width * margin) / 100);
+  const line: Cell[] = [];
+  let column = 0;
+  for (let pad = offset; pad < 0 && line.length < width; pad++) {
+    line.push(gapCell(-1));
+  }
+  for (const cell of layout.lines[0] ?? []) {
+    const start = column - offset;
+    column += cell.width;
+    if (start < 0) continue;
+    if (start + cell.width > width) break;
+    line.push(cell);
+  }
+  return {
+    lines: [line],
+    slots: layout.slots.map((word) =>
+      word.map((slot) => ({
+        line: 0,
+        column: Math.max(0, Math.min(width, slot.column - offset)),
+      })),
+    ),
+  };
 }
 
 function gapCell(wordIndex: number): Cell {
