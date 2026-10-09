@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vite-plus/test";
-import { getDefaultConfig } from "../../src/ts/constants/default-config";
-import { migrateConfig } from "../../src/ts/config/utils";
+import { getDefaultConfig } from "../src/config/default-config";
+import { migrateConfig } from "../src/config/migrate";
 import { PartialConfig } from "@oxytype/schemas/configs";
 
 const defaultConfig = getDefaultConfig();
 
-describe("config.ts", () => {
+describe("config migration", () => {
   describe("migrateConfig", () => {
     it.for(["off", "result", "on", "sellout"])(
       "drops legacy ads value %s while preserving supported settings",
