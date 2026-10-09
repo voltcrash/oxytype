@@ -5,7 +5,6 @@ import { join } from "node:path";
 import { App } from "./app";
 import { openConfigStore } from "./config/store";
 import { resolvePaths } from "./storage/paths";
-import { detectColorDepth } from "./theme/depth";
 
 const paths = resolvePaths();
 const config = await openConfigStore(join(paths.config, "config.json"));
@@ -17,12 +16,6 @@ async function quit(): Promise<void> {
 }
 
 await render(
-  () => (
-    <App
-      config={config}
-      colorDepth={detectColorDepth()}
-      onQuit={() => void quit()}
-    />
-  ),
+  () => <App config={config} onQuit={() => void quit()} />,
   renderer,
 );

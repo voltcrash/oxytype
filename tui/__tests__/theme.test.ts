@@ -1,7 +1,7 @@
 import { getDefaultConfig } from "@oxytype/typing-core/config/default-config";
 import { themes } from "@oxytype/typing-core/themes";
 import { describe, expect, test } from "bun:test";
-import { nearestAnsi256, parseHex } from "../src/theme/color";
+import { parseHex } from "../src/theme/color";
 import { resolvePalette, toTerminalTheme } from "../src/theme/theme";
 
 const config = getDefaultConfig();
@@ -18,21 +18,24 @@ describe("terminal themes", () => {
     expect(custom.palette.colorfulErrorExtra).toBe(config.customThemeColors[9]);
   });
 
-  test("convert every built-in theme to truecolor", () => {
+  test("convert every built-in theme to RGB", () => {
     for (const name of Object.keys(themes) as (keyof typeof themes)[]) {
-      const theme = toTerminalTheme({ ...config, theme: name }, "truecolor");
+      const theme = toTerminalTheme({ ...config, theme: name });
       const bg = parseHex(themes[name].bg);
       expect(theme.colors.bg.toInts().slice(0, 3)).toEqual([bg.r, bg.g, bg.b]);
       expect(theme.colors.bg.intent).toBe("rgb");
     }
   });
-
-  test("use indexed colours for 256-colour terminals", () => {
-    const theme = toTerminalTheme(config, "256");
-    expect(theme.name).toBe("serika_dark");
-    expect(theme.colors.main.intent).toBe("indexed");
-    expect(theme.colors.main.slot).toBe(
-      nearestAnsi256(parseHex(themes.serika_dark.main)),
-    );
+  test("composite translucent colours onto the background", () => {
+    const theme = toTerminalTheme({
+      ...config,
+      customTheme: true,
+      customThemeColors: [
+        "#000000",
+        "#ffffff80",
+        ...config.customThemeColors.slice(2),
+      ] as typeof config.customThemeColors,
+    });
+    expect(theme.colors.main.toInts()).toEqual([128, 128, 128, 255]);
   });
 });

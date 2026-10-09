@@ -2,7 +2,6 @@ import { Dynamic } from "@opentui/solid";
 
 import type { ConfigStore } from "./config/store";
 import type { ScreenId } from "./router/screens";
-import type { ColorDepth } from "./theme/depth";
 
 import { ConfigContext } from "./config/store";
 import { createRouter, RouterContext } from "./router/router";
@@ -13,17 +12,16 @@ import { createTheme, ThemeContext } from "./theme/theme";
 
 export type AppProps = {
   config: ConfigStore;
-  colorDepth: ColorDepth;
   initialScreen?: ScreenId;
   onQuit: () => void;
 };
 
 export function App(props: AppProps) {
   // oxlint-disable-next-line solid/reactivity -- read once at startup
-  const { config, colorDepth, initialScreen } = props;
+  const { config, initialScreen } = props;
   const router = createRouter(initialScreen ?? "test");
   const dispatcher = createKeyDispatcher();
-  const theme = createTheme(config.config, colorDepth);
+  const theme = createTheme(config.config);
 
   return (
     <ConfigContext.Provider value={config}>
