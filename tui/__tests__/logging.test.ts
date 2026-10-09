@@ -3,9 +3,31 @@ import { readFile, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { createLogger } from "../src/logging";
+import { createApi } from "../src/api/client";
+import { networkSettingsSchema } from "../src/api/settings";
 import { tempDir } from "./helpers/temp-dir";
 
 describe("local diagnostics", () => {
+  test("records API failures and debug timing without URLs credentials or bodies", async () => {
+    const file = join(await tempDir(), "oxytype.log");
+    const logger = createLogger(file, { debug: true });
+    const api = createApi({
+      settings: networkSettingsSchema.parse({
+        apiUrl: "https://private-server.test/api",
+      }),
+      logger,
+      token: () => "private-bearer",
+      fetch: async () =>
+        Response.json({ message: "private-response" }, { status: 503 }),
+    });
+    await api.auth("/private-path", { text: "private-typed-body" });
+    await logger.flush();
+    const log = await readFile(file, "utf8");
+    expect(log).toContain('"event":"api.response"');
+    expect(log).toContain('"status":503');
+    expect(log).toContain('"durationMs":');
+    expect(log).not.toContain("private-");
+  });
   test("filters debug, serializes writes and keeps errors private", async () => {
     const file = join(await tempDir(), "oxytype.log");
     const logger = createLogger(file);

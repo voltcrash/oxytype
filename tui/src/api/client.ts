@@ -79,6 +79,9 @@ export function createApi(options: ApiOptions) {
           : timeout.signal,
       });
       status = response.status;
+      if (status >= 400) {
+        options.logger?.write("error", "api.response", { status });
+      }
       const compatibility = response.headers.get(COMPATIBILITY_CHECK_HEADER);
       if (
         compatibility !== null &&
