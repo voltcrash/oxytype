@@ -3,6 +3,7 @@ import {
   getLiveAccText,
   getLiveBurstText,
   getLiveSpeedText,
+  getCurrentWordCount,
   getTimerText,
   getWordsTotal,
   isTimerFlashHidden,
@@ -24,7 +25,12 @@ export function LiveStatsBar() {
       customLimit: test.customText.limit,
       seconds: test.stats().seconds,
       activeWordIndex: test.activeIndex(),
-      wordCount: test.activeIndex(),
+      wordCount: getCurrentWordCount({
+        mode: test.config().mode,
+        customLimit: test.customText.limit,
+        activeWordIndex: test.activeIndex(),
+        getSectionIndex: test.sectionIndex,
+      }),
       wordsTotal: getWordsTotal({
         config: test.config(),
         customLimit: test.customText.limit,

@@ -70,6 +70,7 @@ export type TypingTest = {
   words: Accessor<readonly string[]>;
   activeIndex: Accessor<number>;
   inputFor: (index: number) => string;
+  sectionIndex: Accessor<number | undefined>;
   revision: Accessor<number>;
   config: Accessor<Config>;
   stats: Accessor<LiveStats & { burst: number }>;
@@ -119,6 +120,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
   let paceSteps = 0;
   let currentQuote: QuoteWithTextSplit | null = null;
   let generator: WordsGenerator | undefined;
+  let sectionIndexes: number[] = [];
   let session: TestSession;
   let timer: ReturnType<typeof setInterval> | undefined;
   let generation = 0;
@@ -256,7 +258,8 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
           setNotice("Funboxes are not available yet; using a standard test");
         }
         currentQuote = null;
-        generator = createGenerator({
+        sectionIndexes = [];
+        const baseGenerator = createGenerator({
           store,
           getConfig: config,
           sources,
@@ -268,10 +271,24 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
             currentQuote = quote;
           },
         });
+        generator = {
+          ...baseGenerator,
+          getNextWord: async (...args) => {
+            const next = await baseGenerator.getNextWord(...args);
+            sectionIndexes[args[0]] = next.sectionIndex;
+            return next;
+          },
+        };
         makeSession();
-        if (options.words !== undefined) session.setWords(options.words);
-        else if (snapshot.mode === "zen") session.setWords([""]);
-        else await session.generate(loaded.language, generator);
+        if (options.words !== undefined) {
+          session.setWords(options.words);
+        } else if (snapshot.mode === "zen") {
+          session.setWords([""]);
+        } else {
+          const generated = await session.generate(loaded.language, generator);
+          if (version !== generation || disposed) return;
+          sectionIndexes = generated.sectionIndexes;
+        }
       } else {
         setConfig(previousConfig);
         makeSession();
@@ -345,9 +362,48 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
   async function insert(text: string, timestamp: number): Promise<void> {
     if (status() !== "ready" && status() !== "running") return;
     const version = generation;
+    const wordIndex = session.getActiveWordIndex();
     await session.insert(text, timestamp);
     if (version !== generation || disposed) return;
+    if (
+      session.isActive() &&
+      generator !== undefined &&
+      config().mode !== "zen" &&
+      options.words === undefined
+    ) {
+      while (
+        session.getWords().length - session.getActiveWordIndex() < 25 &&
+        !generator.areAllWordsGenerated()
+      ) {
+        const generatedWords = session.getWords();
+        await session.nextWord(
+          generatedWords.length,
+          100,
+          generatedWords.at(-1)?.replace(/[ \n]$/, ""),
+          generatedWords.at(-2)?.replace(/[ \n]$/, ""),
+          generator,
+        );
+        if (version !== generation || disposed) return;
+      }
+      if (generator.areAllWordsGenerated()) {
+        const generatedWords = session.getWords();
+        const last = generatedWords.length - 1;
+        generatedWords[last] =
+          generatedWords[last]?.replace(/[ \n]$/, "") ?? "";
+        session.setWords(generatedWords);
+      }
+    }
     refresh();
+    const burst =
+      session.getActiveWordIndex() > wordIndex
+        ? getWordBurst(session.buildEventLog(), wordIndex, timestamp)
+        : undefined;
+    setStats((previous) => ({
+      ...previous,
+      acc: session.liveCache.getLiveCachedAccuracy(),
+      burst:
+        burst !== undefined && Number.isFinite(burst) ? burst : previous.burst,
+    }));
     if (status() !== "finished") startTimer();
   }
   async function restart(repeat = false, quick = false): Promise<void> {
@@ -422,6 +478,10 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
       revision();
       return session?.recorder.getInputForWord(index) ?? "";
     },
+    sectionIndex: () => {
+      revision();
+      return sectionIndexes[activeIndex()];
+    },
     insert,
     advance,
     pace,
@@ -463,16 +523,12 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
             session.delete(action.inputType, timestamp);
             refresh();
           }
-          setStats((previous) => ({
-            ...previous,
-            acc: session.liveCache.getLiveCachedAccuracy(),
-            burst:
-              getWordBurst(
-                session.buildEventLog(),
-                session.getActiveWordIndex(),
-                timestamp,
-              ) ?? previous.burst,
-          }));
+          if (action.type === "delete") {
+            setStats((previous) => ({
+              ...previous,
+              acc: session.liveCache.getLiveCachedAccuracy(),
+            }));
+          }
           return undefined;
         })
         .catch((error: unknown) => {
