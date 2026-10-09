@@ -5,14 +5,14 @@ import {
   checkIfFinished,
 } from "../../../src/ts/input/helpers/fail-or-finish";
 import { __testing } from "../../../src/ts/config/testing";
-import * as Misc from "../../../src/ts/utils/misc";
+import * as Misc from "@oxytype/typing-core/mode";
 import * as Strings from "../../../src/ts/utils/strings";
 
 const { replaceConfig } = __testing;
 
-vi.mock("../../../src/ts/utils/misc", async (importOriginal) => {
+vi.mock("@oxytype/typing-core/mode", async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import("../../../src/ts/utils/misc")>();
+    await importOriginal<typeof import("@oxytype/typing-core/mode")>();
   return {
     ...actual,
     whorf: vi.fn(),

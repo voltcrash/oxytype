@@ -24,6 +24,20 @@ Terminal client for oxytype. Same backend, same accounts. OpenTUI + Solid.
 
 ## Stage A — Shared core
 
+Completed A1–A13 in one PR, with separate extraction/testing commits.
+
+- Core exports source directly; clients inject config, asset, quote, storage and
+  text-source adapters. Frontend retains rendering and browser lifecycle hooks.
+- Parity: eight recorded web input/timing fixtures, identical completed-event
+  payloads and hashes, plus 61 seeded word-generation snapshots.
+- Frontend consumes the session facade for events, generation and results, and
+  the shared input, timer, practice/weak-spot and pace logic.
+- Browser smoke: words-10 with typo correction, result stats, pace caret and
+  restart; time-15 emitted ticks 1–15 and completed normally.
+- Verification: package lint/typecheck/tests, frontend lint/typecheck/tests and
+  production build. See `packages/typing-core/README.md` for API/fixture details.
+
+
 ### A1. Scaffold `packages/typing-core`
 
 - Package w/ typescript-config, oxlint-config, vitest. Exports `src/*.ts`, no build.
@@ -97,6 +111,25 @@ Terminal client for oxytype. Same backend, same accounts. OpenTUI + Solid.
 
 ## Stage B — Backend + schemas
 
+Completed B1–B9 in one PR stacked on Stage A, with separate implementation,
+migration, test and documentation commits.
+
+- Client identity covers payload hashes, persisted history, regular/tag PBs,
+  typing totals, XP, streaks/activity, rank memory and all leaderboard types.
+  Existing data and omitted query parameters remain web by default.
+- Offline history/stats retain completion timestamps; 30-day age limit, no PBs,
+  rankings or XP rewards. Replay/score validation remains active.
+- Native bearer GET/PATCH verified with curl against an ephemeral D1-backed
+  server. Device code → claim/approve → token → API → revocation tested on D1;
+  web cookie-origin/CORS checks remain enabled.
+- Terminal timing verified through a recorded raw-PTY/shared-session fixture and
+  production anticheat. This is automated transport evidence; human TUI
+  calibration follows the interactive client stages.
+- Verification: 98 D1 integration, 721 backend unit, 169 core and 1,788 frontend
+  tests. Package tests, lint/typecheck, formatting and both builds pass.
+  Details: [TUI_BACKEND.md](TUI_BACKEND.md).
+
+
 ### B1. `client` field in schemas
 
 - `client: "web" | "tui"` on completed event (default `web`). Frontend sends `web`.
@@ -146,6 +179,20 @@ Terminal client for oxytype. Same backend, same accounts. OpenTUI + Solid.
 
 ## Stage C — Web frontend additions
 
+Completed C1–C3 in one PR stacked on Stage B, with separate implementation,
+regression-test and documentation commits.
+
+- `/device` reviews a query-prefilled code after sign-in, then requires explicit
+  approval or denial. Browser + curl flow verified against ephemeral D1.
+- Account/profile selectors switch PBs, stats, XP, streaks, activity, history,
+  detailed tables, charts and exports. Client caches and history mutations stay
+  independent; web typing continues to use web data.
+- All-time/daily/weekly leaderboard selectors switch entries, ranks, eligibility
+  and rank memory. URLs retain the client and reset pagination on selection.
+- Verification: 1,823 frontend tests, 98 D1 integration tests, frontend
+  lint/typecheck, formatting, production build and browser smoke pass.
+  Details and OAuth smoke scope: [TUI_WEB.md](TUI_WEB.md).
+
 ### C1. `/device` page
 
 - Code entry (prefilled from query), approve/deny, requires login.
@@ -163,6 +210,21 @@ Terminal client for oxytype. Same backend, same accounts. OpenTUI + Solid.
 ---
 
 ## Stage D — TUI foundation
+
+Completed D1–D6 in one PR stacked on Stage C, with separate scaffold, shared-code
+extraction, feature, test and documentation commits.
+
+- `tui/` runs OpenTUI 0.5.10 + Solid on Bun with package/root lint, Bun tests and
+  CI. OpenTUI is pinned below the releases that require Node >=26.4.
+- Screen stack shell with screen-first key handling; Ctrl+C always quits.
+- XDG storage with atomic JSON writes. `config.json` uses web defaults and
+  migration, now shared from the core. Theme palettes are shared too; OpenTUI
+  emits truecolor or downsamples to xterm-256.
+- English 200 + English quotes are copied from `frontend/static` at dev/test
+  time and load through core loaders without network access.
+- Verification: 44 TUI, 1,718 frontend and package tests; lint/typecheck,
+  formatting, frontend build and PTY smoke pass. Details:
+  [TUI_FOUNDATION.md](TUI_FOUNDATION.md).
 
 ### D1. Scaffold `tui/`
 
@@ -199,6 +261,21 @@ Terminal client for oxytype. Same backend, same accounts. OpenTUI + Solid.
 ---
 
 ## Stage E — Typing test (offline)
+
+Completed E1–E10 in one PR stacked on Stage D, with separate shared-code,
+rendering, session, result, history, pace, test and documentation commits.
+
+- Offline English time/words/quote/zen/custom tests use the shared generator,
+  input, timer and completed-event engine. Rendering wraps and follows the active
+  line, including all-line scrolling, native caret and a core-driven pace marker.
+- Mode/amount selectors, quick/explicit restarts, repeat, configurable live stats,
+  result numbers, block charts and atomic local history are functional. PB/average
+  pace use matching local results. Terminal approximations are in `tui/MISSING.md`.
+- Verification: 84 TUI, 486 package and 1,697 frontend tests; lint/typecheck,
+  formatting, circular-dependency checks and frontend production build. The web
+  time-15 fixture matches every live tick and final metrics. A raw 80x24 PTY saves
+  a completed test, reopens history on cold startup and quits cleanly.
+  Details: [TUI_TYPING_TEST.md](TUI_TYPING_TEST.md).
 
 ### E1. Word rendering
 
@@ -254,6 +331,24 @@ Terminal client for oxytype. Same backend, same accounts. OpenTUI + Solid.
 
 ## Stage F — Account + API
 
+Completed F1–F7 in one PR stacked on Stage E, with separate transport, device,
+session, queue, sync, asset, regression-test and documentation commits.
+
+- Contracts/Bearer client with local/env connection settings, timeouts and
+  response/compatibility checks. Device consent, 0600 server-bound credentials,
+  expiry/offline recovery and token revocation work through the account screen.
+- Online TUI results show PB/error feedback. Durable account-bound retries use
+  offline history/stats semantics, exclude PB/XP/rankings and drop uploads after
+  30 days. Guest results remain local; local history survives queue expiry.
+- Server wins on login; validated local edits sync through debounced PATCHes.
+  Background config pulls preserve active tests. Languages/quotes download into
+  validated versioned caches and fall back to English when unavailable offline.
+- Verification: 114 TUI, 99 D1 integration, 721 backend unit, 486 package and
+  1,697 frontend tests; repository lint/typecheck, formatting and both builds.
+  Actual client/device/result flows pass against D1. Four raw PTYs verify login,
+  online PB, offline queue/cold reconnect, logout and cold offline French.
+  Details and concurrency scope: [TUI_ACCOUNT_API.md](TUI_ACCOUNT_API.md).
+
 ### F1. API client
 
 - Contracts client + Bearer adapter, base URL from env/config, timeouts.
@@ -292,6 +387,9 @@ Terminal client for oxytype. Same backend, same accounts. OpenTUI + Solid.
 ---
 
 ## Stage G — Screens (parity)
+
+Implemented. Controls and validation: [TUI_SCREENS.md](TUI_SCREENS.md).
+Browser handoffs and terminal approximations: [MISSING.md](../tui/MISSING.md).
 
 ### G1. Command palette
 
@@ -345,6 +443,27 @@ Terminal client for oxytype. Same backend, same accounts. OpenTUI + Solid.
 ---
 
 ## Stage H — Ship
+
+Implemented H1–H7 in a PR stacked on Stage G, with separate audit, snapshot,
+diagnostic, CLI, package, release, regression and documentation commits.
+
+- Full feature audit includes ported families, terminal approximations, browser
+  handoffs and omitted web controls; unsupported settings are labelled web only.
+- Eighteen OpenTUI screen snapshots cover standard/compact layouts, size
+  guidance, typing/results/replay, settings/palette, editor/funboxes/challenges,
+  guest/authenticated account, leaderboard and history views.
+- Private rotating local logs, debug request timing, validated launch flags,
+  one-shot login/logout, signal/fatal cleanup and saved-data flushing are wired.
+- `tui/dist/npm` contains the Bun launcher, compiled Solid/shared code, source
+  maps, offline assets and licenses. Installed use needs no workspace/preload.
+  npm date versions omit zero padding; release helpers check commit/version
+  collisions, and main-only publication validates the isolated package first.
+- Verification: 205 TUI tests, 520 package tests, repository lint/typecheck,
+  formatting, npm pack/install/bunx/device-auth checks and four raw PTY smokes
+  (including the isolated install). Local verification is on macOS; Linux package
+  checks are wired into CI. Windows PTY coverage remains absent. npm publication
+  requires the documented maintainer/trusted-publisher setup.
+- User/development/release guide: [TUI.md](TUI.md).
 
 ### H1. `tui/MISSING.md` audit
 

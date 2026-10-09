@@ -1,3 +1,4 @@
+import type { Client } from "@oxytype/schemas/shared";
 import { and, desc, eq, gte } from "drizzle-orm";
 import MonkeyError from "../utils/error";
 import { database, encode, statement } from "../db/client";
@@ -10,6 +11,7 @@ function unpack(row: typeof results.$inferSelect): DBResult {
     ...row.data,
     _id: row.id,
     uid: row.uid,
+    client: row.client,
   } as DBResult);
 }
 export async function addResult(
@@ -23,7 +25,7 @@ export async function addResult(
   result.uid ??= uid;
   await stage(
     statement(
-      "INSERT INTO results(id,uid,timestamp,mode,mode2,language,wpm,acc,submission_hash,data) VALUES(?,?,?,?,?,?,?,?,?,?)",
+      "INSERT INTO results(id,uid,timestamp,mode,mode2,language,wpm,acc,client,submission_hash,data) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
       result._id,
       uid,
       result.timestamp,
@@ -32,6 +34,7 @@ export async function addResult(
       result.language ?? "english",
       result.wpm,
       result.acc,
+      result.client ?? "web",
       (result as DBResult & { submissionHash?: string }).submissionHash ?? null,
       encode(result),
     ),
@@ -71,27 +74,34 @@ export async function getResult(uid: string, id: string): Promise<DBResult> {
   if (!row) throw new MonkeyError(404, "Result not found");
   return unpack(row);
 }
-export async function getLastResult(uid: string): Promise<DBResult> {
+export async function getLastResult(
+  uid: string,
+  client: Client = "web",
+): Promise<DBResult> {
   const row = await database()
     .select()
     .from(results)
-    .where(eq(results.uid, uid))
+    .where(and(eq(results.uid, uid), eq(results.client, client)))
     .orderBy(desc(results.timestamp), desc(results.id))
     .get();
   if (!row) throw new MonkeyError(404, "No last result found");
   return unpack(row);
 }
-export async function getLastResultTimestamp(uid: string): Promise<number> {
+export async function getLastResultTimestamp(
+  uid: string,
+  client: Client = "web",
+): Promise<number> {
   const row = await database()
     .select({ timestamp: results.timestamp })
     .from(results)
-    .where(eq(results.uid, uid))
+    .where(and(eq(results.uid, uid), eq(results.client, client)))
     .orderBy(desc(results.timestamp), desc(results.id))
     .get();
   if (!row) throw new MonkeyError(404, "No last result found");
   return row.timestamp;
 }
 type GetResultsOpts = {
+  client?: Client;
   onOrAfterTimestamp?: number;
   limit?: number;
   offset?: number;
@@ -107,6 +117,7 @@ export async function getResults(
     .where(
       and(
         eq(results.uid, uid),
+        eq(results.client, opts.client ?? "web"),
         timestamp !== undefined && Number.isFinite(timestamp)
           ? gte(results.timestamp, timestamp)
           : undefined,

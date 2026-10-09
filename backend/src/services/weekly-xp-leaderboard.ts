@@ -1,3 +1,4 @@
+import type { Client } from "@oxytype/schemas/shared";
 import type { Configuration } from "@oxytype/schemas/configuration";
 import type {
   XpLeaderboardProfile,
@@ -24,8 +25,10 @@ function unpack(row: RankingRow): XpLeaderboardEntry {
 }
 export class WeeklyXpLeaderboard {
   private readonly customTime: number;
-  constructor(customTime = -1) {
+  private readonly client: Client;
+  constructor(customTime = -1, client: Client = "web") {
     this.customTime = customTime;
+    this.client = client;
   }
   private period(): number {
     return this.customTime === -1 ? getCurrentWeekTimestamp() : this.customTime;
@@ -39,17 +42,20 @@ export class WeeklyXpLeaderboard {
       period = this.period();
     // Rank against this user's total after the gain, in a single read.
     const ahead = await statement(
-      "WITH me AS (SELECT COALESCE((SELECT xp FROM weekly_entries WHERE period=? AND uid=?),0)+? AS xp) SELECT count(*) AS count FROM weekly_entries,me WHERE period=? AND uid<>? AND (weekly_entries.xp>me.xp OR (weekly_entries.xp=me.xp AND uid>?))",
+      "WITH me AS (SELECT COALESCE((SELECT xp FROM weekly_entries WHERE client=? AND period=? AND uid=?),0)+? AS xp) SELECT count(*) AS count FROM weekly_entries,me WHERE client=? AND period=? AND uid<>? AND (weekly_entries.xp>me.xp OR (weekly_entries.xp=me.xp AND uid>?))",
+      this.client,
       period,
       entry.uid,
       xpGained,
+      this.client,
       period,
       entry.uid,
       entry.uid,
     ).first<number>("count");
     await stage(
       statement(
-        "INSERT INTO weekly_entries(period,uid,xp,time_typed_seconds,expires_at,data) VALUES(?,?,?,?,?,?) ON CONFLICT(period,uid) DO UPDATE SET xp=xp+excluded.xp,time_typed_seconds=time_typed_seconds+excluded.time_typed_seconds,data=excluded.data",
+        "INSERT INTO weekly_entries(client,period,uid,xp,time_typed_seconds,expires_at,data) VALUES(?,?,?,?,?,?,?) ON CONFLICT(client,period,uid) DO UPDATE SET xp=xp+excluded.xp,time_typed_seconds=time_typed_seconds+excluded.time_typed_seconds,data=excluded.data",
+        this.client,
         period,
         entry.uid,
         xpGained,
@@ -60,7 +66,8 @@ export class WeeklyXpLeaderboard {
     );
     await LaterQueue.scheduleForNextWeek(
       "weekly-xp-leaderboard-results",
-      "weekly",
+      this.client === "web" ? "weekly" : "weekly:tui",
+      this.client,
     );
     return (ahead ?? 0) + 1;
   }
@@ -79,6 +86,7 @@ export class WeeklyXpLeaderboard {
       pageSize,
       undefined,
       includeExpired,
+      this.client,
     );
     return {
       entries: result.rows
@@ -97,6 +105,7 @@ export class WeeklyXpLeaderboard {
       this.period(),
       uid,
       undefined,
+      this.client,
     );
     return row ? unpack(row) : null;
   }
@@ -104,6 +113,7 @@ export class WeeklyXpLeaderboard {
 export function get(
   weeklyXpLeaderboardConfig: Configuration["leaderboards"]["weeklyXp"],
   customTimestamp?: number,
+  client: Client = "web",
 ): WeeklyXpLeaderboard | null {
   const { enabled } = weeklyXpLeaderboardConfig;
 
@@ -111,7 +121,7 @@ export function get(
     return null;
   }
 
-  return new WeeklyXpLeaderboard(customTimestamp);
+  return new WeeklyXpLeaderboard(customTimestamp, client);
 }
 
 export async function purgeUserFromXpLeaderboards(

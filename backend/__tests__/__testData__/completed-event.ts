@@ -12,6 +12,7 @@ export function completedEvent(
   const consistency = (values: number[]): number =>
     roundTo2(kogasa(stdDev(values) / mean(values)));
   return {
+    client: "web",
     uid: "anticheat-user",
     hash: "hash",
     timestamp: 1000,

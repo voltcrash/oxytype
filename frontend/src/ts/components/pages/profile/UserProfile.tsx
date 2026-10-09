@@ -1,4 +1,4 @@
-import { PersonalBest, PersonalBests } from "@oxytype/schemas/shared";
+import { Client, PersonalBest, PersonalBests } from "@oxytype/schemas/shared";
 import {
   RankAndCount,
   UserProfile as UserProfileType,
@@ -16,12 +16,14 @@ import { UserDetails } from "./UserDetails";
 export function UserProfile(props: {
   profile: UserProfileType;
   isAccountPage?: true;
+  client?: Client;
 }): JSXElement {
   return (
     <div class="grid w-full gap-8">
       <UserDetails
         profile={props.profile}
         isAccountPage={props.isAccountPage}
+        client={props.client}
       />
       <Show when={!props.profile.banned && !props.profile.lbOptOut}>
         <LeaderboardPosition
@@ -34,12 +36,14 @@ export function UserProfile(props: {
           mode="time"
           mode2={["15", "30", "60", "120"]}
           pbs={props.profile.personalBests.time}
+          client={props.client}
           isAccountPage={props.isAccountPage}
         />
         <PbCard
           mode="words"
           mode2={["10", "25", "50", "100"]}
           pbs={props.profile.personalBests.words}
+          client={props.client}
           isAccountPage={props.isAccountPage}
         />
       </div>
@@ -53,9 +57,12 @@ export function UserProfile(props: {
 
       <ActivityCalendar
         testActivity={
-          props.isAccountPage ? undefined : props.profile.testActivity
+          props.isAccountPage && props.client !== "tui"
+            ? undefined
+            : props.profile.testActivity
         }
         isAccountPage={props.isAccountPage}
+        client={props.client}
       />
     </div>
   );
@@ -105,6 +112,7 @@ function PbCard<M extends "time" | "words">(props: {
   mode2: string[];
   pbs: PersonalBests[M];
   isAccountPage?: true;
+  client?: Client;
 }): JSXElement {
   const format = getFormatting;
 
@@ -182,7 +190,13 @@ function PbCard<M extends "time" | "words">(props: {
             balloon={{ text: "Show all personal bests", position: "left" }}
             class="h-full rounded-none rounded-r text-sub hover:text-bg"
             fa={{ icon: "fa-ellipsis-v" }}
-            onClick={() => showPbTablesModal(props.mode)}
+            onClick={() =>
+              showPbTablesModal(
+                props.mode,
+                { [props.mode]: props.pbs },
+                props.client,
+              )
+            }
           />
         </div>
       </Show>

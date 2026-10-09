@@ -10,6 +10,7 @@ import {
   authAccounts,
   authVerifications,
   authRateLimits,
+  authDeviceCodes,
 } from "../db/schema";
 import { background, runtime, envValue, type WorkerEnv } from "../runtime/env";
 import { mutateUser } from "../db/mutation";
@@ -18,7 +19,7 @@ import {
   createAuthMiddleware,
   getSessionFromCtx,
 } from "better-auth/api";
-import { bearer } from "better-auth/plugins";
+import { bearer, deviceAuthorization } from "better-auth/plugins";
 import { getFrontendUrl, isDevEnvironment } from "../utils/misc";
 import * as UserDAL from "../dal/user";
 
@@ -192,6 +193,13 @@ export function createAuth(
     },
     plugins: [
       bearer(),
+      deviceAuthorization({
+        verificationUri: new URL("/device", frontendUrl).href,
+        expiresIn: "10m",
+        interval: "5s",
+        validateClient: (clientId) => clientId === "oxytype-tui",
+        schema: { deviceCode: { modelName: "authDeviceCodes" } },
+      }),
       ...(dashboardApiKey !== undefined && dashboardApiKey !== ""
         ? [dash({ apiKey: dashboardApiKey })]
         : []),
@@ -216,6 +224,7 @@ export function getAuth(): ReturnType<typeof createAuth> {
         authAccounts,
         authVerifications,
         authRateLimits,
+        authDeviceCodes,
       },
       transaction: false,
     }),

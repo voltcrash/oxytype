@@ -1,3 +1,4 @@
+import type { Client } from "@oxytype/schemas/shared";
 import { statement } from "./client";
 export type RankingRow = {
   uid: string;
@@ -12,12 +13,15 @@ function rankingQuery(
   period: number,
   board?: string,
   includeExpired = false,
+  client: Client = "web",
 ): { query: string; values: (string | number)[] } {
   const score = table === "daily_entries" ? "score" : "xp";
+  const clientScope = table === "weekly_entries" ? "AND client=?" : "";
   const values: (string | number)[] = [period, includeExpired ? 0 : Date.now()];
   if (board !== undefined) values.push(board);
+  if (table === "weekly_entries") values.push(client);
   return {
-    query: `WITH ranked AS (SELECT uid,data,${score} AS score,${table === "weekly_entries" ? "time_typed_seconds AS timeTypedSeconds," : ""}row_number() OVER(ORDER BY ${score} DESC,uid DESC) AS rank FROM ${table} WHERE period=? AND expires_at>? ${board === undefined ? "" : "AND board=?"})`,
+    query: `WITH ranked AS (SELECT uid,data,${score} AS score,${table === "weekly_entries" ? "time_typed_seconds AS timeTypedSeconds," : ""}row_number() OVER(ORDER BY ${score} DESC,uid DESC) AS rank FROM ${table} WHERE period=? AND expires_at>? ${board === undefined ? "" : "AND board=?"} ${clientScope})`,
     values,
   };
 }
@@ -28,9 +32,17 @@ export async function rankingPage(
   pageSize: number,
   board?: string,
   includeExpired = false,
+  client: Client = "web",
 ): Promise<{ rows: RankingRow[]; count: number; minWpm: number }> {
   if (page < 0 || pageSize < 0) throw new Error("Invalid page or pageSize");
-  const { query, values } = rankingQuery(table, period, board, includeExpired);
+  const { query, values } = rankingQuery(
+    table,
+    period,
+    board,
+    includeExpired,
+    client,
+  );
+  const clientScope = table === "weekly_entries" ? "AND client=?" : "";
   // Totals need filtering only; avoid ranking every row a second time.
   const [rows, summary] = await Promise.all([
     statement(
@@ -40,7 +52,7 @@ export async function rankingPage(
       page * pageSize,
     ).all<RankingRow>(),
     statement(
-      `SELECT count(*) AS count,coalesce(min(json_extract(data,'$.wpm')),0) AS minWpm FROM ${table} WHERE period=? AND expires_at>? ${board === undefined ? "" : "AND board=?"}`,
+      `SELECT count(*) AS count,coalesce(min(json_extract(data,'$.wpm')),0) AS minWpm FROM ${table} WHERE period=? AND expires_at>? ${board === undefined ? "" : "AND board=?"} ${clientScope}`,
       ...values,
     ).first<{ count: number; minWpm: number }>(),
   ]);
@@ -55,11 +67,14 @@ export async function rankingUser(
   period: number,
   uid: string,
   board?: string,
+  client: Client = "web",
 ): Promise<RankingRow | null> {
   const score = table === "daily_entries" ? "score" : "xp";
-  const scope = `period=? AND expires_at>? ${board === undefined ? "" : "AND board=?"}`;
+  const clientScope = table === "weekly_entries" ? "AND client=?" : "";
+  const scope = `period=? AND expires_at>? ${board === undefined ? "" : "AND board=?"} ${clientScope}`;
   const scopeValues: (string | number)[] = [period, Date.now()];
   if (board !== undefined) scopeValues.push(board);
+  if (table === "weekly_entries") scopeValues.push(client);
   // Read one profile, then count higher scores using the ranking index.
   const ahead = `SELECT count(*) FROM ${table} WHERE ${scope} AND (${score},uid)>(me.score,me.uid)`;
   return await statement(

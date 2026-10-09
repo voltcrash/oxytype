@@ -1,3 +1,5 @@
+import type { Client } from "@oxytype/schemas/shared";
+import { clientBoard } from "../db/client-profile";
 import type { LeaderboardEntry } from "@oxytype/schemas/leaderboards";
 import { newId } from "../utils/id";
 import { binding, statement } from "../db/client";
@@ -6,8 +8,13 @@ import { isDevEnvironment, omit } from "../utils/misc";
 export type DBLeaderboardEntry = Omit<LeaderboardEntry, "_id"> & {
   _id: string;
 };
-function board(mode: string, mode2: string, language: string): string {
-  return `${language}_${mode}_${mode2}`;
+function board(
+  mode: string,
+  mode2: string,
+  language: string,
+  client: Client = "web",
+): string {
+  return clientBoard(`${language}_${mode}_${mode2}`, client);
 }
 function unpack(row: {
   uid: string;
@@ -29,11 +36,12 @@ export async function get(
   page: number,
   pageSize: number,
   premium = false,
+  client: Client = "web",
 ): Promise<DBLeaderboardEntry[]> {
   if (page < 0 || pageSize < 0) throw new Error("Invalid page or pageSize");
   const rows = await statement(
     `SELECT s.uid,s.rank,s.data ${snapshot} ORDER BY s.rank LIMIT ? OFFSET ?`,
-    board(mode, mode2, language),
+    board(mode, mode2, language, client),
     Math.min(pageSize, 1000),
     page * pageSize,
   ).all<{ uid: string; rank: number; data: string }>();
@@ -45,11 +53,12 @@ export async function getCount(
   mode: string,
   mode2: string,
   language: string,
+  client: Client = "web",
 ): Promise<number> {
   return (
     (await statement(
       `SELECT count(*) AS count ${snapshot}`,
-      board(mode, mode2, language),
+      board(mode, mode2, language, client),
     ).first<number>("count")) ?? 0
   );
 }
@@ -58,10 +67,11 @@ export async function getRank(
   mode2: string,
   language: string,
   uid: string,
+  client: Client = "web",
 ): Promise<DBLeaderboardEntry | null> {
   const row = await statement(
     `SELECT s.uid,s.rank,s.data ${snapshot} AND s.uid=?`,
-    board(mode, mode2, language),
+    board(mode, mode2, language, client),
     uid,
   ).first<{ uid: string; rank: number; data: string }>();
   return row ? unpack(row) : null;
@@ -70,8 +80,9 @@ export async function update(
   mode: string,
   mode2: string,
   language: string,
+  client: Client = "web",
 ): Promise<{ message: string; rank?: number }> {
-  const key = board(mode, mode2, language),
+  const key = board(mode, mode2, language, client),
     generation = newId();
   const minimum = isDevEnvironment()
     ? 0
@@ -82,11 +93,13 @@ export async function update(
       `INSERT INTO leaderboard_snapshots(generation,board,uid,rank,data)
       SELECT ?,?,u.uid,row_number() OVER(ORDER BY b.wpm DESC,b.acc DESC,b.timestamp DESC,u.uid DESC),
       json_patch(b.data,json_object('uid',u.uid,'name',u.name,'badgeId',(SELECT json_extract(value,'$.id') FROM json_each(u.data,'$.inventory.badges') WHERE json_extract(value,'$.selected')=1 LIMIT 1),'isPremium',json(CASE WHEN json_extract(u.data,'$.premium.expirationTimestamp')=-1 OR json_extract(u.data,'$.premium.expirationTimestamp')>? THEN 'true' ELSE 'false' END)))
-      FROM leaderboard_bests b JOIN users u ON b.uid=u.uid WHERE b.board=? AND b.wpm>0 AND b.acc>0 AND b.timestamp>0 AND u.banned=0 AND u.lb_opt_out=0 AND u.needs_to_change_name=0 AND u.time_typing>?`,
+      FROM leaderboard_bests b JOIN users u ON b.uid=u.uid WHERE b.board=? AND b.wpm>0 AND b.acc>0 AND b.timestamp>0 AND u.banned=0 AND u.lb_opt_out=0 AND u.needs_to_change_name=0 AND CASE WHEN ?='web' THEN u.time_typing ELSE COALESCE((SELECT time_typing FROM client_profiles WHERE uid=u.uid AND client=?),0) END>?`,
       generation,
       key,
       Date.now(),
       key,
+      client,
+      client,
       minimum,
     ),
     statement(

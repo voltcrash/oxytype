@@ -158,3 +158,28 @@ cd ..
 pnpm oxlint --type-aware --type-check --format agent
 pnpm build-be
 ```
+
+## Terminal clients
+
+`client: "tui"` results use the same score, duration, chart and spacing checks.
+Traditional terminals report key arrivals without release events. The shared
+session records one keydown per received key with zero hold placeholders and
+unknown overlap; it does not invent release times. Short terminal tests require
+keyboard telemetry. Long-test sentinels retain the existing cutoff.
+
+For TUI results, the narrow fixed-timing bot signature uses arrival gaps alone;
+unknown holds cannot disable that gate. Replay fingerprints likewise use the
+rounded gaps independently of unobserved hold durations. Review signals that
+need measured holds remain inactive when holds are zero. Numeric thresholds
+remain unchanged; no human terminal calibration justifies changing them yet.
+Timing review audits include the client and offline status.
+
+The committed `backend/__tests__/__testData__/terminal-words-10.json` records
+actual PTY delivery through a shared session. Input was automated: it is
+transport evidence, not a labelled human sample or the future OpenTUI app.
+`packages/typing-core/scripts/record-terminal-fixture.ts` reproduces the raw-PTY
+capture. Unit checks and production-mode D1 submissions accept that recording;
+additional tests reject missing telemetry, fixed high-speed arrivals, forged
+scores and replayed gaps while allowing varied arrivals with unknown holds.
+Review real human TUI samples during later interactive testing before tuning
+thresholds. See [backend contracts](TUI_BACKEND.md) for offline and auth policy.

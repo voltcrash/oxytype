@@ -220,4 +220,26 @@ describe("date-and-time", () => {
       expect(DateAndTime.isYesterday(input, offset)).toEqual(expected);
     });
   });
+
+  describe("secondsToString", () => {
+    it("formats clock-style durations", () => {
+      expect(DateAndTime.secondsToString(5)).toBe("5");
+      expect(DateAndTime.secondsToString(65)).toBe("01:05");
+      expect(DateAndTime.secondsToString(3725)).toBe("01:02:05");
+      expect(DateAndTime.secondsToString(5, true)).toBe("00:05");
+      expect(DateAndTime.secondsToString(-30)).toBe("30");
+    });
+
+    it("formats text durations", () => {
+      expect(DateAndTime.secondsToString(61, false, false, "text")).toBe(
+        "1 minute 1 second",
+      );
+      expect(
+        DateAndTime.secondsToString(90061, false, false, "text", true, true),
+      ).toBe("1 day 1 hour 1 minute 1 second");
+      expect(DateAndTime.secondsToString(30, false, false, "text", false)).toBe(
+        "less than 1 minute",
+      );
+    });
+  });
 });

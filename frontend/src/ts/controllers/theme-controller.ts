@@ -13,43 +13,23 @@ import * as CustomThemes from "../collections/custom-themes";
 import { showNoticeNotification } from "../states/notifications";
 import { debounce } from "throttle-debounce";
 import { CustomThemeColors, ThemeName } from "@oxytype/schemas/configs";
-import { Theme, themes, ThemesList } from "../constants/themes";
+import {
+  convertCustomColorsToTheme,
+  themes,
+  ThemesList,
+} from "../constants/themes";
 import fileStorage from "../utils/file-storage";
 import { setThemeIndicator } from "../states/core";
 import { setTheme, ThemeIdentifier } from "../states/theme";
 
+export {
+  convertCustomColorsToTheme,
+  convertThemeToCustomColors,
+} from "../constants/themes";
+
 export let randomTheme: ThemeIdentifier | null = null;
 let isPreviewingTheme = false;
 let randomThemeIndex = 0;
-
-export function convertCustomColorsToTheme(colors: CustomThemeColors): Theme {
-  return {
-    bg: colors[0],
-    main: colors[1],
-    caret: colors[2],
-    sub: colors[3],
-    subAlt: colors[4],
-    text: colors[5],
-    error: colors[6],
-    errorExtra: colors[7],
-    colorfulError: colors[8],
-    colorfulErrorExtra: colors[9],
-  };
-}
-export function convertThemeToCustomColors(theme: Theme): CustomThemeColors {
-  return [
-    theme.bg,
-    theme.main,
-    theme.caret,
-    theme.sub,
-    theme.subAlt,
-    theme.text,
-    theme.error,
-    theme.errorExtra,
-    theme.colorfulError,
-    theme.colorfulErrorExtra,
-  ];
-}
 
 async function apply(
   themeName: ThemeIdentifier,

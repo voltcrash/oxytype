@@ -1,7 +1,7 @@
 import { ResultFilters, ResultFiltersSchema } from "@oxytype/schemas/users";
 
 import defaultResultFilters from "../../../constants/default-result-filters";
-import { sanitize } from "../../../utils/sanitize";
+import { sanitize } from "@oxytype/util/sanitize";
 import { typedKeys } from "@oxytype/util/objects";
 
 export function mergeWithDefaultFilters(

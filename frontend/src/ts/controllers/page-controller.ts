@@ -83,6 +83,7 @@ const pages = {
     },
   }),
   login: solidPage("login"),
+  device: solidPage("device"),
   profile: solidPage("profile", {
     beforeShow: async (options) => {
       setSelectedProfileName(options.params?.["uidOrName"]);

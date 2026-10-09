@@ -1,3 +1,4 @@
+import type { ClientQuery } from "@oxytype/schemas/shared";
 import {
   GetSpeedHistogramQuery,
   GetSpeedHistogramResponse,
@@ -11,13 +12,18 @@ export async function getSpeedHistogram(
   req: MonkeyRequest<GetSpeedHistogramQuery>,
 ): Promise<GetSpeedHistogramResponse> {
   const { language, mode, mode2 } = req.query;
-  const data = await PublicDAL.getSpeedHistogram(language, mode, mode2);
+  const data = await PublicDAL.getSpeedHistogram(
+    language,
+    mode,
+    mode2,
+    req.query.client,
+  );
   return new MonkeyResponse("Public speed histogram retrieved", data);
 }
 
 export async function getTypingStats(
-  _req: MonkeyRequest,
+  req: MonkeyRequest<ClientQuery>,
 ): Promise<GetTypingStatsResponse> {
-  const data = await PublicDAL.getTypingStats();
+  const data = await PublicDAL.getTypingStats(req.query?.client);
   return new MonkeyResponse("Public typing stats retrieved", data);
 }

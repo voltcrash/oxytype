@@ -10,12 +10,13 @@ import {
   LeaderboardEntrySchema,
   XpLeaderboardEntrySchema,
 } from "@oxytype/schemas/leaderboards";
-import { Mode2Schema, ModeSchema } from "@oxytype/schemas/shared";
+import { ClientSchema, Mode2Schema, ModeSchema } from "@oxytype/schemas/shared";
 import { initContract } from "@ts-rest/core";
 import { LanguageSchema } from "@oxytype/schemas/languages";
 import { PageNumberSchema } from "@oxytype/schemas/util";
 
 const LanguageAndModeQuerySchema = z.object({
+  client: ClientSchema.optional(),
   language: LanguageSchema,
   mode: ModeSchema,
   mode2: Mode2Schema,
@@ -103,6 +104,7 @@ export type GetLeaderboardDailyRankResponse = z.infer<
 //--------------------------------------------------------------------------
 
 const WeeklyXpLeaderboardQuerySchema = z.object({
+  client: ClientSchema.optional(),
   weeksBefore: z.literal(1).optional(),
 });
 

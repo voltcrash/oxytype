@@ -16,6 +16,9 @@ export const lazyPages = {
   login: lazy(async () =>
     import("./login/LoginPage").then((m) => ({ default: m.LoginPage })),
   ),
+  device: lazy(async () =>
+    import("./device/DevicePage").then((m) => ({ default: m.DevicePage })),
+  ),
   profile: lazy(async () =>
     import("./profile/ProfilePage").then((m) => ({ default: m.ProfilePage })),
   ),

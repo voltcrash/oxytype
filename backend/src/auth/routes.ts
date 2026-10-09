@@ -25,10 +25,26 @@ export function addAuthRoutes(app: Hono<ApiEnv>): void {
       c.req.path.startsWith("/auth/dash/") &&
       request.headers.get("authorization")?.startsWith("Bearer ") === true &&
       !request.headers.has("cookie");
+    const noBrowserContext =
+      !request.headers.has("origin") &&
+      !request.headers.has("cookie") &&
+      !request.headers.has("sec-fetch-site");
+    const nativeDeviceRequest =
+      noBrowserContext &&
+      ["/auth/device/code", "/auth/device/token"].includes(c.req.path);
+    let nativeBearerRequest =
+      noBrowserContext &&
+      request.headers.get("authorization")?.startsWith("Bearer ") === true;
+    if (nativeBearerRequest && !dashboardRequest && !nativeDeviceRequest) {
+      nativeBearerRequest =
+        (await auth.api.getSession({ headers: request.headers })) !== null;
+    }
     if (
       c.req.method !== "GET" &&
       c.req.method !== "HEAD" &&
-      !dashboardRequest
+      !dashboardRequest &&
+      !nativeDeviceRequest &&
+      !nativeBearerRequest
     ) {
       const origin = c.req.header("origin");
       if (origin !== new URL(getFrontendUrl()).origin) {

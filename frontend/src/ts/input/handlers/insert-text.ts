@@ -1,3 +1,4 @@
+import { evaluateInsert } from "@oxytype/typing-core/input/engine";
 import * as TestUI from "../../test/test-ui";
 import * as TestWords from "../../test/test-words";
 import {
@@ -26,7 +27,6 @@ import {
 import { showNoticeNotification } from "../../states/notifications";
 import { goToNextWord, goToPreviousWord } from "../helpers/word-navigation";
 import { onBeforeInsertText } from "./before-insert-text";
-import { shouldGoToNextWord, isCharCorrect } from "../helpers/validation";
 import { getCurrentInput, logTestEvent } from "../../test/events/data";
 import { getCommitCharacterType, normalizeData } from "../helpers/util";
 import { areAllWordsGenerated } from "../../test/words-generator";
@@ -221,29 +221,20 @@ export async function onInsertText(options: OnInsertTextParams): Promise<void> {
     targetWord: currentWord,
   });
 
-  // is char correct
-  const correct = isCharCorrect({
+  const decision = evaluateInsert(Config, {
     data,
     inputValue: testInput,
     targetWord: currentWord,
     correctShiftUsed,
+    nospace: commitCharacterType === "nospace",
   });
-
-  // handing cases where last char needs to be removed
-  // this is here and not in beforeInsertText because we want to penalize for incorrect spaces
-  // like accuracy, keypress errors, and missed words
-  let removeLastChar = false;
-  let visualInputOverride: string | undefined;
-  if (Config.stopOnError === "letter" && !correct) {
-    if (!Config.blindMode) {
-      visualInputOverride = testInput + data;
-    }
-    removeLastChar = true;
-  }
-
+  const {
+    correct,
+    stopped: removeLastChar,
+    visualInputOverride,
+    advance: goingToNextWord,
+  } = decision;
   if (correctShiftUsed === false) {
-    removeLastChar = true;
-    visualInputOverride = undefined;
     incrementIncorrectShiftsInARow();
     if (getIncorrectShiftsInARow() >= 5) {
       showNoticeNotification("Opposite shift mode is on.", {
@@ -254,16 +245,6 @@ export async function onInsertText(options: OnInsertTextParams): Promise<void> {
   } else {
     resetIncorrectShiftsInARow();
   }
-
-  // derived after removeLastChar: stop-on-error and opposite shift mode can block navigation
-  const goingToNextWord =
-    !removeLastChar &&
-    shouldGoToNextWord({
-      data,
-      inputValue: testInput,
-      targetWord: currentWord,
-      commitCharacterType,
-    });
 
   if (Config.keymapMode === "react") {
     flash(data, correct);

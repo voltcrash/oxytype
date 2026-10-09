@@ -1,0 +1,113 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`guest and authenticated account snapshots: guest account 1`] = `
+"
+ oxytype  test  settings  [account]  leaderboards  history          serika dark
+
+ account
+ not logged in · guest
+ enter log in · r reconnect · l log out
+ config local · 0 queued uploads
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
+
+"
+`;
+
+exports[`guest and authenticated account snapshots: authenticated account 1`] = `
+"
+ oxytype  test  settings  [account]  leaderboards  history          serika dark
+
+ account
+ Tester · authenticated
+ enter log in · r reconnect · l log out
+ config synced · 0 queued uploads
+
+ tui stats · tab switch client · ↑↓ PB pages
+ Tester · 100 xp · streak 2 (max 3)
+ 7 completed · 8 started · 0.0 hours
+ personal bests · 0 · page 1/1
+ no personal bests yet
+ h history · t tags · p presets
+
+
+
+
+
+
+
+
+ esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
+
+"
+`;
+
+exports[`populated leaderboard snapshot: leaderboard 1`] = `
+"
+ oxytype  test  settings  account  [leaderboards]  history          serika dark
+
+ leaderboards · all-time · tui · english · time 15
+
+ › 1. Tester           100 wpm · 100.0% · raw 101
+
+ page 1/1 · your rank unranked
+
+ ↑↓ select · ←→ pages · tab board · c client · l language · m test · enter
+ profile
+
+
+
+
+
+
+
+
+
+
+
+ esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
+
+"
+`;
+
+exports[`saved history detail snapshot: history details 1`] = `
+"
+ oxytype  test  settings  account  leaderboards  [history]          serika dark
+
+ local history · 1 tests
+
+ 7 wpm · 81.6% acc · raw 64
+
+ consistency 84.7% · time 9.23s · chars 5/0/9/0
+
+ tags  · normal · online
+
+ ↑↓ select · enter details · tab local/TUI/web · f filters · x clear · r reload
+
+
+
+
+
+
+
+
+
+
+ esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
+
+"
+`;

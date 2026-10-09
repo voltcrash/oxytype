@@ -191,6 +191,14 @@ function getColumns<M extends Mode>({
                 <Fa icon="fa-eye-slash" fixedWidth={true} />
               </span>
             </Show>
+            <Show when={info.row.original.offline}>
+              <span
+                aria-label="offline result: history and stats only"
+                data-balloon-pos="up"
+              >
+                <Fa icon="fa-plug" fixedWidth />
+              </span>
+            </Show>
             <Show when={info.row.original.lazyMode}>
               <span aria-label="lazy mode" data-balloon-pos="up">
                 <Fa icon="fa-couch" fixedWidth={true} />
@@ -267,6 +275,7 @@ function getColumns<M extends Mode>({
               }
 
               showEditResultTagsModal({
+                client: info.row.original.client,
                 _id: info.row.original._id,
                 tags: info.getValue(),
               });

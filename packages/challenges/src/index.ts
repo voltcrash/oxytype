@@ -1,3 +1,7 @@
+import type {
+  CompletedEvent,
+  CustomTextSettings,
+} from "@oxytype/schemas/results";
 import { ChallengeName } from "@oxytype/schemas/challenges";
 import {
   Config,
@@ -693,4 +697,199 @@ export function getRegularChallenges(): Challenge[] {
 
 export function getChallenge(name: ChallengeName): Challenge {
   return map[name];
+}
+
+export type ChallengeResult = Pick<
+  CompletedEvent,
+  | "wpm"
+  | "acc"
+  | "rawWpm"
+  | "consistency"
+  | "afkDuration"
+  | "testDuration"
+  | "funbox"
+>;
+
+function verifyRequirement(
+  result: ChallengeResult,
+  config: Readonly<Config>,
+  requirements: NonNullable<ChallengeSettings["requirements"]>,
+  requirementType: keyof NonNullable<ChallengeSettings["requirements"]>,
+): [boolean, string[]] {
+  let requirementsMet = true;
+  let failReasons: string[] = [];
+
+  const afk = (result.afkDuration / result.testDuration) * 100;
+
+  if (requirements[requirementType] === undefined) {
+    throw new Error("Requirement value is undefined");
+  }
+
+  if (requirementType === "wpm" && requirements.wpm) {
+    const requirementValue = requirements.wpm;
+    if ("exact" in requirementValue) {
+      if (Math.round(result.wpm) !== requirementValue.exact) {
+        requirementsMet = false;
+        failReasons.push(`WPM not ${requirementValue.exact}`);
+      }
+    } else if ("min" in requirementValue) {
+      if (result.wpm < requirementValue.min) {
+        requirementsMet = false;
+        failReasons.push(`WPM below ${requirementValue.min}`);
+      }
+    }
+  } else if (requirementType === "acc" && requirements.acc) {
+    const requirementValue = requirements.acc;
+    if ("exact" in requirementValue) {
+      if (result.acc !== requirementValue.exact) {
+        requirementsMet = false;
+        failReasons.push(`Accuracy not ${requirementValue.exact}`);
+      }
+    } else if ("min" in requirementValue) {
+      if (result.acc < requirementValue.min) {
+        requirementsMet = false;
+        failReasons.push(`Accuracy below ${requirementValue.min}`);
+      }
+    }
+  } else if (requirementType === "afk" && requirements.afk) {
+    const requirementValue = requirements.afk;
+    if (requirementValue.max) {
+      if (Math.round(afk) > requirementValue.max) {
+        requirementsMet = false;
+        failReasons.push(`AFK percentage above ${requirementValue.max}`);
+      }
+    }
+  } else if (requirementType === "time" && requirements.time) {
+    const requirementValue = requirements.time;
+    if (requirementValue.min) {
+      if (Math.round(result.testDuration) < requirementValue.min) {
+        requirementsMet = false;
+        failReasons.push(`Test time below ${requirementValue.min}`);
+      }
+    }
+  } else if (requirementType === "funbox" && requirements.funbox) {
+    const funboxMode = requirements.funbox.exact;
+    if (funboxMode === undefined) {
+      throw new Error("Funbox mode is undefined");
+    }
+
+    if (
+      funboxMode.length !== result.funbox.length ||
+      funboxMode.some((name) => !result.funbox.includes(name))
+    ) {
+      requirementsMet = false;
+      for (const f of funboxMode) {
+        if (!result.funbox?.includes(f)) {
+          failReasons.push(`${f} funbox not active`);
+        }
+      }
+      if (result.funbox !== undefined && result.funbox.length > 0) {
+        for (const f of result.funbox) {
+          if (!funboxMode.includes(f)) {
+            failReasons.push(`${f} funbox active`);
+          }
+        }
+      }
+    }
+  } else if (requirementType === "raw" && requirements.raw) {
+    const requirementValue = requirements.raw;
+    if (requirementValue.exact) {
+      if (Math.round(result.rawWpm) !== requirementValue.exact) {
+        requirementsMet = false;
+        failReasons.push(`Raw WPM not ${requirementValue.exact}`);
+      }
+    }
+  } else if (requirementType === "con" && requirements.con) {
+    const requirementValue = requirements.con;
+    if (requirementValue.exact) {
+      if (Math.round(result.consistency) !== requirementValue.exact) {
+        requirementsMet = false;
+        failReasons.push(`Consistency not ${requirementValue.exact}`);
+      }
+    }
+  } else if (requirementType === "config" && requirements.config) {
+    const requirementValue = requirements.config;
+    for (const configKey of Object.keys(requirementValue) as (keyof Config)[]) {
+      const configValue = requirementValue[configKey];
+      if (config[configKey] !== configValue) {
+        requirementsMet = false;
+        failReasons.push(`${configKey} not set to ${configValue}`);
+      }
+    }
+  }
+  return [requirementsMet, failReasons];
+}
+
+/** Shared web/terminal verification; no rendering or side effects. */
+export function verifyChallenge(
+  result: ChallengeResult,
+  config: Readonly<Config>,
+  challenge: Challenge,
+): string[] {
+  if ((result.afkDuration / result.testDuration) * 100 > 10) {
+    return ["AFK time is greater than 10%"];
+  }
+  const requirements = challenge.settings.requirements;
+  if (requirements === undefined) return [];
+  return (Object.keys(requirements) as (keyof typeof requirements)[]).flatMap(
+    (type) => verifyRequirement(result, config, requirements, type)[1],
+  );
+}
+
+export function challengeSetup(challenge: Challenge): {
+  config: Partial<Config>;
+  customText?: CustomTextSettings;
+  script?: string;
+} {
+  const settings = challenge.settings;
+  const config: Partial<Config> = { difficulty: "normal", funbox: [] };
+  if (settings.type === "customTime") {
+    config.mode = "time";
+    config.time = settings.parameters.time;
+  } else if (settings.type === "customWords") {
+    config.mode = "words";
+    config.words = settings.parameters.words;
+  } else if (settings.type === "accuracy") {
+    config.mode = "time";
+    config.time = 0;
+    config.difficulty = "master";
+  } else if (settings.type === "funbox") {
+    config.mode = settings.parameters.mode;
+    config.difficulty = settings.parameters.difficulty ?? "normal";
+    config.funbox = [settings.parameters.funbox];
+    if (settings.parameters.mode === "time") {
+      config.time = settings.parameters.mode2;
+    } else if (settings.parameters.mode === "words") {
+      config.words = settings.parameters.mode2;
+    }
+  } else if (settings.type === "customText") {
+    config.mode = "custom";
+    return {
+      config,
+      customText: {
+        text: settings.parameters.text.split(" "),
+        mode: settings.parameters.mode,
+        limit: {
+          mode: settings.parameters.limitMode,
+          value: settings.parameters.limit,
+        },
+        pipeDelimiter: settings.parameters.isPipeDelimiter,
+      },
+    };
+  } else if (settings.type === "script") {
+    config.mode = "custom";
+    if (settings.parameters.theme !== undefined) {
+      config.theme = settings.parameters.theme;
+    }
+    config.funbox = settings.parameters.funboxes ?? [];
+    return { config, script: settings.parameters.script };
+  }
+  if (challenge.name === "englishMaster") {
+    Object.assign(config, {
+      language: "english_10k",
+      punctuation: true,
+      numbers: true,
+    });
+  }
+  return { config };
 }

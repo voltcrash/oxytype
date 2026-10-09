@@ -2,6 +2,7 @@ import { z, ZodEffects, ZodOptional, ZodString } from "zod/v3";
 import { IdSchema, nameWithSeparators, slug, StringNumberSchema } from "./util";
 import { LanguageSchema } from "./languages";
 import {
+  ClientSchema,
   ModeSchema,
   Mode2Schema,
   PersonalBestsSchema,
@@ -326,6 +327,7 @@ export const RewardTypeSchema = z.enum(["xp", "badge"]);
 export type RewardType = z.infer<typeof RewardTypeSchema>;
 
 export const XpRewardSchema = z.object({
+  client: ClientSchema.optional(),
   type: z.literal(RewardTypeSchema.enum.xp),
   item: z.number().int(),
 });

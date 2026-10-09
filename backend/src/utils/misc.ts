@@ -29,7 +29,9 @@ type AgentLog = {
   device?: string;
 };
 
-export function buildAgentLog(req: MonkeyRequest): AgentLog {
+export function buildAgentLog(
+  req: Pick<MonkeyRequest, "raw" | "ctx">,
+): AgentLog {
   const agent = new UAParser(req.raw.headers["user-agent"]).getResult();
 
   const agentLog: AgentLog = {

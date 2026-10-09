@@ -8,6 +8,8 @@ describe("getPageForPath", () => {
     ["/settings", "settings"],
     ["/settings/", "settings"],
     ["/account-settings", "settings"],
+    ["/device", "device"],
+    ["/device/", "device"],
     ["/profile", "profileSearch"],
     ["/profile/typer", "profile"],
     ["/leaderboards", "leaderboards"],

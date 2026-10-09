@@ -6,11 +6,19 @@ import { createEffectOn } from "../../../hooks/effects";
 import { PageName } from "../../../pages/page";
 import { queryClient } from "../../../queries";
 import {
+  getAccountQueryOptions,
+  updateTerminalLeaderboardMemory,
+} from "../../../queries/account";
+import {
   getLeaderboardQueryOptions,
   getRankQueryOptions,
 } from "../../../queries/leaderboards";
 import { getServerConfigurationQueryOptions } from "../../../queries/server-configuration";
-import { getActivePage, isAuthenticated } from "../../../states/core";
+import {
+  getActivePage,
+  getUserId,
+  isAuthenticated,
+} from "../../../states/core";
 import {
   getGoToUserPage,
   getPage,
@@ -22,8 +30,10 @@ import {
   setSelection,
   updateGetParameters,
 } from "../../../states/leaderboard-selection";
+import { showErrorNotification } from "../../../states/notifications";
 import { cn } from "../../../utils/cn";
 import AsyncContent from "../../common/AsyncContent";
+import { ClientToggle } from "../../common/ClientToggle";
 import { LoadingCircle } from "../../common/LoadingCircle";
 import { Page } from "../../common/Page";
 import { Separator } from "../../common/Separator";
@@ -40,6 +50,13 @@ export function LeaderboardPage(): JSXElement {
   const isOpen = () => getActivePage() === pageName;
 
   const [scrollToUser, setScrollToUser] = createSignal(false);
+  const terminalAccount = useQuery(() => ({
+    ...getAccountQueryOptions("tui"),
+    enabled: isOpen() && isAuthenticated() && getSelection().client === "tui",
+  }));
+  const selectedAccount = () =>
+    getSelection().client === "tui" ? terminalAccount.data : getSnapshot();
+  const memoryUpdates = new Set<string>();
 
   //invalidate cache for daily and weekly lb on close
   createEffectOn(isOpen, (open) => {
@@ -114,6 +131,8 @@ export function LeaderboardPage(): JSXElement {
   const onSelectionChange = (newSelection: Selection) => {
     setSelection(newSelection);
     setPage(0);
+    setScrollToUser(false);
+    setGoToUserPage(false);
   };
 
   /**
@@ -135,14 +154,30 @@ export function LeaderboardPage(): JSXElement {
     ) {
       const diff = getLbMemoryDifference(getSelection(), rankQuery.data.rank);
 
-      if (diff !== 0) {
-        void updateLbMemory(
-          "time",
-          getSelection().mode2,
-          "english",
-          rankQuery.data.rank,
-          true,
-        );
+      const selection = getSelection();
+      const key = `${getUserId()}:${selection.client ?? "web"}:${selection.mode2}:${rankQuery.data.rank}`;
+      if (diff !== undefined && diff !== 0 && !memoryUpdates.has(key)) {
+        memoryUpdates.add(key);
+        const update =
+          selection.client === "tui"
+            ? updateTerminalLeaderboardMemory(
+                selection.mode2 as string,
+                rankQuery.data.rank,
+              )
+            : updateLbMemory(
+                "time",
+                selection.mode2,
+                "english",
+                rankQuery.data.rank,
+                true,
+              );
+        void update
+          .catch((error: unknown) =>
+            showErrorNotification("Could not save leaderboard rank", { error }),
+          )
+          .finally(() => {
+            memoryUpdates.delete(key);
+          });
       }
     }
   };
@@ -155,12 +190,13 @@ export function LeaderboardPage(): JSXElement {
       selection.type !== "allTime" ||
       selection.mode !== "time" ||
       selection.language !== "english" ||
-      currentRank === undefined
+      currentRank === undefined ||
+      selectedAccount() === undefined
     ) {
       return undefined;
     }
     const oldRank =
-      getSnapshot()?.lbMemory?.time?.[selection.mode2]?.english ?? 0;
+      selectedAccount()?.lbMemory?.time?.[selection.mode2]?.english ?? 0;
     const diff = oldRank - currentRank;
 
     return diff;
@@ -170,6 +206,14 @@ export function LeaderboardPage(): JSXElement {
     <Page id="leaderboards">
       <div class="content-grid flex flex-col gap-6 lg:flex-row lg:gap-8">
         <div class="w-full shrink-0 lg:w-60 2xl:w-75">
+          <div class="mb-4">
+            <ClientToggle
+              value={getSelection().client ?? "web"}
+              onChange={(client) =>
+                onSelectionChange({ ...getSelection(), client })
+              }
+            />
+          </div>
           <AsyncContent queries={{ serverConfigurationQuery }}>
             {({ serverConfigurationQueryData }) => (
               <Sidebar
@@ -231,7 +275,9 @@ export function LeaderboardPage(): JSXElement {
                       serverConfigurationQueryData()?.leaderboards
                         .minTimeTyping ?? 0
                     }
-                    userTimeTyping={getSnapshot()?.typingStats.timeTyping ?? 0}
+                    userTimeTyping={
+                      selectedAccount()?.typingStats.timeTyping ?? 0
+                    }
                   />
                 );
               }}

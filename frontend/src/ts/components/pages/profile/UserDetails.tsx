@@ -1,3 +1,4 @@
+import { Client } from "@oxytype/schemas/shared";
 import {
   TypingStats as TypingStatsType,
   UserProfile,
@@ -39,6 +40,7 @@ type Variant = "basic" | "hasSocials" | "hasBioOrKeyboard" | "full";
 export function UserDetails(props: {
   profile: UserProfile;
   isAccountPage?: true;
+  client?: Client;
 }): JSXElement {
   const variant = () => {
     if (props.profile.banned) return "basic";
@@ -73,6 +75,7 @@ export function UserDetails(props: {
           profile={props.profile}
           variant={variant()}
           isAccountPage={props.isAccountPage}
+          client={props.client}
         />
         <Show when={variant() === "full" || variant() === "hasBioOrKeyboard"}>
           <BioAndKeyboard details={props.profile.details} variant={variant()} />
@@ -93,6 +96,7 @@ export function UserDetails(props: {
         <ActionButtons
           profile={props.profile}
           isAccountPage={props.isAccountPage}
+          client={props.client}
         />
       </div>
       <Show when={props.isAccountPage === true}>
@@ -105,6 +109,7 @@ export function UserDetails(props: {
 function ActionButtons(props: {
   profile: UserProfile;
   isAccountPage?: true;
+  client?: Client;
 }): JSXElement {
   const isUsersProfile = () =>
     props.profile.uid !== undefined &&
@@ -150,7 +155,7 @@ function ActionButtons(props: {
         class="h-full rounded-none rounded-br text-sub hover:text-bg"
         fa={{ icon: "fa-link", fixedWidth: true }}
         onClick={() => {
-          const url = `${location.origin}/profile/${props.profile.name}`;
+          const url = `${location.origin}/profile/${props.profile.name}?client=${props.client ?? "web"}`;
 
           navigator.clipboard.writeText(url).then(
             function () {
@@ -174,6 +179,7 @@ function AvatarAndName(props: {
   profile: UserProfile;
   variant: Variant;
   isAccountPage?: true;
+  client?: Client;
 }): JSXElement {
   const accountAgeHint = () => {
     const creationDate = new Date(props.profile.addedAt);
@@ -185,7 +191,7 @@ function AvatarAndName(props: {
     `${length} ${length === 1 ? "day" : "days"}`;
 
   const extraStreakText = () => {
-    if (!props.isAccountPage) return "";
+    if (!props.isAccountPage || props.client === "tui") return "";
     let hoverText = "";
 
     const lastResult = getLastResult();

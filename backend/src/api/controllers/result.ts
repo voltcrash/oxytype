@@ -1,3 +1,5 @@
+import { clientProfile } from "../../db/client-profile";
+import type { ClientQuery } from "@oxytype/schemas/shared";
 import { isUniqueViolation } from "../../db/client";
 import { atomicUser } from "../../db/mutation";
 import * as ResultDAL from "../../dal/result";
@@ -96,6 +98,7 @@ export async function getResults(
 
   const results = await ResultDAL.getResults(uid, {
     onOrAfterTimestamp,
+    client: req.query.client,
     limit,
     offset,
   });
@@ -124,10 +127,10 @@ export async function getResultById(
 }
 
 export async function getLastResult(
-  req: MonkeyRequest,
+  req: MonkeyRequest<ClientQuery>,
 ): Promise<GetLastResultResponse> {
   const { uid } = req.ctx.decodedToken;
-  const result = await ResultDAL.getLastResult(uid);
+  const result = await ResultDAL.getLastResult(uid, req.query?.client);
   return new MonkeyResponse("Result retrieved", result);
 }
 
@@ -183,6 +186,8 @@ export async function addResult(
         req.body.result.mode,
         req.body.result.mode2,
         req.ctx.configuration.dailyLeaderboards,
+        -1,
+        req.body.result.client,
       );
       const entry = await daily?.getRank(
         uid,
@@ -195,6 +200,8 @@ export async function addResult(
       if (response.data.weeklyXpLeaderboardRank === undefined) return;
       const weekly = WeeklyXpLeaderboard.get(
         req.ctx.configuration.leaderboards.weeklyXp,
+        undefined,
+        req.body.result.client,
       );
       const entry = await weekly?.getRank(
         uid,
@@ -214,7 +221,7 @@ async function addResultAtomic(
 
   // Independent of the user row; read both in one round trip.
   const lastResultTimestampRead = tryCatch(
-    ResultDAL.getLastResultTimestamp(uid),
+    ResultDAL.getLastResultTimestamp(uid, req.body.result.client),
   );
   const user = await UserDAL.getUser(uid, "add result");
 
@@ -228,6 +235,18 @@ async function addResultAtomic(
   // Each optimistic retry starts from the original client payload/hash.
   const completedEvent = structuredClone(req.body.result);
   completedEvent.uid = uid;
+  const profile = clientProfile(user, completedEvent.client);
+  const offline = completedEvent.offline === true;
+  if (
+    offline &&
+    (completedEvent.timestamp < Date.now() - 30 * 86400000 ||
+      completedEvent.timestamp > Date.now() + 1000)
+  ) {
+    throw new MonkeyError(
+      400,
+      "Offline results must be within the last 30 days",
+    );
+  }
 
   if (isTestTooShort(completedEvent)) {
     const status = MonkeyStatusCodes.TEST_TOO_SHORT;
@@ -242,7 +261,12 @@ async function addResultAtomic(
   if (req.ctx.configuration.results.objectHashCheckEnabled) {
     const objectToHash = omit(completedEvent, ["hash"]);
     const serverhash = objectHash(objectToHash);
-    if (serverhash !== resulthash) {
+    // Older web clients hashed before the client discriminator existed.
+    const legacyWebHash =
+      completedEvent.client === "web"
+        ? objectHash(omit(objectToHash, ["client"]))
+        : undefined;
+    if (serverhash !== resulthash && legacyWebHash !== resulthash) {
       await addLog(
         "incorrect_result_hash",
         {
@@ -352,13 +376,14 @@ async function addResultAtomic(
   // by the result-spacing check below. When it does not (new account, or all
   // results deleted) there is nothing to bound it against, so it must not be
   // credited toward timeTyping / XP / leaderboard eligibility.
-  if (!isSafeNumber(lastResultTimestamp)) {
+  if (offline || !isSafeNumber(lastResultTimestamp)) {
     completedEvent.incompleteTestSeconds = 0;
     completedEvent.incompleteTests = [];
+    if (offline) completedEvent.restartCount = 0;
   }
 
   //convert result test duration to miliseconds
-  completedEvent.timestamp = Math.floor(Date.now() / 1000) * 1000;
+  if (!offline) completedEvent.timestamp = Math.floor(Date.now() / 1000) * 1000;
 
   //check if now is earlier than last result plus duration (-1 second as a buffer)
   const testDurationMilis = completedEvent.testDuration * 1000;
@@ -371,7 +396,7 @@ async function addResultAtomic(
   const earliestPossible =
     previousTimestamp + testDurationMilis + incompleteTestsMilis;
   const nowNoMilis = Math.floor(Date.now() / 1000) * 1000;
-  if (nowNoMilis < earliestPossible - 1000) {
+  if (!offline && nowNoMilis < earliestPossible - 1000) {
     await addLog(
       "invalid_result_spacing",
       {
@@ -491,15 +516,23 @@ async function addResultAtomic(
   let isPb = false;
   let tagPbs: string[] = [];
 
-  if (!completedEvent.bailedOut) {
+  if (!offline && !completedEvent.bailedOut) {
     [isPb, tagPbs] = await Promise.all([
       UserDAL.checkIfPb(uid, user, completedEvent),
       UserDAL.checkIfTagPb(uid, user, completedEvent),
     ]);
   }
 
-  if (completedEvent.mode === "time" && completedEvent.mode2 === "60") {
-    await UserDAL.incrementBananas(uid, completedEvent.wpm);
+  if (
+    !offline &&
+    completedEvent.mode === "time" &&
+    completedEvent.mode2 === "60"
+  ) {
+    await UserDAL.incrementBananas(
+      uid,
+      completedEvent.wpm,
+      completedEvent.client,
+    );
   }
 
   delete completedEvent.challenge;
@@ -511,10 +544,12 @@ async function addResultAtomic(
     uid,
     completedEvent.restartCount,
     totalDurationTypedSeconds,
+    completedEvent.client,
   );
   await PublicDAL.updateStats(
     completedEvent.restartCount,
     totalDurationTypedSeconds,
+    completedEvent.client,
   );
 
   const dailyLeaderboardsConfig = req.ctx.configuration.dailyLeaderboards;
@@ -523,6 +558,8 @@ async function addResultAtomic(
     completedEvent.mode,
     completedEvent.mode2,
     dailyLeaderboardsConfig,
+    -1,
+    completedEvent.client,
   );
 
   let dailyLeaderboardRank = -1;
@@ -536,9 +573,10 @@ async function addResultAtomic(
   const userEligibleForLeaderboard =
     user.banned !== true &&
     user.lbOptOut !== true &&
-    (isDevEnvironment() || (user.timeTyping ?? 0) > minTimeTyping);
+    (isDevEnvironment() || (profile.timeTyping ?? 0) > minTimeTyping);
 
   const validResultCriteria =
+    !offline &&
     canFunboxGetPb(completedEvent) &&
     !completedEvent.bailedOut &&
     userEligibleForLeaderboard &&
@@ -577,7 +615,11 @@ async function addResultAtomic(
     }
   }
 
-  const streak = await UserDAL.updateStreak(uid, completedEvent.timestamp);
+  const streak = await UserDAL.updateStreak(
+    uid,
+    completedEvent.timestamp,
+    completedEvent.client,
+  );
   const badgeWaitingInInbox = (
     user.inbox?.flatMap((i) =>
       (i.rewards ?? []).map((r) => (r.type === "badge" ? r.item.id : null)),
@@ -585,6 +627,7 @@ async function addResultAtomic(
   ).includes(14);
 
   const shouldGetBadge =
+    !offline &&
     streak >= 365 &&
     user.inventory?.badges?.find((b) => b.id === 14) === undefined &&
     !badgeWaitingInInbox;
@@ -610,13 +653,15 @@ async function addResultAtomic(
     );
   }
 
-  const xpGained = await calculateXp(
-    completedEvent,
-    req.ctx.configuration.users.xp,
-    lastResultTimestamp,
-    user.xp ?? 0,
-    streak,
-  );
+  const xpGained: XpResult = offline
+    ? { xp: 0 }
+    : await calculateXp(
+        completedEvent,
+        req.ctx.configuration.users.xp,
+        lastResultTimestamp,
+        profile.xp ?? 0,
+        streak,
+      );
 
   if (isNaN(xpGained.xp)) {
     throw new MonkeyError(
@@ -647,8 +692,15 @@ async function addResultAtomic(
 
   const weeklyXpLeaderboard = WeeklyXpLeaderboard.get(
     weeklyXpLeaderboardConfig,
+    undefined,
+    completedEvent.client,
   );
-  if (userEligibleForLeaderboard && xpGained.xp > 0 && weeklyXpLeaderboard) {
+  if (
+    !offline &&
+    userEligibleForLeaderboard &&
+    xpGained.xp > 0 &&
+    weeklyXpLeaderboard
+  ) {
     weeklyXpLeaderboardRank = await weeklyXpLeaderboard.addResult(
       weeklyXpLeaderboardConfig,
       {
@@ -688,8 +740,12 @@ async function addResultAtomic(
     req.ctx.configuration.anticheat,
   );
 
-  await UserDAL.incrementXp(uid, xpGained.xp);
-  await UserDAL.incrementTestActivity(user, completedEvent.timestamp);
+  await UserDAL.incrementXp(uid, xpGained.xp, completedEvent.client);
+  await UserDAL.incrementTestActivity(
+    user,
+    completedEvent.timestamp,
+    completedEvent.client,
+  );
 
   if (isPb) {
     await addLog(
@@ -751,6 +807,8 @@ async function reviewKeyTiming(
 
   const summary = {
     ...context,
+    client: completedEvent.client,
+    offline: completedEvent.offline === true,
     mode: completedEvent.mode,
     mode2: completedEvent.mode2,
     wpm: completedEvent.wpm,

@@ -15,6 +15,7 @@ export type PageName =
   | "about"
   | "account"
   | "login"
+  | "device"
   | "profile"
   | "profileSearch"
   | "404"

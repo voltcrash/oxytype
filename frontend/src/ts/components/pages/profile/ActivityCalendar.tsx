@@ -1,11 +1,22 @@
+import { Client } from "@oxytype/schemas/shared";
 import { TestActivity } from "@oxytype/schemas/users";
-import { createEffect, createSignal, For, JSXElement, Show } from "solid-js";
+import {
+  createEffect,
+  createSignal,
+  For,
+  JSXElement,
+  onCleanup,
+  Show,
+} from "solid-js";
 
 import { get as getSeverConfiguration } from "../../../ape/server-configuration";
 import { getSnapshot, getTestActivityCalendar } from "../../../db";
 import { TestActivityCalendar } from "../../../elements/test-activity-calendar";
+import { queryClient } from "../../../queries";
+import { getAccountActivityQueryOptions } from "../../../queries/account";
 import { cn } from "../../../utils/cn";
 import { getFirstDayOfTheWeek } from "../../../utils/date-and-time";
+import { createErrorMessage } from "../../../utils/error";
 import SlimSelect, { SlimSelectProps } from "../../ui/SlimSelect";
 
 const firstDayOfTheWeek = getFirstDayOfTheWeek();
@@ -13,7 +24,12 @@ const firstDayOfTheWeek = getFirstDayOfTheWeek();
 export function ActivityCalendar(props: {
   isAccountPage?: true;
   testActivity?: TestActivity;
+  client?: Client;
 }): JSXElement {
+  const [selectedYear, setSelectedYear] = createSignal("current");
+  const [error, setError] = createSignal<string>();
+  let revision = 0;
+  onCleanup(() => revision++);
   const [view, setView] = createSignal({
     shown: false,
     noData: false,
@@ -60,20 +76,24 @@ export function ActivityCalendar(props: {
   };
 
   createEffect(() => {
-    const activity = props.isAccountPage
-      ? getSnapshot()?.testActivity
-      : props.testActivity;
+    const activity =
+      props.isAccountPage && props.client !== "tui"
+        ? getSnapshot()?.testActivity
+        : props.testActivity;
+    revision++;
+    setSelectedYear("current");
+    setError(undefined);
     updateCalendar(
       activity === undefined
         ? undefined
-        : props.isAccountPage
+        : props.isAccountPage && props.client !== "tui"
           ? (activity as TestActivityCalendar)
           : new TestActivityCalendar(
               (activity as TestActivity).testsByDays,
               new Date((activity as TestActivity).lastDay),
               firstDayOfTheWeek,
             ),
-      true,
+      props.client !== "tui",
     );
   });
 
@@ -104,7 +124,44 @@ export function ActivityCalendar(props: {
     return years;
   };
 
-  const [selectedYear, setSelectedYear] = createSignal("current");
+  const selectYear = async (year: string): Promise<void> => {
+    const current = ++revision;
+    setError(undefined);
+    try {
+      let calendar: TestActivityCalendar | undefined;
+      if (props.client !== "tui") {
+        calendar = await getTestActivityCalendar(year);
+      } else if (year === "current") {
+        const activity = props.testActivity;
+        if (activity !== undefined) {
+          calendar = new TestActivityCalendar(
+            activity.testsByDays,
+            new Date(activity.lastDay),
+            firstDayOfTheWeek,
+          );
+        }
+      } else {
+        const activity = await queryClient.query(
+          getAccountActivityQueryOptions("tui"),
+        );
+        const days = activity?.[year];
+        if (days !== undefined && days.length > 0) {
+          calendar = new TestActivityCalendar(
+            days,
+            new Date(Date.UTC(Number(year), 0, days.length)),
+            firstDayOfTheWeek,
+            true,
+          );
+        }
+      }
+      if (current === revision) updateCalendar(calendar);
+    } catch (err) {
+      if (current === revision) {
+        updateCalendar(undefined);
+        setError(createErrorMessage(err, "Could not load activity"));
+      }
+    }
+  };
 
   return (
     <div
@@ -123,12 +180,8 @@ export function ActivityCalendar(props: {
                 settings={{ showSearch: false }}
                 onChange={setSelectedYear}
                 events={{
-                  afterChange: async (newVal) => {
-                    const activity = await getTestActivityCalendar(
-                      newVal[0]?.value as string,
-                    );
-                    updateCalendar(activity);
-                  },
+                  afterChange: async (newVal) =>
+                    await selectYear(newVal[0]?.value ?? "current"),
                 }}
               />
             </div>
@@ -220,7 +273,11 @@ export function ActivityCalendar(props: {
           </For>
         </div>
         <div class={cn("nodata [grid-area:chart]", !view().noData && "hidden")}>
-          No data found.
+          <Show when={error()} fallback="No data found.">
+            <span role="alert" class="text-error">
+              {error()}
+            </span>
+          </Show>
         </div>
         <div class="note col-span-2 text-center text-[0.6em] text-sub">
           Note: All activity data is using UTC time.

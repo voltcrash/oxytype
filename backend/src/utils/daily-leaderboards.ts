@@ -8,7 +8,8 @@ import type {
   LeaderboardEntry,
   DailyLeaderboardEntry,
 } from "@oxytype/schemas/leaderboards";
-import type { Mode, Mode2 } from "@oxytype/schemas/shared";
+import { clientBoard } from "../db/client-profile";
+import type { Client, Mode, Mode2 } from "@oxytype/schemas/shared";
 import { getCurrentDayTimestamp } from "@oxytype/util/date-and-time";
 import { statement, encode } from "../db/client";
 import { stage } from "../db/mutation";
@@ -22,11 +23,20 @@ function unpack(row: RankingRow): LeaderboardEntry {
 export class DailyLeaderboard {
   private readonly modeRule: ValidModeRule;
   private readonly customTime: number;
+  private readonly client: Client;
   private readonly board: string;
-  constructor(modeRule: ValidModeRule, customTime = -1) {
+  constructor(
+    modeRule: ValidModeRule,
+    customTime = -1,
+    client: Client = "web",
+  ) {
     this.modeRule = modeRule;
     this.customTime = customTime;
-    this.board = `${modeRule.language}:${modeRule.mode}:${modeRule.mode2}`;
+    this.client = client;
+    this.board = clientBoard(
+      `${modeRule.language}:${modeRule.mode}:${modeRule.mode2}`,
+      client,
+    );
   }
   private period(): number {
     return this.customTime === -1 ? getCurrentDayTimestamp() : this.customTime;
@@ -82,6 +92,7 @@ export class DailyLeaderboard {
         "daily-leaderboard-results",
         this.board,
         this.modeRule,
+        this.client,
       );
     }
     if (previous !== null && previous >= score) return -1;
@@ -133,8 +144,17 @@ export class DailyLeaderboard {
 export async function purgeUserFromDailyLeaderboards(
   uid: string,
   _config: Configuration["dailyLeaderboards"],
+  client?: Client,
 ): Promise<void> {
-  await stage(statement("DELETE FROM daily_entries WHERE uid=?", uid));
+  await stage(
+    statement(
+      "DELETE FROM daily_entries WHERE uid=? AND (? IS NULL OR (?='web' AND board NOT LIKE 'tui:%') OR (?='tui' AND board LIKE 'tui:%'))",
+      uid,
+      client ?? null,
+      client ?? null,
+      client ?? null,
+    ),
+  );
 }
 function isValidModeRule(
   modeRule: ValidModeRule,
@@ -156,6 +176,7 @@ export function getDailyLeaderboard(
   mode2: Mode2<Mode>,
   dailyLeaderboardsConfig: Configuration["dailyLeaderboards"],
   customTimestamp = -1,
+  client: Client = "web",
 ): DailyLeaderboard | null {
   const { validModeRules, enabled } = dailyLeaderboardsConfig;
 
@@ -166,5 +187,5 @@ export function getDailyLeaderboard(
     return null;
   }
 
-  return new DailyLeaderboard(modeRule, customTimestamp);
+  return new DailyLeaderboard(modeRule, customTimestamp, client);
 }

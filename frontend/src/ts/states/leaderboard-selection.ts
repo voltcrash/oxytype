@@ -1,5 +1,5 @@
 import { LanguageSchema } from "@oxytype/schemas/languages";
-import { ModeSchema } from "@oxytype/schemas/shared";
+import { ClientSchema, ModeSchema } from "@oxytype/schemas/shared";
 import { Accessor, createSignal, Setter } from "solid-js";
 import { z } from "zod/v3";
 import { serialize as serializeUrlSearchParams } from "zod-urlsearchparams";
@@ -10,6 +10,7 @@ export const pageSize = 50;
 
 export type LeaderboardType = Selection["type"];
 const XpSelection = z.object({
+  client: ClientSchema.optional(),
   type: z.literal("weekly"),
   previous: z.boolean(),
   language: z.never().optional(),
@@ -17,6 +18,7 @@ const XpSelection = z.object({
   mode2: z.never().optional(),
 });
 const SpeedSelection = z.object({
+  client: ClientSchema.optional(),
   type: z.enum(["daily", "allTime"]),
   previous: z.boolean(),
   mode: ModeSchema,
@@ -29,6 +31,7 @@ export type Selection = z.infer<typeof SelectionSchema>;
 
 export const LeaderboardUrlParamsSchema = z
   .object({
+    client: ClientSchema.optional(),
     type: z.enum(["allTime", "daily", "weekly"]),
     mode: ModeSchema.optional(),
     mode2: z.string().optional(),
@@ -54,14 +57,24 @@ export { setSelection };
 export function readLeaderboardGetParameters(
   params: LeaderboardUrlParams | undefined,
 ): void {
-  if (params?.type === undefined) return;
+  if (params?.type === undefined) {
+    if (params?.client !== undefined) {
+      setSelection({ ...getSelection(), client: params.client });
+      setPage(0);
+    }
+    return;
+  }
 
   let newSelection: Partial<Selection> = {
     type: params.type,
+    client: params.client ?? "web",
   };
 
   if (params.type === "weekly") {
     newSelection.previous = params.lastWeek ?? false;
+    newSelection.mode = undefined;
+    newSelection.mode2 = undefined;
+    newSelection.language = undefined;
   } else {
     newSelection.mode = params.mode ?? "time";
     newSelection.mode2 = params.mode2 ?? "15";
@@ -72,11 +85,8 @@ export function readLeaderboardGetParameters(
 
   setSelection({ ...getSelection(), ...newSelection } as Selection);
 
-  if (params.goToUserPage === true) {
-    setGoToUserPage(true);
-  } else if (params.page !== undefined) {
-    setPage(Math.max(0, params.page - 1));
-  }
+  setGoToUserPage(params.goToUserPage === true);
+  setPage(params.page === undefined ? 0 : Math.max(0, params.page - 1));
 }
 
 export function updateGetParameters(
@@ -84,6 +94,7 @@ export function updateGetParameters(
   pageNumber: number,
 ): void {
   const params: LeaderboardUrlParams = {
+    client: selection.client ?? "web",
     type: selection.type,
     mode: selection.mode,
     mode2: selection.mode2,

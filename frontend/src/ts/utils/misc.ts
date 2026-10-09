@@ -1,54 +1,11 @@
 import { lastElementFromArray } from "./arrays";
-import { Config } from "@oxytype/schemas/configs";
-import { Mode, Mode2, PersonalBests } from "@oxytype/schemas/shared";
+import { Mode } from "@oxytype/schemas/shared";
 import { Result } from "@oxytype/schemas/results";
 import { RankAndCount } from "@oxytype/schemas/users";
 import { roundTo2 } from "@oxytype/util/numbers";
 import { download } from "../components/common/Download";
 
-export function whorf(speed: number, wordlen: number): number {
-  return Math.min(
-    speed,
-    Math.floor(speed * Math.pow(1.03, -2 * (wordlen - 3))),
-  );
-}
-
-//convert numbers to arabic-indic
-export function convertNumberToArabic(numString: string): string {
-  const arabicIndic = "٠١٢٣٤٥٦٧٨٩";
-  let ret = "";
-  for (const char of numString) {
-    ret += arabicIndic[parseInt(char)];
-  }
-  return ret;
-}
-
-export function convertNumberToBangla(numString: string): string {
-  const banglaIndic = "০১২৩৪৫৬৭৮৯";
-  let ret = "";
-  for (const char of numString) {
-    ret += banglaIndic[parseInt(char)];
-  }
-  return ret;
-}
-
-export function convertNumberToNepali(numString: string): string {
-  const nepaliIndic = "०१२३४५६७८९";
-  let ret = "";
-  for (const char of numString) {
-    ret += nepaliIndic[parseInt(char)];
-  }
-  return ret;
-}
-
-export function convertNumberToHindi(numString: string): string {
-  const hindiIndic = "०१२३४५६७८९";
-  let ret = "";
-  for (const char of numString) {
-    ret += hindiIndic[parseInt(char)];
-  }
-  return ret;
-}
+export { whorf } from "@oxytype/typing-core/mode";
 
 export function findGetParameter(
   parameterName: string,
@@ -114,29 +71,7 @@ type LastIndex = {
   return match ? this.lastIndexOf(lastElementFromArray(match) as string) : -1;
 };
 
-export function getMode2<M extends keyof PersonalBests>(
-  config: Config,
-  randomQuote: { id: number } | null,
-): Mode2<M> {
-  const mode = config.mode;
-  let retVal: string;
-
-  if (mode === "time") {
-    retVal = config.time.toString();
-  } else if (mode === "words") {
-    retVal = config.words.toString();
-  } else if (mode === "custom") {
-    retVal = "custom";
-  } else if (mode === "zen") {
-    retVal = "zen";
-  } else if (mode === "quote") {
-    retVal = `${randomQuote?.id ?? -1}`;
-  } else {
-    throw new Error("Invalid mode");
-  }
-
-  return retVal as Mode2<M>;
-}
+export { getMode2 } from "@oxytype/typing-core/mode";
 
 export async function downloadResultsCSV(array: Result<Mode>[]): Promise<void> {
   const csvString = [
@@ -165,6 +100,8 @@ export async function downloadResultsCSV(array: Result<Mode>[]): Promise<void> {
       "bailedOut",
       "tags",
       "timestamp",
+      "client",
+      "offline",
     ],
     ...array.map((item) => [
       item._id,
@@ -191,6 +128,8 @@ export async function downloadResultsCSV(array: Result<Mode>[]): Promise<void> {
       item.bailedOut,
       item.tags?.join(";"),
       item.timestamp,
+      item.client ?? "web",
+      item.offline ?? false,
     ]),
   ]
     .map((e) => e.join(","))
@@ -202,22 +141,6 @@ export async function downloadResultsCSV(array: Result<Mode>[]): Promise<void> {
 
 export async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-export function zipfyRandomArrayIndex(dictLength: number): number {
-  /**
-   * get random index based on probability distribution of Zipf's law,
-   * where PMF is (1/n)/H_N,
-   * where H_N is the Harmonic number of (N), where N is dictLength
-   * and the harmonic number is approximated using the formula:
-   * H_n = ln(n + 0.5) + gamma
-   */
-  const gamma = 0.5772156649015329; // Euler–Mascheroni constant
-  const H_N = Math.log(dictLength + 0.5) + gamma; // approximation of H_N
-  const r = Math.random();
-  /* inverse of CDF where CDF is H_n/H_N */
-  const inverseCDF = Math.exp(r * H_N - gamma) - 0.5;
-  return Math.floor(inverseCDF);
 }
 
 export function reloadAfter(seconds: number): void {
@@ -376,9 +299,6 @@ export function debounceUntilResolved<TArgs extends unknown[], TResult>(
     return run(...args);
   };
 }
-
-export type RequiredProperties<T, K extends keyof T> = Omit<T, K> &
-  Required<Pick<T, K>>;
 
 function isPlatform(searchTerm: string | RegExp): boolean {
   // oxlint-disable-next-line no-deprecated

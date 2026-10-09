@@ -1,3 +1,9 @@
+import {
+  advancePace,
+  correctPace,
+  createPaceState,
+  PaceState,
+} from "@oxytype/typing-core/pace-caret";
 import { cancelPendingAnimationFrame } from "../utils/debounced-animation-frame";
 import * as TestWords from "./test-words";
 import { Config } from "../config/store";
@@ -26,16 +32,7 @@ import {
   setPaceCaretWpm,
 } from "../states/test";
 
-type Settings = {
-  wpm: number;
-  cps: number;
-  spc: number;
-  correction: number;
-  currentWordIndex: number;
-  currentLetterIndex: number;
-  wordsStatus: Record<number, true | undefined>;
-  timeout: NodeJS.Timeout | null;
-};
+type Settings = PaceState & { timeout: NodeJS.Timeout | null };
 
 let startTimestamp = 0;
 
@@ -124,20 +121,7 @@ export async function init(): Promise<void> {
     return;
   }
 
-  const characters = wpm * 5;
-  const cps = characters / 60; //characters per step
-  const spc = 60 / characters; //seconds per character
-
-  settings = {
-    wpm: wpm,
-    cps: cps,
-    spc: spc,
-    correction: 0,
-    currentWordIndex: 0,
-    currentLetterIndex: 0,
-    wordsStatus: {},
-    timeout: null,
-  };
+  settings = { ...(createPaceState(wpm) as PaceState), timeout: null };
   setPaceCaretWpm(wpm);
 }
 
@@ -198,76 +182,25 @@ export function reset(): void {
 
 function incrementLetterIndex(): void {
   if (settings === null) return;
-
-  try {
-    if (
-      settings.currentLetterIndex >=
-      // oxlint-disable-next-line typescript/no-non-null-assertion let it throw if undefined
-      TestWords.words.get(settings.currentWordIndex)!.text.length
-    ) {
-      //go to the next word
-      settings.currentLetterIndex = -1;
-      settings.currentWordIndex++;
-    }
-    settings.currentLetterIndex++;
-
-    if (!Config.blindMode) {
-      if (settings.correction < 0) {
-        while (settings.correction < 0) {
-          settings.currentLetterIndex--;
-          if (settings.currentLetterIndex <= -1) {
-            //go to the previous word
-            settings.currentLetterIndex =
-              // oxlint-disable-next-line typescript/no-non-null-assertion let it throw if undefined
-              TestWords.words.get(settings.currentWordIndex - 1)!.text.length;
-            settings.currentWordIndex--;
-          }
-          settings.correction++;
-        }
-      } else if (settings.correction > 0) {
-        while (settings.correction > 0) {
-          settings.currentLetterIndex++;
-          if (
-            settings.currentLetterIndex >=
-            // oxlint-disable-next-line typescript/no-non-null-assertion let it throw if undefined
-            TestWords.words.get(settings.currentWordIndex)!.text.length + 1
-          ) {
-            //go to the next word
-            settings.currentLetterIndex = 0;
-            settings.currentWordIndex++;
-          }
-          settings.correction--;
-        }
-      }
-    }
-  } catch (e) {
-    //out of words
+  if (
+    !advancePace(
+      settings,
+      (index) => TestWords.words.get(index)?.text,
+      Config.blindMode,
+    )
+  ) {
     settings = null;
-    console.log("pace caret out of words");
     getCaret().hide();
-    return;
   }
 }
-
 export function handleSpace(correct: boolean, currentWord: string): void {
-  if (correct) {
-    if (
-      settings?.wordsStatus[getActiveWordIndex()] === true &&
-      !Config.blindMode
-    ) {
-      settings.wordsStatus[getActiveWordIndex()] = undefined;
-      settings.correction -= currentWord.length;
-    }
-  } else {
-    if (
-      settings !== null &&
-      settings.wordsStatus[getActiveWordIndex()] === undefined &&
-      !Config.blindMode
-    ) {
-      settings.wordsStatus[getActiveWordIndex()] = true;
-      settings.correction += currentWord.length;
-    }
-  }
+  correctPace(
+    settings,
+    getActiveWordIndex(),
+    correct,
+    currentWord,
+    Config.blindMode,
+  );
 }
 
 export function start(): void {
