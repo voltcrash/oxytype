@@ -58,6 +58,10 @@ jobs:
             tui-src:
               - 'tui/**/*'
               - 'packages/**/*'
+              - 'frontend/static/languages/english.json'
+              - 'frontend/static/quotes/english.json'
+              - 'frontend/static/layouts/qwerty.json'
+              - '.github/workflows/tui-release.yml'
 
       - name: Export changes
         id: export-changes
@@ -444,3 +448,6 @@ jobs:
 
       - name: Test
         run: npm run test-tui
+
+      - name: Build and smoke npm package
+        run: pnpm --filter @voltcrash/oxytype package-check
