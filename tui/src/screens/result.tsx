@@ -57,6 +57,9 @@ export function ResultScreen() {
     }
   });
   const showChart = (): boolean => dimensions().height >= 22;
+  /** Tall terminals lift results off the header like the web's centred page. */
+  const tallSpace = (): number =>
+    Math.max(0, Math.floor((dimensions().height - 34) / 2));
   const big = (finished: FinishedTest) => ({
     speed: format().typingSpeed(finished.result.wpm),
     accuracy: format().accuracy(finished.result.acc),
@@ -93,6 +96,7 @@ export function ResultScreen() {
   ];
   return (
     <box flexDirection="column" width="100%" flexGrow={1} paddingBottom={1}>
+      <box flexGrow={1} maxHeight={tallSpace()} />
       <Show
         when={test.result()}
         fallback={
@@ -131,7 +135,13 @@ export function ResultScreen() {
                   width={
                     contentWidth(dimensions().width) - bigWidth(finished()) - 4
                   }
-                  height={dimensions().height >= 32 ? 8 : 6}
+                  height={
+                    dimensions().height >= 40
+                      ? 10
+                      : dimensions().height >= 32
+                        ? 8
+                        : 6
+                  }
                   startAtZero={config.startGraphsAtZero}
                 />
               </Show>
