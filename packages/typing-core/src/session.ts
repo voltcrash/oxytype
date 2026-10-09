@@ -60,6 +60,7 @@ export type SessionEvents = {
 };
 export type TestSessionDeps = {
   words?: string[];
+  weakSpot?: ReturnType<typeof createWeakSpot>;
   getContext?: () => EventLogContext;
   getActiveWordIndex?: () => number;
   isResultCalculating?: () => boolean;
@@ -76,7 +77,7 @@ export type TestSessionDeps = {
 export class TestSession {
   public readonly recorder: EventRecorder;
   public readonly liveCache: LiveCache;
-  public readonly weakSpot = createWeakSpot();
+  public readonly weakSpot: ReturnType<typeof createWeakSpot>;
   private readonly getConfig: () => SessionConfig;
   private readonly deps: TestSessionDeps;
   private readonly clock: TestTimer;
@@ -97,6 +98,7 @@ export class TestSession {
     config: SessionConfig | (() => SessionConfig),
     deps: TestSessionDeps,
   ) {
+    this.weakSpot = deps.weakSpot ?? createWeakSpot();
     this.getConfig = typeof config === "function" ? config : () => config;
     this.deps = deps;
     this.words = [...(deps.words ?? [])];
