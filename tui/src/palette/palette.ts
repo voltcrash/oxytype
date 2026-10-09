@@ -38,6 +38,7 @@ export type Palette = {
   run: (item?: PaletteItem) => Promise<void>;
   back: () => void;
   handleKey: (event: KeyEvent) => void;
+  paste: (text: string) => void;
 };
 
 /** Flattens subgroups like the web's single list command line. */
@@ -221,6 +222,12 @@ export function createPalette(options: {
     usingSingleList,
     run,
     back,
+    paste: (text) => {
+      if (!isOpen() || busy()) return;
+      field.insert(text);
+      setError(undefined);
+      if (mode() === "search") selection.set(0);
+    },
     handleKey: (event) => {
       if (event.eventType === "release") return;
       event.preventDefault();

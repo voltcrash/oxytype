@@ -23,7 +23,7 @@ function wordStart(characters: string[], cursor: number): number {
   return index;
 }
 
-/** Single-line editing state driven by screen key handlers. */
+/** Editing state driven by screen key handlers and bracketed paste. */
 export function createTextField(
   initial = "",
   options: { maxLength?: number; multiline?: boolean } = {},
@@ -45,6 +45,10 @@ export function createTextField(
       options.multiline === true
         ? text.replace(/\r\n?/g, "\n")
         : text.replace(/[\r\n\t]+/g, " "),
+    ).filter(
+      (char) =>
+        (options.multiline === true && (char === "\n" || char === "\t")) ||
+        (char.charCodeAt(0) >= 32 && char.charCodeAt(0) !== 127),
     );
     set(
       [...current.slice(0, start), ...inserted, ...current.slice(end)].join(""),

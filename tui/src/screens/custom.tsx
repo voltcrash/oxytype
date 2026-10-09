@@ -1,4 +1,4 @@
-import { useTerminalDimensions } from "@opentui/solid";
+import { usePaste, useTerminalDimensions } from "@opentui/solid";
 import { CustomTextSettingsSchema } from "@oxytype/schemas/results";
 import { createSignal } from "solid-js";
 
@@ -28,6 +28,13 @@ export function CustomScreen() {
   const [editing, setEditing] = createSignal(false);
   const [settings, setSettings] = createSignal({ ...test.customText });
   const [savedId, setSavedId] = createSignal<string>();
+  usePaste((event) => {
+    if (event.defaultPrevented || palette?.isOpen() === true || !editing()) {
+      return;
+    }
+    event.preventDefault();
+    field.insert(new TextDecoder().decode(event.bytes));
+  });
   const selection = createSelection(() => library.texts().length);
   const draft = () => ({
     ...settings(),

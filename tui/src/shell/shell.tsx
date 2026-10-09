@@ -1,6 +1,6 @@
 import type { ParentProps } from "solid-js";
 
-import { useKeyboard } from "@opentui/solid";
+import { useKeyboard, usePaste } from "@opentui/solid";
 import { For, Show, useContext } from "solid-js";
 
 import type { GlobalAction } from "./keymap";
@@ -33,6 +33,12 @@ export function Shell(props: ParentProps<{ onQuit: () => void }>) {
   const notifications = useNotifications();
   const palette = usePalette();
   const colors = () => theme().colors;
+  usePaste((event) => {
+    if (palette?.isOpen() !== true) return;
+    event.preventDefault();
+    event.stopPropagation();
+    palette.paste(new TextDecoder().decode(event.bytes));
+  });
 
   const run = (action: GlobalAction): void => {
     if (action.type === "quit") {
