@@ -8,6 +8,7 @@ import { useScreenKeys } from "../shell/screen-keys";
 import { useTypingTest } from "../test/typing-test";
 import { useTheme } from "../theme/theme";
 import { createAction } from "../ui/actions";
+import { KeyHints, parseHints } from "../ui/key-hints";
 import { ListView } from "../ui/list-view";
 import { createSelection } from "../ui/selection";
 import { StyledLine } from "../ui/styled";
@@ -198,11 +199,14 @@ export function CustomScreen() {
       <box height={5}>
         <StyledLine chunks={preview()} wrap />
       </box>
-      <text fg={theme().colors.sub}>
-        {editing()
-          ? "typing · enter newline · F9 newline · tab literal tab · esc finish editing"
-          : "e edit · n new · o options · enter type · s save · l load · d delete"}
-      </text>
+      <KeyHints
+        wrap
+        hints={parseHints(
+          editing()
+            ? "typing · enter newline · F9 newline · tab literal tab · esc finish editing"
+            : "e edit · n new · o options · enter type · s save · l load · d delete",
+        )}
+      />
       <text fg={theme().colors.main}>saved texts</text>
       <ListView
         items={library.texts()}

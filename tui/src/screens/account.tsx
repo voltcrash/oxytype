@@ -6,6 +6,7 @@ import { useAuth } from "../auth/store";
 import { useRouter } from "../router/router";
 import { useScreenKeys } from "../shell/screen-keys";
 import { useTheme } from "../theme/theme";
+import { KeyHints, parseHints } from "../ui/key-hints";
 import { ProfileStats } from "../ui/profile-stats";
 import { createRemote, dataOrThrow } from "../ui/remote";
 import { RemoteStatus } from "../ui/remote-status";
@@ -87,17 +88,19 @@ export function AccountScreen() {
                       device().verification_uri}
                   </text>
                   <text fg={theme().colors.sub}>
-                    approve this code in your browser · esc cancel
+                    approve this code in your browser
                   </text>
+                  <KeyHints hints={parseHints("esc cancel")} />
                 </>
               )}
             </Show>
             <Show when={store().notice()}>
               {(notice) => <text fg={theme().colors.error}>{notice()}</text>}
             </Show>
-            <text fg={theme().colors.sub}>
-              enter log in · r reconnect · l log out
-            </text>
+            <KeyHints
+              wrap
+              hints={parseHints("enter log in · r reconnect · l log out")}
+            />
             <Show when={account}>
               {(service) => (
                 <>
@@ -136,7 +139,7 @@ export function AccountScreen() {
             />
           )}
         </Show>
-        <text fg={theme().colors.sub}>h history · t tags · p presets</text>
+        <KeyHints wrap hints={parseHints("h history · t tags · p presets")} />
       </Show>
     </box>
   );

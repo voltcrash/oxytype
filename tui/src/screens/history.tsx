@@ -16,6 +16,7 @@ import {
 import { useHistory } from "../results/history";
 import { useScreenKeys } from "../shell/screen-keys";
 import { useTheme } from "../theme/theme";
+import { KeyHints, parseHints } from "../ui/key-hints";
 import { ListView } from "../ui/list-view";
 import { createRemote, dataOrThrow } from "../ui/remote";
 import { RemoteStatus } from "../ui/remote-status";
@@ -223,10 +224,12 @@ export function HistoryScreen() {
           )}
         </Show>
       </Show>
-      <text fg={theme().colors.sub}>
-        ↑↓ select · enter details · tab local/TUI/web · f filters · x clear · r
-        reload
-      </text>
+      <KeyHints
+        wrap
+        hints={parseHints(
+          "↑↓ select · enter details · tab local/TUI/web · f filters · x clear · r reload",
+        )}
+      />
     </box>
   );
 }

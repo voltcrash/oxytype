@@ -67,7 +67,7 @@ exports[`OpenTUI screen snapshots ready, typing and result at 80x24: replay 1`] 
  cat dog
 
 
- space play/pause · ←→ seek 1s · home/end · s speed · esc back
+ space play/pause  ←→ seek 1s  home/end jump  s speed  esc back
 
 
 
@@ -92,7 +92,7 @@ exports[`OpenTUI screen snapshots ready, typing and result at 80x24: empty histo
 
  no saved tests match
 
- ↑↓ select · enter details · tab local/TUI/web · f filters · x clear · r reload
+ ↑↓ select  enter details  tab local/TUI/web  f filters  x clear  r reload
 
 
 
@@ -248,7 +248,7 @@ exports[`OpenTUI screen snapshots custom screen: custom 1`] = `
 
 
 
- e edit · n new · o options · enter type · s save · l load · d delete
+ e edit  n new  o options  enter type  s save  l load  d delete
 
  saved texts
 
@@ -271,7 +271,6 @@ exports[`OpenTUI screen snapshots funboxes screen: funboxes 1`] = `
  funboxes · type to search
   search funboxes
 
-
  ▌ [ ] 58008 · shared words
    [ ] mirror · browser only
    [ ] upside down · browser only
@@ -280,13 +279,14 @@ exports[`OpenTUI screen snapshots funboxes screen: funboxes 1`] = `
    [ ] simon says · browser only
    [ ] tts · browser only
    [ ] choo choo · browser only
-   [ ] arrows · shared words
  1/48
+
  A special mode for accountants.
 
 
 
- ↑↓ select · enter toggle · shared compatibility and forced settings apply
+ shared compatibility and forced settings apply
+ ↑↓ select  enter toggle
  esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 
 "
@@ -299,7 +299,6 @@ exports[`OpenTUI screen snapshots challenges screen: challenges 1`] = `
  challenges · type to search
   search challenges
 
-
  ▌ 6969696969 · other
    One Hour Warrior · endurance
    Double Down · endurance
@@ -308,13 +307,14 @@ exports[`OpenTUI screen snapshots challenges screen: challenges 1`] = `
    8 Ball · endurance
    The Big 12 · endurance
    1 Day · endurance
-   Bigram Salad · speed
  1/53
+
  Complete a 69-second test and achieve 69 WPM, 69 raw, 69% accuracy, and 69%
  consistency.
 
 
- ↑↓ select · enter start · scripts download once · Wingdings requires a browser
+ scripts download once · Wingdings requires a browser
+ ↑↓ select  enter start
  esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 
 "

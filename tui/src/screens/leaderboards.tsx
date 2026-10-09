@@ -11,6 +11,7 @@ import { usePalette } from "../palette/palette";
 import { useRouter } from "../router/router";
 import { useScreenKeys } from "../shell/screen-keys";
 import { useTheme } from "../theme/theme";
+import { KeyHints, parseHints } from "../ui/key-hints";
 import { ListView } from "../ui/list-view";
 import { createRemote, dataOrThrow } from "../ui/remote";
 import { RemoteStatus } from "../ui/remote-status";
@@ -219,10 +220,12 @@ export function LeaderboardsScreen() {
           {rank.data() === undefined ? "unranked" : (rank.data() ?? 0) + 1}
         </text>
         <RemoteStatus loading={rank.loading()} error={rank.error()} />
-        <text fg={theme().colors.sub}>
-          ↑↓ select · ←→ pages · tab board · c client · l language · m test ·
-          enter profile
-        </text>
+        <KeyHints
+          wrap
+          hints={parseHints(
+            "↑↓ select · ←→ pages · tab board · c client · l language · m test · enter profile",
+          )}
+        />
       </Show>
     </box>
   );

@@ -8,6 +8,7 @@ import { usePalette } from "../palette/palette";
 import { useRouter } from "../router/router";
 import { useScreenKeys } from "../shell/screen-keys";
 import { useTheme } from "../theme/theme";
+import { KeyHints, parseHints } from "../ui/key-hints";
 import { ProfileStats } from "../ui/profile-stats";
 import { createRemote, dataOrThrow } from "../ui/remote";
 import { RemoteStatus } from "../ui/remote-status";
@@ -92,9 +93,12 @@ export function ProfileScreen() {
           />
         )}
       </Show>
-      <text fg={theme().colors.sub}>
-        / username · tab TUI/web · ↑↓ PB pages · r reload · b report in browser
-      </text>
+      <KeyHints
+        wrap
+        hints={parseHints(
+          "/ username · tab TUI/web · ↑↓ PB pages · r reload · b report in browser",
+        )}
+      />
     </box>
   );
 }

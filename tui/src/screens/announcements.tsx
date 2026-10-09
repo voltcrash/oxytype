@@ -5,6 +5,7 @@ import { useAccount } from "../account";
 import { useScreenKeys } from "../shell/screen-keys";
 import { useTheme } from "../theme/theme";
 import { announcementLines } from "../ui/announcement-text";
+import { KeyHints, parseHints } from "../ui/key-hints";
 import { createRemote, dataOrThrow } from "../ui/remote";
 import { RemoteStatus } from "../ui/remote-status";
 
@@ -76,7 +77,10 @@ export function AnnouncementsScreen() {
           )}
         </For>
       </box>
-      <text fg={theme().colors.sub}>↑↓ scroll · pgup/pgdn page · r reload</text>
+      <KeyHints
+        wrap
+        hints={parseHints("↑↓ scroll · pgup/pgdn page · r reload")}
+      />
     </box>
   );
 }

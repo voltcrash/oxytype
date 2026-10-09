@@ -7,6 +7,7 @@ import { useScreenKeys } from "../shell/screen-keys";
 import { useTypingTest } from "../test/typing-test";
 import { useTheme } from "../theme/theme";
 import { createAction } from "../ui/actions";
+import { KeyHints, parseHints } from "../ui/key-hints";
 import { ListView } from "../ui/list-view";
 import { createSelection } from "../ui/selection";
 import { createTextField } from "../ui/text-field";
@@ -56,7 +57,7 @@ export function ChallengesScreen() {
       <ListView
         items={items()}
         selected={selection.index()}
-        height={Math.max(1, dimensions().height - 15)}
+        height={Math.max(1, dimensions().height - 16)}
         render={(challenge) => (
           <text fg={theme().colors.text}>
             {challenge.display} · {challenge.category}
@@ -67,9 +68,9 @@ export function ChallengesScreen() {
         {selected()?.description}
       </text>
       <text fg={theme().colors.sub}>
-        ↑↓ select · enter start · scripts download once · Wingdings requires a
-        browser
+        scripts download once · Wingdings requires a browser
       </text>
+      <KeyHints hints={parseHints("↑↓ select · enter start")} />
     </box>
   );
 }

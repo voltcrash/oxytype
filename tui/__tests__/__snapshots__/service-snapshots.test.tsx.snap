@@ -6,7 +6,7 @@ exports[`guest and authenticated account snapshots: guest account 1`] = `
 
  account
  not logged in · guest
- enter log in · r reconnect · l log out
+ enter log in  r reconnect  l log out
  config local · 0 queued uploads
 
 
@@ -34,7 +34,7 @@ exports[`guest and authenticated account snapshots: authenticated account 1`] = 
 
  account
  Tester · authenticated
- enter log in · r reconnect · l log out
+ enter log in  r reconnect  l log out
  config synced · 0 queued uploads
 
  tui stats · tab switch client · ↑↓ PB pages
@@ -42,7 +42,7 @@ exports[`guest and authenticated account snapshots: authenticated account 1`] = 
  7 completed · 8 started · 0.0 hours
  personal bests · 0 · page 1/1
  no personal bests yet
- h history · t tags · p presets
+ h history  t tags  p presets
 
 
 
@@ -66,8 +66,8 @@ exports[`populated leaderboard snapshot: leaderboard 1`] = `
 
  page 1/1 · your rank unranked
 
- ↑↓ select · ←→ pages · tab board · c client · l language · m test · enter
- profile
+ ↑↓ select  ←→ pages  tab board  c client  l language  m test  enter profile
+
 
 
 
@@ -96,7 +96,7 @@ exports[`saved history detail snapshot: history details 1`] = `
 
  tags  · normal · online
 
- ↑↓ select · enter details · tab local/TUI/web · f filters · x clear · r reload
+ ↑↓ select  enter details  tab local/TUI/web  f filters  x clear  r reload
 
 
 

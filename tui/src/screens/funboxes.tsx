@@ -7,6 +7,7 @@ import { useNotifications } from "../notifications";
 import { useScreenKeys } from "../shell/screen-keys";
 import { terminalFunboxes, wordFunboxes } from "../test/funboxes";
 import { useTheme } from "../theme/theme";
+import { KeyHints, parseHints } from "../ui/key-hints";
 import { ListView } from "../ui/list-view";
 import { createSelection } from "../ui/selection";
 import { createTextField } from "../ui/text-field";
@@ -64,7 +65,7 @@ export function FunboxesScreen() {
       <ListView
         items={items()}
         selected={selection.index()}
-        height={Math.max(1, dimensions().height - 15)}
+        height={Math.max(1, dimensions().height - 16)}
         render={(box) => (
           <text fg={theme().colors.text}>
             {store.config.funbox.includes(box.name) ? "[x]" : "[ ]"}{" "}
@@ -81,9 +82,9 @@ export function FunboxesScreen() {
         {selected()?.description}
       </text>
       <text fg={theme().colors.sub}>
-        ↑↓ select · enter toggle · shared compatibility and forced settings
-        apply
+        shared compatibility and forced settings apply
       </text>
+      <KeyHints hints={parseHints("↑↓ select · enter toggle")} />
     </box>
   );
 }
