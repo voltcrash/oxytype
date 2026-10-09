@@ -14,7 +14,8 @@ import time
 
 
 package = Path(__file__).resolve().parents[1]
-# Resolve before XDG overrides: package-manager shims may otherwise download Bun.
+# Direct bun: the TUI runs on the Bun runtime, not through vp. Resolve before
+# XDG overrides: package-manager shims may otherwise download Bun.
 bun = os.environ.get("OXYTYPE_SMOKE_BUN") or subprocess.check_output(
     ["bun", "-e", "console.log(process.execPath)"], cwd=package, text=True
 ).strip()

@@ -19,6 +19,7 @@ const manifest = JSON.parse(
   await readFile(join(root, "dist/npm/package.json"), "utf8"),
 ) as { version: string };
 try {
+  // Direct npm: pack and install the way end users get the published package.
   const packed = JSON.parse(
     execFileSync(
       "npm",
