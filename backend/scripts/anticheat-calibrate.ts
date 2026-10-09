@@ -5,7 +5,7 @@ import {
   type TimingSample,
 } from "../src/anticheat/calibration";
 
-const USAGE = `Usage: pnpm anticheat:calibrate <label>=<file.json> [...]
+const USAGE = `Usage: vp run anticheat:calibrate <label>=<file.json> [...]
 
 Each file holds timing samples: an /admin/anticheat/audits?event=anticheat_sample
 response, audit rows, or an array of { keySpacing, keyDuration }. Label files

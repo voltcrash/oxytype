@@ -1,7 +1,7 @@
 /**
  * Example usage in root or frontend:
- * pnpm check-assets (npm run check-assets)
- * pnpm check-assets -- -- quotes others (npm run check-assets -- -- quotes others)
+ * vp run check-assets
+ * vp run check-assets quotes others
  */
 
 import * as fs from "fs";

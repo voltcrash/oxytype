@@ -15,7 +15,7 @@ if (maxDepthFlagIdx !== -1) {
 
 const target = args[0];
 if (target === undefined || target === "") {
-  console.log("Usage: pnpm import-tree <file-or-directory> [--depth <n>]");
+  console.log("Usage: vp run import-tree <file-or-directory> [--depth <n>]");
   process.exit(1);
 }
 

@@ -5,7 +5,7 @@
  * keystroke plan into the test and saves what the web produced: the event log
  * and the completed event. Run with the dev server up:
  *
- *   pnpm dev-fe
+ *   vp run dev-fe
  *   node packages/typing-core/scripts/record-fixtures.ts [url] [fixture names...]
  *
  * Set CHROME to a Chromium executable if Playwright's bundled one is missing.

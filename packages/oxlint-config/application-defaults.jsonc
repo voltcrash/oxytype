@@ -1,5 +1,5 @@
 // App configs opt into shared rules; overrides cannot set categories.
-// Regenerate after tool upgrades: pnpm lint-check-config --write
+// Regenerate after tool upgrades: vp run lint-check-config --write
 {
   "rules": {
     "block-scoped-var": "off",
