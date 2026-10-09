@@ -7,6 +7,7 @@
   "scripts": {
     "assets": "bun scripts/bundle-assets.ts",
     "build": "bun run assets && bun scripts/build.ts",
+    "package-check": "bun run build && bun scripts/smoke-package.ts",
     "dev": "bun run assets && bun run src/index.tsx",
     "test": "bun run assets && bun test",
     "madge": "madge --circular --extensions ts,tsx ./src",

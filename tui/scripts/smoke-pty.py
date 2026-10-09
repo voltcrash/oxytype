@@ -15,17 +15,18 @@ import time
 
 package = Path(__file__).resolve().parents[1]
 # Resolve before XDG overrides: package-manager shims may otherwise download Bun.
-bun = subprocess.check_output(
+bun = os.environ.get("OXYTYPE_SMOKE_BUN") or subprocess.check_output(
     ["bun", "-e", "console.log(process.execPath)"], cwd=package, text=True
 ).strip()
+binary = os.environ.get("OXYTYPE_SMOKE_BIN")
 
 
 def launch(env):
     master, slave = pty.openpty()
     fcntl.ioctl(slave, termios.TIOCSWINSZ, struct.pack("HHHH", 24, 80, 0, 0))
     child = subprocess.Popen(
-        [bun, "run", "src/index.tsx"],
-        cwd=package,
+        [bun, binary] if binary else [bun, "run", "src/index.tsx"],
+        cwd=Path(binary).parent if binary else package,
         env=env,
         stdin=slave,
         stdout=slave,
