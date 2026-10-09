@@ -5,6 +5,7 @@ import type { ScreenId } from "../router/screens";
 import { AccountScreen } from "./account";
 import { HistoryScreen } from "./history";
 import { Placeholder } from "./placeholder";
+import { PresetsScreen } from "./presets";
 import { ResultScreen } from "./result";
 import { SettingsScreen } from "./settings";
 import { TagsScreen } from "./tags";
@@ -17,7 +18,7 @@ export const screens: Record<ScreenId, Component> = {
   settings: SettingsScreen,
   account: AccountScreen,
   tags: TagsScreen,
-  presets: () => <Placeholder title="presets" />,
+  presets: PresetsScreen,
   profile: () => <Placeholder title="profile" />,
   leaderboards: () => <Placeholder title="leaderboards" />,
 };
