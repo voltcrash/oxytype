@@ -1,3 +1,5 @@
+import { RGBA } from "@opentui/core";
+
 export type Rgb = { r: number; g: number; b: number };
 export type Rgba = Rgb & { a: number };
 
@@ -34,4 +36,16 @@ export function toHex(color: Rgb): string {
   return `#${[color.r, color.g, color.b]
     .map((it) => it.toString(16).padStart(2, "0"))
     .join("")}`;
+}
+
+/** `color` at `alpha` over `background`; undefined is black. */
+export function fade(
+  color: RGBA | undefined,
+  background: RGBA,
+  alpha: number,
+): RGBA {
+  const [r, g, b] = color?.toInts() ?? [0, 0, 0];
+  const [br, bg, bb] = background.toInts();
+  const mixed = blend({ r, g, b, a: alpha }, { r: br, g: bg, b: bb });
+  return RGBA.fromInts(mixed.r, mixed.g, mixed.b);
 }
