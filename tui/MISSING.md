@@ -12,3 +12,5 @@ browser.
 | Background images | missing | Terminal image support varies | Theme colors |
 | Screenshots | missing | Browser canvas/DOM capture | Terminal capture or text export later |
 | Visual funboxes | missing | CSS, DOM and animation effects | Terminal effects where feasible in G17 |
+| Translucent theme colours | approximated | Terminals have no alpha channel | Composited onto the theme background |
+| Theme colours without truecolor | approximated | 256-colour terminals | OpenTUI downsamples to the nearest xterm-256 colour |
