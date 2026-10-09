@@ -10,11 +10,18 @@ import type {
 } from "@oxytype/typing-core/words-generator";
 import { createWordsGenerator } from "@oxytype/typing-core/words-generator";
 
+import {
+  createFunboxWordFunctions,
+  getWordFunboxes,
+} from "@oxytype/typing-core/funbox-word-functions";
+import type { Wordset } from "@oxytype/typing-core/wordset";
 import type { ConfigStore } from "../config/store";
 import type { TestSources } from "./sources";
 
 export type GeneratorOptions = {
   store: ConfigStore;
+  getWeakSpotWord: (wordset: Wordset) => string;
+  notify: (message: string) => void;
   getSelectedQuoteId?: () => number;
   /** The config words are generated for, e.g. with a fallback language. */
   getConfig: () => Config;
@@ -40,10 +47,30 @@ export function customTextSource(
 
 export function createGenerator(options: GeneratorOptions): WordsGenerator {
   const { store } = options;
+  const functions = createFunboxWordFunctions({
+    getConfig: options.getConfig,
+    getLanguage: async (language) => {
+      const loaded = await options.sources.loadLanguage(language);
+      if (loaded.missing !== undefined) {
+        throw new Error(`${language} unavailable offline`);
+      }
+      return loaded.language;
+    },
+    getPoem: options.sources.getPoem,
+    getSection: options.sources.getSection,
+    getWeakSpotWord: options.getWeakSpotWord,
+    notify: options.notify,
+    disableFunbox: (name) =>
+      store.set(
+        "funbox",
+        store.config.funbox.filter((it) => it !== name),
+      ),
+    setLanguage: (language) => store.set("language", language),
+  });
   return createWordsGenerator({
     getConfig: options.getConfig,
-    // Word funboxes arrive with the funbox screens.
-    getActiveFunboxes: () => [],
+    getActiveFunboxes: () =>
+      getWordFunboxes(options.getConfig().funbox, functions),
     customText: customTextSource(options.customText),
     quotes: options.sources.quotes,
     transforms: {

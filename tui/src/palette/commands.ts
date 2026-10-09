@@ -437,7 +437,15 @@ export function rootCommands(context: CommandContext): CommandGroup {
       exec: navigate("history"),
     },
     ...(
-      ["tags", "presets", "profile", "quotes", "custom", "challenges"] as const
+      [
+        "tags",
+        "presets",
+        "profile",
+        "quotes",
+        "custom",
+        "challenges",
+        "funboxes",
+      ] as const
     ).map((screen): Command => ({
       id: `view${screen}`,
       display: `View ${screen}`,

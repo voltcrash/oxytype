@@ -50,6 +50,21 @@ export function inputAction(
     };
   }
   if (event.ctrl || event.meta || event.super || event.hyper) return undefined;
+  if (
+    config.funbox.includes("arrows") &&
+    ["left", "down", "up", "right"].includes(event.name)
+  ) {
+    return {
+      type: "insert",
+      text:
+        (
+          { left: "←", down: "↓", up: "↑", right: "→" } as Record<
+            string,
+            string
+          >
+        )[event.name] ?? "",
+    };
+  }
   if (event.name === "space") return { type: "insert", text: " " };
   if (event.name === "return") return { type: "insert", text: "\n" };
   if (event.name === "tab" && words.some((word) => word.includes("\t"))) {

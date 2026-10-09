@@ -5,6 +5,7 @@ import type { ScreenId } from "../router/screens";
 import { AccountScreen } from "./account";
 import { ChallengesScreen } from "./challenges";
 import { CustomScreen } from "./custom";
+import { FunboxesScreen } from "./funboxes";
 import { HistoryScreen } from "./history";
 import { LeaderboardsScreen } from "./leaderboards";
 import { PresetsScreen } from "./presets";
@@ -27,5 +28,6 @@ export const screens: Record<ScreenId, Component> = {
   quotes: QuotesScreen,
   custom: CustomScreen,
   challenges: ChallengesScreen,
+  funboxes: FunboxesScreen,
   leaderboards: LeaderboardsScreen,
 };

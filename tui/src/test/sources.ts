@@ -1,6 +1,8 @@
 import type { Language, LanguageObject } from "@oxytype/schemas/languages";
 import type { FetchJson } from "@oxytype/typing-core/languages";
 import { createLanguageLoader } from "@oxytype/typing-core/languages";
+import { getPoem } from "@oxytype/typing-core/poetry";
+import { getSection } from "@oxytype/typing-core/wikipedia";
 import { QuotesController } from "@oxytype/typing-core/quote-source";
 import { tryCatch } from "@oxytype/util/trycatch";
 
@@ -22,6 +24,8 @@ export type TestSources = {
     quoteLengths?: number[],
   ) => Promise<LoadedLanguage>;
   quotes: QuotesController;
+  getPoem: () => ReturnType<typeof getPoem>;
+  getSection: (language: Language) => ReturnType<typeof getSection>;
   getScript: (name: string) => Promise<string>;
 };
 
@@ -33,6 +37,17 @@ export function createTestSources(
 ): TestSources {
   let languages = createLanguageLoader({ fetchJson });
   const quotes = new QuotesController({ fetchJson, getSnapshot });
+  const externalJson: FetchJson = async (url) => {
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(10_000),
+      credentials: "omit",
+      redirect: "error",
+    });
+    if (!response.ok) {
+      throw new Error(`Text source unavailable (${response.status})`);
+    }
+    return response.json() as Promise<unknown>;
+  };
   return {
     loadLanguage: async (language, quoteLengths) => {
       const loaded = await tryCatch(languages.getLanguage(language));
@@ -62,6 +77,16 @@ export function createTestSources(
       };
     },
     quotes,
+    getPoem: async () => getPoem(externalJson),
+    getSection: async (language) =>
+      getSection(language, {
+        fetchJson: async (url) =>
+          externalJson(
+            url.includes("/w/api.php") ? `${url}&explaintext=1` : url,
+          ),
+        getLanguage: languages.getLanguage,
+        htmlToText: (text) => text,
+      }),
     getScript: async (name) => {
       const data = await fetchJson(`challenges/${name}`);
       if (typeof data !== "string" || data.trim() === "") {

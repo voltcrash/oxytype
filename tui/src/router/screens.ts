@@ -11,6 +11,7 @@ const screenIds = [
   "quotes",
   "custom",
   "challenges",
+  "funboxes",
 ] as const;
 
 export type ScreenId = (typeof screenIds)[number];
@@ -28,4 +29,5 @@ export const screenTitles: Record<ScreenId, string> = {
   quotes: "quotes",
   custom: "custom text",
   challenges: "challenges",
+  funboxes: "funboxes",
 };

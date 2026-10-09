@@ -49,6 +49,7 @@ import type { ChallengeName } from "@oxytype/schemas/challenges";
 import type { ConfigStore } from "../config/store";
 import type { TestSources } from "./sources";
 import type { UploadIdentity } from "../auth/identity";
+import { terminalFunboxes } from "./funboxes";
 import { createGenerator } from "./generator";
 import { inputAction, keyData } from "./input";
 
@@ -158,12 +159,15 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
   let owner: UploadIdentity | undefined;
 
   function snapshotConfig(): Config {
-    // Word/visual funboxes are Stage G. Never attribute an unimplemented effect.
-    return {
+    // Results include only effects this terminal actually implements.
+    const snapshot = {
       ...structuredClone(unwrap(store.config)),
       ...challengeConfig,
-      funbox: [],
     };
+    snapshot.funbox = snapshot.funbox.filter((name) =>
+      terminalFunboxes.has(name),
+    );
+    return snapshot;
   }
   function stopTimer(): void {
     clearInterval(timer);
@@ -187,7 +191,6 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
     session = createTestSession(config, {
       dateNow,
       generator: config().mode === "zen" ? undefined : generator,
-      nospace: () => false,
       allWordsGenerated: () =>
         options.words !== undefined
           ? config().mode !== "time" && config().mode !== "zen"
@@ -306,13 +309,18 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
             `${loaded.missing}${loaded.missingQuotes === true ? " quotes" : ""} is not available offline; using english`,
           );
         }
-        if (store.config.funbox.length > 0) {
-          setNotice("Funboxes are not available yet; using a standard test");
+        const missing = store.config.funbox.filter(
+          (name) => !terminalFunboxes.has(name),
+        );
+        if (missing.length > 0) {
+          setNotice(`Browser-only funboxes skipped: ${missing.join(", ")}`);
         }
         currentQuote = null;
         sectionIndexes = [];
         const baseGenerator = createGenerator({
           store,
+          getWeakSpotWord: (wordset) => session.weakSpot.getWord(wordset),
+          notify: (message) => setNotice(message),
           getSelectedQuoteId: () => selectedQuoteId,
           getConfig: config,
           sources,
@@ -462,6 +470,10 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
   }
   async function restart(repeat = false, quick = false): Promise<void> {
     if (session?.isActive()) {
+      if (config().funbox.includes("no_quit")) {
+        setNotice("No quit funbox is active. Please finish the test.");
+        return;
+      }
       if (
         quick &&
         !canQuickRestart(
@@ -532,6 +544,12 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
       }
       const loaded = getChallenge(name);
       const setup = challengeSetup(loaded);
+      if (
+        setup.config.funbox?.some((funbox) => !terminalFunboxes.has(funbox)) ===
+        true
+      ) {
+        throw new Error("This challenge requires a browser-only funbox");
+      }
       if (setup.script !== undefined) {
         const text = (await sources.getScript(setup.script))
           .trim()
