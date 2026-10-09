@@ -20,7 +20,9 @@ export function TestScreen() {
   const test = useTypingTest();
   const dimensions = useTerminalDimensions();
   const shownConfig = (): typeof store.config =>
-    test.status() === "running" ? test.config() : store.config;
+    test.status() === "running" || test.challenge() !== undefined
+      ? test.config()
+      : store.config;
   const tape = (): boolean => store.config.tapeMode !== "off";
   /** Columns for words: the terminal width, capped by max line width. */
   const lineWidth = (): number => {
@@ -121,6 +123,7 @@ export function TestScreen() {
     if (next === previous) return;
     previous = next;
     if (fromServer && untrack(test.status) === "running") return;
+    test.clearChallenge();
     void test.restart();
   });
   createEffect(() => {
@@ -161,6 +164,7 @@ export function TestScreen() {
           values[
             (values.indexOf(limit.value) + step + values.length) % values.length
           ] ?? 10;
+        test.clearChallenge();
         void test.restart();
       } else {
         changeAmount(store, step);
@@ -176,6 +180,7 @@ export function TestScreen() {
             : "word";
       limit.value =
         limit.mode === "time" ? 30 : limit.mode === "section" ? 1 : 10;
+      test.clearChallenge();
       void test.restart();
     } else {
       void test.handleKey(event);

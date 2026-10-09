@@ -21,6 +21,9 @@ export type RemoteAssetOptions = {
 };
 
 function validate(asset: string, value: unknown): unknown {
+  if (asset.startsWith("challenges/")) {
+    return z.string().min(1).max(1_000_000).parse(value);
+  }
   const name = asset.split("/")[1]?.replace(/\.json$/, "");
   if (asset.startsWith("languages/")) {
     const data = LanguageObjectSchema.parse(value);
@@ -59,7 +62,11 @@ export function createRemoteAssets(
       return {
         response,
         ...(response.status === 200
-          ? { data: (await response.json()) as unknown }
+          ? {
+              data: path.startsWith("challenges/")
+                ? await response.text()
+                : ((await response.json()) as unknown),
+            }
           : {}),
       };
     } finally {

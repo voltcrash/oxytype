@@ -22,6 +22,7 @@ export type TestSources = {
     quoteLengths?: number[],
   ) => Promise<LoadedLanguage>;
   quotes: QuotesController;
+  getScript: (name: string) => Promise<string>;
 };
 
 export function createTestSources(
@@ -61,5 +62,12 @@ export function createTestSources(
       };
     },
     quotes,
+    getScript: async (name) => {
+      const data = await fetchJson(`challenges/${name}`);
+      if (typeof data !== "string" || data.trim() === "") {
+        throw new Error("Invalid challenge script");
+      }
+      return data;
+    },
   };
 }

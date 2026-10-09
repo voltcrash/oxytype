@@ -77,6 +77,11 @@ export function ResultScreen() {
               {finished().result.mode} {finished().result.mode2} ·{" "}
               {finished().result.language}
             </text>
+            <Show when={finished().challengeMessage}>
+              <text fg={theme().colors.main}>
+                {finished().challengeMessage}
+              </text>
+            </Show>
             <Show when={finished().invalid}>
               <text fg={theme().colors.error}>
                 not saved: {finished().failure ?? finished().invalid}

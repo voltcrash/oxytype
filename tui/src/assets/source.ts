@@ -8,7 +8,8 @@ import { createRemoteAssets, type RemoteAssetOptions } from "./download";
 const bundledAssetsDir = join(import.meta.dir, "..", "..", "assets");
 
 // Core requests `/languages/<name>.json` and `quotes/<name>.json`.
-const assetPattern = /^\/?(languages|quotes)\/([a-z0-9_]+)\.json$/;
+const assetPattern =
+  /^\/?(?:(languages|quotes)\/([a-z0-9_]+)\.json|challenges\/([a-zA-Z0-9_-]+)\.txt)$/;
 
 export class AssetUnavailableError extends Error {
   readonly asset: string;
@@ -43,11 +44,18 @@ export function createAssetSource(options: AssetSourceOptions = {}): FetchJson {
   return async (url) => {
     const match = assetPattern.exec(url);
     if (match === null) throw new Error(`Unsupported asset URL: ${url}`);
-    const asset = `${match[1]}/${match[2]}.json`;
+    const asset =
+      match[3] === undefined
+        ? `${match[1]}/${match[2]}.json`
+        : `challenges/${match[3]}.txt`;
 
     for (const directory of directories) {
       const read = await tryCatch(readFile(join(directory, asset), "utf8"));
-      if (read.error === null) return JSON.parse(read.data) as unknown;
+      if (read.error === null) {
+        return asset.startsWith("challenges/")
+          ? read.data
+          : (JSON.parse(read.data) as unknown);
+      }
       if (!("code" in read.error) || read.error.code !== "ENOENT") {
         throw read.error;
       }

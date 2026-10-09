@@ -39,6 +39,13 @@ import { unwrap } from "solid-js/store";
 
 import { createTextLibrary, type TextLibrary } from "../storage/texts";
 import { CustomTextSettingsSchema } from "@oxytype/schemas/results";
+import {
+  getChallenge,
+  challengeSetup,
+  verifyChallenge,
+  type Challenge,
+} from "@oxytype/challenges";
+import type { ChallengeName } from "@oxytype/schemas/challenges";
 import type { ConfigStore } from "../config/store";
 import type { TestSources } from "./sources";
 import type { UploadIdentity } from "../auth/identity";
@@ -53,6 +60,7 @@ export type FinishedTest = {
   rawHistory: number[];
   invalid?: string;
   failure?: string;
+  challengeMessage?: string;
   owner?: UploadIdentity;
 };
 export type TypingTestOptions = {
@@ -72,6 +80,9 @@ export type TypingTestOptions = {
 };
 export type TypingTest = {
   sources: TestSources;
+  loadChallenge: (name: ChallengeName) => Promise<void>;
+  challenge: Accessor<Challenge | undefined>;
+  clearChallenge: () => void;
   texts: TextLibrary;
   setCustomText: (settings: CustomTextSettings) => Promise<void>;
   selectQuote: (language: Config["language"], id: number) => Promise<void>;
@@ -106,6 +117,8 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
   const now = options.now ?? (() => performance.now());
   const dateNow = options.dateNow ?? (() => Date.now());
   const [status, setStatus] = createSignal<TestStatus>("loading");
+  const [challenge, setChallenge] = createSignal<Challenge>();
+  let challengeConfig: Partial<Config> = {};
   const [notice, setNotice] = createSignal<string>();
   const [words, setWords] = createSignal<readonly string[]>([]);
   const [activeIndex, setActiveIndex] = createSignal(0);
@@ -146,7 +159,11 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
 
   function snapshotConfig(): Config {
     // Word/visual funboxes are Stage G. Never attribute an unimplemented effect.
-    return { ...structuredClone(unwrap(store.config)), funbox: [] };
+    return {
+      ...structuredClone(unwrap(store.config)),
+      ...challengeConfig,
+      funbox: [],
+    };
   }
   function stopTimer(): void {
     clearInterval(timer);
@@ -219,6 +236,22 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
         ),
         timestamp: dateNow(),
       });
+      const loadedChallenge = challenge();
+      const challengeFailures =
+        loadedChallenge === undefined
+          ? []
+          : verifyChallenge(completed, config(), loadedChallenge);
+      if (
+        loadedChallenge !== undefined &&
+        challengeFailures.length === 0 &&
+        !repeated
+      ) {
+        completed.challenge = loadedChallenge.name;
+      }
+      const challengeMessage =
+        loadedChallenge === undefined
+          ? undefined
+          : `${loadedChallenge.display}: ${challengeFailures.length === 0 ? "passed" : challengeFailures.join(", ")}`;
       const invalid = getInvalidResultReason({
         result: completed,
         eventLog,
@@ -232,6 +265,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
         refresh();
         setResult({
           result: completed,
+          challengeMessage,
           eventLog,
           rawHistory: getRawHistory(eventLog),
           invalid,
@@ -485,8 +519,44 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
   const ready = load();
   return {
     sources,
+    challenge,
+    clearChallenge: () => {
+      setChallenge(undefined);
+      challengeConfig = {};
+    },
+    loadChallenge: async (name) => {
+      if (name === "wingdings") {
+        throw new Error(
+          "Ten Words of Pain needs Wingdings; open this challenge in the browser",
+        );
+      }
+      const loaded = getChallenge(name);
+      const setup = challengeSetup(loaded);
+      if (setup.script !== undefined) {
+        const text = (await sources.getScript(setup.script))
+          .trim()
+          .replace(/[\r\n\t ]+/g, " ")
+          .split(" ");
+        Object.assign(customText, {
+          text,
+          mode: "repeat",
+          limit: { mode: "word", value: text.length },
+          pipeDelimiter: false,
+        });
+      } else if (setup.customText !== undefined) {
+        Object.assign(customText, structuredClone(setup.customText));
+      }
+      challengeConfig = setup.config;
+      setChallenge(loaded);
+      await restart();
+      setNotice(
+        `Challenge: ${loaded.display}${loaded.settings.message === undefined ? "" : ` · ${loaded.settings.message}`}`,
+      );
+    },
     texts,
     setCustomText: async (settings) => {
+      setChallenge(undefined);
+      challengeConfig = {};
       const next = CustomTextSettingsSchema.parse(settings);
       Object.assign(customText, structuredClone(next));
       texts.setCurrent(next);
@@ -495,6 +565,8 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
       await restart();
     },
     selectQuote: async (language, id) => {
+      setChallenge(undefined);
+      challengeConfig = {};
       selectedQuoteId = id;
       store.set("language", language);
       store.set("quoteLength", [-2]);
