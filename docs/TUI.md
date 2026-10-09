@@ -57,8 +57,9 @@ unknown arguments, invalid language/theme identifiers and test flags with
 `1` runtime/auth/storage failure, `2` usage/non-interactive play, `130` cancelled
 CLI auth. Ctrl+C in interactive play saves pending data and quits normally.
 
-Test flags **update saved settings**. On startup the client checks any existing
-session and pulls server config; explicit flags apply afterwards. Ordinary
+Test flags **update saved settings**. Before applying explicit flags, the client
+checks any existing session and pulls server config. Without flags, it starts
+immediately and checks the session in the background. Ordinary
 settings changes continue syncing to the server. A new login uses the server
 configuration. The palette can change every applicable setting without flags.
 

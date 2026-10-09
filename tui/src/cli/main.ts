@@ -38,8 +38,8 @@ export async function main(args: string[]): Promise<number> {
         const { runAuthCommand } = await import("./auth");
         return await runAuthCommand(options.command, runtime.account.auth);
       }
-      await runtime.account.auth.check();
       if (Object.keys(options.config).length > 0) {
+        await runtime.account.auth.check();
         runtime.config.apply({ ...runtime.config.config, ...options.config });
       }
       const { runUi } = await import("./ui");
