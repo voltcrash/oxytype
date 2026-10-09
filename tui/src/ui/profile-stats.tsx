@@ -20,6 +20,9 @@ export function ProfileStats(props: {
       ),
     );
   const format = () => new Formatting(config);
+  const pages = () =>
+    Math.max(1, Math.ceil(bests().length / Math.max(1, props.height)));
+  const page = () => Math.min(Math.max(0, props.page ?? 0), pages() - 1);
   return (
     <box flexDirection="column">
       <text fg={theme().colors.text}>
@@ -44,12 +47,11 @@ export function ProfileStats(props: {
           keyboard {props.profile.details?.keyboard}
         </text>
       </Show>
-      <text fg={theme().colors.main}>personal bests · {bests().length}</text>
+      <text fg={theme().colors.main}>
+        personal bests · {bests().length} · page {page() + 1}/{pages()}
+      </text>
       <For
-        each={bests().slice(
-          (props.page ?? 0) * props.height,
-          ((props.page ?? 0) + 1) * props.height,
-        )}
+        each={bests().slice(page() * props.height, (page() + 1) * props.height)}
       >
         {(entry) => (
           <text fg={theme().colors.text}>

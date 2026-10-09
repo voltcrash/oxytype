@@ -30,7 +30,9 @@ export function createTextField(
 ): TextField {
   const [value, setValue] = createSignal(initial);
   const [cursor, setCursor] = createSignal(chars(initial).length);
+  let verticalColumn: number | undefined;
   function set(next: string, at?: number): void {
+    verticalColumn = undefined;
     const limited =
       options.maxLength === undefined
         ? next
@@ -65,6 +67,27 @@ export function createTextField(
       const at = cursor();
       if (event.eventType === "release") return false;
       if (
+        options.multiline === true &&
+        (event.name === "up" || event.name === "down")
+      ) {
+        const start = current.lastIndexOf("\n", at - 1) + 1;
+        const column = verticalColumn ?? at - start;
+        verticalColumn = column;
+        const end = current.indexOf("\n", at);
+        if (event.name === "up" && start > 0) {
+          const previousStart = current.lastIndexOf("\n", start - 2) + 1;
+          setCursor(Math.min(start - 1, previousStart + column));
+        } else if (event.name === "down" && end >= 0) {
+          const nextEnd = current.indexOf("\n", end + 1);
+          setCursor(
+            Math.min(nextEnd < 0 ? current.length : nextEnd, end + 1 + column),
+          );
+        }
+        event.preventDefault();
+        return true;
+      }
+      verticalColumn = undefined;
+      if (
         (event.name === "backspace" && (event.ctrl || event.meta)) ||
         (event.ctrl && event.name === "w")
       ) {
@@ -83,9 +106,17 @@ export function createTextField(
       } else if (event.name === "right" || (event.ctrl && event.name === "f")) {
         setCursor(Math.min(current.length, at + 1));
       } else if (event.name === "home" || (event.ctrl && event.name === "a")) {
-        setCursor(0);
+        setCursor(
+          options.multiline === true && !event.ctrl
+            ? current.lastIndexOf("\n", at - 1) + 1
+            : 0,
+        );
       } else if (event.name === "end" || (event.ctrl && event.name === "e")) {
-        setCursor(current.length);
+        const end =
+          options.multiline === true && !event.ctrl
+            ? current.indexOf("\n", at)
+            : -1;
+        setCursor(end < 0 ? current.length : end);
       } else if (
         options.multiline === true &&
         (event.name === "return" || event.name === "tab")
