@@ -84,7 +84,11 @@ export function createApi(options: ApiOptions) {
           409,
         );
       }
-      if (response.status === 401 && token === options.token?.()) {
+      if (
+        response.status === 401 &&
+        token !== undefined &&
+        token === options.token?.()
+      ) {
         options.onUnauthorized?.();
       }
       let body: unknown;
@@ -140,17 +144,21 @@ export function createApi(options: ApiOptions) {
       body?: object,
       signal?: AbortSignal,
       authenticated = true,
+      explicitToken?: string,
     ) =>
       request(
         `${options.settings.apiUrl}/auth${path}`,
         {
           method: body === undefined ? "GET" : "POST",
-          ...(body === undefined
-            ? {}
-            : {
-                body: JSON.stringify(body),
-                headers: { "content-type": "application/json" },
-              }),
+          ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+          headers: {
+            ...(body === undefined
+              ? {}
+              : { "content-type": "application/json" }),
+            ...(explicitToken === undefined
+              ? {}
+              : { authorization: `Bearer ${explicitToken}` }),
+          },
           signal,
         },
         authenticated,
