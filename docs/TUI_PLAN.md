@@ -42,7 +42,7 @@ Completed A1–A13 in one PR, with separate extraction/testing commits.
 
 - Package w/ typescript-config, oxlint-config, vitest. Exports `src/*.ts`, no build.
 - Empty `index.ts`. Registered in pnpm workspace.
-- Done: `pnpm lint-pkg` + `test-pkg` pass.
+- Done: `vp run lint-pkg` + `test-pkg` pass.
 
 ### A2. Parity fixture harness
 
@@ -231,7 +231,7 @@ extraction, feature, test and documentation commits.
 - Bun + `@opentui/solid`, Solid JSX transform, lint/typecheck/test wiring, root `vp run` scripts.
 - Hello-world screen.
 - Create `tui/MISSING.md`: intro + table `Feature | Status (missing/approximated) | Reason | Approximation`. Seed w/ known: TTS, sounds, custom fonts, background images, screenshots, visual funboxes.
-- Done: `pnpm --filter @voltcrash/oxytype dev` renders; `tui/MISSING.md` exists.
+- Done: `vp run --filter @voltcrash/oxytype dev` renders; `tui/MISSING.md` exists.
 
 ### D2. App shell + router
 

@@ -115,7 +115,7 @@ To calibrate, export samples, split them by reviewed label and run:
 
 ```sh
 cd backend
-pnpm anticheat:calibrate human=reviewed-human.json bot=known-bot.json
+vp run anticheat:calibrate human=reviewed-human.json bot=known-bot.json
 ```
 
 It accepts admin audit responses, audit rows or arrays of
@@ -151,12 +151,12 @@ command before changing thresholds or considering enforcement.
 
 ```sh
 cd backend
-pnpm vitest run __tests__/d1/anticheat.spec.ts
+vp test run __tests__/d1/anticheat.spec.ts
 cd ../frontend
-pnpm vitest run __tests__/test/events/anticheat.spec.ts
+vp test run __tests__/test/events/anticheat.spec.ts
 cd ..
-pnpm oxlint --type-aware --type-check --format agent
-pnpm build-be
+vp lint --type-aware --type-check --format agent
+vp run build-be
 ```
 
 ## Terminal clients

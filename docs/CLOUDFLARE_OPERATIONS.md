@@ -10,12 +10,12 @@ The [production setup](PRODUCTION_SETUP.md) uses an isolated database and
 ## Local development
 
 ```sh
-pnpm install --frozen-lockfile
+vp install --frozen-lockfile
 cp backend/.dev.vars.example backend/.dev.vars
-pnpm --filter @oxytype/backend db:migrate
-pnpm dev-be
+vp run --filter @oxytype/backend db:migrate
+vp run dev-be
 # another terminal
-pnpm dev-fe
+vp run dev-fe
 ```
 
 Frontend: `http://localhost:3000`; API: `http://localhost:5005` (also `/api`).
@@ -35,11 +35,11 @@ enabled. Daily XP rewards for the top 100 are mailed only once the inbox is on.
 Verification:
 
 ```sh
-pnpm oxlint --type-aware --type-check --format agent backend
-pnpm --filter @oxytype/backend test
-pnpm --filter @oxytype/backend integration-test
-pnpm --filter @oxytype/backend exec vitest run __tests__/d1/http.spec.ts
-pnpm build-be
+vp lint --type-aware --type-check --format agent backend
+vp run --filter @oxytype/backend test
+vp run --filter @oxytype/backend integration-test
+vp -C backend test run __tests__/d1/http.spec.ts
+vp run build-be
 ```
 
 Build generates docs and copies quote/config assets, then performs a Wrangler
@@ -61,12 +61,12 @@ config/resources; use its explicit commands or the daily production workflow.
 Both hosted sites serve frontend and API through the Worker assets binding.
 
 ```sh
-pnpm --filter @oxytype/backend exec wrangler login
-pnpm --filter @oxytype/backend exec wrangler whoami
-pnpm build-be
-pnpm --filter @oxytype/backend db:migrate:remote
-pnpm --filter @oxytype/backend exec wrangler secret put BETTER_AUTH_SECRET
-pnpm --filter @oxytype/backend deploy:worker
+vp exec --filter @oxytype/backend -- wrangler login
+vp exec --filter @oxytype/backend -- wrangler whoami
+vp run build-be
+vp run --filter @oxytype/backend db:migrate:remote
+vp exec --filter @oxytype/backend -- wrangler secret put BETTER_AUTH_SECRET
+vp run --filter @oxytype/backend deploy:worker
 ```
 
 Generate the secret privately (`openssl rand -base64 32`); preserve it across
@@ -143,8 +143,8 @@ Before deploying to a retained database or restoring older data, run these
 read-only audits. They include disabled keys and output counts only:
 
 ```sh
-pnpm --filter @oxytype/backend db:audit-ape-key-hashes
-pnpm --filter @oxytype/backend db:audit-ape-key-hashes:production
+vp run --filter @oxytype/backend db:audit-ape-key-hashes
+vp run --filter @oxytype/backend db:audit-ape-key-hashes:production
 ```
 
 `unsupported_hashes` must be zero. Replace affected keys before accepting API-key

@@ -72,13 +72,13 @@ paste handlers, caret work and playback/countdown lifecycles.
 Run from repository root:
 
 ```sh
-pnpm lint-tui
-pnpm lint-fe
-pnpm lint-pkg
-pnpm test-tui
-pnpm test-fe
-pnpm test-pkg
-pnpm build-fe
+vp run lint-tui
+vp run lint-fe
+vp run lint-pkg
+vp run test-tui
+vp run test-fe
+vp run test-pkg
+vp run build-fe
 python3 tui/scripts/smoke-pty.py
 python3 tui/scripts/smoke-account-pty.py
 python3 tui/scripts/smoke-screens-pty.py

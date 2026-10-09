@@ -3,6 +3,6 @@ if [ "$(git symbolic-ref --short HEAD)" = "master" ]; then
     https://github.com/voltcrash/oxytype|https://github.com/voltcrash/oxytype.git|git@github.com:voltcrash/oxytype.git) ;;
     *) exit 0 ;;
   esac
-  npx --no -- commitlint --edit ${1}
+  vp exec commitlint --edit "${1}"
 fi
 

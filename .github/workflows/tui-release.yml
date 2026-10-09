@@ -32,21 +32,21 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@v7.0.0
+      - uses: voidzero-dev/setup-vp@v1.21.1
         with:
           node-version: "24.21.0"
           registry-url: https://registry.npmjs.org
-
-      - uses: pnpm/action-setup@v6.1.0
-        with:
-          version: "12.8.1"
+          run-install: false
+          # Bun is the tui runtime, pinned by setup-bun; don't let vp shim it.
+          package-manager: |
+            bun: false
 
       - uses: oven-sh/setup-bun@v2.2.0
         with:
           bun-version: "1.4.2"
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: vp install --frozen-lockfile
 
       - name: Plan terminal publication
         id: plan
@@ -70,15 +70,17 @@ jobs:
 
       - name: Validate terminal source
         if: steps.plan.outputs.shouldPublish == 'true'
-        run: pnpm lint-tui && pnpm test-tui && pnpm --filter @oxytype/release test
+        run: vp run lint-tui && vp run test-tui && vp run --filter @oxytype/release test
 
       - name: Build and smoke isolated npm package
         if: steps.plan.outputs.shouldPublish == 'true'
-        run: pnpm --filter @voltcrash/oxytype package-check
+        run: vp run --filter @voltcrash/oxytype package-check
 
       - name: Publish terminal package
         if: steps.plan.outputs.shouldPublish == 'true'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           RELEASE_CHANNEL: ${{ steps.plan.outputs.channel }}
+        # npm directly: publishes the prebuilt dist/npm dir (not a workspace
+        # package) with npm provenance; vp pm publish would forward to pnpm.
         run: npm publish ./tui/dist/npm --access public --provenance --tag "$RELEASE_CHANNEL"

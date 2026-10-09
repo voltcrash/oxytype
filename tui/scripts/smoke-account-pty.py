@@ -20,6 +20,7 @@ import time
 
 
 package = Path(__file__).resolve().parents[1]
+# Direct bun: the TUI runs on the Bun runtime, not through vp.
 bun = subprocess.check_output(
     ["bun", "-e", "console.log(process.execPath)"], cwd=package, text=True
 ).strip()

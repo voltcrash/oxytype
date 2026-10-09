@@ -10,4 +10,4 @@
 - `font-styles.ts` generates ignored CSS from font metadata and official Font Awesome CSS. Development uses full fonts; production uses previews/icon subsets. Separate directories avoid cross-mode overwrites. Storybook registers the same plugin.
 - Standalone grids retain their original dimensions and native auth inputs.
 
-Checks: `pnpm lint-styles`, frontend build/tests, `pnpm oxlint --type-aware --type-check --format agent frontend`.
+Checks: `vp run lint-styles`, frontend build/tests, `vp lint --type-aware --type-check --format agent frontend`.

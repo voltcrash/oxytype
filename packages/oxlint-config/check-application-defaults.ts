@@ -41,7 +41,7 @@ if (process.argv.includes("--write")) {
   writeFileSync(
     defaultsFile,
     `// App configs opt into shared rules; overrides cannot set categories.
-// Regenerate after tool upgrades: pnpm lint-check-config --write
+// Regenerate after tool upgrades: vp run lint-check-config --write
 ${JSON.stringify({ rules: defaults }, null, 2)}
 `,
   );
@@ -56,6 +56,6 @@ ${JSON.stringify({ rules: defaults }, null, 2)}
   deepStrictEqual(
     actual.rules,
     defaults,
-    "Scoped category exclusions changed; run pnpm lint-check-config --write",
+    "Scoped category exclusions changed; run vp run lint-check-config --write",
   );
 }

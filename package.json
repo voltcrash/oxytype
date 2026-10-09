@@ -39,7 +39,7 @@
     "start": "vp run build && vp run --filter @oxytype/frontend --filter @oxytype/backend --parallel start",
     "start-be": "vp run build-be && vp run --filter @oxytype/backend start",
     "start-fe": "vp run build-fe && vp run --filter @oxytype/frontend start",
-    "audit-fe": "cd frontend && npm run audit",
+    "audit-fe": "vp run --filter @oxytype/frontend audit",
     "format-check": "vp fmt . --check",
     "format-fix": "vp fmt .",
     "lint-styles": "stylelint \"**/*.css\"",
@@ -81,5 +81,6 @@
   "engines": {
     "node": ">=24.21.0 <25"
   },
-  "packageManager": "pnpm@12.8.1"
+  "packageManager": "pnpm@12.8.1",
+  "//": "preinstall keeps npx: deps aren't installed yet, and `vp dlx` (pnpm dlx) overrides the user agent so only-allow always passes."
 }

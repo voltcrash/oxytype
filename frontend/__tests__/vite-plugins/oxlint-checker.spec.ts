@@ -40,24 +40,15 @@ it("counts agent diagnostics and passes the required output format to both lint 
     } as unknown as ViteDevServer,
   );
   expect(spawn).toHaveBeenLastCalledWith(
-    "pnpm",
-    ["exec", "vp", "lint", ".", "--format", "agent"],
+    "vp",
+    ["lint", ".", "--format", "agent"],
     expect.any(Object),
   );
   children[0]?.emit("close", 0);
   await vi.waitFor(() => expect(children).toHaveLength(2));
   expect(spawn).toHaveBeenLastCalledWith(
-    "pnpm",
-    [
-      "exec",
-      "vp",
-      "lint",
-      ".",
-      "--format",
-      "agent",
-      "--type-check",
-      "--type-aware",
-    ],
+    "vp",
+    ["lint", ".", "--format", "agent", "--type-check", "--type-aware"],
     expect.any(Object),
   );
   children[1]?.stdout.emit(
