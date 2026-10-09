@@ -67,6 +67,41 @@ export function inputAction(
 }
 
 /** Raw terminal protocols have no release events or reliable physical key code. */
+const punctuationCodes: Record<string, KeydownEventData["code"]> = {
+  "`": "Backquote",
+  "~": "Backquote",
+  "-": "Minus",
+  _: "Minus",
+  "=": "Equal",
+  "+": "Equal",
+  "[": "BracketLeft",
+  "{": "BracketLeft",
+  "]": "BracketRight",
+  "}": "BracketRight",
+  "\\": "Backslash",
+  "|": "Backslash",
+  ";": "Semicolon",
+  ":": "Semicolon",
+  "'": "Quote",
+  '"': "Quote",
+  ",": "Comma",
+  "<": "Comma",
+  ".": "Period",
+  ">": "Period",
+  "/": "Slash",
+  "?": "Slash",
+  "!": "Digit1",
+  "@": "Digit2",
+  "#": "Digit3",
+  $: "Digit4",
+  "%": "Digit5",
+  "^": "Digit6",
+  "&": "Digit7",
+  "*": "Digit8",
+  "(": "Digit9",
+  ")": "Digit0",
+};
+
 export function keyData(event: KeyEvent): KeydownEventData {
   const supplied = event.code as KeydownEventData["code"];
   let code: KeydownEventData["code"] = "NoCode";
@@ -87,7 +122,7 @@ export function keyData(event: KeyEvent): KeydownEventData {
     } else if (/^[0-9]$/.test(base)) {
       code = `Digit${base}` as KeydownEventData["code"];
     } else {
-      code = named[event.name] ?? "NoCode";
+      code = named[event.name] ?? punctuationCodes[base] ?? "NoCode";
     }
   }
   return {
