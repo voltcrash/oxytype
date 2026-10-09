@@ -5,6 +5,7 @@ import type { ConfigStore } from "./config/store";
 import type { ScreenId } from "./router/screens";
 
 import { createAssetSource } from "./assets/source";
+import { AuthContext, type AuthStore } from "./auth/store";
 import { ConfigContext } from "./config/store";
 import {
   createHistoryStore,
@@ -30,11 +31,12 @@ export type AppProps = {
   onQuit: () => void;
   testOptions?: Partial<Omit<TypingTestOptions, "store">>;
   history?: HistoryStore;
+  auth?: AuthStore;
 };
 
 export function App(props: AppProps) {
   // oxlint-disable-next-line solid/reactivity -- read once at startup
-  const { config, initialScreen, testOptions } = props;
+  const { config, initialScreen, testOptions, auth } = props;
   const router = createRouter(initialScreen ?? "test");
   const dispatcher = createKeyDispatcher();
   const theme = createTheme(config.config);
@@ -56,20 +58,22 @@ export function App(props: AppProps) {
   );
 
   return (
-    <ConfigContext.Provider value={config}>
-      <ThemeContext.Provider value={theme}>
-        <RouterContext.Provider value={router}>
-          <KeyDispatcherContext.Provider value={dispatcher}>
-            <HistoryContext.Provider value={history}>
-              <TypingTestContext.Provider value={test}>
-                <Shell onQuit={props.onQuit}>
-                  <Dynamic component={screens[router.current()]} />
-                </Shell>
-              </TypingTestContext.Provider>
-            </HistoryContext.Provider>
-          </KeyDispatcherContext.Provider>
-        </RouterContext.Provider>
-      </ThemeContext.Provider>
-    </ConfigContext.Provider>
+    <AuthContext.Provider value={auth}>
+      <ConfigContext.Provider value={config}>
+        <ThemeContext.Provider value={theme}>
+          <RouterContext.Provider value={router}>
+            <KeyDispatcherContext.Provider value={dispatcher}>
+              <HistoryContext.Provider value={history}>
+                <TypingTestContext.Provider value={test}>
+                  <Shell onQuit={props.onQuit}>
+                    <Dynamic component={screens[router.current()]} />
+                  </Shell>
+                </TypingTestContext.Provider>
+              </HistoryContext.Provider>
+            </KeyDispatcherContext.Provider>
+          </RouterContext.Provider>
+        </ThemeContext.Provider>
+      </ConfigContext.Provider>
+    </AuthContext.Provider>
   );
 }

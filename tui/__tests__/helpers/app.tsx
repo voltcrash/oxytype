@@ -21,6 +21,7 @@ export async function renderApp(
       initialScreen={props.initialScreen}
       testOptions={props.testOptions}
       history={props.history}
+      auth={props.auth}
       onQuit={props.onQuit ?? (() => undefined)}
     />
   ));
