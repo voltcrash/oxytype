@@ -6,7 +6,7 @@ import type {
 import * as ConfigSchemas from "@oxytype/schemas/configs";
 import { typedKeys } from "@oxytype/util/objects";
 import { getDefaultConfig } from "../constants/default-config";
-import { sanitize } from "../utils/sanitize";
+import { sanitize } from "@oxytype/util/sanitize";
 import { Config } from "./store";
 
 // The shared schema retains removed features for saved-config compatibility.

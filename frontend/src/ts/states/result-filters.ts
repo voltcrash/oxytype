@@ -3,7 +3,7 @@ import { mergeWithDefaultFilters } from "../components/pages/account/utils";
 import defaultResultFilters from "../constants/default-result-filters";
 import { useLocalStorageStore } from "../hooks/useLocalStorageStore";
 import { isObject } from "../utils/misc";
-import { sanitize } from "../utils/sanitize";
+import { sanitize } from "@oxytype/util/sanitize";
 
 export const [filters, setFilters] = useLocalStorageStore({
   key: "resultFilters",
