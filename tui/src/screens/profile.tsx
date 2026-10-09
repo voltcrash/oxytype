@@ -1,4 +1,5 @@
 import { useTerminalDimensions } from "@opentui/solid";
+import { browserHandoffUrl } from "@oxytype/schemas/browser-handoff";
 import { UserNameWithoutFilterSchema } from "@oxytype/schemas/users";
 import { createSignal, Show } from "solid-js";
 
@@ -41,6 +42,18 @@ export function ProfileScreen() {
     } else if (event.name === "r" && !event.ctrl) {
       event.preventDefault();
       profile.reload();
+    } else if (event.name === "b" && profile.data() !== undefined) {
+      event.preventDefault();
+      router.openHandoff(
+        "Report user",
+        browserHandoffUrl(
+          account?.api.settings.assetUrl ?? "https://oxytype.voltcrash.com",
+          {
+            action: "user-report",
+            username: profile.data()?.name ?? router.profileName(),
+          },
+        ),
+      );
     } else if (event.name === "/" || event.name === "return") {
       event.preventDefault();
       palette?.open({
@@ -79,7 +92,7 @@ export function ProfileScreen() {
         )}
       </Show>
       <text fg={theme().colors.sub}>
-        / username · tab TUI/web · ↑↓ PB pages · r reload
+        / username · tab TUI/web · ↑↓ PB pages · r reload · b report in browser
       </text>
     </box>
   );

@@ -13,6 +13,7 @@ const screenIds = [
   "challenges",
   "funboxes",
   "announcements",
+  "browser",
 ] as const;
 
 export type ScreenId = (typeof screenIds)[number];
@@ -32,4 +33,5 @@ export const screenTitles: Record<ScreenId, string> = {
   challenges: "challenges",
   funboxes: "funboxes",
   announcements: "announcements",
+  browser: "browser",
 };

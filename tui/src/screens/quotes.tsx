@@ -1,4 +1,5 @@
 import { useTerminalDimensions } from "@opentui/solid";
+import { browserHandoffUrl } from "@oxytype/schemas/browser-handoff";
 import { LanguageSchema, type Language } from "@oxytype/schemas/languages";
 import { createMemo, createSignal, Show } from "solid-js";
 
@@ -105,6 +106,22 @@ export function QuotesScreen() {
         }
         await account.favorites.toggle(quote.language, quote.id);
       });
+    } else if (event.name === "b" && selected() !== undefined) {
+      event.preventDefault();
+      const quote = selected();
+      if (quote !== undefined) {
+        router.openHandoff(
+          "Report quote",
+          browserHandoffUrl(
+            account?.api.settings.assetUrl ?? "https://oxytype.voltcrash.com",
+            {
+              action: "quote-report",
+              language: quote.language,
+              quoteId: quote.id,
+            },
+          ),
+        );
+      }
     } else if (event.name === "return" && selected() !== undefined) {
       event.preventDefault();
       const quote = selected();
@@ -159,7 +176,7 @@ export function QuotesScreen() {
       </Show>
       <text fg={theme().colors.sub}>
         ↑↓ select · / search · enter type · f favorite · v favorites · l
-        language · r reload
+        language · r reload · b report in browser
       </text>
     </box>
   );

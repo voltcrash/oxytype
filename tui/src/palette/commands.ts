@@ -1,6 +1,8 @@
 import type { Config } from "@oxytype/schemas/configs";
 
 import { LanguageSchema } from "@oxytype/schemas/languages";
+import { browserHandoffUrl } from "@oxytype/schemas/browser-handoff";
+import { UserNameWithoutFilterSchema } from "@oxytype/schemas/users";
 import { get as getTypingSpeedUnit } from "@oxytype/typing-core/typing-speed-units";
 import { ThemesList } from "@oxytype/typing-core/themes";
 import { canQuickRestart } from "@oxytype/typing-core/quick-restart";
@@ -356,6 +358,8 @@ export function rootCommands(context: CommandContext): CommandGroup {
     );
   };
   const settings = settingCommands(context);
+  const siteUrl =
+    context.account?.api.settings.assetUrl ?? "https://oxytype.voltcrash.com";
   const navigate = (screen: Parameters<Router["push"]>[0]) => () => {
     if (screen === "test" && test.status() === "finished") void test.restart();
     router.push(screen);
@@ -488,6 +492,70 @@ export function rootCommands(context: CommandContext): CommandGroup {
       exec: navigate(screen),
     })),
     ...configTools(context),
+    {
+      id: "signUpBrowser",
+      display: "Sign up in browser",
+      alias: "register create account captcha",
+      exec: () =>
+        router.openHandoff("Sign up", browserHandoffUrl(siteUrl, "signup")),
+    },
+    {
+      id: "submitQuoteBrowser",
+      display: "Submit quote in browser",
+      alias: "captcha add quote",
+      exec: () =>
+        router.openHandoff(
+          "Submit quote",
+          browserHandoffUrl(siteUrl, {
+            action: "quote-submit",
+            language: context.store.config.language,
+          }),
+        ),
+    },
+    {
+      id: "reportQuoteBrowser",
+      display: "Report quote in browser",
+      alias: "captcha flag quote",
+      input: {
+        placeholder: "Quote id (in current language)",
+        submit: (value) => {
+          const quoteId = Number(value);
+          if (!Number.isSafeInteger(quoteId) || quoteId <= 0) {
+            return "Enter a positive quote id";
+          }
+          router.openHandoff(
+            "Report quote",
+            browserHandoffUrl(siteUrl, {
+              action: "quote-report",
+              language: context.store.config.language,
+              quoteId,
+            }),
+          );
+          return undefined;
+        },
+      },
+    },
+    {
+      id: "reportUserBrowser",
+      display: "Report user in browser",
+      alias: "captcha flag profile",
+      input: {
+        placeholder: "Username to report",
+        defaultValue: router.profileName,
+        submit: (value) => {
+          const username = UserNameWithoutFilterSchema.safeParse(value.trim());
+          if (!username.success) return "Enter a username";
+          router.openHandoff(
+            "Report user",
+            browserHandoffUrl(siteUrl, {
+              action: "user-report",
+              username: username.data,
+            }),
+          );
+          return undefined;
+        },
+      },
+    },
     {
       id: "clearNotifications",
       display: "Clear all notifications",
