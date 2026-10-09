@@ -114,14 +114,31 @@ import {
   getIncompleteTestSeconds,
   getDateBasedTestDurationMs,
   getInputHistory,
-  getKeypressesPerSecond,
 } from "./events/stats";
+import {
+  getInvalidResultReason,
+  InvalidResultReason,
+  isAfkResult,
+} from "@oxytype/typing-core/result-validity";
 import { getLiveCachedAccuracy } from "./events/live-cache";
 import { isDevEnvironment } from "../utils/env";
 import { resetModifierState } from "../states/modifiers";
 import { nthElementFromArray } from "../utils/arrays";
 
 let failReason = "";
+
+const invalidMessages: Record<
+  Exclude<InvalidResultReason, "failed">,
+  string
+> = {
+  "inconsistent duration": "inconsistent test duration",
+  "too short": "too short",
+  afk: "AFK detected",
+  repeated: "repeated",
+  wpm: "wpm",
+  raw: "raw",
+  accuracy: "accuracy",
+};
 
 export function startTest(now: number): boolean {
   if (PageTransition.get()) {
@@ -787,94 +804,31 @@ export async function finish(difficultyFailed = false): Promise<void> {
 
   ///////// completed event ready
 
-  //afk check
-  let afkDetected = getKeypressesPerSecond(eventLog)
-    .slice(-5)
-    .every((kps) => kps === 0);
-  if (getBailedOut()) afkDetected = false;
-
-  const mode2Number = parseInt(completedEvent.mode2);
-
-  let tooShort = false;
-  //fail checks
-  const dateDur = getDateBasedTestDurationMs(eventLog) / 1000;
-  if (
-    Config.mode === "time" &&
-    !getBailedOut() &&
-    (ce.testDuration < dateDur - 0.1 || ce.testDuration > dateDur + 0.1) &&
-    ce.testDuration <= 120
-  ) {
-    showNoticeNotification("Test invalid - inconsistent test duration");
-    console.error("Test duration inconsistent", ce.testDuration, dateDur);
-    setIsTestInvalid(true);
-    dontSave = true;
-  } else if (difficultyFailed) {
+  const afkDetected = isAfkResult(eventLog, getBailedOut());
+  const invalidReason = getInvalidResultReason({
+    result: completedEvent,
+    eventLog,
+    bailedOut: getBailedOut(),
+    failed: difficultyFailed,
+    repeated: isRepeated(),
+    lbOptOut: DB.getSnapshot()?.lbOptOut === true,
+    customLimit: CustomText.getData().limit,
+  });
+  const tooShort = invalidReason === "too short";
+  if (invalidReason === "failed") {
     showNoticeNotification(`Test failed - ${failReason}`, {
       durationMs: 1000,
     });
     dontSave = true;
-  } else if (
-    completedEvent.testDuration < 1 ||
-    (Config.mode === "time" && mode2Number < 15 && mode2Number > 0) ||
-    (Config.mode === "time" &&
-      mode2Number === 0 &&
-      completedEvent.testDuration < 15) ||
-    (Config.mode === "words" && mode2Number < 10 && mode2Number > 0) ||
-    (Config.mode === "words" &&
-      mode2Number === 0 &&
-      completedEvent.testDuration < 15) ||
-    (Config.mode === "custom" &&
-      (CustomText.getLimitMode() === "word" ||
-        CustomText.getLimitMode() === "section") &&
-      CustomText.getLimitValue() < 10) ||
-    (Config.mode === "custom" &&
-      CustomText.getLimitMode() === "time" &&
-      CustomText.getLimitValue() < 15) ||
-    (Config.mode === "zen" && completedEvent.testDuration < 15)
-  ) {
-    showNoticeNotification("Test invalid - too short");
-    setIsTestInvalid(true);
-    tooShort = true;
-    dontSave = true;
-  } else if (afkDetected) {
-    showNoticeNotification("Test invalid - AFK detected");
-    setIsTestInvalid(true);
-    dontSave = true;
-  } else if (isRepeated()) {
-    showNoticeNotification("Test invalid - repeated");
-    setIsTestInvalid(true);
-    dontSave = true;
-  } else if (
-    completedEvent.wpm < 0 ||
-    (completedEvent.wpm > 350 &&
-      completedEvent.mode !== "words" &&
-      completedEvent.mode2 !== "10") ||
-    (completedEvent.wpm > 420 &&
-      completedEvent.mode === "words" &&
-      completedEvent.mode2 === "10")
-  ) {
-    showNoticeNotification("Test invalid - wpm");
-    setIsTestInvalid(true);
-    dontSave = true;
-  } else if (
-    completedEvent.rawWpm < 0 ||
-    (completedEvent.rawWpm > 350 &&
-      completedEvent.mode !== "words" &&
-      completedEvent.mode2 !== "10") ||
-    (completedEvent.rawWpm > 420 &&
-      completedEvent.mode === "words" &&
-      completedEvent.mode2 === "10")
-  ) {
-    showNoticeNotification("Test invalid - raw");
-    setIsTestInvalid(true);
-    dontSave = true;
-  } else if (
-    (!DB.getSnapshot()?.lbOptOut &&
-      (completedEvent.acc < 75 || completedEvent.acc > 100)) ||
-    (DB.getSnapshot()?.lbOptOut === true &&
-      (completedEvent.acc < 50 || completedEvent.acc > 100))
-  ) {
-    showNoticeNotification("Test invalid - accuracy");
+  } else if (invalidReason !== undefined) {
+    if (invalidReason === "inconsistent duration") {
+      console.error(
+        "Test duration inconsistent",
+        ce.testDuration,
+        getDateBasedTestDurationMs(eventLog) / 1000,
+      );
+    }
+    showNoticeNotification(`Test invalid - ${invalidMessages[invalidReason]}`);
     setIsTestInvalid(true);
     dontSave = true;
   }
