@@ -5,6 +5,7 @@ import {
   CustomTextSettings,
   CustomTextSettingsSchema,
 } from "@oxytype/schemas/results";
+import { defaultCustomTextSettings } from "@oxytype/typing-core/custom-text";
 
 const CustomTextObjectSchema = z.record(z.string(), z.string());
 type CustomTextObject = z.infer<typeof CustomTextObjectSchema>;
@@ -28,13 +29,6 @@ const customTextLongLS = new LocalStorageWithSchema({
 });
 
 type CustomTextLimit = z.infer<typeof CustomTextSettingsSchema>["limit"];
-
-const defaultCustomTextSettings: CustomTextSettings = {
-  text: ["The", "quick", "brown", "fox", "jumps", "over", "the", "lazy", "dog"],
-  mode: "repeat",
-  limit: { value: 9, mode: "word" },
-  pipeDelimiter: false,
-};
 
 const customTextSettings = new LocalStorageWithSchema({
   key: "customTextSettings",
