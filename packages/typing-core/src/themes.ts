@@ -1,4 +1,4 @@
-import { ThemeName } from "@oxytype/schemas/configs";
+import { CustomThemeColors, ThemeName } from "@oxytype/schemas/configs";
 import { z } from "zod/v3";
 
 const hexColorSchema = z
@@ -2329,3 +2329,33 @@ export const ThemesList: ThemeWithName[] = Object.keys(themes)
     ...themes[it as ThemeName],
     name: it as ThemeName,
   }));
+
+export function convertCustomColorsToTheme(colors: CustomThemeColors): Theme {
+  return {
+    bg: colors[0],
+    main: colors[1],
+    caret: colors[2],
+    sub: colors[3],
+    subAlt: colors[4],
+    text: colors[5],
+    error: colors[6],
+    errorExtra: colors[7],
+    colorfulError: colors[8],
+    colorfulErrorExtra: colors[9],
+  };
+}
+
+export function convertThemeToCustomColors(theme: Theme): CustomThemeColors {
+  return [
+    theme.bg,
+    theme.main,
+    theme.caret,
+    theme.sub,
+    theme.subAlt,
+    theme.text,
+    theme.error,
+    theme.errorExtra,
+    theme.colorfulError,
+    theme.colorfulErrorExtra,
+  ];
+}
