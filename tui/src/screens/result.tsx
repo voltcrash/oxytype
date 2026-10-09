@@ -27,7 +27,7 @@ export function ResultScreen() {
     }
     if (save.state === "saving") return "saving locally…";
     if (save.state === "error") return "local save failed";
-    return "saved locally · offline";
+    return `saved locally${test.result()?.result.offline === true ? " · offline" : ""}`;
   };
   const next = (repeat = false): void => {
     void test.restart(repeat);

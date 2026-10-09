@@ -194,7 +194,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
       eventLog.context.bailedOut = bailedOut;
       const completed = session.complete(eventLog, {
         client: "tui",
-        offline: true,
+        offline: owner?.online !== true,
         config: config(),
         currentQuote,
         customText: {
