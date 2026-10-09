@@ -1,8 +1,8 @@
 # Terminal parity gaps
 
-Stage A extracts shared logic. Terminal rendering starts in Stage D. These
-browser features need terminal substitutes or a browser handoff; update this
-list as each client feature ships.
+Web features that the terminal client omits or approximates. Update this list
+whenever a client phase skips a feature, approximates it or hands it off to the
+browser.
 
 | Feature | Status (missing/approximated) | Reason | Approximation |
 | --- | --- | --- | --- |
