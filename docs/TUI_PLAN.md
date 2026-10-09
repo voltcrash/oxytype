@@ -211,6 +211,21 @@ regression-test and documentation commits.
 
 ## Stage D — TUI foundation
 
+Completed D1–D6 in one PR stacked on Stage C, with separate scaffold, shared-code
+extraction, feature, test and documentation commits.
+
+- `tui/` runs OpenTUI 0.5.10 + Solid on Bun with package/root lint, Bun tests and
+  CI. OpenTUI is pinned below the releases that require Node >=26.4.
+- Screen stack shell with screen-first key handling; Ctrl+C always quits.
+- XDG storage with atomic JSON writes. `config.json` uses web defaults and
+  migration, now shared from the core. Theme palettes are shared too; OpenTUI
+  emits truecolor or downsamples to xterm-256.
+- English 200 + English quotes are copied from `frontend/static` at dev/test
+  time and load through core loaders without network access.
+- Verification: 44 TUI, 1,718 frontend and package tests; lint/typecheck,
+  formatting, frontend build and PTY smoke pass. Details:
+  [TUI_FOUNDATION.md](TUI_FOUNDATION.md).
+
 ### D1. Scaffold `tui/`
 
 - Bun + `@opentui/solid`, Solid JSX transform, lint/typecheck/test wiring, root `vp run` scripts.
