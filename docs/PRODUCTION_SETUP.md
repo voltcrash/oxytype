@@ -100,7 +100,11 @@ pnpm --filter @oxytype/backend db:migrate:production
 pnpm --filter @oxytype/backend deploy:production-site
 ```
 
-Builds run sequentially because shared package builds clean their output.
+Production builds run `vp run --no-cache build-fe`, then `vp run --no-cache build-be`.
+Keep `--no-cache` before the task name so the runner consumes it. Trailing flags
+reach the build tool; `vp build` rejects `--force`. The runner's cache bypass
+ensures fresh production assets even when workspace task caching is enabled.
+Builds stay sequential because shared package builds clean their output.
 Deployment checks isolated bindings, required secrets, the real Turnstile key,
 enabled providers and the built frontend's `/api` configuration before upload.
 The deploy command uploads secrets from the private file and packages the frontend
@@ -164,6 +168,10 @@ Retrying a failed run keeps its original `main` snapshot but uses the date when
 the new attempt's release planning executes. An older snapshot cannot deploy over
 already released commits. A date tag belonging to another commit or a conflicting
 manual release stops the workflow before deployment.
+
+After merging a fix for a failed release, start a new **Production release** run
+from **main** in Actions, or run `gh workflow run production-release.yml --ref main`.
+Rerunning the old failed run retains its original snapshot and cannot pick up the fix.
 
 GitHub's scheduler can run late or drop jobs under load; 00:17 UTC is the requested
 trigger time, not an exact-time guarantee. See [GitHub scheduling behavior](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).

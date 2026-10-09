@@ -50,11 +50,13 @@ jobs:
             be-src:
               - 'backend/**/*'
               - 'backend/package.json'
+              - '.github/workflows/production-release.yml'
             fe-src:
               - 'frontend/**/*.{ts,tsx,js,scss,html}'
               - 'frontend/**/package.json'
             pkg-src:
               - 'packages/**/*'
+              - '.github/workflows/production-release.yml'
             tui-src:
               - 'tui/**/*'
               - 'packages/**/*'
