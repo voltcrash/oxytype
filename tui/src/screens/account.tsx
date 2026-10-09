@@ -62,7 +62,7 @@ export function AccountScreen() {
     }
   });
   return (
-    <box flexDirection="column" width="100%" gap={1}>
+    <box flexDirection="column" width="100%" gap={0}>
       <text fg={theme().colors.main}>account</text>
       <Show
         when={auth}

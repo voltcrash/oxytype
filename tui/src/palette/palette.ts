@@ -74,6 +74,7 @@ export function createPalette(options: {
   const [error, setError] = createSignal<string>();
   const [busy, setBusy] = createSignal(false);
   const [listVersion, setListVersion] = createSignal(0);
+  let operationVersion = 0;
   const field = createTextField();
   const query = (): string => (mode() === "search" ? field.value() : "");
   const usingSingleList = (): boolean =>
@@ -125,7 +126,9 @@ export function createPalette(options: {
     });
   }
   function close(): void {
+    operationVersion++;
     batch(() => {
+      setBusy(false);
       setOpen(false);
       setStack([]);
       setMode("search");
@@ -155,25 +158,28 @@ export function createPalette(options: {
     }
   }
   async function guarded(operation: () => Promise<void>): Promise<void> {
+    const version = operationVersion;
     setBusy(true);
     try {
       await operation();
     } catch (failure) {
       const message =
         failure instanceof Error ? failure.message : "Command failed";
-      setError(message);
+      if (version === operationVersion) setError(message);
       options.onError?.(message);
     } finally {
-      setBusy(false);
+      if (version === operationVersion) setBusy(false);
     }
   }
   async function run(item?: PaletteItem): Promise<void> {
     if (busy()) return;
+    const version = operationVersion;
     if (mode() === "input") {
       const command = inputCommand();
       if (command?.input === undefined) return;
       await guarded(async () => {
         const failure = await command.input?.submit(field.value());
+        if (version !== operationVersion) return;
         if (failure === undefined) close();
         else setError(failure);
       });
@@ -188,6 +194,7 @@ export function createPalette(options: {
     } else {
       await guarded(async () => {
         await command.exec?.();
+        if (version !== operationVersion) return;
         if (command.sticky === true) setListVersion((it) => it + 1);
         else close();
       });
