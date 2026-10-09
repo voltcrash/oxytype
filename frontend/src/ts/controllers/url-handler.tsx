@@ -33,6 +33,7 @@ import { setSelectedQuoteId } from "../states/test";
 import * as CustomText from "../test/custom-text";
 import { restart as restartTest } from "../test/test-logic";
 import * as Misc from "../utils/misc";
+import { loadBrowserHandoff } from "./browser-handoff";
 import * as ChallengeController from "./challenge-controller";
 
 const customThemeUrlDataSchema = z.object({
@@ -304,5 +305,6 @@ authEvent.subscribe(async (event) => {
     loadCustomThemeFromUrl(search);
     loadTestSettingsFromUrl(search);
     void loadChallengeFromUrl(search);
+    void loadBrowserHandoff(search, event.data.isUserSignedIn);
   }
 });
