@@ -3,6 +3,32 @@ import { describe, expect, test } from "bun:test";
 import { key, typingTest } from "./helpers/typing-test";
 
 describe("offline modes and restarts", () => {
+  test("starts custom time and section limits through core generation", async () => {
+    const { test: typing, store } = await typingTest({
+      customText: {
+        text: ["one two", "three four"],
+        mode: "repeat",
+        limit: { mode: "section", value: 2 },
+        pipeDelimiter: true,
+      },
+    });
+    store.set("mode", "custom");
+    await typing.restart();
+    expect(typing.status()).toBe("ready");
+    expect(typing.words()).toHaveLength(4);
+    expect(typing.sectionIndex()).toBe(1);
+    await typing.insert(typing.words()[0] ?? "", 0);
+    await typing.insert(typing.words()[1] ?? "", 1000);
+    expect(typing.sectionIndex()).toBe(2);
+    typing.customText.limit.mode = "time";
+    typing.customText.limit.value = 15;
+    await typing.restart();
+    await typing.insert("o", 0);
+    typing.advance(15000);
+    expect(typing.status()).toBe("finished");
+    expect(typing.result()?.result.customText?.limit.mode).toBe("time");
+    await store.flush();
+  });
   test("refills words beyond the initial buffer and ends on the final letter", async () => {
     const { test: typing, store } = await typingTest();
     store.set("mode", "words");
