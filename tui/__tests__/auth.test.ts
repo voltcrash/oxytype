@@ -228,4 +228,27 @@ describe("device login and credentials", () => {
       await requestDeviceCode(client).catch((error: unknown) => error),
     ).toBeInstanceOf(Error);
   });
+
+  test("keeps consent available when the browser cannot launch", async () => {
+    const client = await auth();
+    let release!: (value: typeof token) => void;
+    const store = createAuthStore({
+      api: client.api,
+      credentials: client.credentials,
+      browser: async () => {
+        throw new Error("headless");
+      },
+      poll: async () =>
+        new Promise((resolve) => {
+          release = resolve;
+        }),
+    });
+    const login = store.login();
+    while (store.notice() === undefined) await Bun.sleep(1);
+    expect(store.device()?.user_code).toBe(code.user_code);
+    expect(store.notice()).toContain("Open the link");
+    release(token);
+    await login;
+    expect(store.state()).toBe("authenticated");
+  });
 });
