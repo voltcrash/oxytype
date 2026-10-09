@@ -32,15 +32,15 @@ exports[`OpenTUI screen snapshots ready, typing and result at 80x24: result with
 "
  oxytype   test   settings   account   leaderboards   history       serika dark
 
- wpm                   ── raw   ── wpm   x errors
- ▀▀█ █▀█            36 ⠉⠉⠉⠉⠓⠒⠒⠒⠒⠒⠒⠦⠤⠤⠤⠤⠤⠤⢤⣀⣀⣀⣀⣀⣀⣀
- █▀▀ █▀█                                        ⠈⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠙⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒
+ wpm                    ── raw   ── wpm   x errors
+ ▀▀█ █▀█             36 ⠉⠉⠉⠉⠓⠒⠒⠒⠒⠒⠒⠦⠤⠤⠤⠤⠤⠤⣄⣀⣀⣀⣀⣀⣀⡀
+ █▀▀ █▀█                                         ⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠙⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒
  ▀▀▀ ▀▀▀
 
  acc
- ▀█  █▀█ █▀█ ▀ █     0
-  █  █ █ █ █  █
- ▀▀▀ ▀▀▀ ▀▀▀ █ ▄       0s                                                  3.0s
+ ▀█  █▀█ █▀█ ▀ ▄▀     0
+  █  █ █ █ █  ▄▀
+ ▀▀▀ ▀▀▀ ▀▀▀ ▄▀ ▄       0s                                                 3.0s
 
  test type    raw    characters    consistency    time
  words 2      28     7/0/0/0       80%            3.00s
@@ -141,9 +141,9 @@ exports[`OpenTUI screen snapshots compact ready and result at 80x20: compact res
  oxytype   test   settings   account   leaderboards   history       serika dark
 
  wpm        acc
- ▀▀█ █▀█    ▀█  █▀█ █▀█ ▀ █
- █▀▀ █▀█     █  █ █ █ █  █
- ▀▀▀ ▀▀▀    ▀▀▀ ▀▀▀ ▀▀▀ █ ▄
+ ▀▀█ █▀█    ▀█  █▀█ █▀█ ▀ ▄▀
+ █▀▀ █▀█     █  █ █ █ █  ▄▀
+ ▀▀▀ ▀▀▀    ▀▀▀ ▀▀▀ ▀▀▀ ▄▀ ▄
 
  test type    raw    characters    consistency    time
  words 2      28     7/0/0/0       80%            3.00s

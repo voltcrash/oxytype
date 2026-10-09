@@ -91,9 +91,9 @@ exports[`saved history detail snapshot: history details 1`] = `
   local    1 test
 
  wpm    acc
- ▀▀█    █▀█ ▀█  ▀ █
-   █    █▀█  █   █
-   ▀    ▀▀▀ ▀▀▀ █ ▄
+ ▀▀█    █▀█ ▀█  ▀ ▄▀
+   █    █▀█  █   ▄▀
+   ▀    ▀▀▀ ▀▀▀ ▄▀ ▄
 
  raw 64 · consistency 84.7% · time 9.23s · chars 5/0/9/0
 
