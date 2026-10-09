@@ -140,6 +140,13 @@ export function TestScreen() {
       void test.handleKey(event);
       return;
     }
+    if (
+      ["f2", "f3", "f4", "f5", "f6", "f9"].includes(event.name) &&
+      !test.canInterrupt()
+    ) {
+      event.preventDefault();
+      return;
+    }
     if (event.name === "f2") {
       event.preventDefault();
       store.set("mode", cycleMode(store.config));

@@ -115,6 +115,7 @@ export type TypingTest = {
   insert: (text: string, now: number) => Promise<void>;
   advance: (now: number) => void;
   finish: (now?: number) => void;
+  canInterrupt: () => boolean;
   restart: (repeat?: boolean, quick?: boolean) => Promise<void>;
   cancel: () => void;
   session: () => TestSession;
@@ -499,12 +500,16 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
     }));
     if (status() !== "finished") startTimer();
   }
+  function canInterrupt(): boolean {
+    if (session?.isActive() && config().funbox.includes("no_quit")) {
+      setNotice("No quit funbox is active. Please finish the test.");
+      return false;
+    }
+    return true;
+  }
   async function restart(repeat = false, quick = false): Promise<void> {
     if (session?.isActive()) {
-      if (config().funbox.includes("no_quit")) {
-        setNotice("No quit funbox is active. Please finish the test.");
-        return;
-      }
+      if (!canInterrupt()) return;
       if (
         quick &&
         !canQuickRestart(
@@ -539,10 +544,12 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
   }
   function finish(timestamp = now()): void {
     if (!session?.isActive()) return;
+    if (!canInterrupt()) return;
     bailedOut = config().mode !== "zen";
     session.finish(timestamp);
   }
   function cancel(): void {
+    if (!canInterrupt()) return;
     stopTimer();
     paceState = null;
     setPace(undefined);
@@ -560,6 +567,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
     generation++;
   });
   function clearSpecial(): void {
+    if (!canInterrupt()) return;
     const active = challenge() !== undefined || practice();
     setChallenge(undefined);
     setPractice(false);
@@ -588,11 +596,13 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
     });
   });
   return {
+    canInterrupt,
     sources,
     challenge,
     clearChallenge: clearSpecial,
     practice,
     practiceWords: async (missed, slow) => {
+      if (!canInterrupt()) throw new Error("Finish the no quit test first");
       const finished = result();
       if (finished === undefined) throw new Error("Finish a test first");
       let message = "No practice words available";
@@ -619,6 +629,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
       setNotice("Practice mode · results are not saved");
     },
     loadChallenge: async (name) => {
+      if (!canInterrupt()) throw new Error("Finish the no quit test first");
       if (name === "wingdings") {
         throw new Error(
           "Ten Words of Pain needs Wingdings; open this challenge in the browser",
@@ -656,6 +667,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
     },
     texts,
     setCustomText: async (settings) => {
+      if (!canInterrupt()) throw new Error("Finish the no quit test first");
       clearSpecial();
       const next = CustomTextSettingsSchema.parse(settings);
       Object.assign(customText, structuredClone(next));
@@ -666,6 +678,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
       await restart();
     },
     selectQuote: async (language, id) => {
+      if (!canInterrupt()) throw new Error("Finish the no quit test first");
       clearSpecial();
       selectedQuoteId = id;
       store.set("language", language);

@@ -93,6 +93,9 @@ export async function openConfigStore(file: string): Promise<ConfigStore> {
 
   if (status !== "ok") save();
   function replaceLocal(next: Config): void {
+    if (testActive() && config.funbox.includes("no_quit")) {
+      throw new Error("No quit funbox is active. Please finish the test.");
+    }
     setConfig(reconcile(next));
     save();
     for (const listener of listeners) {

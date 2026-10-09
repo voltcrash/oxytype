@@ -21,7 +21,10 @@ export type Router = {
   reset: (screen: ScreenId) => void;
 };
 
-export function createRouter(initial: ScreenId): Router {
+export function createRouter(
+  initial: ScreenId,
+  canLeave: () => boolean = () => true,
+): Router {
   const [profileName, setProfileName] = createSignal("");
   const [handoff, setHandoff] = createSignal<{ title: string; url: string }>();
   const [stack, setStack] = createSignal<ScreenStack>([initial]);
@@ -29,25 +32,34 @@ export function createRouter(initial: ScreenId): Router {
   return {
     handoff,
     openHandoff: (title, url) => {
+      if (!canLeave()) return;
       setHandoff({ title, url });
       setStack((it) => pushScreen(it, "browser"));
     },
     profileName,
     openProfile: (name) => {
+      if (!canLeave()) return;
       setProfileName(name);
       setStack((it) => pushScreen(it, "profile"));
     },
     stack,
     current: () => currentScreen(stack()),
-    push: (screen) => setStack((it) => pushScreen(it, screen)),
-    replace: (screen) => setStack((it) => replaceScreen(it, screen)),
+    push: (screen) => {
+      if (canLeave()) setStack((it) => pushScreen(it, screen));
+    },
+    replace: (screen) => {
+      if (canLeave()) setStack((it) => replaceScreen(it, screen));
+    },
     back: () => {
+      if (!canLeave()) return false;
       const below = popScreen(stack());
       if (below === undefined) return false;
       setStack(below);
       return true;
     },
-    reset: (screen) => setStack([screen]),
+    reset: (screen) => {
+      if (canLeave()) setStack([screen]);
+    },
   };
 }
 

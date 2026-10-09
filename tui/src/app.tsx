@@ -50,7 +50,6 @@ export type AppProps = {
 export function App(props: AppProps) {
   // oxlint-disable-next-line solid/reactivity -- read once at startup
   const { config, initialScreen, testOptions, auth, account } = props;
-  const router = createRouter(initialScreen ?? "test");
   const dispatcher = createKeyDispatcher();
 
   // oxlint-disable-next-line solid/reactivity -- app-owned store initialized once
@@ -72,6 +71,7 @@ export function App(props: AppProps) {
     getTags: account?.tags.active,
     ...testOptions,
   });
+  const router = createRouter(initialScreen ?? "test", test.canInterrupt);
   const theme = createTheme(
     config.config,
     createRandomTheme(config.config, () => test.status() === "ready"),
