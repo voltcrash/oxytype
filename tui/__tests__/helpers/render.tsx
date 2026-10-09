@@ -1,10 +1,14 @@
 import type { JSX } from "solid-js";
 
 import { testRender } from "@opentui/solid";
+import { getDefaultConfig } from "@oxytype/typing-core/config/default-config";
+
+import { toTerminalTheme } from "../../src/theme/theme";
 
 type Setup = Awaited<ReturnType<typeof testRender>>;
 
 const active: Setup[] = [];
+const dim = toTerminalTheme(getDefaultConfig()).colors.sub;
 
 export function cleanupRenderers(): void {
   for (const setup of active.splice(0)) setup.renderer.destroy();
@@ -29,14 +33,18 @@ export async function renderTui(
       await setup.renderOnce();
       return setup.captureCharFrame();
     },
-    // Pills, tabs and selections mark the active label with a raised background.
+    // Active tabs, pills and choices sit on a raised background in a
+    // brighter colour than the default theme's dim text.
     active: async (label: string) => {
       await setup.renderOnce();
       const frame = setup.captureSpans();
       const canvas = frame.lines[0]?.spans[0]?.bg;
       return frame.lines.some((line) =>
         line.spans.some(
-          (span) => span.text.trim() === label && !span.bg.equals(canvas),
+          (span) =>
+            span.text.trim() === label &&
+            !span.bg.equals(canvas) &&
+            !span.fg.equals(dim),
         ),
       );
     },
