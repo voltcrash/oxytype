@@ -52,7 +52,7 @@ export function createResultUploader(options: {
   const { api, queue, identity } = options;
   const [last, setLast] = createSignal<UploadStatus>();
   const [notice, setNotice] = createSignal<string>();
-  const localResults = new Map<string, LocalResult>();
+  let lastEntryId: string | undefined;
   let pending = Promise.resolve();
   async function serialize(operation: () => Promise<void>): Promise<void> {
     pending = pending.then(operation, operation);
@@ -64,8 +64,8 @@ export function createResultUploader(options: {
     message: string,
     isPb?: boolean,
   ): void {
-    const result = localResults.get(id);
-    if (result !== undefined && last()?.result === result) {
+    const result = last()?.result;
+    if (id === lastEntryId && result !== undefined) {
       setLast({ result, state, message, isPb });
     }
   }
@@ -102,7 +102,6 @@ export function createResultUploader(options: {
               : "uploaded",
           pb,
         );
-        localResults.delete(entry.id);
         setNotice(undefined);
         return true;
       }
@@ -134,7 +133,7 @@ export function createResultUploader(options: {
             true,
           );
           const entry = await queue.add(test.owner.apiUrl, payload);
-          localResults.set(entry.id, test.result);
+          lastEntryId = entry.id;
           setLast({
             result: test.result,
             state: "queued",
@@ -158,7 +157,20 @@ export function createResultUploader(options: {
       serialize(async () => {
         try {
           await queue.flush();
+          const lastPending = queue
+            .entries()
+            .some((entry) => entry.id === lastEntryId);
           await queue.expire();
+          if (
+            lastPending &&
+            !queue.entries().some((entry) => entry.id === lastEntryId)
+          ) {
+            status(
+              lastEntryId ?? "",
+              "error",
+              "upload expired after 30 days; local history retained",
+            );
+          }
           for (const entry of queue.entries()) {
             if (entry.state !== "pending" || !canUpload(entry)) continue;
             if (!(await send(entry))) break;

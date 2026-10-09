@@ -212,4 +212,27 @@ describe("result uploads and offline queue", () => {
     expect(requests).toBe(0);
     expect(uploader.last()?.state).toBe("error");
   });
+
+  test("shows expiry for the latest queued result without retaining previous screen results", async () => {
+    const queue = createUploadQueue();
+    let online = false;
+    const uploader = createResultUploader({
+      queue,
+      identity: () => ({ ...identity, online }),
+      api: createApi({
+        settings,
+        fetch: async () => Response.json(uploadResponse),
+      }),
+    });
+    const older = await finishedTest({ ...identity, online: false });
+    await uploader.accept(older);
+    const latest = await finishedTest({ ...identity, online: false });
+    latest.result.timestamp = Date.now() - maxUploadAge - 1;
+    await uploader.accept(latest);
+    online = true;
+    await uploader.drain();
+    expect(uploader.last()?.result).toBe(latest.result);
+    expect(uploader.last()?.message).toContain("expired");
+    expect(queue.entries()).toHaveLength(0);
+  });
 });
