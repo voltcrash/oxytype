@@ -367,6 +367,12 @@ export function rootCommands(context: CommandContext): CommandGroup {
   const list: Command[] = [
     // result
     {
+      id: "replayTest",
+      display: "Replay last test",
+      available: () => test.result() !== undefined,
+      exec: () => router.push("replay"),
+    },
+    {
       id: "nextTest",
       display: "Next test",
       alias: "restart start begin type test typing",

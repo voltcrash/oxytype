@@ -43,6 +43,9 @@ export function ResultScreen() {
     ) {
       event.preventDefault();
       next();
+    } else if (event.name === "r" && !event.ctrl) {
+      event.preventDefault();
+      router.push("replay");
     } else if (event.name === "f7") {
       event.preventDefault();
       next(true);
@@ -116,7 +119,7 @@ export function ResultScreen() {
         )}
       </Show>
       <text fg={theme().colors.sub}>
-        enter next test · F7 repeat · ^o history
+        enter next test · F7 repeat · r replay · ^o history
       </text>
     </box>
   );

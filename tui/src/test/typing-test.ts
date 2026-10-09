@@ -598,7 +598,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
       let message = "No practice words available";
       const selected = buildPracticeWords(
         finished.eventLog,
-        [...session.getWords()],
+        finished.eventLog.context.targetWords,
         missed,
         slow,
         (practiceNotice) => {
