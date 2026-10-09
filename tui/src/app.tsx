@@ -33,6 +33,7 @@ import {
   TypingTestContext,
   type TypingTestOptions,
 } from "./test/typing-test";
+import { createRandomTheme } from "./theme/random";
 import { createTheme, ThemeContext } from "./theme/theme";
 
 export type AppProps = {
@@ -51,7 +52,7 @@ export function App(props: AppProps) {
   const { config, initialScreen, testOptions, auth, account } = props;
   const router = createRouter(initialScreen ?? "test");
   const dispatcher = createKeyDispatcher();
-  const theme = createTheme(config.config);
+
   // oxlint-disable-next-line solid/reactivity -- app-owned store initialized once
   const history = props.history ?? createHistoryStore();
   const test = createTypingTest({
@@ -62,6 +63,10 @@ export function App(props: AppProps) {
     getIdentity: account?.identity,
     ...testOptions,
   });
+  const theme = createTheme(
+    config.config,
+    createRandomTheme(config.config, () => test.status() === "ready"),
+  );
   // oxlint-disable-next-line solid/reactivity -- app-owned store initialized once
   const notifications = props.notifications ?? createNotifications();
   config.setTestActive(() => test.status() === "running");

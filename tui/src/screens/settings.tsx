@@ -1,4 +1,4 @@
-import { useTerminalDimensions } from "@opentui/solid";
+import { useRenderer, useTerminalDimensions } from "@opentui/solid";
 import { getDefaultConfig } from "@oxytype/typing-core/config/default-config";
 import { createMemo, createSignal, For, Show } from "solid-js";
 
@@ -8,6 +8,8 @@ import type { Chunk } from "../ui/styled";
 import { useAccount } from "../account";
 import { useAuth } from "../auth/store";
 import { useConfig } from "../config/store";
+import { configTools } from "../config/tools";
+import { useNotifications } from "../notifications";
 import { usePalette } from "../palette/palette";
 import { isDefault } from "../settings/rows";
 import { settingSections } from "../settings/sections";
@@ -32,11 +34,17 @@ export function SettingsScreen() {
   const account = useAccount();
   const dimensions = useTerminalDimensions();
   const colors = (): ReturnType<typeof theme>["colors"] => theme().colors;
+  const renderer = useRenderer();
   const sections = settingSections({
     store,
     palette,
     loggedIn: () => auth?.user() !== undefined,
     account,
+    tools: configTools({
+      store,
+      notifications: useNotifications(),
+      copy: (text) => renderer.copyToClipboardOSC52(text),
+    }),
   });
   const [sectionIndex, setSectionIndex] = createSignal(0);
   const [rowIndex, setRowIndex] = createSignal(0);

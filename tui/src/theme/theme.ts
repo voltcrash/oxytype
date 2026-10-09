@@ -1,4 +1,4 @@
-import type { Config } from "@oxytype/schemas/configs";
+import type { ThemeName, Config } from "@oxytype/schemas/configs";
 import type { ColorName, Theme } from "@oxytype/typing-core/themes";
 import {
   convertCustomColorsToTheme,
@@ -58,8 +58,18 @@ export function toTerminalTheme(config: ThemeConfig): TerminalTheme {
   };
 }
 
-export function createTheme(config: ThemeConfig): Accessor<TerminalTheme> {
-  return createMemo(() => toTerminalTheme(config));
+export function createTheme(
+  config: ThemeConfig,
+  override?: Accessor<ThemeName | undefined>,
+): Accessor<TerminalTheme> {
+  return createMemo(() => {
+    const name = override?.();
+    return toTerminalTheme(
+      name === undefined
+        ? config
+        : { ...config, theme: name, customTheme: false },
+    );
+  });
 }
 
 export const ThemeContext = createContext<Accessor<TerminalTheme>>();

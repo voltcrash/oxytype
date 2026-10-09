@@ -1,16 +1,22 @@
 import type { Config } from "@oxytype/schemas/configs";
 
+import type { Command } from "../palette/types";
+import {
+  ThemesList,
+  convertThemeToCustomColors,
+  themes,
+} from "@oxytype/typing-core/themes";
+import { openCommand, configRow, settingTitle } from "./rows";
 import { LanguageSchema } from "@oxytype/schemas/languages";
 import { get as getTypingSpeedUnit } from "@oxytype/typing-core/typing-speed-units";
 
 import type { Account } from "../account";
 import type { SettingRow, SettingSection, RowContext } from "./rows";
 
-import { configRow, settingTitle } from "./rows";
-
 export type SectionContext = RowContext & {
   loggedIn: () => boolean;
   account?: Account;
+  tools?: Command[];
 };
 
 function speed(context: RowContext, key: keyof Config): () => string {
@@ -354,6 +360,135 @@ function hideElementsSection(context: SectionContext): SettingSection {
   };
 }
 
+function themeSection(context: SectionContext): SettingSection {
+  const { store } = context;
+  const colorNames = [
+    "background",
+    "main",
+    "caret",
+    "sub",
+    "sub alternate",
+    "text",
+    "error",
+    "extra error",
+    "colorful error",
+    "colorful extra error",
+  ];
+  return {
+    id: "theme",
+    title: "theme",
+    groups: [
+      {
+        title: "theme",
+        rows: [
+          configRow(context, "theme", {
+            options: ThemesList.map((it) => it.name),
+            optionDisplay: replaceUnderscores,
+          }),
+          {
+            id: "favoriteTheme",
+            title: "favorite current theme",
+            value: () =>
+              store.config.favThemes.includes(store.config.theme)
+                ? "yes"
+                : "no",
+            activate: () => {
+              const favorites = store.config.favThemes;
+              store.set(
+                "favThemes",
+                favorites.includes(store.config.theme)
+                  ? favorites.filter((it) => it !== store.config.theme)
+                  : [...favorites, store.config.theme],
+              );
+            },
+          },
+          configRow(context, "randomTheme", {
+            options: ["off", "on", "fav", "light", "dark"],
+            note: "auto/custom rotation: web only",
+          }),
+          configRow(context, "autoSwitchTheme", { note: "web only" }),
+          configRow(context, "themeLight", {
+            optionDisplay: replaceUnderscores,
+            note: "web only",
+          }),
+          configRow(context, "themeDark", {
+            optionDisplay: replaceUnderscores,
+            note: "web only",
+          }),
+          configRow(context, "flipTestColors"),
+          configRow(context, "colorfulMode"),
+        ],
+      },
+      {
+        title: "custom colors",
+        rows: [
+          configRow(context, "customTheme"),
+          {
+            id: "copyPresetTheme",
+            title: "copy preset colors",
+            activate: () => {
+              store.set(
+                "customThemeColors",
+                convertThemeToCustomColors(themes[store.config.theme]),
+              );
+              store.set("customTheme", true);
+            },
+          },
+          ...colorNames.map((name, index): SettingRow => ({
+            id: `customColor${index}`,
+            title: name,
+            value: () => store.config.customThemeColors[index],
+            activate: () =>
+              openCommand(context, {
+                id: `editColor${index}`,
+                display: `Custom ${name}`,
+                input: {
+                  defaultValue: () =>
+                    store.config.customThemeColors[index] ?? "",
+                  submit: (value) => {
+                    const colors = [
+                      ...store.config.customThemeColors,
+                    ] as Config["customThemeColors"];
+                    colors[index] = value.trim();
+                    if (!store.set("customThemeColors", colors)) {
+                      return "Enter a hex color (#rgb or #rrggbb, optional alpha)";
+                    }
+                    store.set("customTheme", true);
+                    return undefined;
+                  },
+                },
+              }),
+          })),
+        ],
+      },
+      {
+        title: "background",
+        rows: [
+          configRow(context, "customBackground"),
+          configRow(context, "customBackgroundSize"),
+        ],
+      },
+    ],
+  };
+}
+
+function dangerSection(context: SectionContext): SettingSection {
+  return {
+    id: "danger",
+    title: "danger zone",
+    groups: [
+      {
+        title: "configuration",
+        rows: (context.tools ?? []).map((command) => ({
+          id: command.id,
+          title: command.display.replace(/\.\.\.$/, "").toLowerCase(),
+          activate: () => openCommand(context, command),
+        })),
+      },
+    ],
+  };
+}
+
 /** Settings sections in the web's order. */
 export function settingSections(context: SectionContext): SettingSection[] {
   return [
@@ -363,6 +498,8 @@ export function settingSections(context: SectionContext): SettingSection[] {
     caretSection(context),
     appearanceSection(context),
     hideElementsSection(context),
+    themeSection(context),
+    dangerSection(context),
   ];
 }
 
