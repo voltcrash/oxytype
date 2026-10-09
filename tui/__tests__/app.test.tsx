@@ -9,7 +9,7 @@ describe("app shell", () => {
   test("starts on the test screen with single-line navigation hints", async () => {
     const app = await renderApp();
     const frame = await app.frame();
-    expect(frame).toContain("typing test");
+    expect(frame).toContain("^r restart");
     // Header and hints fit an 80-column terminal without wrapping.
     expect(frame).toContain(
       "oxytype   test   settings   account   leaderboards",
@@ -32,13 +32,13 @@ describe("app shell", () => {
     expect(await app.active("settings")).toBe(true);
 
     await app.escape();
-    expect(await app.frame()).toContain("typing test");
+    expect(await app.frame()).toContain("^r restart");
   });
 
   test("escape at the root screen stays put", async () => {
     const app = await renderApp();
     await app.escape();
-    expect(await app.frame()).toContain("typing test");
+    expect(await app.frame()).toContain("^r restart");
   });
 
   test("screens handle their own keys before global bindings", async () => {
@@ -49,7 +49,7 @@ describe("app shell", () => {
     await app.frame();
     await app.escape();
     await app.waitForFrame((frame) => !frame.includes("loading words"));
-    expect(await app.frame()).toContain("typing test");
+    expect(await app.frame()).toContain("^r restart");
     await config.flush();
   });
 
@@ -58,9 +58,9 @@ describe("app shell", () => {
     app.mockInput.pressKey("s", { ctrl: true });
     app.mockInput.pressKey("a", { ctrl: true });
     app.mockInput.pressKey("t", { ctrl: true });
-    expect(await app.frame()).toContain("typing test");
+    expect(await app.frame()).toContain("^r restart");
     await app.escape();
-    expect(await app.frame()).toContain("typing test");
+    expect(await app.frame()).toContain("^r restart");
   });
 
   test("ctrl+c quits from any screen", async () => {
@@ -74,11 +74,14 @@ describe("app shell", () => {
   test("reflects config changes on the test screen", async () => {
     const config = await openConfigStore(join(await tempDir(), "config.json"));
     const app = await renderApp({ config });
-    expect(await app.frame()).toContain("30s · english");
+    expect(await app.frame()).toContain("english");
+    expect(await app.active("time")).toBe(true);
+    expect(await app.active("30")).toBe(true);
 
     config.set("mode", "words");
     config.set("words", 25);
-    expect(await app.frame()).toContain("25 words · english");
+    expect(await app.active("words")).toBe(true);
+    expect(await app.active("25")).toBe(true);
     await config.flush();
   });
 });

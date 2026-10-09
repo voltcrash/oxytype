@@ -107,7 +107,7 @@ describe("Stage G screens", () => {
       ),
     ]).toEqual(["tui", "web"]);
     app.mockInput.pressKey("t", { ctrl: true });
-    expect(await app.frame()).toContain("typing test");
+    expect(await app.frame()).toContain("^r restart");
   });
   test("paginates zero-based boards and opens the selected public profile", async () => {
     const client = await server((url) => {

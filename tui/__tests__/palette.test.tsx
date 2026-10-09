@@ -77,7 +77,7 @@ describe("command palette", () => {
     await app.escape();
     expect(await app.frame()).not.toContain("type to search");
     // Escape no longer belongs to the palette.
-    expect(await app.frame()).toContain("typing test");
+    expect(await app.frame()).toContain("^r restart");
     await config.flush();
   });
 

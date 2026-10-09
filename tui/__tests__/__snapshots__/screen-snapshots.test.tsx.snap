@@ -4,24 +4,24 @@ exports[`OpenTUI screen snapshots ready, typing and result at 80x24: ready 1`] =
 "
  oxytype   test   settings   account   leaderboards   history       serika dark
 
- typing test
+          punct numbers │ time words quote zen custom │ 10 25 50 100 2
 
- time  [words]  quote  zen  custom  punctuation  numbers
 
- 2 words · english
 
- 0/2
+
+
+
+ 0/2                                                                    english
 
  cat dog
 
 
- F2 mode · F3 punctuation · F4 numbers · F5/F6 amount
-
- ^r restart · F7 repeat · F8 finish
 
 
 
 
+
+ ^r restart  F7 repeat  F8 finish  F2 mode  F3 punct  F4 numbers  F5/F6 length
 
  esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 
@@ -116,20 +116,20 @@ exports[`OpenTUI screen snapshots compact ready and result at 80x20: compact rea
 "
  oxytype   test   settings   account   leaderboards   history       serika dark
 
- typing test
+          punct numbers │ time words quote zen custom │ 10 25 50 100 2
 
- time  [words]  quote  zen  custom  punctuation  numbers
 
- 2 words · english
 
- 0/2
+
+ 0/2                                                                    english
 
  cat dog
 
 
- F2 mode · F3 punctuation · F4 numbers · F5/F6 amount
 
- ^r restart · F7 repeat · F8 finish
+
+
+ ^r restart  F7 repeat  F8 finish  F2 mode  F3 punct  F4 numbers  F5/F6 length
 
  esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 

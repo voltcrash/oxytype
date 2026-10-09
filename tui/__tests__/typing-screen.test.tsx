@@ -43,8 +43,7 @@ test("completes words-10, displays core results, saves once and restarts", async
   await app.escape();
   app.mockInput.pressEnter();
   await app.waitForFrame(
-    (frame) =>
-      frame.includes("typing test") && !frame.includes("loading words"),
+    (frame) => frame.includes("^r restart") && !frame.includes("loading words"),
   );
   expect(await app.frame()).toContain("0/10");
   expect(app.renderer.getCursorState().visible).toBe(true);
@@ -62,22 +61,17 @@ test("changes offline modes and respects the live stats configuration", async ()
   expect(await app.frame()).toContain("0 wpm");
   expect(await app.frame()).toContain("100% acc");
   app.mockInput.pressKey("F2");
-  await app.waitForFrame(
-    (frame) =>
-      frame.includes("[words]") &&
-      frame.includes("25 words") &&
-      !frame.includes("loading words"),
+  await app.waitFor(
+    async () => (await app.active("words")) && (await app.active("25")),
   );
   app.mockInput.pressKey("F5");
-  await app.waitForFrame(
-    (frame) => frame.includes("10 words") && !frame.includes("loading words"),
-  );
+  await app.waitFor(async () => await app.active("10"));
   app.mockInput.pressKey("F3");
   app.mockInput.pressKey("F4");
   expect(config.config.punctuation).toBe(true);
   expect(config.config.numbers).toBe(true);
   app.resize(100, 24);
-  expect(await app.frame()).toContain("typing test");
+  expect(await app.frame()).toContain("^r restart");
   await config.flush();
 });
 
@@ -102,7 +96,7 @@ test("finishes the current words test when a server snapshot changes the next te
     await app.renderOnce();
     if (index === 4) {
       config.replace({ mode: "time", time: 60 });
-      expect(await app.frame()).toContain("10 words");
+      expect(await app.frame()).toContain("0/10");
     }
   }
   await app.waitForFrame((frame) => frame.includes("enter next test"));
