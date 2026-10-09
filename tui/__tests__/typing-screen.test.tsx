@@ -76,3 +76,37 @@ test("changes offline modes and respects the live stats configuration", async ()
   expect(await app.frame()).toContain("typing test");
   await config.flush();
 });
+
+test("finishes the current words test when a server snapshot changes the next test", async () => {
+  const config = await openConfigStore(join(await tempDir(), "config.json"));
+  config.set("mode", "words");
+  config.set("words", 10);
+  let clock = 0;
+  const text = "the quick brown fox jumps over the lazy dog again";
+  const words = text
+    .split(" ")
+    .map((word, index) => word + (index === 9 ? "" : " "));
+  const history = createHistoryStore();
+  const app = await renderApp({
+    config,
+    history,
+    testOptions: { words, now: () => clock, schedule: false },
+  });
+  for (const [index, char] of Array.from(text).entries()) {
+    clock += 180;
+    app.mockInput.pressKey(char);
+    await app.renderOnce();
+    if (index === 4) {
+      config.replace({ mode: "time", time: 60 });
+      expect(await app.frame()).toContain("10 words");
+    }
+  }
+  await app.waitForFrame((frame) => frame.includes("enter next test"));
+  expect(history.entries()[0]?.result).toMatchObject({
+    mode: "words",
+    mode2: "10",
+    acc: 100,
+  });
+  expect(config.config.mode).toBe("time");
+  await config.flush();
+});
