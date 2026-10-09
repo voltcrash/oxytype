@@ -1,19 +1,27 @@
-import type { RGBA, TextChunk, TextRenderable } from "@opentui/core";
+import type {
+  BoxRenderable,
+  RGBA,
+  TextChunk,
+  TextRenderable,
+} from "@opentui/core";
 
 import { StyledText, TextAttributes } from "@opentui/core";
-import { createEffect, createMemo, Index } from "solid-js";
+import { useRenderer } from "@opentui/solid";
+import { createEffect, createMemo, Index, onCleanup } from "solid-js";
 
 import type { TerminalTheme } from "../theme/theme";
-import type { Cell, LineWindow, WordsLayout } from "./layout";
+import type { Cell, LineWindow, Position, WordsLayout } from "./layout";
 import type { LetterColorConfig } from "./letter-colors";
 
 import { useConfig } from "../config/store";
 import { useTheme } from "../theme/theme";
+import { terminalCaretStyle } from "./caret";
 import { cellColor } from "./letter-colors";
 
 export type WordsProps = {
   layout: WordsLayout;
   window: LineWindow;
+  caret?: Position;
 };
 
 type CellStyle = { fg: RGBA; attributes: number };
@@ -50,12 +58,43 @@ function lineContent(
 }
 
 export function Words(props: WordsProps) {
+  const renderer = useRenderer();
+  const theme = useTheme();
+  const { config } = useConfig();
+  let box!: BoxRenderable;
   const lines = createMemo(() =>
     props.layout.lines.slice(props.window.start, props.window.end),
   );
 
+  const paintCaret = (): void => {
+    const caret = props.caret;
+    const row =
+      caret === undefined ? -1 : (caret.line - props.window.start) * 2;
+    const visible = config.caretStyle !== "off" && row >= 0 && row < box.height;
+    renderer.setCursorStyle({
+      style: terminalCaretStyle(config.caretStyle),
+      blinking: false,
+    });
+    renderer.setCursorColor(theme().colors.caret);
+    renderer.setCursorPosition(
+      box.x + Math.min(caret?.column ?? 0, Math.max(0, box.width - 1)) + 1,
+      box.y + Math.max(0, row) + 1,
+      visible,
+    );
+  };
+  onCleanup(() => renderer.setCursorPosition(0, 0, false));
+
   return (
-    <box flexDirection="column" gap={1}>
+    <box
+      ref={(node) => {
+        box = node;
+      }}
+      flexDirection="column"
+      gap={1}
+      width="100%"
+      flexShrink={0}
+      renderAfter={() => paintCaret()}
+    >
       <Index each={lines()}>{(cells) => <WordLine cells={cells()} />}</Index>
     </box>
   );
