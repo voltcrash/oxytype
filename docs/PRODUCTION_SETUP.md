@@ -169,6 +169,10 @@ the new attempt's release planning executes. An older snapshot cannot deploy ove
 already released commits. A date tag belonging to another commit or a conflicting
 manual release stops the workflow before deployment.
 
+After merging a fix for a failed release, start a new **Production release** run
+from **main** in Actions, or run `gh workflow run production-release.yml --ref main`.
+Rerunning the old failed run retains its original snapshot and cannot pick up the fix.
+
 GitHub's scheduler can run late or drop jobs under load; 00:17 UTC is the requested
 trigger time, not an exact-time guarantee. See [GitHub scheduling behavior](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).
 
