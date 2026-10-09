@@ -7,6 +7,7 @@ import { ResultChart } from "../results/chart";
 import { useHistory } from "../results/history";
 import { useUploads } from "../results/upload";
 import { useRouter } from "../router/router";
+import { contentWidth } from "../shell/layout";
 import { useScreenKeys } from "../shell/screen-keys";
 import { useTypingTest, type FinishedTest } from "../test/typing-test";
 import { useTheme } from "../theme/theme";
@@ -56,8 +57,6 @@ export function ResultScreen() {
     }
   });
   const showChart = (): boolean => dimensions().height >= 22;
-  const columnWidth = (): number =>
-    Math.min(dimensions().width, 126) - (dimensions().width >= 100 ? 6 : 2);
   const big = (finished: FinishedTest) => ({
     speed: format().typingSpeed(finished.result.wpm),
     accuracy: format().accuracy(finished.result.acc),
@@ -129,7 +128,9 @@ export function ResultScreen() {
               <Show when={showChart()}>
                 <ResultChart
                   test={finished()}
-                  width={columnWidth() - bigWidth(finished()) - 4}
+                  width={
+                    contentWidth(dimensions().width) - bigWidth(finished()) - 4
+                  }
                   height={dimensions().height >= 32 ? 8 : 6}
                   startAtZero={config.startGraphsAtZero}
                 />

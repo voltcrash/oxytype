@@ -10,6 +10,7 @@ import {
 
 import { useConfig } from "../config/store";
 import { useRouter } from "../router/router";
+import { contentWidth } from "../shell/layout";
 import { useScreenKeys } from "../shell/screen-keys";
 import { Keymap } from "../test/keymap";
 import { caretSlot, layoutWords, lineWindow, tapeWindow } from "../test/layout";
@@ -58,13 +59,11 @@ export function TestScreen() {
       : store.config;
   const tape = (): boolean => store.config.tapeMode !== "off";
   const running = (): boolean => test.status() === "running";
-  /** Shell column minus its side padding and the caret's spare cell. */
+  /** The content column minus the caret's spare cell. */
   const available = (): number =>
     Math.max(
       1,
-      Math.min(dimensions().width, 120 + (dimensions().width >= 100 ? 6 : 2)) -
-        (dimensions().width >= 100 ? 6 : 2) -
-        (store.config.showAllLines ? 2 : 1),
+      contentWidth(dimensions().width) - (store.config.showAllLines ? 2 : 1),
     );
   /** Columns for words: a readable measure unless max line width says otherwise. */
   const lineWidth = (): number =>

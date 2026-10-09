@@ -17,13 +17,12 @@ import { KeyHints } from "../ui/key-hints";
 import { StyledLine } from "../ui/styled";
 import { Tabs } from "../ui/tabs";
 import { globalBindings, paletteBindings, quitBinding } from "./keymap";
+import { maxContentWidth, sidePadding } from "./layout";
 import { KeyDispatcherContext } from "./screen-keys";
 
 const navScreens = globalBindings.flatMap((it) =>
   it.action.type === "open" ? [it.action.screen] : [],
 );
-/** Wide enough for settings rows; wider terminals centre the column. */
-const maxContentWidth = 120;
 const hintBindings = [
   ...globalBindings,
   ...paletteBindings.slice(0, 1),
@@ -96,7 +95,6 @@ export function Shell(props: ParentProps<{ onQuit: () => void }>) {
   /** Like the web's focus mode: chrome steps back while typing. */
   const focused = (): boolean =>
     router.current() === "test" && test.status() === "running";
-  const sidePadding = (): number => (dimensions().width >= 100 ? 3 : 1);
 
   return (
     <box
@@ -105,8 +103,8 @@ export function Shell(props: ParentProps<{ onQuit: () => void }>) {
       height="100%"
       paddingTop={1}
       paddingBottom={1}
-      paddingLeft={sidePadding()}
-      paddingRight={sidePadding()}
+      paddingLeft={sidePadding(dimensions().width)}
+      paddingRight={sidePadding(dimensions().width)}
       alignItems="center"
       backgroundColor={colors().bg}
     >
