@@ -13,25 +13,48 @@ export type LoadedLanguage = {
   language: LanguageObject;
   /** Set when the configured language was unavailable offline. */
   missing?: Language;
+  missingQuotes?: boolean;
 };
 
 export type TestSources = {
-  loadLanguage: (language: Language) => Promise<LoadedLanguage>;
+  loadLanguage: (
+    language: Language,
+    quoteLengths?: number[],
+  ) => Promise<LoadedLanguage>;
   quotes: QuotesController;
 };
 
 export function createTestSources(fetchJson: FetchJson): TestSources {
-  const languages = createLanguageLoader({ fetchJson });
+  let languages = createLanguageLoader({ fetchJson });
+  const quotes = new QuotesController({ fetchJson, getSnapshot: () => null });
   return {
-    loadLanguage: async (language) => {
+    loadLanguage: async (language, quoteLengths) => {
       const loaded = await tryCatch(languages.getLanguage(language));
-      if (loaded.error === null) return { language: loaded.data };
-      if (!(loaded.error instanceof AssetUnavailableError)) throw loaded.error;
+      if (loaded.error === null) {
+        if (quoteLengths === undefined) return { language: loaded.data };
+        const quoteLanguage = language.startsWith("swiss_german")
+          ? "german"
+          : language;
+        const collection = await quotes.getQuotes(quoteLanguage, quoteLengths);
+        if (collection.length > 0) {
+          quotes.updateQuoteQueue(quoteLengths);
+          return { language: loaded.data };
+        }
+      } else if (!(loaded.error instanceof AssetUnavailableError)) {
+        throw loaded.error;
+      }
+      // Core memoizes failures; a new loader allows a later reconnect to retry.
+      languages = createLanguageLoader({ fetchJson });
+      if (quoteLengths !== undefined) {
+        await quotes.getQuotes(fallbackLanguage, quoteLengths);
+        quotes.updateQuoteQueue(quoteLengths);
+      }
       return {
         language: await languages.getLanguage(fallbackLanguage),
         missing: language,
+        missingQuotes: loaded.error === null && quoteLengths !== undefined,
       };
     },
-    quotes: new QuotesController({ fetchJson, getSnapshot: () => null }),
+    quotes,
   };
 }

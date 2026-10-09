@@ -251,13 +251,16 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
     try {
       if (!repeated) {
         const snapshot = snapshotConfig();
-        const loaded = await sources.loadLanguage(snapshot.language);
+        const loaded = await sources.loadLanguage(
+          snapshot.language,
+          snapshot.mode === "quote" ? snapshot.quoteLength : undefined,
+        );
         if (version !== generation || disposed) return;
         snapshot.language = loaded.language.name;
         setConfig(snapshot);
         if (loaded.missing !== undefined) {
           setNotice(
-            `${loaded.missing} is not available offline; using english`,
+            `${loaded.missing}${loaded.missingQuotes === true ? " quotes" : ""} is not available offline; using english`,
           );
         }
         if (store.config.funbox.length > 0) {
