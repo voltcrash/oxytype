@@ -37,7 +37,8 @@ these modules. `config/metadata` holds setting labels, descriptions, groups,
 option visibility and value/override/block rules; clients add icons and show
 block reasons. `config/funbox-validation` checks funbox/config compatibility;
 `config/setter` resolves one change, including dependent settings, without
-applying it.
+applying it. `command-matching` holds the command palette's word-prefix
+filtering.
 
 `format`, `typing-speed-units` and `live-stats` share the web's number/unit,
 timer/progress and blind-mode display rules. `quick-restart` shares long-test
