@@ -9,11 +9,13 @@ import { createAssetSource } from "./assets/source";
 import { openConfigStore } from "./config/store";
 import { openHistoryStore } from "./results/history";
 import { resolvePaths } from "./storage/paths";
+import { openTextLibrary } from "./storage/texts";
 import { createTestSources } from "./test/sources";
 
 const paths = resolvePaths();
 const config = await openConfigStore(join(paths.config, "config.json"));
 const history = await openHistoryStore(join(paths.data, "history.json"));
+const texts = await openTextLibrary(join(paths.data, "custom-texts.json"));
 const settings = await openNetworkSettings(join(paths.config, "network.json"));
 const account = await openAccount({ paths, settings, config });
 const renderer = await createCliRenderer({ exitOnCtrlC: false });
@@ -26,7 +28,11 @@ async function quit(): Promise<void> {
   account.stop();
   const writes = [
     ...accountWrites,
-    ...(await Promise.allSettled([config.flush(), history.flush()])),
+    ...(await Promise.allSettled([
+      config.flush(),
+      history.flush(),
+      texts.flush(),
+    ])),
   ];
   renderer.destroy();
   for (const write of writes) {
@@ -44,6 +50,7 @@ await render(
       history={history}
       account={account}
       testOptions={{
+        texts,
         sources: createTestSources(
           createAssetSource({
             cacheDir: paths.cache,

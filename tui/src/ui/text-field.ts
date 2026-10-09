@@ -26,7 +26,7 @@ function wordStart(characters: string[], cursor: number): number {
 /** Single-line editing state driven by screen key handlers. */
 export function createTextField(
   initial = "",
-  options: { maxLength?: number } = {},
+  options: { maxLength?: number; multiline?: boolean } = {},
 ): TextField {
   const [value, setValue] = createSignal(initial);
   const [cursor, setCursor] = createSignal(chars(initial).length);
@@ -41,7 +41,11 @@ export function createTextField(
   }
   function splice(start: number, end: number, text: string): void {
     const current = chars(value());
-    const inserted = chars(text.replace(/[\r\n\t]+/g, " "));
+    const inserted = chars(
+      options.multiline === true
+        ? text.replace(/\r\n?/g, "\n")
+        : text.replace(/[\r\n\t]+/g, " "),
+    );
     set(
       [...current.slice(0, start), ...inserted, ...current.slice(end)].join(""),
       start + inserted.length,
@@ -79,12 +83,20 @@ export function createTextField(
       } else if (event.name === "end" || (event.ctrl && event.name === "e")) {
         setCursor(current.length);
       } else if (
+        options.multiline === true &&
+        (event.name === "return" || event.name === "tab")
+      ) {
+        splice(at, at, event.name === "return" ? "\n" : "\t");
+      } else if (
         !event.ctrl &&
         !event.meta &&
         (event.name === "space" ||
           (event.sequence !== "" &&
             Array.from(event.sequence).every(
-              (char) => char.charCodeAt(0) >= 32 && char.charCodeAt(0) !== 127,
+              (char) =>
+                (options.multiline === true &&
+                  (char === "\n" || char === "\t" || char === "\r")) ||
+                (char.charCodeAt(0) >= 32 && char.charCodeAt(0) !== 127),
             )))
       ) {
         splice(at, at, event.name === "space" ? " " : event.sequence);

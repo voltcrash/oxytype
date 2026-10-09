@@ -4,7 +4,6 @@ import type {
   CustomTextSettings,
   IncompleteTest,
 } from "@oxytype/schemas/results";
-import { defaultCustomTextSettings } from "@oxytype/typing-core/custom-text";
 import {
   getAccuracy,
   getIncompleteTestSeconds,
@@ -38,6 +37,8 @@ import {
 } from "solid-js";
 import { unwrap } from "solid-js/store";
 
+import { createTextLibrary, type TextLibrary } from "../storage/texts";
+import { CustomTextSettingsSchema } from "@oxytype/schemas/results";
 import type { ConfigStore } from "../config/store";
 import type { TestSources } from "./sources";
 import type { UploadIdentity } from "../auth/identity";
@@ -57,6 +58,7 @@ export type FinishedTest = {
 export type TypingTestOptions = {
   store: ConfigStore;
   sources: TestSources;
+  texts?: TextLibrary;
   customText?: CustomTextSettings;
   /** Deterministic words, e.g. for a recorded input fixture. */
   words?: string[];
@@ -70,6 +72,8 @@ export type TypingTestOptions = {
 };
 export type TypingTest = {
   sources: TestSources;
+  texts: TextLibrary;
+  setCustomText: (settings: CustomTextSettings) => Promise<void>;
   selectQuote: (language: Config["language"], id: number) => Promise<void>;
   status: Accessor<TestStatus>;
   notice: Accessor<string | undefined>;
@@ -97,9 +101,8 @@ export type TypingTest = {
 
 export function createTypingTest(options: TypingTestOptions): TypingTest {
   const { store, sources } = options;
-  const customText = structuredClone(
-    options.customText ?? defaultCustomTextSettings,
-  );
+  const texts = options.texts ?? createTextLibrary();
+  const customText = structuredClone(options.customText ?? texts.current());
   const now = options.now ?? (() => performance.now());
   const dateNow = options.dateNow ?? (() => Date.now());
   const [status, setStatus] = createSignal<TestStatus>("loading");
@@ -482,6 +485,15 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
   const ready = load();
   return {
     sources,
+    texts,
+    setCustomText: async (settings) => {
+      const next = CustomTextSettingsSchema.parse(settings);
+      Object.assign(customText, structuredClone(next));
+      texts.setCurrent(next);
+      await texts.flush();
+      store.set("mode", "custom");
+      await restart();
+    },
     selectQuote: async (language, id) => {
       selectedQuoteId = id;
       store.set("language", language);

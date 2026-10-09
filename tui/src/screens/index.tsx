@@ -3,6 +3,7 @@ import type { Component } from "solid-js";
 import type { ScreenId } from "../router/screens";
 
 import { AccountScreen } from "./account";
+import { CustomScreen } from "./custom";
 import { HistoryScreen } from "./history";
 import { LeaderboardsScreen } from "./leaderboards";
 import { PresetsScreen } from "./presets";
@@ -23,5 +24,6 @@ export const screens: Record<ScreenId, Component> = {
   presets: PresetsScreen,
   profile: ProfileScreen,
   quotes: QuotesScreen,
+  custom: CustomScreen,
   leaderboards: LeaderboardsScreen,
 };

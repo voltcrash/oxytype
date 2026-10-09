@@ -9,6 +9,7 @@ const screenIds = [
   "presets",
   "profile",
   "quotes",
+  "custom",
 ] as const;
 
 export type ScreenId = (typeof screenIds)[number];
@@ -24,4 +25,5 @@ export const screenTitles: Record<ScreenId, string> = {
   presets: "presets",
   profile: "profile",
   quotes: "quotes",
+  custom: "custom text",
 };
