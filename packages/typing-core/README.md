@@ -33,7 +33,9 @@ commit separators; omit the last separator for a finite test), or call
 `config/default-config` and `config/migrate` provide the web default config and
 `migrateConfig` (legacy values, schema repair, default merge). `themes` holds the
 built-in palettes and custom-theme colour conversion. The frontend re-exports
-these modules.
+these modules. `config/metadata` holds setting labels, descriptions, groups,
+option visibility and value/override/block rules; clients add icons and show
+block reasons. `config/funbox-validation` checks funbox/config compatibility.
 
 `format`, `typing-speed-units` and `live-stats` share the web's number/unit,
 timer/progress and blind-mode display rules. `quick-restart` shares long-test
