@@ -908,9 +908,15 @@ importers:
       '@opentui/solid':
         specifier: 0.5.10
         version: 0.5.10(solid-js@1.9.12)(supports-color@10.2.2)(typescript@7.0.2)(web-tree-sitter@0.25.10)
+      '@oxytype/util':
+        specifier: workspace:*
+        version: link:../packages/util
       solid-js:
         specifier: 1.9.12
         version: 1.9.12
+      zod:
+        specifier: 4.6.5
+        version: 4.6.5
     devDependencies:
       '@oxytype/typescript-config':
         specifier: workspace:*
