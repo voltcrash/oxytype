@@ -173,6 +173,8 @@ if (process.env.FIXTURE_FAIL_BUILD === target) process.exit(1);
       BACKEND_URL: "https://staging.example.test/api",
       TURNSTILE_SITE_KEY: "staging-site-key",
       AUTH_PROVIDERS: "google",
+      BETTER_AUTH_SECRET: undefined,
+      TURNSTILE_SECRET_KEY: undefined,
     });
     expect(result.status, result.stdout + result.stderr).toBe(0);
     for (const build of builds()) {
@@ -184,5 +186,32 @@ if (process.env.FIXTURE_FAIL_BUILD === target) process.exit(1);
       expect(build.authSecret).toBeUndefined();
       expect(build.turnstileSecret).toBeUndefined();
     }
+  }, 30_000);
+
+  it.each([
+    ["frontend", "build-fe", ["frontend"]],
+    ["backend", "build-be", ["frontend", "backend"]],
+  ])(
+    "stops and reports a failed %s build",
+    (target, script, expected) => {
+      const result = run({ FIXTURE_FAIL_BUILD: target });
+      expect(result.error).toBeUndefined();
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain(
+        `${script} failed; production was not deployed`,
+      );
+      expect(builds().map(({ target: built }) => built)).toEqual(expected);
+    },
+    30_000,
+  );
+
+  it("fails closed when pnpm cannot start", () => {
+    const result = run({ PATH: root });
+    expect(result.error).toBeUndefined();
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      "build-fe failed; production was not deployed",
+    );
+    expect(builds()).toEqual([]);
   }, 30_000);
 });
