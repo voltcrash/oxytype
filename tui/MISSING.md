@@ -21,7 +21,7 @@ the web client. Browser handoffs are approximations requiring a browser.
 | Built-in themes, favorites and active custom colors | ported | Shared palettes, favorite/light/dark rotation, color editor; alpha/cloud/automatic limitations below |
 | Account login/session/logout | ported | Device consent, bearer auth, secure credentials, expiry/reconnect and revocation; browser owns consent and account administration |
 | Profile search, account/profile stats and PBs | ported | Username lookup, TUI/web selection, text stats and paginated time/words PBs; rich views below |
-| Result history, filters and details | ported | Local/TUI/web history; direct filters, selected-result metrics and remote WPM sparkline; mutations/exports below |
+| Result history, filters and details | ported | Local/TUI/web history; direct filters, selected-result metrics and braille WPM/raw chart; mutations/exports below |
 | Tags and presets | ported | CRUD, active tags, shared preset groups and apply; tag PB tables below |
 | All-time, daily and weekly XP leaderboards | ported | TUI/web, language/mode, pagination, rank and profile navigation; presentation below |
 | Quote search/favorites and custom texts | ported | ID/text/source search, typing selected quotes, favorites, multiline editor and saved texts; moderation/editor limitations below |
@@ -46,7 +46,7 @@ the web client. Browser handoffs are approximations requiring a browser.
 | Typo hints below letters | approximated | Cell grid | Both inline and below hints replace the incorrect target letter |
 | Separate word-error underline colour | approximated | Terminals underline using the foreground colour | Underlined committed words retain their letter colours |
 | Timer/live-stat sizes and bars | approximated | Fixed terminal cells | Numeric text; shared flash visibility, speed-unit and blind-mode rules |
-| Result chart interaction | approximated | Terminal text and limited columns | Block sparklines for WPM/raw/errors; bucket long series, preserve error peaks; hide charts below 22 rows |
+| Result chart interaction | approximated | Terminal text and limited columns | Braille line chart for WPM/raw with error marks; hide charts below 22 rows |
 | Raw terminal key holds | approximated | Legacy protocols omit key releases | Real press spacing; core zero-duration placeholders; record Kitty releases when available |
 | Modified restart/finish keys | approximated | Legacy terminals may encode Shift+Enter/Esc like the plain key | Ctrl+R restart, F7 repeat and F8 finish alternatives |
 | Online/tag PB pace | approximated | Pace queries use locally stored results | Matching local PB, tag PB, average, daily, last and custom pace; server PBs are displayed on account/profile screens but do not drive pace |
@@ -70,7 +70,7 @@ the web client. Browser handoffs are approximations requiring a browser.
 | Captcha signup/reports/quote submission | browser handoff | Existing browser forms own captcha | Palette actions retain the URL for manual copy; links preserve quote language/ID or username through browser login, then open the form |
 | Historical replay and replay sound/animation | approximated / missing | Saved history stores result metrics without raw event logs | Replay the latest in-memory test, including corrections/regressions, with pause, seek and speed controls; no replay after process exit |
 | Web palette hotkey | approximated | OS/terminal shortcuts vary | Ctrl+P/Ctrl+K open the terminal palette; `commandPaletteHotkey` stays synced for web |
-| Result word history, per-key timing and detailed diagnostics | missing | Result screen provides summary metrics and sparklines | Latest-test replay and practice commands; inspect rich word/key breakdowns on web |
+| Result word history, per-key timing and detailed diagnostics | missing | Result screen provides summary metrics and a braille chart | Latest-test replay and practice commands; inspect rich word/key breakdowns on web |
 | Result crown, daily rank/reward panels and quote action buttons | approximated | Compact terminal result screen | Upload/PB text; leaderboards, quotes and browser handoffs live on separate screens |
 | History deletion, retagging, CSV export and PB reset | missing | History screen is read-only; tag CRUD does not retag saved results | Use web account controls; local `history.json` retains full metrics |
 | Share test settings/results and screenshot watermark | missing | Browser share URLs/canvas controls have no terminal equivalent | Config file export; use web share/screenshot controls |
