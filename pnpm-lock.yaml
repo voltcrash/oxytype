@@ -908,6 +908,12 @@ importers:
       '@opentui/solid':
         specifier: 0.5.10
         version: 0.5.10(solid-js@1.9.12)(supports-color@10.2.2)(typescript@7.0.2)(web-tree-sitter@0.25.10)
+      '@oxytype/schemas':
+        specifier: workspace:*
+        version: link:../packages/schemas
+      '@oxytype/typing-core':
+        specifier: workspace:*
+        version: link:../packages/typing-core
       '@oxytype/util':
         specifier: workspace:*
         version: link:../packages/util
