@@ -211,26 +211,26 @@ exports[`OpenTUI screen snapshots settings and palette search: behavior settings
 exports[`OpenTUI screen snapshots settings and palette search: theme palette 1`] = `
 "
  oxytype   test   settings   account   leaderboards   history       serika dark
-  ┌──────────────────────────────────────────────────────────────────────────┐
-  │ > theme                                                                  │
-  │   Theme › 8008                                                           │
- t│   Theme › 80s after dark                                                 │─
- ▌│   Theme › 9009                                                           │
-  │   Theme › aether                                                         │
-  │   Theme › alduin                                                         │
-  │   Theme › alpine                                                         │
-  │   Theme › anti hero                                                      │
-  │   Theme › arch                                                           │
-  │   Theme › aurora                                                         │
- s│   Theme › beach                                                          │─
-  │   Theme › bento                                                          │
-  │   Theme › bingsu                                                         │
-  │   Theme › bliss                                                          │
- l│   Theme › blue dolphin                                                   │─
- N│ 1/197                                                                    │
- s│ enter select · tab/arrows move · esc back                                │
- i└──────────────────────────────────────────────────────────────────────────┘
- ↑↓ select  ←→ change  enter edit  r reset  / search  tab section
+
+  behavior  input  sound  caret  appearance  hide elements  theme  danger zone
+  ╭─ commands ───────────────────────────────────────────────────────────────╮
+ t│ > theme                                                                  │─
+ ▌│ ──────────────────────────────────────────────────────────────────────── │
+  │ ▌  Theme › 8008                                                          │
+  │    Theme › 80s after dark                                                │
+  │    Theme › 9009                                                          │
+  │    Theme › aether                                                        │
+  │    Theme › alduin                                                        │
+  │    Theme › alpine                                                        │
+ s│    Theme › anti hero                                                     │─
+  │    Theme › arch                                                          │
+  │    Theme › aurora                                                        │
+  │    Theme › beach                                                         │
+ l│    Theme › bento                                                         │─
+ N│    Theme › bingsu                                                        │
+ s│ 1/197                                                                    │
+ i│ enter select  tab/↑↓ move  esc back                                      │
+ ↑╰──────────────────────────────────────────────────────────────────────────╯
  esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 
 "
