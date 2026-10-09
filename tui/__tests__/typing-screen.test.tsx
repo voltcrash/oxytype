@@ -3,6 +3,7 @@ import { join } from "node:path";
 
 import { openConfigStore } from "../src/config/store";
 import { createHistoryStore } from "../src/results/history";
+import { bigTextLines } from "../src/ui/big-text";
 import { renderApp } from "./helpers/app";
 import { tempDir } from "./helpers/temp-dir";
 
@@ -31,8 +32,8 @@ test("completes words-10, displays core results, saves once and restarts", async
     await app.renderOnce();
   }
   await app.waitForFrame((frame) => frame.includes("enter next test"));
-  expect(await app.frame()).toContain("100% acc");
-  expect(await app.frame()).toContain("characters 49/0/0/0");
+  expect(await app.frame()).toContain(bigTextLines("100%")[0]);
+  expect(await app.frame()).toContain("49/0/0/0");
   expect(history.entries()).toHaveLength(1);
   config.set("resultSaving", false);
   config.set("resultSaving", true);

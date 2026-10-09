@@ -48,7 +48,7 @@ async function screen(
         app.mockInput.pressKey(char);
         await app.renderOnce();
       }
-      await app.waitForFrame((frame) => frame.includes("100% acc"));
+      await app.waitForFrame((frame) => frame.includes("enter next test"));
     },
   };
 }

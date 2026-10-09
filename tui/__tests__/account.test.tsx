@@ -8,6 +8,7 @@ import type { AppPaths } from "../src/storage/paths";
 import { openAccount, type Account } from "../src/account";
 import { networkSettingsSchema } from "../src/api/settings";
 import { openConfigStore, type ConfigStore } from "../src/config/store";
+import { bigTextLines } from "../src/ui/big-text";
 import { renderApp } from "./helpers/app";
 import { finishedTest, identity, uploadResponse } from "./helpers/finished";
 import { tempDir } from "./helpers/temp-dir";
@@ -155,7 +156,7 @@ describe("connected account screens", () => {
         client.requests.filter((request) => request.path.endsWith("/results")),
       ).toHaveLength(1);
       expect(client.account.queue.entries()).toHaveLength(0);
-      expect(await app.frame()).toContain("100% acc");
+      expect(await app.frame()).toContain(bigTextLines("100%")[0]);
     } finally {
       await client.account.flush();
       client.account.stop();

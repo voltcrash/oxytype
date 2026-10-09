@@ -1,6 +1,6 @@
 import { useTerminalDimensions } from "@opentui/solid";
 import { Formatting } from "@oxytype/typing-core/format";
-import { Show } from "solid-js";
+import { For, Show } from "solid-js";
 
 import { useConfig } from "../config/store";
 import { ResultChart } from "../results/chart";
@@ -8,8 +8,12 @@ import { useHistory } from "../results/history";
 import { useUploads } from "../results/upload";
 import { useRouter } from "../router/router";
 import { useScreenKeys } from "../shell/screen-keys";
-import { useTypingTest } from "../test/typing-test";
+import { useTypingTest, type FinishedTest } from "../test/typing-test";
 import { useTheme } from "../theme/theme";
+import { BigText, bigTextLines } from "../ui/big-text";
+import { KeyHints, type Hint } from "../ui/key-hints";
+
+type Stat = { label: string; value: string; detail?: string };
 
 export function ResultScreen() {
   const router = useRouter();
@@ -51,9 +55,45 @@ export function ResultScreen() {
       next(true);
     }
   });
+  const showChart = (): boolean => dimensions().height >= 22;
+  const columnWidth = (): number =>
+    Math.min(dimensions().width, 126) - (dimensions().width >= 100 ? 6 : 2);
+  const big = (finished: FinishedTest) => ({
+    speed: format().typingSpeed(finished.result.wpm),
+    accuracy: format().accuracy(finished.result.acc),
+  });
+  const bigWidth = (finished: FinishedTest): number =>
+    Math.max(
+      bigTextLines(big(finished).speed)[0].length,
+      bigTextLines(big(finished).accuracy)[0].length,
+      config.typingSpeedUnit.length,
+    );
+  const stats = (finished: FinishedTest): Stat[] => [
+    {
+      label: "test type",
+      value: `${finished.result.mode} ${finished.result.mode2}`.trim(),
+      detail: finished.result.language.replaceAll("_", " "),
+    },
+    { label: "raw", value: format().typingSpeed(finished.result.rawWpm) },
+    {
+      label: "characters",
+      value: finished.result.charStats.join("/"),
+      detail: "correct/incorrect/extra/missed",
+    },
+    {
+      label: "consistency",
+      value: format().percentage(finished.result.consistency),
+    },
+    { label: "time", value: `${finished.result.testDuration.toFixed(2)}s` },
+  ];
+  const hints: Hint[] = [
+    { key: "enter", label: "next test" },
+    { key: "F7", label: "repeat" },
+    { key: "r", label: "replay" },
+    { key: "^o", label: "history" },
+  ];
   return (
-    <box flexDirection="column" gap={1} width="100%">
-      <text fg={theme().colors.main}>result</text>
+    <box flexDirection="column" width="100%" flexGrow={1} paddingBottom={1}>
       <Show
         when={test.result()}
         fallback={
@@ -61,66 +101,92 @@ export function ResultScreen() {
         }
       >
         {(finished) => (
-          <>
-            <text fg={theme().colors.main}>
-              {format().typingSpeed(finished().result.wpm)}{" "}
-              {config.typingSpeedUnit} ·{" "}
-              {format().accuracy(finished().result.acc)} acc
-            </text>
-            <text fg={theme().colors.text}>
-              raw {format().typingSpeed(finished().result.rawWpm)} · consistency{" "}
-              {format().percentage(finished().result.consistency)}
-            </text>
-            <text fg={theme().colors.sub}>
-              characters {finished().result.charStats.join("/")} ·
-              correct/incorrect/extra/missed
-            </text>
-            <text fg={theme().colors.sub}>
-              time {finished().result.testDuration.toFixed(2)}s ·{" "}
-              {finished().result.mode} {finished().result.mode2} ·{" "}
-              {finished().result.language}
-            </text>
-            <Show when={finished().challengeMessage}>
-              <text fg={theme().colors.main}>
-                {finished().challengeMessage}
-              </text>
-            </Show>
-            <Show when={finished().invalid}>
-              <text fg={theme().colors.error}>
-                not saved: {finished().failure ?? finished().invalid}
-              </text>
-            </Show>
-            <Show when={finished().invalid === undefined}>
-              <text fg={theme().colors.sub}>{saveMessage()}</text>
-              <Show when={uploads?.last()?.result === finished().result}>
-                <text
-                  fg={
-                    uploads?.last()?.state === "error"
-                      ? theme().colors.error
-                      : theme().colors.main
-                  }
-                >
-                  {uploads?.last()?.message}
-                  {uploads?.last()?.isPb === true ? " · new TUI PB" : ""}
+          <box flexDirection="column" gap={1} flexShrink={0}>
+            <box flexDirection="row" gap={4} flexShrink={0}>
+              <box
+                flexDirection={showChart() ? "column" : "row"}
+                gap={showChart() ? 0 : 4}
+                flexShrink={0}
+              >
+                <box flexDirection="column" flexShrink={0}>
+                  <text fg={theme().colors.sub}>{config.typingSpeedUnit}</text>
+                  <BigText
+                    text={big(finished()).speed}
+                    fg={theme().colors.main}
+                  />
+                </box>
+                <Show when={showChart()}>
+                  <text> </text>
+                </Show>
+                <box flexDirection="column" flexShrink={0}>
+                  <text fg={theme().colors.sub}>acc</text>
+                  <BigText
+                    text={big(finished()).accuracy}
+                    fg={theme().colors.main}
+                  />
+                </box>
+              </box>
+              <Show when={showChart()}>
+                <ResultChart
+                  test={finished()}
+                  width={columnWidth() - bigWidth(finished()) - 4}
+                  height={dimensions().height >= 32 ? 8 : 6}
+                  startAtZero={config.startGraphsAtZero}
+                />
+              </Show>
+            </box>
+            <box flexDirection="row" gap={4} flexShrink={0} flexWrap="wrap">
+              <For each={stats(finished())}>
+                {(stat) => (
+                  <box flexDirection="column" flexShrink={0}>
+                    <text fg={theme().colors.sub}>{stat.label}</text>
+                    <text fg={theme().colors.text}>{stat.value}</text>
+                    <Show
+                      when={
+                        stat.detail !== undefined && stat.label !== "characters"
+                      }
+                    >
+                      <text fg={theme().colors.sub}>{stat.detail}</text>
+                    </Show>
+                  </box>
+                )}
+              </For>
+            </box>
+            <box flexDirection="column" flexShrink={0}>
+              <Show when={finished().challengeMessage}>
+                <text fg={theme().colors.main}>
+                  {finished().challengeMessage}
                 </text>
               </Show>
-            </Show>
-            <Show when={history.notice()}>
-              {(notice) => <text fg={theme().colors.error}>{notice()}</text>}
-            </Show>
-            <Show when={dimensions().height >= 22}>
-              <ResultChart
-                test={finished()}
-                width={dimensions().width - 2}
-                startAtZero={config.startGraphsAtZero}
-              />
-            </Show>
-          </>
+              <Show when={finished().invalid}>
+                <text fg={theme().colors.error}>
+                  not saved: {finished().failure ?? finished().invalid}
+                </text>
+              </Show>
+              <Show when={finished().invalid === undefined}>
+                <text fg={theme().colors.sub}>{saveMessage()}</text>
+                <Show when={uploads?.last()?.result === finished().result}>
+                  <text
+                    fg={
+                      uploads?.last()?.state === "error"
+                        ? theme().colors.error
+                        : theme().colors.main
+                    }
+                  >
+                    {uploads?.last()?.message}
+                    {uploads?.last()?.isPb === true ? " · new TUI PB" : ""}
+                  </text>
+                </Show>
+              </Show>
+              <Show when={history.notice()}>
+                {(notice) => <text fg={theme().colors.error}>{notice()}</text>}
+              </Show>
+            </box>
+          </box>
         )}
       </Show>
-      <text fg={theme().colors.sub}>
-        enter next test · F7 repeat · r replay · ^o history
-      </text>
+      <box flexGrow={1} />
+      <KeyHints hints={hints} />
     </box>
   );
 }

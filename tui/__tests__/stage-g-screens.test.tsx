@@ -238,7 +238,7 @@ describe("Stage G screens", () => {
       app.mockInput.pressKey(char);
       await app.renderOnce();
     }
-    await app.waitForFrame((frame) => frame.includes("100% acc"));
+    await app.waitForFrame((frame) => frame.includes("enter next test"));
     app.mockInput.pressKey("r");
     expect(await app.frame()).toContain("last test replay · paused · 1×");
     app.mockInput.pressKey("END");
