@@ -1,5 +1,22 @@
 # Oxytype production release helpers
 
+## Terminal npm releases
+
+`terminal-release.js` supplies the manual
+[Terminal npm release workflow](../../.github/workflows/tui-release.yml).
+It normalizes UTC date versions to npm semver (`v26.10.04` → `26.10.4`), requires
+`next` for prereleases, verifies the workflow checkout, and checks npm for
+version collisions. An existing version from the same commit skips publication;
+an existing version from another commit fails. No website deployment is involved.
+
+The workflow runs on `main` in the `npm` environment, validates terminal/release
+tests, installs and smokes the packed artifact, then publishes `tui/dist/npm`
+with provenance. Configure npm trusted publishing or the bootstrap `NPM_TOKEN`
+as described in [the terminal guide](../../docs/TUI.md). The TUI source manifest
+stays private; publication uses the generated manifest and files whitelist.
+
+## Website production releases
+
 This package supplies the daily Cloudflare production workflow with release
 planning, changelog, date-version and site-history helpers. Deployment uses the
 explicit Wrangler production commands. See
