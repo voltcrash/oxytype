@@ -1,5 +1,5 @@
 preload = ["@opentui/solid/preload"]
 
 [test]
-preload = ["@opentui/solid/preload"]
+preload = ["@opentui/solid/preload", "./__tests__/setup.ts"]
 root = "./__tests__"

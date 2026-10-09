@@ -1,15 +1,14 @@
 import type { JSX } from "solid-js";
 
 import { testRender } from "@opentui/solid";
-import { afterEach } from "bun:test";
 
 type Setup = Awaited<ReturnType<typeof testRender>>;
 
 const active: Setup[] = [];
 
-afterEach(() => {
+export function cleanupRenderers(): void {
   for (const setup of active.splice(0)) setup.renderer.destroy();
-});
+}
 
 export async function renderTui(
   node: () => JSX.Element,

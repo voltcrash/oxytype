@@ -1,5 +1,4 @@
 import { KeyEvent } from "@opentui/core";
-import { afterEach } from "bun:test";
 import { join } from "node:path";
 import { createRoot } from "solid-js";
 
@@ -15,9 +14,9 @@ import type { ConfigStore } from "../../src/config/store";
 import { tempDir } from "./temp-dir";
 
 const disposers: (() => void)[] = [];
-afterEach(() => {
+export function cleanupTypingTests(): void {
   for (const dispose of disposers.splice(0)) dispose();
-});
+}
 
 export function key(name: string, options: Partial<KeyEvent> = {}): KeyEvent {
   return new KeyEvent({
