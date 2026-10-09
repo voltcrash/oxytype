@@ -11,6 +11,7 @@ import {
   type AuthStore,
 } from "./auth/store";
 import type { ConfigStore } from "./config/store";
+import type { Logger } from "./logging";
 import { createConfigSync, type ConfigSync } from "./config/sync";
 import { openQuoteFavorites, type QuoteFavorites } from "./results/favorites";
 import { openActiveTags, type ActiveTags } from "./results/tags";
@@ -39,6 +40,7 @@ export async function openAccount(options: {
   browser?: AuthOptions["browser"];
   poll?: AuthOptions["poll"];
   intervalMs?: number;
+  logger?: Logger;
 }): Promise<Account> {
   const credentials = await openCredentials(
     join(options.paths.data, "credentials.json"),
@@ -51,6 +53,7 @@ export async function openAccount(options: {
   const api = createApi({
     settings: options.settings,
     fetch: options.fetch,
+    logger: options.logger,
     token: () => credentials.get()?.accessToken,
     onUnauthorized: () => {
       rawAuth.invalidate();
@@ -63,6 +66,7 @@ export async function openAccount(options: {
     credentials,
     browser: options.browser,
     poll: options.poll,
+    onError: options.logger?.error,
   });
   const identity = (): UploadIdentity | undefined => {
     const credential = credentials.get();

@@ -7,6 +7,7 @@ import type { EndpointMetadata } from "@oxytype/contracts/util/api";
 import { initClient, isZodType } from "@ts-rest/core";
 
 import type { NetworkSettings } from "./settings";
+import type { Logger } from "../logging";
 
 export type Fetch = (
   input: string | URL | Request,
@@ -48,6 +49,7 @@ export type ApiOptions = {
   token?: () => string | undefined;
   fetch?: Fetch;
   onUnauthorized?: () => void;
+  logger?: Logger;
 };
 
 // oxlint-disable-next-line explicit-function-return-type -- infer the contracts client
@@ -58,6 +60,8 @@ export function createApi(options: ApiOptions) {
     init: RequestInit = {},
     authenticated = true,
   ): Promise<ApiResponse> {
+    const started = Date.now();
+    let status: number | undefined;
     const headers = new Headers(init.headers);
     headers.set("accept", "application/json");
     const token = authenticated ? options.token?.() : undefined;
@@ -74,6 +78,7 @@ export function createApi(options: ApiOptions) {
           ? AbortSignal.any([timeout.signal, init.signal])
           : timeout.signal,
       });
+      status = response.status;
       const compatibility = response.headers.get(COMPATIBILITY_CHECK_HEADER);
       if (
         compatibility !== null &&
@@ -99,6 +104,7 @@ export function createApi(options: ApiOptions) {
       }
       return { status: response.status, body, headers: response.headers };
     } catch (error) {
+      if (!init.signal?.aborted) options.logger?.error("api.error", error);
       if (error instanceof ApiError || init.signal?.aborted) throw error;
       throw new TransportError(
         timeout.signal.aborted
@@ -108,6 +114,11 @@ export function createApi(options: ApiOptions) {
       );
     } finally {
       clearTimeout(timer);
+      options.logger?.write("debug", "api.request", {
+        method: init.method ?? "GET",
+        status,
+        durationMs: Date.now() - started,
+      });
     }
   }
   const client = initClient(contract, {

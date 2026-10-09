@@ -46,6 +46,7 @@ export type AuthOptions = {
   browser?: typeof openBrowser;
   poll?: typeof pollDeviceToken;
   now?: () => number;
+  onError?: (operation: string, error: unknown) => void;
 };
 
 export function createAuthStore(options: AuthOptions): AuthStore {
@@ -133,6 +134,7 @@ export function createAuthStore(options: AuthOptions): AuthStore {
       return true;
     } catch (error) {
       if (current !== version) return false;
+      options.onError?.("auth.check", error);
       setState(error instanceof TransportError ? "offline" : "error");
       setOnline(false);
       setNotice(
@@ -202,6 +204,7 @@ export function createAuthStore(options: AuthOptions): AuthStore {
         setNotice(undefined);
       } catch (error) {
         if (current !== version) return;
+        options.onError?.("auth.login", error);
         setDevice(undefined);
         setState("error");
         setNotice(errorMessage(error));
@@ -235,6 +238,7 @@ export function createAuthStore(options: AuthOptions): AuthStore {
         setNotice("Logged out");
       } catch (error) {
         if (current !== version) return;
+        options.onError?.("auth.logout", error);
         // Keep the credential so a failed revocation can be retried.
         setState("error");
         setNotice(
