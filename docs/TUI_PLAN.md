@@ -444,6 +444,27 @@ Browser handoffs and terminal approximations: [MISSING.md](../tui/MISSING.md).
 
 ## Stage H — Ship
 
+Implemented H1–H7 in a PR stacked on Stage G, with separate audit, snapshot,
+diagnostic, CLI, package, release, regression and documentation commits.
+
+- Full feature audit includes ported families, terminal approximations, browser
+  handoffs and omitted web controls; unsupported settings are labelled web only.
+- Eighteen OpenTUI screen snapshots cover standard/compact layouts, size
+  guidance, typing/results/replay, settings/palette, editor/funboxes/challenges,
+  guest/authenticated account, leaderboard and history views.
+- Private rotating local logs, debug request timing, validated launch flags,
+  one-shot login/logout, signal/fatal cleanup and saved-data flushing are wired.
+- `tui/dist/npm` contains the Bun launcher, compiled Solid/shared code, source
+  maps, offline assets and licenses. Installed use needs no workspace/preload.
+  npm date versions omit zero padding; release helpers check commit/version
+  collisions, and main-only publication validates the isolated package first.
+- Verification: 205 TUI tests, 520 package tests, repository lint/typecheck,
+  formatting, npm pack/install/bunx/device-auth checks and four raw PTY smokes
+  (including the isolated install). Local verification is on macOS; Linux package
+  checks are wired into CI. Windows PTY coverage remains absent. npm publication
+  requires the documented maintainer/trusted-publisher setup.
+- User/development/release guide: [TUI.md](TUI.md).
+
 ### H1. `tui/MISSING.md` audit
 
 - Walk every web feature; mark ported / approximated / missing + reason.
