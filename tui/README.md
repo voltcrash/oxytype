@@ -3,10 +3,31 @@
 `@voltcrash/oxytype` runs oxytype in a terminal with OpenTUI and Solid. It
 requires Bun; OpenTUI loads its native renderer through Bun FFI.
 
+After the first npm release, run:
+
+```sh
+bunx @voltcrash/oxytype
+bunx @voltcrash/oxytype --time 30 --punctuation
+bunx @voltcrash/oxytype login
+```
+
+Stable Bun 1.3.0+ and an 80×20 interactive terminal are required; use 80×24 for
+charts. Install persistently with `bun add --global @voltcrash/oxytype`, then
+run `oxytype --help`. Test flags update saved settings. `--debug` adds local
+request timing; private rotating logs live in the XDG data directory.
+
+Full installation, flags, controls, offline behavior and troubleshooting:
+[Terminal guide](https://github.com/voltcrash/oxytype/blob/main/docs/TUI.md).
+Feature status: [MISSING.md](MISSING.md).
+
+## Development
+
 ```sh
 pnpm dev-tui
 pnpm lint-tui
 pnpm test-tui
+pnpm build-tui
+pnpm --filter @voltcrash/oxytype package-check # isolated npm install + PTY smoke
 bun test __tests__/app.test.tsx # from tui/, after `bun run assets`
 python3 tui/scripts/smoke-pty.py # from root; Unix PTY CLI smoke
 python3 tui/scripts/smoke-account-pty.py # device/API/queue/cached-assets PTY smoke
@@ -90,14 +111,24 @@ Layouts, quote/language assets and challenge scripts download into the asset
 cache. Shared weak-spot learning and the latest replay last for this process.
 
 Stage G screens, controls, verification and shared-code changes:
-[TUI_SCREENS.md](../docs/TUI_SCREENS.md).
+[TUI_SCREENS.md](https://github.com/voltcrash/oxytype/blob/main/docs/TUI_SCREENS.md).
 
 Connection settings live in `network.json` beside `config.json`; environment
 overrides are `OXYTYPE_API_URL`, `OXYTYPE_ASSET_URL`, `OXYTYPE_TIMEOUT_MS`.
 Defaults use the official site. Account/API/storage details and verification:
-[TUI_ACCOUNT_API.md](../docs/TUI_ACCOUNT_API.md).
+[TUI_ACCOUNT_API.md](https://github.com/voltcrash/oxytype/blob/main/docs/TUI_ACCOUNT_API.md).
 
 Stage E verification and terminal approximations:
-[TUI_TYPING_TEST.md](../docs/TUI_TYPING_TEST.md).
+[TUI_TYPING_TEST.md](https://github.com/voltcrash/oxytype/blob/main/docs/TUI_TYPING_TEST.md).
+
+Build output is `tui/dist/npm`; publish that directory. The source workspace
+manifest stays private. Build bundles Solid/shared code, copies offline assets,
+preserves dependency notices and emits a Bun bin. OpenTUI core stays a pinned
+runtime dependency with optional native binaries. No workspace packages or
+Solid preload/bunfig are needed by the installed app.
+
+The main-only `tui-release.yml` workflow validates and publishes through
+`packages/release`. npm uses unpadded date semver (`26.10.4`); production tags
+retain padded dates (`v26.10.04`). Publication setup is in the terminal guide.
 
 Terminal gaps and approximations are tracked in [MISSING.md](MISSING.md).
