@@ -28,7 +28,7 @@ export function TestScreen() {
           committed: index < test.activeIndex(),
         }),
       ),
-      Math.max(1, dimensions().width - 3),
+      Math.max(1, dimensions().width - (store.config.showAllLines ? 4 : 3)),
     ),
   );
   const caret = createMemo(() =>
@@ -41,9 +41,15 @@ export function TestScreen() {
     ),
   );
   const window = createMemo(() => {
-    const view = lineWindow(layout().lines.length, caret()?.line ?? 0, false);
+    const view = lineWindow(
+      layout().lines.length,
+      caret()?.line ?? 0,
+      store.config.showAllLines,
+    );
     const count = Math.max(1, Math.floor((dimensions().height - 12) / 2));
-    return { start: view.start, end: Math.min(view.end, view.start + count) };
+    if (store.config.showAllLines) return view;
+    const start = Math.max(view.start, (caret()?.line ?? 0) - count + 1);
+    return { start, end: Math.min(view.end, start + count) };
   });
   const pace = createMemo(() => {
     const position = test.pace();
@@ -113,7 +119,35 @@ export function TestScreen() {
       store.set("numbers", !store.config.numbers);
     } else if (event.name === "f5" || event.name === "f6") {
       event.preventDefault();
-      changeAmount(store, event.name === "f5" ? -1 : 1);
+      const step = event.name === "f5" ? -1 : 1;
+      if (store.config.mode === "custom") {
+        const limit = test.customText.limit;
+        const values =
+          limit.mode === "time"
+            ? [15, 30, 60, 120, 0]
+            : limit.mode === "section"
+              ? [1, 3, 5, 10, 0]
+              : [10, 25, 50, 100, 0];
+        limit.value =
+          values[
+            (values.indexOf(limit.value) + step + values.length) % values.length
+          ] ?? 10;
+        void test.restart();
+      } else {
+        changeAmount(store, step);
+      }
+    } else if (event.name === "f9" && store.config.mode === "custom") {
+      event.preventDefault();
+      const limit = test.customText.limit;
+      limit.mode =
+        limit.mode === "word"
+          ? "time"
+          : limit.mode === "time"
+            ? "section"
+            : "word";
+      limit.value =
+        limit.mode === "time" ? 30 : limit.mode === "section" ? 1 : 10;
+      void test.restart();
     } else {
       void test.handleKey(event);
     }
@@ -137,6 +171,10 @@ export function TestScreen() {
           layout={layout()}
           window={window()}
           pace={pace()}
+          height={Math.min(
+            (window().end - window().start) * 2,
+            Math.max(2, dimensions().height - 12),
+          )}
           caret={
             test.status() === "ready" || test.status() === "running"
               ? caret()
@@ -147,6 +185,9 @@ export function TestScreen() {
       <text fg={theme().colors.sub}>
         F2 mode · F3 punctuation · F4 numbers · F5/F6 amount
       </text>
+      <Show when={store.config.mode === "custom"}>
+        <text fg={theme().colors.sub}>F9 custom limit: word/time/section</text>
+      </Show>
       <text fg={theme().colors.sub}>^r restart · F7 repeat · F8 finish</text>
     </box>
   );

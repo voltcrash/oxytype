@@ -1,5 +1,6 @@
 import type {
   BoxRenderable,
+  ScrollBoxRenderable,
   RGBA,
   TextChunk,
   TextRenderable,
@@ -23,6 +24,7 @@ export type WordsProps = {
   window: LineWindow;
   caret?: Position;
   pace?: Position;
+  height?: number;
 };
 
 type CellStyle = { fg: RGBA; attributes: number };
@@ -63,6 +65,7 @@ export function Words(props: WordsProps) {
   const theme = useTheme();
   const { config } = useConfig();
   let box!: BoxRenderable;
+  let scroll!: ScrollBoxRenderable;
   const lines = createMemo(() =>
     props.layout.lines.slice(props.window.start, props.window.end),
   );
@@ -78,7 +81,12 @@ export function Words(props: WordsProps) {
     const caret = props.caret;
     const row =
       caret === undefined ? -1 : (caret.line - props.window.start) * 2;
-    const visible = config.caretStyle !== "off" && row >= 0 && row < box.height;
+    const cursorY = box.y + row;
+    const visible =
+      config.caretStyle !== "off" &&
+      row >= 0 &&
+      cursorY >= scroll.viewport.y &&
+      cursorY < scroll.viewport.y + scroll.viewport.height;
     renderer.setCursorStyle({
       style: terminalCaretStyle(config.caretStyle),
       blinking: false,
@@ -90,36 +98,60 @@ export function Words(props: WordsProps) {
       visible,
     );
   };
+  const scrollToCaret = (): void => {
+    if (scroll === undefined || !config.showAllLines) return;
+    const requested = Math.max(
+      0,
+      ((props.caret?.line ?? 0) - props.window.start - 1) * 2,
+    );
+    const top = Math.min(
+      requested,
+      Math.max(0, scroll.scrollHeight - scroll.viewport.height),
+    );
+    if (top !== scroll.scrollTop) scroll.scrollTo(top);
+  };
   onCleanup(() => renderer.setCursorPosition(0, 0, false));
 
   return (
-    <box
+    <scrollbox
       ref={(node) => {
-        box = node;
+        scroll = node;
       }}
-      flexDirection="column"
-      gap={1}
-      width="100%"
+      height={props.height ?? lines().length * 2}
       flexShrink={0}
-      renderAfter={() => paintCaret()}
+      scrollX={false}
+      verticalScrollbarOptions={{ visible: config.showAllLines }}
+      renderBefore={() => scrollToCaret()}
     >
-      <Index each={lines()}>{(cells) => <WordLine cells={cells()} />}</Index>
-      <Show when={visiblePace()}>
-        <text
-          position="absolute"
-          left={props.pace?.column ?? 0}
-          top={((props.pace?.line ?? 0) - props.window.start) * 2 + 1}
-          fg={theme().colors.sub}
-        >
-          {config.paceCaretStyle === "block" ||
-          config.paceCaretStyle === "outline"
-            ? "▣"
-            : config.paceCaretStyle === "underline"
-              ? "_"
-              : "▏"}
-        </text>
-      </Show>
-    </box>
+      <box
+        ref={(node) => {
+          box = node;
+        }}
+        flexDirection="column"
+        gap={1}
+        width="100%"
+        flexShrink={0}
+        height={lines().length * 2}
+        renderAfter={() => paintCaret()}
+      >
+        <Index each={lines()}>{(cells) => <WordLine cells={cells()} />}</Index>
+        <Show when={visiblePace()}>
+          <text
+            position="absolute"
+            left={props.pace?.column ?? 0}
+            top={((props.pace?.line ?? 0) - props.window.start) * 2 + 1}
+            fg={theme().colors.sub}
+          >
+            {config.paceCaretStyle === "block" ||
+            config.paceCaretStyle === "outline"
+              ? "▣"
+              : config.paceCaretStyle === "underline"
+                ? "_"
+                : "▏"}
+          </text>
+        </Show>
+      </box>
+    </scrollbox>
   );
 }
 

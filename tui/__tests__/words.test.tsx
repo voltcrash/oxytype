@@ -11,6 +11,41 @@ import { renderTui } from "./helpers/render";
 import { tempDir } from "./helpers/temp-dir";
 
 describe("word rendering", () => {
+  test("scrolls all-line text to the caret and paints the pace marker", async () => {
+    const store = await openConfigStore(join(await tempDir(), "config.json"));
+    store.set("showAllLines", true);
+    await store.flush();
+    const theme = createTheme(store.config);
+    const layout = layoutWords(
+      Array.from({ length: 12 }, (_, index) =>
+        buildWordView(`word${index}\n`, "", {
+          ...store.config,
+          zen: false,
+          committed: false,
+        }),
+      ),
+      40,
+    );
+    const app = await renderTui(() => (
+      <ConfigContext.Provider value={store}>
+        <ThemeContext.Provider value={theme}>
+          <Words
+            layout={layout}
+            window={{ start: 0, end: layout.lines.length }}
+            height={6}
+            caret={{ line: 8, column: 2 }}
+            pace={{ line: 8, column: 1 }}
+          />
+        </ThemeContext.Provider>
+      </ConfigContext.Provider>
+    ));
+    await app.frame();
+    const frame = await app.frame();
+    expect(frame).toContain("word8");
+    expect(frame).toContain("▏");
+    expect(app.renderer.getCursorState().visible).toBe(true);
+    expect(app.renderer.getCursorState().y).toBeLessThanOrEqual(6);
+  });
   test("positions the native caret after wrapping and hides it when disabled", async () => {
     const store = await openConfigStore(join(await tempDir(), "config.json"));
     await store.flush();
