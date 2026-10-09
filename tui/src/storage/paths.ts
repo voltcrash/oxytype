@@ -1,7 +1,7 @@
 import { homedir } from "node:os";
 import { posix, win32 } from "node:path";
 
-export const appName = "oxytype";
+const appName = "oxytype";
 
 export type AppPaths = {
   /** User settings, e.g. `config.json`. */

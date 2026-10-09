@@ -4,7 +4,7 @@ import type { FetchJson } from "@oxytype/typing-core/languages";
 import { tryCatch } from "@oxytype/util/trycatch";
 
 /** Shipped with the package: English 200 and English quotes. */
-export const bundledAssetsDir = join(import.meta.dir, "..", "..", "assets");
+const bundledAssetsDir = join(import.meta.dir, "..", "..", "assets");
 
 // Core requests `/languages/<name>.json` and `quotes/<name>.json`.
 const assetPattern = /^\/?(languages|quotes)\/([a-z0-9_]+)\.json$/;

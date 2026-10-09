@@ -1,4 +1,4 @@
-export const screenIds = [
+const screenIds = [
   "test",
   "result",
   "settings",

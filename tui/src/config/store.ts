@@ -10,7 +10,7 @@ import { createStore, reconcile, unwrap } from "solid-js/store";
 import type { Schema } from "../storage/json";
 import { readJson, writeJson } from "../storage/json";
 
-export type ConfigLoadStatus =
+type ConfigLoadStatus =
   /** Stored config matched the current schema. */
   | "ok"
   /** No file yet; defaults were written. */
