@@ -1,7 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import { join } from "node:path";
 
-import { localPaceSpeed, openHistoryStore } from "../src/results/history";
+import {
+  createHistoryStore,
+  localPaceSpeed,
+  openHistoryStore,
+} from "../src/results/history";
 import { writeJson } from "../src/storage/json";
 import { typingTest } from "./helpers/typing-test";
 import { tempDir } from "./helpers/temp-dir";
@@ -30,6 +34,24 @@ async function finishedTest(): Promise<
 }
 
 describe("local result history", () => {
+  test("reports a failed disk save and rejects schema-invalid result data", async () => {
+    const directory = await tempDir();
+    const blocked = join(directory, "blocked");
+    await writeJson(blocked, {});
+    const history = createHistoryStore([], join(blocked, "history.json"));
+    const finished = await finishedTest();
+    expect(await history.add(finished)).toBe(false);
+    expect(history.lastSave()?.state).toBe("error");
+    expect(history.notice()).toBeDefined();
+    const empty = createHistoryStore();
+    expect(
+      await empty.add({
+        ...finished,
+        result: { ...finished.result, wpm: 500 },
+      }),
+    ).toBe(false);
+    expect(empty.entries()).toHaveLength(0);
+  });
   test("survives a restart with core metrics and charts intact", async () => {
     const file = join(await tempDir(), "history.json");
     const history = await openHistoryStore(file);
