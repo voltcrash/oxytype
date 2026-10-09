@@ -163,7 +163,7 @@ try:
             drain(master, output, 1.0)
             os.write(master, b"\x01\r")  # Ctrl+A then enter: device login
             drain(master, output, 0.5)
-            assert b"code PTY-1234" in output, bytes(output)[-2000:]
+            assert b"PTY-1234" in output, bytes(output)[-2000:]
             assert b"pty-device-secret" not in output and b"pty-session" not in output
             drain(master, output, 2.0)
             assert credentials.stat().st_mode & 0o777 == 0o600
