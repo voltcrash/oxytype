@@ -3,6 +3,7 @@ name: Oxytype CI
 env:
   PNPM_VERSION: "12.8.1"
   NODE_VERSION: "24.21.0"
+  BUN_VERSION: "1.4.2"
   TURNSTILE_SITE_KEY: "1x00000000000000000000AA"
 
 permissions:
@@ -29,6 +30,7 @@ jobs:
       should-build-be: ${{ steps.export-changes.outputs.should-build-be }}
       should-build-fe: ${{ steps.export-changes.outputs.should-build-fe }}
       should-build-pkg: ${{ steps.export-changes.outputs.should-build-pkg }}
+      should-build-tui: ${{ steps.export-changes.outputs.should-build-tui }}
       assets-or-styles: ${{ steps.export-changes.outputs.assets-or-styles }}
 
     steps:
@@ -53,11 +55,15 @@ jobs:
               - 'frontend/**/package.json'
             pkg-src:
               - 'packages/**/*'
+            tui-src:
+              - 'tui/**/*'
+              - 'packages/**/*'
 
       - name: Export changes
         id: export-changes
         run: |
           echo "should-build-pkg=${{ steps.filter.outputs.pkg-src }}" >> $GITHUB_OUTPUT
+          echo "should-build-tui=${{ steps.filter.outputs.tui-src }}" >> $GITHUB_OUTPUT
           echo "should-build-be=${{ steps.filter.outputs.be-src }}" >> $GITHUB_OUTPUT
           echo "should-build-fe=${{ steps.filter.outputs.fe-src }}" >> $GITHUB_OUTPUT
           echo "assets-or-styles=${{ steps.filter.outputs.assets-or-styles }}" >> $GITHUB_OUTPUT
@@ -392,3 +398,49 @@ jobs:
 
       - name: Test
         run: npm run test-pkg
+
+  ci-tui:
+    name: ci-tui
+    needs: [pre-ci, prime-cache]
+    runs-on: ubuntu-latest
+    if: needs.pre-ci.outputs.should-build-tui == 'true' || contains(github.event.pull_request.labels.*.name, 'force-full-ci')
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6.1.0
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Cache node modules
+        id: cache-pnpm
+        uses: actions/cache@v6.1.0
+        env:
+          cache-name: node-modules
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-${{ env.NODE_VERSION }}-build-${{ env.cache-name }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2.2.0
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Check lint
+        run: npm run lint-fast-tui && npm run lint-tui
+
+      - name: Test
+        run: npm run test-tui
