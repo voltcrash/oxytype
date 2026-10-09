@@ -15,11 +15,14 @@ export async function renderApp(
     (await openConfigStore(join(await tempDir(), "config.json")));
   // Finish the first-run write before the temporary directory is removed.
   await config.flush();
-  return renderTui(() => (
+  const app = await renderTui(() => (
     <App
       config={config}
       initialScreen={props.initialScreen}
+      testOptions={props.testOptions}
       onQuit={props.onQuit ?? (() => undefined)}
     />
   ));
+  await app.waitForFrame((frame) => !frame.includes("loading words"));
+  return app;
 }

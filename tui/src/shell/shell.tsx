@@ -29,19 +29,22 @@ export function Shell(props: ParentProps<{ onQuit: () => void }>) {
     else router.push(action.screen);
   };
 
-  useKeyboard((event) => {
-    if (matchesKey(event, quitBinding.key)) {
+  useKeyboard(
+    (event) => {
+      if (matchesKey(event, quitBinding.key)) {
+        event.preventDefault();
+        run(quitBinding.action);
+        return;
+      }
+      dispatcher?.dispatch(event);
+      if (event.defaultPrevented) return;
+      const binding = globalBindings.find((it) => matchesKey(event, it.key));
+      if (binding === undefined) return;
       event.preventDefault();
-      run(quitBinding.action);
-      return;
-    }
-    dispatcher?.dispatch(event);
-    if (event.defaultPrevented) return;
-    const binding = globalBindings.find((it) => matchesKey(event, it.key));
-    if (binding === undefined) return;
-    event.preventDefault();
-    run(binding.action);
-  });
+      run(binding.action);
+    },
+    { release: true },
+  );
 
   return (
     <box

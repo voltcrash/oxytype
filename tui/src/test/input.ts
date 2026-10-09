@@ -19,6 +19,8 @@ export function inputAction(
   words: readonly string[],
 ): InputAction | undefined {
   if (event.eventType !== "release") {
+    if (event.name === "f7") return { type: "repeat" };
+    if (event.name === "f8") return { type: "finish" };
     if (event.ctrl && !event.meta && event.name === "r") {
       return { type: event.shift ? "repeat" : "restart" };
     }

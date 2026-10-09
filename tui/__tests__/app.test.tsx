@@ -39,15 +39,15 @@ describe("app shell", () => {
   });
 
   test("screens handle their own keys before global bindings", async () => {
-    const app = await renderApp();
-    app.mockInput.pressEnter();
-    expect(await app.frame()).toContain("press enter to start the next test");
-
-    // The result replaces itself with a new test instead of stacking.
-    app.mockInput.pressEnter();
-    expect(await app.frame()).toContain("typing test");
+    const config = await openConfigStore(join(await tempDir(), "config.json"));
+    config.set("quickRestart", "esc");
+    const app = await renderApp({ config });
+    app.mockInput.pressKey("x");
+    await app.frame();
     await app.escape();
+    await app.waitForFrame((frame) => !frame.includes("loading words"));
     expect(await app.frame()).toContain("typing test");
+    await config.flush();
   });
 
   test("opening an earlier screen unwinds the stack", async () => {
