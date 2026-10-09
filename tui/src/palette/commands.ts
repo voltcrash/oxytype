@@ -479,6 +479,7 @@ export function rootCommands(context: CommandContext): CommandGroup {
         "custom",
         "challenges",
         "funboxes",
+        "announcements",
       ] as const
     ).map((screen): Command => ({
       id: `view${screen}`,
