@@ -191,7 +191,7 @@ exports[`OpenTUI screen snapshots settings and palette search: behavior settings
    quick restart                [off]  esc   tab   enter
    repeat quotes                [off]  typing
    blind mode                   [off]  on
-   always show words history    [off]  on
+   always show words history    [off]  on   web only
    single list command palette   manual  [on]
    command palette shortcut     Mod+K · terminal ^p  web only
  speed & accuracy

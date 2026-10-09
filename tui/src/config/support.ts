@@ -5,6 +5,19 @@ import type { Config } from "@oxytype/schemas/configs";
  * client keeps the user's choice; `MISSING.md` explains each gap.
  */
 const webOnly = new Set<keyof Config>([
+  "burstHeatmap",
+  "alwaysShowWordsHistory",
+  "repeatedPace",
+  "autoSwitchTheme",
+  "themeLight",
+  "themeDark",
+  "showKeyTips",
+  "showOutOfFocusWarning",
+  "showTestModesNotice",
+  "capsLockWarning",
+  "showAverage",
+  "showPb",
+  "monkey",
   "soundVolume",
   "playSoundOnClick",
   "playSoundOnError",
