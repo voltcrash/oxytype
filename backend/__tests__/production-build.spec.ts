@@ -214,4 +214,43 @@ if (process.env.FIXTURE_FAIL_BUILD === target) process.exit(1);
     );
     expect(builds()).toEqual([]);
   }, 30_000);
+
+  it.each([
+    "backend/.dev.vars.production",
+    "frontend/.env.production.local",
+    "backend/wrangler.production.json",
+  ])(
+    "rejects a missing %s before starting builds",
+    (path) => {
+      rmSync(resolve(root, path));
+      const result = run();
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain("ENOENT");
+      expect(builds()).toEqual([]);
+    },
+    30_000,
+  );
+
+  it.each([
+    [
+      "backend/.dev.vars.production",
+      "BETTER_AUTH_SECRET=replace-with-production-secret\n",
+      "BETTER_AUTH_SECRET",
+    ],
+    [
+      "frontend/.env.production.local",
+      "BACKEND_URL=/api\nTURNSTILE_SITE_KEY=replace-with-site-key\nAUTH_PROVIDERS=github\n",
+      "real production TURNSTILE_SITE_KEY",
+    ],
+  ])(
+    "rejects invalid %s before starting builds",
+    (path, settings, message) => {
+      write(path, settings);
+      const result = run();
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain(message);
+      expect(builds()).toEqual([]);
+    },
+    30_000,
+  );
 });
