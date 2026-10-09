@@ -12,6 +12,7 @@
   },
   "include": [
     "src",
+    "bin",
     "__tests__",
     "scripts",
     "vite.config.ts",

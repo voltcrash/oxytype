@@ -43,7 +43,7 @@ const manifest = {
     "Oxytype typing tests in your terminal. Same account, offline play, Bun + OpenTUI.",
   license: metadata.license,
   type: "module",
-  bin: { oxytype: "bin/oxytype.mjs" },
+  bin: { oxytype: "bin/oxytype.js" },
   engines: metadata.engines,
   files: [
     "bin/",
@@ -68,11 +68,15 @@ await writeFile(
   join(target, "package.json"),
   `${JSON.stringify(manifest, null, 2)}\n`,
 );
-await copyFile(
-  join(root, "bin", "oxytype.mjs"),
-  join(target, "bin", "oxytype.mjs"),
-);
-await chmod(join(target, "bin", "oxytype.mjs"), 0o755);
+const launcher = await Bun.build({
+  entrypoints: [join(root, "bin", "oxytype.ts")],
+  outdir: join(target, "bin"),
+  target: "bun",
+});
+if (!launcher.success) {
+  throw new AggregateError(launcher.logs, "Launcher build failed");
+}
+await chmod(join(target, "bin", "oxytype.js"), 0o755);
 for (const file of ["README.md", "MISSING.md"]) {
   await copyFile(join(root, file), join(target, file));
 }
