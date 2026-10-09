@@ -35,9 +35,7 @@ test("live values and result metrics match the recorded web time-15 fixture", as
     now: () => clock,
     dateNow: () => date + clock,
   });
-  for (const [setting, value] of Object.entries(fixture.config)) {
-    store.set(setting as keyof Config, value);
-  }
+  store.apply(fixture.config);
   await typing.restart();
   let ticks = 0;
   for (const event of fixture.eventLog.events) {

@@ -57,12 +57,16 @@ test("changes offline modes and respects the live stats configuration", async ()
   config.set("words", 25);
   config.set("liveAccStyle", "mini");
   config.set("liveBurstStyle", "mini");
+  config.set("mode", "time");
   const app = await renderApp({ config });
   expect(await app.frame()).toContain("0 wpm");
   expect(await app.frame()).toContain("100% acc");
   app.mockInput.pressKey("F2");
   await app.waitForFrame(
-    (frame) => frame.includes("[words]") && !frame.includes("loading words"),
+    (frame) =>
+      frame.includes("[words]") &&
+      frame.includes("25 words") &&
+      !frame.includes("loading words"),
   );
   app.mockInput.pressKey("F5");
   await app.waitForFrame(
