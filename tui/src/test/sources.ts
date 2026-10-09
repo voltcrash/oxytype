@@ -3,12 +3,11 @@ import type { FetchJson } from "@oxytype/typing-core/languages";
 import { createLanguageLoader } from "@oxytype/typing-core/languages";
 import { QuotesController } from "@oxytype/typing-core/quote-source";
 import { tryCatch } from "@oxytype/util/trycatch";
-import { createContext, useContext } from "solid-js";
 
 import { AssetUnavailableError } from "../assets/source";
 
 /** Always bundled, so a test can start without downloads. */
-export const fallbackLanguage: Language = "english";
+const fallbackLanguage: Language = "english";
 
 export type LoadedLanguage = {
   language: LanguageObject;
@@ -35,14 +34,4 @@ export function createTestSources(fetchJson: FetchJson): TestSources {
     },
     quotes: new QuotesController({ fetchJson, getSnapshot: () => null }),
   };
-}
-
-export const TestSourcesContext = createContext<TestSources>();
-
-export function useTestSources(): TestSources {
-  const sources = useContext(TestSourcesContext);
-  if (sources === undefined) {
-    throw new Error("useTestSources outside TestSourcesContext");
-  }
-  return sources;
 }
