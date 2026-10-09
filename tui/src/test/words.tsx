@@ -5,6 +5,7 @@ import type {
   TextChunk,
   TextRenderable,
 } from "@opentui/core";
+import type { Config } from "@oxytype/schemas/configs";
 
 import { StyledText, TextAttributes } from "@opentui/core";
 import { useRenderer } from "@opentui/solid";
@@ -12,30 +13,46 @@ import { createEffect, createMemo, Index, onCleanup, Show } from "solid-js";
 
 import type { TerminalTheme } from "../theme/theme";
 import type { Cell, LineWindow, Position, WordsLayout } from "./layout";
-import type { LetterColorConfig } from "./letter-colors";
+import type { LetterColorConfig, WordContext } from "./letter-colors";
 
 import { useConfig } from "../config/store";
 import { useTheme } from "../theme/theme";
 import { terminalCaretStyle } from "./caret";
-import { cellColor } from "./letter-colors";
+import { cellColor, typedEffectCell } from "./letter-colors";
 
 export type WordsProps = {
   layout: WordsLayout;
+  /** Drives word highlighting and typed effects. */
+  activeIndex?: number;
   window: LineWindow;
   caret?: Position;
   pace?: Position;
   height?: number;
 };
 
-type CellStyle = { fg: RGBA; attributes: number };
+type CellStyle = { char: string; fg: RGBA; attributes: number };
+type StyleConfig = LetterColorConfig & Pick<Config, "typedEffect">;
 
 function cellStyle(
   cell: Cell,
   colors: TerminalTheme["colors"],
-  config: LetterColorConfig,
+  config: StyleConfig,
+  words?: WordContext,
 ): CellStyle {
+  const typed =
+    words !== undefined && cell.wordIndex < words.activeIndex
+      ? typedEffectCell(cell, colors, config)
+      : undefined;
+  if (typed !== undefined) {
+    return {
+      char: typed.char,
+      fg: typed.fg ?? colors.sub,
+      attributes: TextAttributes.NONE,
+    };
+  }
   return {
-    fg: cellColor(cell.kind, colors, config),
+    char: cell.char,
+    fg: cellColor(cell, colors, config, words),
     // Terminals cannot colour underlines separately; the letter colour shows.
     attributes: cell.error ? TextAttributes.UNDERLINE : TextAttributes.NONE,
   };
@@ -45,16 +62,22 @@ function cellStyle(
 function lineContent(
   cells: Cell[],
   colors: TerminalTheme["colors"],
-  config: LetterColorConfig,
+  config: StyleConfig,
+  words?: WordContext,
 ): StyledText {
   const chunks: TextChunk[] = [];
   for (const cell of cells) {
-    const style = cellStyle(cell, colors, config);
+    const style = cellStyle(cell, colors, config, words);
     const last = chunks.at(-1);
     if (last?.fg === style.fg && last.attributes === style.attributes) {
-      last.text += cell.char;
+      last.text += style.char;
     } else {
-      chunks.push({ __isChunk: true, text: cell.char, ...style });
+      chunks.push({
+        __isChunk: true,
+        text: style.char,
+        fg: style.fg,
+        attributes: style.attributes,
+      });
     }
   }
   return new StyledText(chunks);
@@ -69,6 +92,24 @@ export function Words(props: WordsProps) {
   const lines = createMemo(() =>
     props.layout.lines.slice(props.window.start, props.window.end),
   );
+  const errors = createMemo(() => {
+    const words = new Set<number>();
+    for (const line of props.layout.lines) {
+      for (const cell of line) {
+        if (cell.error || cell.kind === "incorrect" || cell.kind === "extra") {
+          words.add(cell.wordIndex);
+        }
+      }
+    }
+    return words;
+  });
+  const wordContext = (): WordContext | undefined =>
+    props.activeIndex === undefined
+      ? undefined
+      : {
+          activeIndex: props.activeIndex,
+          hasError: (index) => errors().has(index),
+        };
   const visiblePace = createMemo(
     () =>
       props.pace !== undefined &&
@@ -134,7 +175,9 @@ export function Words(props: WordsProps) {
         height={lines().length * 2}
         renderAfter={() => paintCaret()}
       >
-        <Index each={lines()}>{(cells) => <WordLine cells={cells()} />}</Index>
+        <Index each={lines()}>
+          {(cells) => <WordLine cells={cells()} words={wordContext()} />}
+        </Index>
         <Show when={visiblePace()}>
           <text
             position="absolute"
@@ -155,13 +198,18 @@ export function Words(props: WordsProps) {
   );
 }
 
-function WordLine(props: { cells: Cell[] }) {
+function WordLine(props: { cells: Cell[]; words?: WordContext }) {
   const theme = useTheme();
   const { config } = useConfig();
   let line!: TextRenderable;
   // OpenTUI Solid 0.5 converts the JSX content prop to a string.
   createEffect(() => {
-    line.content = lineContent(props.cells, theme().colors, config);
+    line.content = lineContent(
+      props.cells,
+      theme().colors,
+      config,
+      props.words,
+    );
   });
   return (
     <text

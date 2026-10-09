@@ -173,6 +173,7 @@ export function TestScreen() {
       >
         <Words
           layout={layout()}
+          activeIndex={test.activeIndex()}
           window={window()}
           pace={pace()}
           height={Math.min(
