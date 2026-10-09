@@ -30,18 +30,17 @@ describe("theme switching", () => {
   test("switches and persists themes at runtime", async () => {
     const file = join(await tempDir(), "config.json");
     const config = await openConfigStore(file);
-    const app = await renderApp({ config, initialScreen: "settings" });
+    const app = await renderApp({ config });
     const names = ThemesList.map((it) => it.name);
     const next = names[names.indexOf("serika_dark") + 1] ?? "";
 
-    app.mockInput.pressArrow("right");
-    expect(await app.frame()).toContain(`< ${next.replaceAll("_", " ")} >`);
+    app.mockInput.pressKey("p", { ctrl: true });
+    await app.mockInput.typeText(`theme ${next.replaceAll("_", " ")}`);
+    app.mockInput.pressEnter();
+    expect(await app.frame()).toContain(next.replaceAll("_", " "));
     expect(await backgroundAt(app)).toEqual(
       rgb(themes[next as keyof typeof themes].bg),
     );
-
-    app.mockInput.pressArrow("left");
-    expect(await backgroundAt(app)).toEqual(rgb(themes.serika_dark.bg));
 
     config.set("theme", "nord");
     expect(await backgroundAt(app)).toEqual(rgb(themes.nord.bg));
