@@ -167,7 +167,7 @@ is pinned OpenTUI core. The source workspace manifest remains private to prevent
 publishing source files and `workspace:*` dependencies accidentally.
 
 `package-check` packs the actual whitelist, installs the tarball outside the
-repo without install scripts, verifies CLI flags/logout/logging, then runs a
+repo without install scripts, verifies CLI flags, bunx, device login/logout and logging, then runs a
 raw 80×24 PTY test with result persistence and cold history reopening. CI repeats
 this on Linux. Asset changes also trigger terminal CI.
 
@@ -186,4 +186,3 @@ runner. For the first publication, use a maintainer's authenticated npm CLI or
 an `NPM_TOKEN` secret in the `npm` environment; the workflow permits that token
 fallback. After trusted publishing works, remove the bootstrap token. Follow
 [npm's trusted-publisher instructions](https://docs.npmjs.com/trusted-publishers/).
-This PR prepares publication; it does not publish to npm.
