@@ -19,6 +19,7 @@ import { useConfig } from "../config/store";
 import { useTheme } from "../theme/theme";
 import { terminalCaretStyle } from "./caret";
 import { cellColor, typedEffectCell } from "./letter-colors";
+import { hideWord } from "./visibility";
 
 export type WordsProps = {
   layout: WordsLayout;
@@ -28,6 +29,8 @@ export type WordsProps = {
   caret?: Position;
   pace?: Position;
   height?: number;
+  funboxes?: Config["funbox"];
+  memoryHidden?: boolean;
 };
 
 type CellStyle = { char: string; fg: RGBA; attributes: number };
@@ -64,10 +67,24 @@ function lineContent(
   colors: TerminalTheme["colors"],
   config: StyleConfig,
   words?: WordContext,
+  funboxes: Config["funbox"] = [],
+  memoryHidden = false,
 ): StyledText {
   const chunks: TextChunk[] = [];
   for (const cell of cells) {
-    const style = cellStyle(cell, colors, config, words);
+    const style = hideWord(
+      funboxes,
+      cell.wordIndex,
+      words?.activeIndex ?? 0,
+      cell.kind === "untyped",
+      memoryHidden,
+    )
+      ? {
+          char: " ".repeat(cell.width),
+          fg: colors.bg,
+          attributes: TextAttributes.NONE,
+        }
+      : cellStyle(cell, colors, config, words);
     const last = chunks.at(-1);
     if (last?.fg === style.fg && last.attributes === style.attributes) {
       last.text += style.char;
@@ -176,7 +193,14 @@ export function Words(props: WordsProps) {
         renderAfter={() => paintCaret()}
       >
         <Index each={lines()}>
-          {(cells) => <WordLine cells={cells()} words={wordContext()} />}
+          {(cells) => (
+            <WordLine
+              cells={cells()}
+              words={wordContext()}
+              funboxes={props.funboxes}
+              memoryHidden={props.memoryHidden}
+            />
+          )}
         </Index>
         <Show when={visiblePace()}>
           <text
@@ -198,7 +222,12 @@ export function Words(props: WordsProps) {
   );
 }
 
-function WordLine(props: { cells: Cell[]; words?: WordContext }) {
+function WordLine(props: {
+  cells: Cell[];
+  words?: WordContext;
+  funboxes?: Config["funbox"];
+  memoryHidden?: boolean;
+}) {
   const theme = useTheme();
   const { config } = useConfig();
   let line!: TextRenderable;
@@ -209,6 +238,8 @@ function WordLine(props: { cells: Cell[]; words?: WordContext }) {
       theme().colors,
       config,
       props.words,
+      props.funboxes,
+      props.memoryHidden,
     );
   });
   return (

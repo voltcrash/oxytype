@@ -1,6 +1,13 @@
 import { usePaste, useTerminalDimensions } from "@opentui/solid";
 import { splitIntoCharacters } from "@oxytype/typing-core/strings";
-import { createEffect, createMemo, onCleanup, Show, untrack } from "solid-js";
+import {
+  createEffect,
+  createMemo,
+  createSignal,
+  onCleanup,
+  Show,
+  untrack,
+} from "solid-js";
 
 import { useConfig } from "../config/store";
 import { useRouter } from "../router/router";
@@ -19,6 +26,24 @@ export function TestScreen() {
   const store = useConfig();
   const test = useTypingTest();
   const dimensions = useTerminalDimensions();
+  const [memoryRemaining, setMemoryRemaining] = createSignal(0);
+  createEffect(() => {
+    if (!test.config().funbox.includes("memory") || test.status() !== "ready") {
+      setMemoryRemaining(0);
+      return;
+    }
+    const duration = Math.round(test.words().length ** 1.2);
+    const deadline = performance.now() + duration * 1000;
+    setMemoryRemaining(duration);
+    const timer = setInterval(
+      () =>
+        setMemoryRemaining(
+          Math.max(0, Math.ceil((deadline - performance.now()) / 1000)),
+        ),
+      1000,
+    );
+    onCleanup(() => clearInterval(timer));
+  });
   const shownConfig = (): typeof store.config =>
     test.status() === "running" || test.challenge() !== undefined
       ? test.config()
@@ -207,8 +232,20 @@ export function TestScreen() {
             Math.floor((dimensions().width - 3 - lineWidth()) / 2),
           )}
         >
+          <Show
+            when={
+              test.config().funbox.includes("memory") &&
+              test.status() === "ready"
+            }
+          >
+            <text fg={theme().colors.main}>
+              memorize · {memoryRemaining()}s
+            </text>
+          </Show>
           <Words
             layout={layout()}
+            funboxes={test.config().funbox}
+            memoryHidden={memoryRemaining() === 0}
             activeIndex={test.activeIndex()}
             window={window()}
             pace={pace()}
