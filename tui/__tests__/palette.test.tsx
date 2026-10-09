@@ -101,7 +101,9 @@ describe("command palette", () => {
     await choose(app, '{"punctuation":true,"time":60}');
     expect(config.config.punctuation).toBe(true);
     expect(config.config.time).toBe(60);
-    expect(await app.frame()).toContain("Done");
+    expect(
+      await app.waitForFrame((frame) => frame.includes("Settings imported")),
+    ).toContain("Settings imported");
     await config.flush();
   });
 });

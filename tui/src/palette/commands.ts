@@ -13,6 +13,7 @@ import type { TypingTest } from "../test/typing-test";
 import type { Command, CommandGroup } from "./types";
 
 import { isWebOnly } from "../config/support";
+import { configTools } from "../config/tools";
 import { configCommand, type ConfigCommandSpec } from "./config-commands";
 
 export type CommandContext = {
@@ -344,7 +345,7 @@ function canBailOut(context: CommandContext): boolean {
 
 /** The terminal's command list, following the web palette's order. */
 export function rootCommands(context: CommandContext): CommandGroup {
-  const { store, router, test, notifications } = context;
+  const { router, test, notifications } = context;
   const resultVisible = (): boolean =>
     router.current() === "result" && test.result() !== undefined;
   const copy = (text: string, success: string): void => {
@@ -435,38 +436,7 @@ export function rootCommands(context: CommandContext): CommandGroup {
       alias: "navigate go to results",
       exec: navigate("history"),
     },
-    {
-      id: "importSettingsJSON",
-      display: "Import settings JSON",
-      alias: "import config",
-      input: {
-        submit: (value) => {
-          if (value.trim() === "") return undefined;
-          try {
-            const parsed = JSON.parse(value) as unknown;
-            if (
-              typeof parsed !== "object" ||
-              parsed === null ||
-              Array.isArray(parsed)
-            ) {
-              return "Settings JSON must be an object";
-            }
-            store.apply(parsed);
-            notifications.notify("Done", "success");
-            return undefined;
-          } catch {
-            return "Invalid JSON";
-          }
-        },
-      },
-    },
-    {
-      id: "exportSettingsJSON",
-      display: "Export settings JSON",
-      alias: "export config",
-      exec: () =>
-        copy(JSON.stringify(store.config), "Settings JSON copied to clipboard"),
-    },
+    ...configTools(context),
     {
       id: "clearNotifications",
       display: "Clear all notifications",
