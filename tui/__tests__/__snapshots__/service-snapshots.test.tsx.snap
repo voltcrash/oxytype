@@ -88,18 +88,16 @@ exports[`saved history detail snapshot: history details 1`] = `
 "
  oxytype   test   settings   account   leaderboards   history       serika dark
 
- local history · 1 tests
+  local    1 test
 
- 7 wpm · 81.6% acc · raw 64
+ wpm    acc
+ ▀▀█    █▀█ ▀█  ▀ █
+   █    █▀█  █   █
+   ▀    ▀▀▀ ▀▀▀ █ ▄
 
- consistency 84.7% · time 9.23s · chars 5/0/9/0
+ raw 64 · consistency 84.7% · time 9.23s · chars 5/0/9/0
 
- tags  · normal · online
-
- ↑↓ select  enter details  tab local/TUI/web  f filters  x clear  r reload
-
-
-
+ words 10 · english · no tags · normal · online
 
 
 
@@ -107,6 +105,8 @@ exports[`saved history detail snapshot: history details 1`] = `
 
 
 
+
+ enter back to list  ↑↓ previous/next  tab local/TUI/web
  esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 
 "

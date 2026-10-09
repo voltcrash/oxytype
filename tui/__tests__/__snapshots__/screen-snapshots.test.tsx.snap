@@ -88,25 +88,25 @@ exports[`OpenTUI screen snapshots ready, typing and result at 80x24: empty histo
 "
  oxytype   test   settings   account   leaderboards   history       serika dark
 
- local history · 0 tests
+  local    0 tests
 
  no saved tests match
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  ↑↓ select  enter details  tab local/TUI/web  f filters  x clear  r reload
-
-
-
-
-
-
-
-
-
-
-
-
-
-
  esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 
 "

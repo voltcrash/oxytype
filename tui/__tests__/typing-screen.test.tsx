@@ -40,7 +40,7 @@ test("completes words-10, displays core results, saves once and restarts", async
   await app.frame();
   expect(history.entries()).toHaveLength(1);
   app.mockInput.pressKey("o", { ctrl: true });
-  expect(await app.frame()).toContain("local history · 1 tests");
+  expect(await app.frame()).toContain("1 test");
   await app.escape();
   app.mockInput.pressEnter();
   await app.waitForFrame(
