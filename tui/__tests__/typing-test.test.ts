@@ -3,6 +3,24 @@ import { describe, expect, test } from "bun:test";
 import { key, typingTest } from "./helpers/typing-test";
 
 describe("typing session", () => {
+  test("records overlapping releases from Kitty without inventing raw keyups", async () => {
+    const { test: typing } = await typingTest({ words: ["cat ", "dog"] });
+    await typing.handleKey(key("c", { source: "kitty" }), 0);
+    await typing.handleKey(key("a", { source: "kitty" }), 100);
+    await typing.handleKey(
+      key("c", { source: "kitty", eventType: "release" }),
+      150,
+    );
+    await typing.handleKey(
+      key("a", { source: "kitty", eventType: "release" }),
+      200,
+    );
+    const releases = typing
+      .session()
+      .buildEventLog()
+      .events.filter((event) => event.type === "keyup");
+    expect(releases.map((event) => event.data.code)).toEqual(["KeyC", "KeyA"]);
+  });
   test("finishes words-10 through terminal key events", async () => {
     const words = "the quick brown fox jumps over the lazy dog again"
       .split(" ")

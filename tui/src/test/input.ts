@@ -69,10 +69,27 @@ export function inputAction(
 /** Raw terminal protocols have no release events or reliable physical key code. */
 export function keyData(event: KeyEvent): KeydownEventData {
   const supplied = event.code as KeydownEventData["code"];
-  const code =
-    event.source === "kitty" && keysToTrack.has(supplied as "NoCode")
-      ? supplied
-      : "NoCode";
+  let code: KeydownEventData["code"] = "NoCode";
+  if (event.source === "kitty") {
+    const named: Record<string, KeydownEventData["code"]> = {
+      space: "Space",
+      return: "Enter",
+      tab: "Tab",
+    };
+    const base =
+      event.baseCode === undefined
+        ? event.name
+        : String.fromCodePoint(event.baseCode);
+    if (keysToTrack.has(supplied as "NoCode")) {
+      code = supplied;
+    } else if (/^[a-z]$/i.test(base)) {
+      code = `Key${base.toUpperCase()}` as KeydownEventData["code"];
+    } else if (/^[0-9]$/.test(base)) {
+      code = `Digit${base}` as KeydownEventData["code"];
+    } else {
+      code = named[event.name] ?? "NoCode";
+    }
+  }
   return {
     code,
     ctrl: event.ctrl ? true : undefined,
