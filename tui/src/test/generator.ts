@@ -15,6 +15,7 @@ import type { TestSources } from "./sources";
 
 export type GeneratorOptions = {
   store: ConfigStore;
+  getSelectedQuoteId?: () => number;
   /** The config words are generated for, e.g. with a fallback language. */
   getConfig: () => Config;
   sources: TestSources;
@@ -57,7 +58,7 @@ export function createGenerator(options: GeneratorOptions): WordsGenerator {
     getCurrentQuote: options.getCurrentQuote,
     setCurrentQuote: options.setCurrentQuote,
     // Quote search arrives with the quote screens.
-    getSelectedQuoteId: () => 1,
+    getSelectedQuoteId: options.getSelectedQuoteId ?? (() => 1),
     getWordsLength: options.getWordsLength,
     setMode: (mode) => store.set("mode", mode),
     setQuoteLengthAll: () => store.set("quoteLength", [0, 1, 2, 3]),

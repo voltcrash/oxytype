@@ -69,6 +69,8 @@ export type TypingTestOptions = {
   getIdentity?: () => UploadIdentity | undefined;
 };
 export type TypingTest = {
+  sources: TestSources;
+  selectQuote: (language: Config["language"], id: number) => Promise<void>;
   status: Accessor<TestStatus>;
   notice: Accessor<string | undefined>;
   words: Accessor<readonly string[]>;
@@ -134,6 +136,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
   let abandoning = false;
   let restartCount = 0;
   let activeTags: string[] = [];
+  let selectedQuoteId = 1;
   let incompleteTests: IncompleteTest[] = [];
   let pending = Promise.resolve();
   let owner: UploadIdentity | undefined;
@@ -273,6 +276,7 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
         sectionIndexes = [];
         const baseGenerator = createGenerator({
           store,
+          getSelectedQuoteId: () => selectedQuoteId,
           getConfig: config,
           sources,
           customText,
@@ -477,6 +481,14 @@ export function createTypingTest(options: TypingTestOptions): TypingTest {
   });
   const ready = load();
   return {
+    sources,
+    selectQuote: async (language, id) => {
+      selectedQuoteId = id;
+      store.set("language", language);
+      store.set("quoteLength", [-2]);
+      store.set("mode", "quote");
+      await restart();
+    },
     status,
     notice,
     words,

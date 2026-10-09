@@ -7,6 +7,7 @@ import { HistoryScreen } from "./history";
 import { LeaderboardsScreen } from "./leaderboards";
 import { PresetsScreen } from "./presets";
 import { ProfileScreen } from "./profile";
+import { QuotesScreen } from "./quotes";
 import { ResultScreen } from "./result";
 import { SettingsScreen } from "./settings";
 import { TagsScreen } from "./tags";
@@ -21,5 +22,6 @@ export const screens: Record<ScreenId, Component> = {
   tags: TagsScreen,
   presets: PresetsScreen,
   profile: ProfileScreen,
+  quotes: QuotesScreen,
   leaderboards: LeaderboardsScreen,
 };

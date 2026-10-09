@@ -57,7 +57,9 @@ export function App(props: AppProps) {
   const history = props.history ?? createHistoryStore();
   const test = createTypingTest({
     store: config,
-    sources: createTestSources(createAssetSource()),
+    sources: createTestSources(createAssetSource(), () => ({
+      favoriteQuotes: account?.favorites.get(),
+    })),
     getPaceSpeed: (settings, mode2) =>
       localPaceSpeed(
         history.entries(),

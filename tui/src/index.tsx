@@ -52,6 +52,7 @@ await render(
               timeoutMs: settings.timeoutMs,
             },
           }),
+          () => ({ favoriteQuotes: account.favorites.get() }),
         ),
       }}
       onQuit={() => void quit()}

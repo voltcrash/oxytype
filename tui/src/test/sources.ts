@@ -24,9 +24,14 @@ export type TestSources = {
   quotes: QuotesController;
 };
 
-export function createTestSources(fetchJson: FetchJson): TestSources {
+export function createTestSources(
+  fetchJson: FetchJson,
+  getSnapshot: ConstructorParameters<
+    typeof QuotesController
+  >[0]["getSnapshot"] = () => null,
+): TestSources {
   let languages = createLanguageLoader({ fetchJson });
-  const quotes = new QuotesController({ fetchJson, getSnapshot: () => null });
+  const quotes = new QuotesController({ fetchJson, getSnapshot });
   return {
     loadLanguage: async (language, quoteLengths) => {
       const loaded = await tryCatch(languages.getLanguage(language));

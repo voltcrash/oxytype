@@ -12,6 +12,7 @@ import {
 } from "./auth/store";
 import type { ConfigStore } from "./config/store";
 import { createConfigSync, type ConfigSync } from "./config/sync";
+import { openQuoteFavorites, type QuoteFavorites } from "./results/favorites";
 import { openActiveTags, type ActiveTags } from "./results/tags";
 import { createResultUploader, type ResultUploader } from "./results/upload";
 import { openUploadQueue, type UploadQueue } from "./results/upload-queue";
@@ -24,6 +25,7 @@ export type Account = {
   uploads: ResultUploader;
   queue: UploadQueue;
   tags: ActiveTags;
+  favorites: QuoteFavorites;
   identity: () => UploadIdentity | undefined;
   start: () => void;
   stop: () => void;
@@ -86,6 +88,16 @@ export async function openAccount(options: {
         : `${options.settings.apiUrl}|${user.uid}`;
     },
   );
+  const favorites = await openQuoteFavorites(
+    join(options.paths.data, "quote-favorites.json"),
+    api,
+    () => {
+      const user = rawAuth.user();
+      return user === undefined
+        ? undefined
+        : `${options.settings.apiUrl}|${user.uid}`;
+    },
+  );
   sync = createConfigSync({ api, store: options.config, identity });
   const uploads = createResultUploader({ api, queue, identity });
   let stopped = false;
@@ -135,6 +147,7 @@ export async function openAccount(options: {
     uploads,
     queue,
     tags,
+    favorites,
     identity,
     start: () => {
       if (timer !== undefined || stopped) return;
@@ -154,6 +167,7 @@ export async function openAccount(options: {
         queue.flush(),
         sync.flush(),
         tags.flush(),
+        favorites.flush(),
       ]);
       for (const write of writes) {
         if (write.status === "rejected") throw write.reason;
