@@ -3,8 +3,10 @@ import { ConfigSchema } from "@oxytype/schemas/configs";
 import { typedKeys } from "@oxytype/util/objects";
 import type { ZodTypeAny } from "zod/v3";
 
+import { getDefaultConfig } from "./default-config";
 import { canSetConfigWithCurrentFunboxes } from "./funbox-validation";
 import { sharedConfigMetadata, type SharedConfigMetadata } from "./metadata";
+import { migrateConfig } from "./migrate";
 
 type ConfigKey = keyof Config;
 
@@ -121,4 +123,47 @@ function resolve<K extends ConfigKey>(
   changes.push({ key, value, previousValue: working[key] } as ConfigChange);
   working[key] = value;
   return undefined;
+}
+
+/** Settings whose rules change others; a full config applies them last. */
+export const lastConfigsToApply: ReadonlySet<ConfigKey> = new Set<ConfigKey>([
+  "keymapMode",
+  "minWpm",
+  "minAcc",
+  "minBurst",
+  "paceCaret",
+  "quoteLength", //quote length sets mode,
+  "words",
+  "time",
+  "mode", // mode sets punctuation and numbers
+  "numbers",
+  "punctuation",
+  "funbox",
+]);
+
+/**
+ * Applies a partial or full config onto the defaults like a web import.
+ * Rejected values keep their defaults.
+ */
+export function resolveFullConfig(
+  partial: object,
+  options: ConfigChangeOptions = {},
+): { config: Config; rejected: ConfigKey[] } {
+  const full = migrateConfig(partial);
+  const config = getDefaultConfig();
+  const rejected: ConfigKey[] = [];
+  const firstKeys = typedKeys(full).filter(
+    (key) => !lastConfigsToApply.has(key),
+  );
+  for (const key of [...firstKeys, ...lastConfigsToApply]) {
+    const result = resolveConfigChange(key, full[key], config, options);
+    if (!result.ok) {
+      rejected.push(key);
+      continue;
+    }
+    for (const change of result.changes) {
+      (config as Record<ConfigKey, unknown>)[change.key] = change.value;
+    }
+  }
+  return { config, rejected };
 }

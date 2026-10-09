@@ -3,7 +3,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import { getDefaultConfig } from "../src/config/default-config";
 import { supportedConfigSchema } from "../src/config/migrate";
-import { resolveConfigChange } from "../src/config/setter";
+import { resolveConfigChange, resolveFullConfig } from "../src/config/setter";
 
 function config(overrides: Partial<Config> = {}): Config {
   return { ...getDefaultConfig(), ...overrides };
@@ -102,5 +102,35 @@ describe("resolveConfigChange", () => {
       reason: "funbox",
       message: "Active funboxes do not support infinite tests",
     });
+  });
+});
+
+describe("resolveFullConfig", () => {
+  it("applies mode-changing settings last", () => {
+    const { config: result, rejected } = resolveFullConfig({
+      mode: "time",
+      time: 15,
+      words: 50,
+      quoteLength: [1],
+      punctuation: true,
+    });
+    expect(result.mode).toBe("time");
+    expect(result.time).toBe(15);
+    expect(result.words).toBe(50);
+    expect(result.quoteLength).toEqual([1]);
+    expect(result.punctuation).toBe(true);
+    expect(rejected).toEqual([]);
+  });
+
+  it("lets later rules win and keeps defaults for rejected values", () => {
+    const { config: result, rejected } = resolveFullConfig(
+      { tapeMode: "word", showAllLines: true, caretStyle: "banana" },
+      { schema: supportedConfigSchema },
+    );
+    expect(result.tapeMode).toBe("word");
+    expect(result.showAllLines).toBe(false);
+    expect(result.caretStyle).toBe("default");
+    // The terminal schema has no legacy mascot setting.
+    expect(rejected).toEqual(["monkey"]);
   });
 });

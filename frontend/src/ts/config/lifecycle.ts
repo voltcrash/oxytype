@@ -17,6 +17,7 @@ import { isObject, promiseWithResolvers } from "../utils/misc";
 import { setConfig } from "./setters";
 import { deleteConfig } from "../ape/config";
 import { typedKeys } from "@oxytype/util/objects";
+import { lastConfigsToApply } from "@oxytype/typing-core/config/setter";
 
 export async function applyConfigFromJson(json: string): Promise<boolean> {
   try {
@@ -54,21 +55,6 @@ export async function loadFromLocalStorage(): Promise<void> {
   }
   loadDone();
 }
-
-const lastConfigsToApply: Set<keyof ConfigSchemas.Config> = new Set([
-  "keymapMode",
-  "minWpm",
-  "minAcc",
-  "minBurst",
-  "paceCaret",
-  "quoteLength", //quote length sets mode,
-  "words",
-  "time",
-  "mode", // mode sets punctuation and numbers
-  "numbers",
-  "punctuation",
-  "funbox",
-]);
 
 export async function applyConfig(
   partialConfig: Partial<ConfigSchemas.Config>,
