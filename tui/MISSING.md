@@ -1,10 +1,36 @@
-# Terminal parity gaps
+# Terminal feature audit
 
-Web features that the terminal client omits or approximates. Update this list
-whenever a client phase skips a feature, approximates it or hands it off to the
-browser.
+Stage H audit of the web pages, result controls, command lists, settings,
+popups and funbox catalogue. `ported` means the terminal provides the behavior;
+`approximated` means the behavior or presentation differs; `missing` means use
+the web client. Browser handoffs are approximations requiring a browser.
 
-| Feature | Status (missing/approximated) | Reason | Approximation |
+## Ported features
+
+| Web feature family | Status | Terminal implementation / scope |
+| --- | --- | --- |
+| Time, words, quote, zen and custom modes | ported | Shared generation, input, timing, completion and validation; punctuation, numbers, difficulty, confidence, freedom, stop-on-error, limits and lazy mode |
+| Restart, repeat, bail out and practice | ported | Configured quick restart, explicit keys, missed/slow/pair practice, shared weak-spot learning for this process |
+| Language, quote lengths and special sources | ported | Bundled English; versioned downloads and offline cache; favorites, British English and word transforms; source limitations below |
+| Live speed, accuracy, burst and progress | ported | Shared tick values, speed units, decimal settings, hide/flash/blind rules; presentation limitations below |
+| Result metrics, local persistence and server upload | ported | WPM/raw/accuracy/consistency/chars/time/mode, validity, PB/upload feedback and separate TUI stats; detailed web-only controls below |
+| Offline tests and delayed uploads | ported | Durable account-bound queue; history/stats only, no PB/XP/leaderboard; uploads expire at 30 days, local history retained |
+| Command palette and navigation | ported | Searchable applicable web commands, nested/flat lists, input and confirmations; terminal hotkeys below |
+| Behavior, input, caret, appearance and visibility settings | ported | Shared schema/rules/defaults, local persistence, server sync, search and per-setting reset; unsupported rendering/input settings labelled web only |
+| Config reset/import/export | ported | Confirmation, JSON/file imports, file exports and shared migrations |
+| Built-in themes, favorites and active custom colors | ported | Shared palettes, favorite/light/dark rotation, color editor; alpha/cloud/automatic limitations below |
+| Account login/session/logout | ported | Device consent, bearer auth, secure credentials, expiry/reconnect and revocation; browser owns consent and account administration |
+| Profile search, account/profile stats and PBs | ported | Username lookup, TUI/web selection, text stats and paginated time/words PBs; rich views below |
+| Result history, filters and details | ported | Local/TUI/web history; direct filters, selected-result metrics and remote WPM sparkline; mutations/exports below |
+| Tags and presets | ported | CRUD, active tags, shared preset groups and apply; tag PB tables below |
+| All-time, daily and weekly XP leaderboards | ported | TUI/web, language/mode, pagination, rank and profile navigation; presentation below |
+| Quote search/favorites and custom texts | ported | ID/text/source search, typing selected quotes, favorites, multiline editor and saved texts; moderation/editor limitations below |
+| Challenges, word funboxes and layout emulation | ported | Shared setup/verification, cached challenge scripts, shared word transforms and keyboard mapping; visual/font/protocol limitations below |
+| Replay and announcements | ported | Latest-test replay controls and public announcement screen; persistence/presentation limitations below |
+
+## Gaps and approximations
+
+| Feature | Status | Reason | Approximation |
 | --- | --- | --- | --- |
 | Text-to-speech | missing | Browser speech synthesis API | Evaluate external speech support later |
 | Sounds | missing | Browser audio playback | Evaluate terminal bell or native audio later |
@@ -44,3 +70,12 @@ browser.
 | Captcha signup/reports/quote submission | browser handoff | Existing browser forms own captcha | Palette actions retain the URL for manual copy; links preserve quote language/ID or username through browser login, then open the form |
 | Historical replay and replay sound/animation | approximated / missing | Saved history stores result metrics without raw event logs | Replay the latest in-memory test, including corrections/regressions, with pause, seek and speed controls; no replay after process exit |
 | Web palette hotkey | approximated | OS/terminal shortcuts vary | Ctrl+P/Ctrl+K open the terminal palette; `commandPaletteHotkey` stays synced for web |
+| Result word history, per-key timing and detailed diagnostics | missing | Result screen provides summary metrics and sparklines | Latest-test replay and practice commands; inspect rich word/key breakdowns on web |
+| Result crown, daily rank/reward panels and quote action buttons | approximated | Compact terminal result screen | Upload/PB text; leaderboards, quotes and browser handoffs live on separate screens |
+| History deletion, retagging, CSV export and PB reset | missing | History screen is read-only; tag CRUD does not retag saved results | Use web account controls; local `history.json` retains full metrics |
+| Share test settings/results and screenshot watermark | missing | Browser share URLs/canvas controls have no terminal equivalent | Config file export; use web share/screenshot controls |
+| OAuth/password/passkey administration and API keys | missing | Terminal uses device authorization | Manage providers, passwords, passkeys and API keys in browser account settings |
+| Caps/Num Lock, browser focus/fullscreen and mouse controls | approximated / missing | Legacy terminal protocols omit lock state; keyboard-driven UI | Terminal focus and window controls; no lock-state warnings or clickable navigation |
+| Notification history and reward claims | missing | Notifications expire within this process | Dedicated announcement screen; browser inbox/reward controls |
+| About, release history, legal and support pages | approximated | Informational browser pages | `--help`, `--version`, packaged README and documentation; website for legal/support/release history |
+| PWA installation, service-worker cache and browser dev overlays | missing | Browser-only application lifecycle | npm installation, Bun runtime, XDG asset cache and local debug logs |
