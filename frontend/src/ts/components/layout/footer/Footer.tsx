@@ -25,15 +25,6 @@ export function Footer(): JSXElement {
       >
         <div class="grid grid-cols-1 justify-items-start [&>*]:min-h-9 xs:grid-cols-2 sm:grid-cols-4 sm:[&>*]:min-h-0 lg:flex lg:flex-wrap">
           <Button
-            href="/security-policy.html"
-            variant="text"
-            text="security"
-            fa={{
-              icon: "fa-shield-alt",
-              fixedWidth: true,
-            }}
-          />
-          <Button
             href="/privacy-policy.html"
             variant="text"
             text="privacy"
