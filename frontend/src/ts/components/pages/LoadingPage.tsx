@@ -10,46 +10,58 @@ import {
 import { cn } from "../../utils/cn";
 import { Anime } from "../common/anime";
 import { Fa } from "../common/Fa";
+import { LoadingIndicator } from "../common/LoadingIndicator";
 
 export function LoadingPage(): JSXElement {
   const barAnimation = (): AnimationParams | undefined => {
     const bar = getBarAnimation();
     if (bar === undefined) return undefined;
     return {
-      width: `${bar.percentage}%`,
+      scaleX: bar.percentage / 100,
       duration: bar.duration,
+      ease: "linear",
       onComplete: () => bar.onComplete(),
     };
   };
 
   return (
-    <div class="grid gap-4 text-center">
+    <div
+      class="grid w-full justify-items-center gap-4 text-center"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      aria-label={getMode() === "error" ? "Loading failed" : "Loading"}
+    >
+      <LoadingIndicator
+        class={cn(
+          "col-start-1 row-start-1 self-center",
+          getMode() !== "spinner" && "invisible",
+        )}
+      />
       <div
-        class={cn("text-[2rem] text-main", getMode() !== "spinner" && "hidden")}
-      >
-        <Fa icon="fa-circle-notch" fixedWidth spin />
-      </div>
-      <div
-        class={cn("text-[2rem] text-error", getMode() !== "error" && "hidden")}
+        class={cn(
+          "col-start-1 row-start-1 h-8 text-[2rem] text-error",
+          getMode() !== "error" && "invisible",
+        )}
+        aria-hidden="true"
       >
         <Fa icon="fa-times" fixedWidth />
       </div>
-      <div
+      <LoadingIndicator
         class={cn(
-          "h-2 w-full max-w-80 justify-self-center rounded bg-sub-alt",
-          getMode() !== "bar" && "hidden",
+          "col-start-1 row-start-1 self-center",
+          getMode() !== "bar" && "invisible",
         )}
       >
         <Anime
-          class="h-full w-1/2 rounded bg-main"
+          class="h-full w-full origin-left scale-x-0 rounded bg-main"
           animation={barAnimation()}
-          respectReducedMotion={false}
         />
-      </div>
+      </LoadingIndicator>
       <div
         class={cn(
-          "min-h-[1.25em] wrap-break-word",
-          !isTextVisible() && "hidden",
+          "row-start-2 min-h-[1.25em] w-full wrap-break-word",
+          !isTextVisible() && "invisible",
         )}
       >
         {getText()}

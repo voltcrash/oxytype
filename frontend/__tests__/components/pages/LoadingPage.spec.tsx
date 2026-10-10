@@ -41,10 +41,10 @@ describe("LoadingPage", () => {
 
   it("shows spinner by default", () => {
     const { spinner, error, bar, text } = renderPage();
-    expect(spinner).not.toHaveClass("hidden");
-    expect(error).toHaveClass("hidden");
-    expect(bar).toHaveClass("hidden");
-    expect(text).toHaveClass("hidden");
+    expect(spinner).not.toHaveClass("invisible");
+    expect(error).toHaveClass("invisible");
+    expect(bar).toHaveClass("invisible");
+    expect(text).toHaveClass("invisible");
     expect(text).toHaveTextContent("Loading...");
   });
 
@@ -52,29 +52,29 @@ describe("LoadingPage", () => {
     const { spinner, error, bar, text } = renderPage();
 
     LoadingPageState.showError();
-    expect(spinner).toHaveClass("hidden");
-    expect(error).not.toHaveClass("hidden");
-    expect(bar).toHaveClass("hidden");
+    expect(spinner).toHaveClass("invisible");
+    expect(error).not.toHaveClass("invisible");
+    expect(bar).toHaveClass("invisible");
 
     await LoadingPageState.showBar();
-    expect(error).toHaveClass("hidden");
-    expect(bar).not.toHaveClass("hidden");
+    expect(error).toHaveClass("invisible");
+    expect(bar).not.toHaveClass("invisible");
 
     LoadingPageState.showSpinner();
-    expect(spinner).not.toHaveClass("hidden");
-    expect(bar).toHaveClass("hidden");
-    expect(text).toHaveClass("hidden");
+    expect(spinner).not.toHaveClass("invisible");
+    expect(bar).toHaveClass("invisible");
+    expect(text).toHaveClass("invisible");
   });
 
   it("updateText shows text, mode change hides it", () => {
     const { text } = renderPage();
 
     LoadingPageState.updateText("Downloading results...");
-    expect(text).not.toHaveClass("hidden");
+    expect(text).not.toHaveClass("invisible");
     expect(text).toHaveTextContent("Downloading results...");
 
     LoadingPageState.showError();
-    expect(text).toHaveClass("hidden");
+    expect(text).toHaveClass("invisible");
   });
 
   it("updateBar animates fill and resolves on complete", async () => {
@@ -84,7 +84,7 @@ describe("LoadingPage", () => {
 
     expect(mockAnimate).toHaveBeenLastCalledWith(
       bar.firstElementChild,
-      expect.objectContaining({ width: "42%", duration: 500 }),
+      expect.objectContaining({ scaleX: 0.42, duration: 500, ease: "linear" }),
     );
   });
 });
