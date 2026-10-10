@@ -3,7 +3,6 @@ import { JSXElement } from "solid-js";
 import { getIsScreenshotting } from "../../../states/core";
 import { getFocus } from "../../../states/test";
 import { cn } from "../../../utils/cn";
-import { Button } from "../../common/Button";
 import { Keytips } from "./Keytips";
 import { ThemeIndicator } from "./ThemeIndicator";
 import { VersionButton } from "./VersionButton";
@@ -23,17 +22,6 @@ export function Footer(): JSXElement {
           getFocus() && "opacity-0",
         )}
       >
-        <div class="grid grid-cols-1 justify-items-start [&>*]:min-h-9 xs:grid-cols-2 sm:grid-cols-4 sm:[&>*]:min-h-0 lg:flex lg:flex-wrap">
-          <Button
-            href="/privacy-policy.html"
-            variant="text"
-            text="privacy"
-            fa={{
-              icon: "fa-lock",
-              fixedWidth: true,
-            }}
-          />
-        </div>
         <div class="flex flex-col items-end text-right [&>*]:min-h-9 lg:flex-row sm:[&>*]:min-h-0">
           <ThemeIndicator />
           <VersionButton />
