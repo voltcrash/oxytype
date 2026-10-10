@@ -204,7 +204,7 @@ describe("App effects", () => {
   it("keeps startup feedback until config and the first page are ready", async () => {
     const startup = document.createElement("div");
     startup.id = "startupScreen";
-    element.prepend(startup);
+    document.body.prepend(startup);
     mount();
     expect(startup.isConnected).toBe(true);
     expect(element.querySelector("input")).not.toBeNull();
@@ -225,6 +225,33 @@ describe("App effects", () => {
     };
     options.onComplete();
     expect(startup.isConnected).toBe(false);
+  });
+
+  it("retains startup feedback when navigation finishes before config", async () => {
+    const startup = document.createElement("div");
+    startup.id = "startupScreen";
+    document.body.prepend(startup);
+    mount();
+    setAppLoading(false);
+    expect(startup.isConnected).toBe(true);
+    expect(services.animate).not.toHaveBeenCalled();
+    await ready();
+    expect(services.animate).toHaveBeenCalledWith(
+      startup,
+      expect.objectContaining({ opacity: [1, 0] }),
+    );
+  });
+
+  it("cleans up a pending startup screen when its owner is disposed", async () => {
+    const startup = document.createElement("div");
+    startup.id = "startupScreen";
+    document.body.prepend(startup);
+    const { unmount } = mount();
+    unmount();
+    expect(startup.isConnected).toBe(false);
+    await ready();
+    setAppLoading(false);
+    expect(services.animate).not.toHaveBeenCalled();
   });
   it("hides owned fallbacks during screenshots and stops reacting on disposal", () => {
     const noscript = document.createElement("noscript");
