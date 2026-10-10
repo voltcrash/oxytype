@@ -26,15 +26,6 @@ export function Footer(): JSXElement {
         <div class="grid grid-cols-1 justify-items-start [&>*]:min-h-9 xs:grid-cols-2 sm:grid-cols-4 sm:[&>*]:min-h-0 lg:flex lg:flex-wrap">
           <Button
             variant="text"
-            text="github"
-            fa={{
-              icon: "fa-code",
-              fixedWidth: true,
-            }}
-            href="https://github.com/voltcrash/oxytype"
-          />
-          <Button
-            variant="text"
             text="discussions"
             fa={{ icon: "fa-comments", fixedWidth: true }}
             href="https://github.com/voltcrash/oxytype/discussions"
