@@ -30,7 +30,7 @@ it("keeps independently mounted radio groups separate", () => {
       <ClientToggle value="tui" onChange={() => undefined} />
     </>
   ));
-  const radios = screen.getAllByRole("radio") as HTMLInputElement[];
+  const radios = screen.getAllByRole<HTMLInputElement>("radio");
   expect(radios[0]?.name).toBe(radios[1]?.name);
   expect(radios[2]?.name).toBe(radios[3]?.name);
   expect(radios[0]?.name).not.toBe(radios[2]?.name);
