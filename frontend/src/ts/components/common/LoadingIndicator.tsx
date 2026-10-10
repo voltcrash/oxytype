@@ -8,7 +8,7 @@ export function LoadingIndicator(
   return (
     <div
       class={cn(
-        "h-2 w-80 max-w-full overflow-hidden rounded bg-sub-alt",
+        "h-2 w-full max-w-80 overflow-hidden rounded bg-sub-alt",
         props.class,
       )}
       aria-hidden="true"
