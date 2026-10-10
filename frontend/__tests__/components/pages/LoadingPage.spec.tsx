@@ -6,7 +6,7 @@ const { mockAnimate } = vi.hoisted(() => ({
   mockAnimate: vi.fn((_el: HTMLElement, params: AnimationParams) => {
     // @ts-expect-error onComplete args not needed in test
     params.onComplete?.();
-    return { pause: vi.fn() };
+    return { cancel: vi.fn() };
   }),
 }));
 

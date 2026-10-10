@@ -1,6 +1,7 @@
-import { AnimationParams } from "animejs";
-import { JSXElement } from "solid-js";
+import { animate } from "animejs";
+import { createEffect, JSXElement, onCleanup } from "solid-js";
 
+import { useRef } from "../../hooks/useRef";
 import {
   getBarAnimation,
   getMode,
@@ -8,21 +9,31 @@ import {
   isTextVisible,
 } from "../../states/loading-page";
 import { cn } from "../../utils/cn";
-import { Anime } from "../common/anime";
+import { applyReducedMotion } from "../../utils/misc";
 import { Fa } from "../common/Fa";
 import { LoadingIndicator } from "../common/LoadingIndicator";
 
 export function LoadingPage(): JSXElement {
-  const barAnimation = (): AnimationParams | undefined => {
+  const [ref, fill] = useRef<HTMLDivElement>();
+  createEffect(() => {
     const bar = getBarAnimation();
-    if (bar === undefined) return undefined;
-    return {
+    const element = fill();
+    if (element === undefined) return;
+    if (bar === undefined) {
+      element.style.transform = "scaleX(0)";
+      return;
+    }
+    const animation = animate(element, {
       scaleX: bar.percentage / 100,
-      duration: bar.duration,
+      duration: applyReducedMotion(bar.duration),
       ease: "linear",
       onComplete: () => bar.onComplete(),
-    };
-  };
+    });
+    onCleanup(() => {
+      animation.cancel();
+      bar.onComplete();
+    });
+  });
 
   return (
     <div
@@ -53,10 +64,10 @@ export function LoadingPage(): JSXElement {
           getMode() !== "bar" && "invisible",
         )}
       >
-        <Anime
+        <div
+          ref={ref}
           class="h-full w-full origin-left scale-x-0 rounded bg-main"
-          animation={barAnimation()}
-        />
+        ></div>
       </LoadingIndicator>
       <div
         class={cn(
