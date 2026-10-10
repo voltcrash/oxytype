@@ -25,6 +25,7 @@ const { deferred, lifecycle, guards, ui, services } = vi.hoisted(() => {
       active: true,
       quickRestart: false,
       dev: true,
+      cookiesAccepted: true,
     },
     ui: {
       applyFont: vi.fn(),
@@ -59,6 +60,9 @@ vi.mock("../../../src/ts/auth-client", () => ({
 }));
 vi.mock("../../../src/ts/config/store", () => ({
   Config: { mode: "words", words: 10, time: 15, tapeMode: "off" },
+}));
+vi.mock("../../../src/ts/cookies", () => ({
+  getAcceptedCookies: () => (guards.cookiesAccepted ? {} : null),
 }));
 vi.mock("../../../src/ts/states/core", async () => {
   const { createSignal } = await import("solid-js");
@@ -138,6 +142,7 @@ import {
 } from "../../../src/ts/states/funbox";
 import {
   hideModalAndClearChain,
+  isModalOpen,
   showModal,
 } from "../../../src/ts/states/modals";
 
@@ -152,6 +157,7 @@ beforeEach(() => {
     active: true,
     quickRestart: false,
     dev: true,
+    cookiesAccepted: true,
   });
   setCrt(null);
   setFunboxBodyClasses([]);
@@ -179,6 +185,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   hideModalAndClearChain("GoogleSignup");
+  hideModalAndClearChain("Cookies");
   element.remove();
   document.body.className = "";
   document.body.style.removeProperty("transition");
@@ -274,6 +281,23 @@ describe("App effects", () => {
     hideModalAndClearChain("GoogleSignup");
     setAppLoading(false);
     expect(services.animate).toHaveBeenCalledTimes(calls);
+  });
+
+  it("opens cookie consent only after the startup fade completes", async () => {
+    guards.cookiesAccepted = false;
+    const startup = document.createElement("div");
+    startup.id = "startupScreen";
+    document.body.prepend(startup);
+    mount();
+    await ready();
+    setAppLoading(false);
+    expect(isModalOpen("Cookies")).toBe(false);
+    const options = services.animate.mock.lastCall?.[1] as {
+      onComplete: () => void;
+    };
+    options.onComplete();
+    expect(startup.isConnected).toBe(false);
+    expect(isModalOpen("Cookies")).toBe(true);
   });
   it("hides owned fallbacks during screenshots and stops reacting on disposal", () => {
     const noscript = document.createElement("noscript");

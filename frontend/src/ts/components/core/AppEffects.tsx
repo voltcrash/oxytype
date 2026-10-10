@@ -14,6 +14,7 @@ import { debounce, throttle } from "throttle-debounce";
 import * as ServerConfiguration from "../../ape/server-configuration";
 import { configLoadPromise } from "../../config/lifecycle";
 import { Config } from "../../config/store";
+import { getAcceptedCookies } from "../../cookies";
 import { configEvent } from "../../events/config";
 import {
   getFontFace,
@@ -33,7 +34,7 @@ import {
   getFunboxBodyClasses,
   isFunboxReducedMotionIgnored,
 } from "../../states/funbox";
-import { isModalOpen } from "../../states/modals";
+import { isModalOpen, showModal } from "../../states/modals";
 import { isFixingSkillIssue } from "../../states/skill-issue";
 import { getResultVisible, isTestActive } from "../../states/test";
 import { getTheme } from "../../states/theme";
@@ -141,25 +142,45 @@ export function AppEffects(props: AppElements): JSXElement {
     // Keep the original animation running while config, auth and the first
     // page settle. Removing it at mount creates a blank frame between loaders.
     const startupScreen = body.querySelector<HTMLElement>("#startupScreen");
+    const [isStartupFinished, setStartupFinished] = createSignal(
+      startupScreen === null,
+    );
     let handoff: ReturnType<typeof animate> | undefined;
     createEffect(() => {
       if (
-        startupScreen === null ||
         handoff !== undefined ||
         !isReady() ||
         (isAppLoading() && !isModalOpen("GoogleSignup"))
       ) {
         return;
       }
+      if (startupScreen === null) return;
       handoff = animate(startupScreen, {
         opacity: [1, 0],
         duration: applyReducedMotion(200),
-        onComplete: () => startupScreen.remove(),
+        onComplete: () => {
+          startupScreen.remove();
+          setStartupFinished(true);
+        },
       });
     });
     onCleanup(() => {
       handoff?.cancel();
       startupScreen?.remove();
+    });
+    let cookiePrompted = false;
+    createEffect(() => {
+      if (
+        cookiePrompted ||
+        !isReady() ||
+        !isStartupFinished() ||
+        isAppLoading() ||
+        getAcceptedCookies() !== null
+      ) {
+        return;
+      }
+      cookiePrompted = true;
+      showModal("Cookies");
     });
     const noscript = body.querySelector<HTMLElement>("noscript");
     createEffect(() => {
