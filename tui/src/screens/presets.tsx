@@ -18,6 +18,7 @@ import { usePalette } from "../palette/palette";
 import { useScreenKeys } from "../shell/screen-keys";
 import { useTheme } from "../theme/theme";
 import { createAction, requireSuccess } from "../ui/actions";
+import { KeyHints, parseHints } from "../ui/key-hints";
 import { ListView } from "../ui/list-view";
 import { createRemote, dataOrThrow } from "../ui/remote";
 import { RemoteStatus } from "../ui/remote-status";
@@ -213,17 +214,18 @@ export function PresetsScreen() {
           selected={selection.index()}
           height={Math.max(1, dimensions().height - 10)}
           empty="no presets yet"
-          render={(preset, active) => (
-            <text fg={active ? theme().colors.main : theme().colors.text}>
-              {active ? "›" : " "} {preset.name} ·{" "}
-              {preset.settingGroups?.join(", ") ?? "full"}
+          render={(preset) => (
+            <text fg={theme().colors.text}>
+              {preset.name} · {preset.settingGroups?.join(", ") ?? "full"}
             </text>
           )}
         />
-        <text fg={theme().colors.sub}>
-          ↑↓ select · enter apply · a add · e rename · s save current · d delete
-          · r reload
-        </text>
+        <KeyHints
+          wrap
+          hints={parseHints(
+            "↑↓ select · enter apply · a add · e rename · s save current · d delete · r reload",
+          )}
+        />
       </Show>
     </box>
   );

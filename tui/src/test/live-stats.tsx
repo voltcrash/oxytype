@@ -33,7 +33,7 @@ export function liveStatsColor(
   return fade(color, colors.bg, Number(config.timerOpacity));
 }
 
-export function LiveStatsBar() {
+export function LiveStatsBar(props: { width?: number }) {
   const test = useTypingTest();
   const { config } = useConfig();
   const theme = useTheme();
@@ -76,7 +76,8 @@ export function LiveStatsBar() {
     if (test.status() !== "running" || wordsTotal() === 0) return 0;
     return Math.min(1, wordCount() / wordsTotal());
   };
-  const barWidth = (): number => Math.max(1, dimensions().width - 2);
+  const barWidth = (): number =>
+    Math.max(1, props.width ?? dimensions().width - 2);
   return (
     <box flexDirection="column" flexShrink={0}>
       <Show when={config.timerStyle === "bar" && test.config().mode !== "zen"}>

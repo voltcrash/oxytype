@@ -16,6 +16,7 @@ import type { Cell, LineWindow, Position, WordsLayout } from "./layout";
 import type { LetterColorConfig, WordContext } from "./letter-colors";
 
 import { useConfig } from "../config/store";
+import { usePalette } from "../palette/palette";
 import { useTheme } from "../theme/theme";
 import { terminalCaretStyle } from "./caret";
 import { cellColor, typedEffectCell } from "./letter-colors";
@@ -104,6 +105,7 @@ export function Words(props: WordsProps) {
   const renderer = useRenderer();
   const theme = useTheme();
   const { config } = useConfig();
+  const palette = usePalette();
   let box!: BoxRenderable;
   let scroll!: ScrollBoxRenderable;
   const lines = createMemo(() =>
@@ -142,6 +144,7 @@ export function Words(props: WordsProps) {
     const cursorY = box.y + row;
     const visible =
       config.caretStyle !== "off" &&
+      palette?.isOpen() !== true &&
       row >= 0 &&
       cursorY >= scroll.viewport.y &&
       cursorY < scroll.viewport.y + scroll.viewport.height;

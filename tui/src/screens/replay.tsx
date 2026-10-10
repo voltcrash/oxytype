@@ -10,6 +10,7 @@ import { useTypingTest } from "../test/typing-test";
 import { buildWordView } from "../test/word-view";
 import { Words } from "../test/words";
 import { useTheme } from "../theme/theme";
+import { KeyHints, parseHints } from "../ui/key-hints";
 
 export function ReplayScreen() {
   const test = useTypingTest();
@@ -122,9 +123,12 @@ export function ReplayScreen() {
           height={(window().end - window().start) * 2}
         />
       </Show>
-      <text fg={theme().colors.sub}>
-        space play/pause · ←→ seek 1s · home/end · s speed · esc back
-      </text>
+      <KeyHints
+        wrap
+        hints={parseHints(
+          "space play/pause · ←→ seek 1s · home/end jump · s speed · esc back",
+        )}
+      />
     </box>
   );
 }

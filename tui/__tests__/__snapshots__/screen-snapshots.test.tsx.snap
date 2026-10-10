@@ -2,26 +2,26 @@
 
 exports[`OpenTUI screen snapshots ready, typing and result at 80x24: ready 1`] = `
 "
- oxytype  [test]  settings  account  leaderboards  history          serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
- typing test
+          punct numbers │ time words quote zen custom │ 10 25 50 100 2
 
- time  [words]  quote  zen  custom  punctuation  numbers
 
- 2 words · english
 
- 0/2
+
+
+
+ 0/2                                                                    english
 
  cat dog
 
 
- F2 mode · F3 punctuation · F4 numbers · F5/F6 amount
-
- ^r restart · F7 repeat · F8 finish
 
 
 
 
+
+ ^r restart  F7 repeat  F8 finish  F2 mode  F3 punct  F4 numbers  F5/F6 length
 
  esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 
@@ -30,26 +30,26 @@ exports[`OpenTUI screen snapshots ready, typing and result at 80x24: ready 1`] =
 
 exports[`OpenTUI screen snapshots ready, typing and result at 80x24: result with chart 1`] = `
 "
- oxytype  test  settings  account  leaderboards  history            serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
- result
+ wpm                    ── raw   ── wpm   x errors
+ ▀▀█ █▀█             36 ⠉⠉⠉⠉⠓⠒⠒⠒⠒⠒⠒⠦⠤⠤⠤⠤⠤⠤⣄⣀⣀⣀⣀⣀⣀⡀
+ █▀▀ █▀█                                         ⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠙⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒
+ ▀▀▀ ▀▀▀
 
- 28 wpm · 100% acc
+ acc
+ ▀█  █▀█ █▀█ ▀ ▄▀     0
+  █  █ █ █ █  ▄▀
+ ▀▀▀ ▀▀▀ ▀▀▀ ▄▀ ▄       0s                                                 3.0s
 
- raw 28 · consistency 80%
-
- characters 7/0/0/0 · correct/incorrect/extra/missed
-
- time 3.00s · words 2 · english
+ test type    raw    characters    consistency    time
+ words 2      28     7/0/0/0       80%            3.00s
+ english
 
  not saved: too short
 
- wpm █▇▆
- raw █▇▆
- err ▁▁▁
- 0s → 3.0s · speed 0–36
 
- enter next test · F7 repeat · r replay · ^o history
+ enter next test  F7 repeat  r replay  ^o history
 
  esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 
@@ -58,7 +58,7 @@ exports[`OpenTUI screen snapshots ready, typing and result at 80x24: result with
 
 exports[`OpenTUI screen snapshots ready, typing and result at 80x24: replay 1`] = `
 "
- oxytype  test  settings  account  leaderboards  history            serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
  last test replay · paused · 1×
 
@@ -67,7 +67,7 @@ exports[`OpenTUI screen snapshots ready, typing and result at 80x24: replay 1`] 
  cat dog
 
 
- space play/pause · ←→ seek 1s · home/end · s speed · esc back
+ space play/pause  ←→ seek 1s  home/end jump  s speed  esc back
 
 
 
@@ -86,13 +86,12 @@ exports[`OpenTUI screen snapshots ready, typing and result at 80x24: replay 1`] 
 
 exports[`OpenTUI screen snapshots ready, typing and result at 80x24: empty history 1`] = `
 "
- oxytype  test  settings  account  leaderboards  [history]          serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
- local history · 0 tests
+  local    0 tests
 
  no saved tests match
 
- ↑↓ select · enter details · tab local/TUI/web · f filters · x clear · r reload
 
 
 
@@ -107,6 +106,7 @@ exports[`OpenTUI screen snapshots ready, typing and result at 80x24: empty histo
 
 
 
+ ↑↓ select  enter details  tab local/TUI/web  f filters  x clear  r reload
  esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 
 "
@@ -114,22 +114,22 @@ exports[`OpenTUI screen snapshots ready, typing and result at 80x24: empty histo
 
 exports[`OpenTUI screen snapshots compact ready and result at 80x20: compact ready 1`] = `
 "
- oxytype  [test]  settings  account  leaderboards  history          serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
- typing test
+          punct numbers │ time words quote zen custom │ 10 25 50 100 2
 
- time  [words]  quote  zen  custom  punctuation  numbers
 
- 2 words · english
 
- 0/2
+
+ 0/2                                                                    english
 
  cat dog
 
 
- F2 mode · F3 punctuation · F4 numbers · F5/F6 amount
 
- ^r restart · F7 repeat · F8 finish
+
+
+ ^r restart  F7 repeat  F8 finish  F2 mode  F3 punct  F4 numbers  F5/F6 length
 
  esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 
@@ -138,22 +138,22 @@ exports[`OpenTUI screen snapshots compact ready and result at 80x20: compact rea
 
 exports[`OpenTUI screen snapshots compact ready and result at 80x20: compact result 1`] = `
 "
- oxytype  test  settings  account  leaderboards  history            serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
- result
+ wpm        acc
+ ▀▀█ █▀█    ▀█  █▀█ █▀█ ▀ ▄▀
+ █▀▀ █▀█     █  █ █ █ █  ▄▀
+ ▀▀▀ ▀▀▀    ▀▀▀ ▀▀▀ ▀▀▀ ▄▀ ▄
 
- 28 wpm · 100% acc
-
- raw 28 · consistency 80%
-
- characters 7/0/0/0 · correct/incorrect/extra/missed
-
- time 3.00s · words 2 · english
+ test type    raw    characters    consistency    time
+ words 2      28     7/0/0/0       80%            3.00s
+ english
 
  not saved: too short
 
- enter next test · F7 repeat · r replay · ^o history
 
+
+ enter next test  F7 repeat  r replay  ^o history
 
  esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 
@@ -182,27 +182,27 @@ exports[`OpenTUI screen snapshots resize prompt at 40x16: resize prompt 1`] = `
 
 exports[`OpenTUI screen snapshots settings and palette search: behavior settings 1`] = `
 "
- oxytype  test  [settings]  account  leaderboards  history          serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
- [behavior]  input   sound   caret   appearance   hide elements   theme   dange
+  behavior  input  sound  caret  appearance  hide elements  theme  danger zone
 
- test behavior
-   difficulty                   [normal]  expert   master
-   quick restart                [off]  esc   tab   enter
-   repeat quotes                [off]  typing
-   blind mode                   [off]  on
-   always show words history    [off]  on   web only
-   single list command palette   manual  [on]
-   command palette shortcut     Mod+K · terminal ^p  web only
- speed & accuracy
-   min speed                    [off]  custom   100 wpm
-   min accuracy                 [off]  custom   90%
-   min word burst               [off]  fixed   flex   100 wpm
- language
+ test behavior ────────────────────────────────────────────────────────────────
+ ▌  difficulty                    normal   expert   master
+    quick restart                 off   esc   tab   enter
+    repeat quotes                 off   typing
+    blind mode                    off   on
+    always show words history     off   on   web only
+    single list command palette   manual   on
+    command palette shortcut     Mod+K · terminal ^p  web only
+ speed & accuracy ─────────────────────────────────────────────────────────────
+    min speed                     off   custom   100 wpm
+    min accuracy                  off   custom   90%
+    min word burst                off   fixed   flex   100 wpm
+ language ─────────────────────────────────────────────────────────────────────
  Normal is the classic typing test experience. Expert fails the test if you
  submit (press space) an incorrect word. Master fails if you press a single
  incorrect key (meaning you have to achieve 100% accuracy).
- ↑↓ select · ←→ change · enter edit · r reset · / search · tab section
+ ↑↓ select  ←→ change  enter edit  r reset  / search  tab section
  esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 
 "
@@ -210,27 +210,27 @@ exports[`OpenTUI screen snapshots settings and palette search: behavior settings
 
 exports[`OpenTUI screen snapshots settings and palette search: theme palette 1`] = `
 "
- oxytype  test  [settings]  account  leaderboards  history          serika dark
-  ┌──────────────────────────────────────────────────────────────────────────┐
- [│ > theme                                                                  │e
-  │   Theme › 8008                                                           │
- t│   Theme › 80s after dark                                                 │
-  │   Theme › 9009                                                           │
-  │   Theme › aether                                                         │
-  │   Theme › alduin                                                         │
-  │   Theme › alpine                                                         │
-  │   Theme › anti hero                                                      │
-  │   Theme › arch                                                           │
-  │   Theme › aurora                                                         │
- s│   Theme › beach                                                          │
-  │   Theme › bento                                                          │
-  │   Theme › bingsu                                                         │
-  │   Theme › bliss                                                          │
- l│   Theme › blue dolphin                                                   │
- N│ 1/197                                                                    │
- s│ enter select · tab/arrows move · esc back                                │
- i└──────────────────────────────────────────────────────────────────────────┘
- ↑↓ select · ←→ change · enter edit · r reset · / search · tab section
+ oxytype   test   settings   account   leaderboards   history       serika dark
+
+  behavior  input  sound  caret  appearance  hide elements  theme  danger zone
+  ╭─ commands ───────────────────────────────────────────────────────────────╮
+ t│ > theme                                                                  │─
+ ▌│ ──────────────────────────────────────────────────────────────────────── │
+  │ ▌   Theme › 8008                                                         │
+  │     Theme › 80s after dark                                               │
+  │     Theme › 9009                                                         │
+  │     Theme › aether                                                       │
+  │     Theme › alduin                                                       │
+  │     Theme › alpine                                                       │
+ s│     Theme › anti hero                                                    │─
+  │     Theme › arch                                                         │
+  │     Theme › aurora                                                       │
+  │     Theme › beach                                                        │
+ l│     Theme › bento                                                        │─
+ N│     Theme › bingsu                                                       │
+ s│ 1/197                                                                    │
+ i│ enter select  tab/↑↓ move  esc back                                      │
+ ↑╰──────────────────────────────────────────────────────────────────────────╯
  esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 
 "
@@ -238,7 +238,7 @@ exports[`OpenTUI screen snapshots settings and palette search: theme palette 1`]
 
 exports[`OpenTUI screen snapshots custom screen: custom 1`] = `
 "
- oxytype  test  settings  account  leaderboards  history            serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
  custom text · repeat · 9 word · pipe off
 
@@ -248,7 +248,7 @@ exports[`OpenTUI screen snapshots custom screen: custom 1`] = `
 
 
 
- e edit · n new · o options · enter type · s save · l load · d delete
+ e edit  n new  o options  enter type  s save  l load  d delete
 
  saved texts
 
@@ -266,13 +266,12 @@ exports[`OpenTUI screen snapshots custom screen: custom 1`] = `
 
 exports[`OpenTUI screen snapshots funboxes screen: funboxes 1`] = `
 "
- oxytype  test  settings  account  leaderboards  history            serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
  funboxes · type to search
   search funboxes
 
-
- › [ ] 58008 · shared words
+ ▌ [ ] 58008 · shared words
    [ ] mirror · browser only
    [ ] upside down · browser only
    [ ] nausea · browser only
@@ -280,13 +279,14 @@ exports[`OpenTUI screen snapshots funboxes screen: funboxes 1`] = `
    [ ] simon says · browser only
    [ ] tts · browser only
    [ ] choo choo · browser only
-   [ ] arrows · shared words
  1/48
+
  A special mode for accountants.
 
 
 
- ↑↓ select · enter toggle · shared compatibility and forced settings apply
+ shared compatibility and forced settings apply
+ ↑↓ select  enter toggle
  esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 
 "
@@ -294,13 +294,12 @@ exports[`OpenTUI screen snapshots funboxes screen: funboxes 1`] = `
 
 exports[`OpenTUI screen snapshots challenges screen: challenges 1`] = `
 "
- oxytype  test  settings  account  leaderboards  history            serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
  challenges · type to search
   search challenges
 
-
- › 6969696969 · other
+ ▌ 6969696969 · other
    One Hour Warrior · endurance
    Double Down · endurance
    Triple Trouble · endurance
@@ -308,13 +307,14 @@ exports[`OpenTUI screen snapshots challenges screen: challenges 1`] = `
    8 Ball · endurance
    The Big 12 · endurance
    1 Day · endurance
-   Bigram Salad · speed
  1/53
+
  Complete a 69-second test and achieve 69 WPM, 69 raw, 69% accuracy, and 69%
  consistency.
 
 
- ↑↓ select · enter start · scripts download once · Wingdings requires a browser
+ scripts download once · Wingdings requires a browser
+ ↑↓ select  enter start
  esc back  ^t test  ^s settings  ^a acct  ^l ranks  ^o history  ^p cmd  ^c quit
 
 "
@@ -322,10 +322,10 @@ exports[`OpenTUI screen snapshots challenges screen: challenges 1`] = `
 
 exports[`OpenTUI screen snapshots account screen: account 1`] = `
 "
- oxytype  test  settings  [account]  leaderboards  history          serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
- account
  account service unavailable
+
 
 
 
@@ -350,9 +350,9 @@ exports[`OpenTUI screen snapshots account screen: account 1`] = `
 
 exports[`OpenTUI screen snapshots leaderboards screen: leaderboards 1`] = `
 "
- oxytype  test  settings  account  [leaderboards]  history          serika dark
+ oxytype   test   settings   account   leaderboards   history       serika dark
 
- leaderboards · all-time · tui · english · time 15
+ tab  all-time    c  tui    l  english    m  time 15
 
  API service unavailable
 

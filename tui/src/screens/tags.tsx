@@ -7,6 +7,7 @@ import { usePalette } from "../palette/palette";
 import { useScreenKeys } from "../shell/screen-keys";
 import { useTheme } from "../theme/theme";
 import { createAction, requireSuccess } from "../ui/actions";
+import { KeyHints, parseHints } from "../ui/key-hints";
 import { ListView } from "../ui/list-view";
 import { createRemote, dataOrThrow } from "../ui/remote";
 import { RemoteStatus } from "../ui/remote-status";
@@ -140,17 +141,19 @@ export function TagsScreen() {
           selected={selection.index()}
           height={Math.max(1, dimensions().height - 10)}
           empty="no tags yet"
-          render={(tag, active) => (
-            <text fg={active ? theme().colors.main : theme().colors.text}>
-              {active ? "›" : " "}{" "}
+          render={(tag) => (
+            <text fg={theme().colors.text}>
               {account?.tags.active().includes(tag._id) ? "[x]" : "[ ]"}{" "}
               {tag.name}
             </text>
           )}
         />
-        <text fg={theme().colors.sub}>
-          ↑↓ select · space active · a add · e rename · d delete · r reload
-        </text>
+        <KeyHints
+          wrap
+          hints={parseHints(
+            "↑↓ select · space active · a add · e rename · d delete · r reload",
+          )}
+        />
       </Show>
     </box>
   );

@@ -7,6 +7,7 @@ import { useRouter } from "../router/router";
 import { useScreenKeys } from "../shell/screen-keys";
 import { useTheme } from "../theme/theme";
 import { createAction } from "../ui/actions";
+import { KeyHints, parseHints } from "../ui/key-hints";
 
 export function BrowserScreen() {
   const router = useRouter();
@@ -47,9 +48,10 @@ export function BrowserScreen() {
       <Show when={action.busy()}>
         <text fg={theme().colors.sub}>opening browser…</text>
       </Show>
-      <text fg={theme().colors.sub}>
-        enter open browser · c copy link · esc back
-      </text>
+      <KeyHints
+        wrap
+        hints={parseHints("enter open browser · c copy link · esc back")}
+      />
     </box>
   );
 }

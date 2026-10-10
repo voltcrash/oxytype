@@ -96,9 +96,10 @@ describe("Stage G screens", () => {
     );
     await client.account.auth.login();
     const app = await renderApp({ ...client, initialScreen: "account" });
-    await app.waitForFrame((frame) => frame.includes("100 xp"));
+    // The stat grid puts xp first: its value starts the row under the labels.
+    await app.waitForFrame((frame) => /^ +100 {2,}/m.test(frame));
     app.mockInput.pressTab();
-    await app.waitForFrame((frame) => frame.includes("200 xp"));
+    await app.waitForFrame((frame) => /^ +200 {2,}/m.test(frame));
     expect([
       ...new Set(
         client.requests
@@ -107,7 +108,7 @@ describe("Stage G screens", () => {
       ),
     ]).toEqual(["tui", "web"]);
     app.mockInput.pressKey("t", { ctrl: true });
-    expect(await app.frame()).toContain("typing test");
+    expect(await app.frame()).toContain("^r restart");
   });
   test("paginates zero-based boards and opens the selected public profile", async () => {
     const client = await server((url) => {
@@ -136,7 +137,7 @@ describe("Stage G screens", () => {
     await app.waitForFrame((frame) => frame.includes("page 1/2"));
     app.mockInput.pressArrow("right");
     await app.waitForFrame(
-      (frame) => frame.includes("page 2/2") && frame.includes("51."),
+      (frame) => frame.includes("page 2/2") && /^ *▌ 51 /m.test(frame),
     );
     expect(
       client.requests
@@ -198,7 +199,7 @@ describe("Stage G screens", () => {
     app.mockInput.pressEnter();
     await app.waitForFrame((frame) => frame.includes("renamed"));
     app.mockInput.pressKey("a", { ctrl: true });
-    expect(await app.frame()).toContain("[account]");
+    expect(await app.active("account")).toBe(true);
   });
   test("saves bracketed multiline paste, then pastes a browser handoff command", async () => {
     const library = createTextLibrary();
@@ -216,7 +217,7 @@ describe("Stage G screens", () => {
     await app.waitForFrame((frame) => frame.includes("pasted"));
     expect(library.texts()[0]?.settings.text).toEqual(["first\nsecond\tline"]);
     app.mockInput.pressKey("s", { ctrl: true });
-    expect(await app.frame()).toContain("[settings]");
+    expect(await app.active("settings")).toBe(true);
     app.mockInput.pressKey("p", { ctrl: true });
     await app.mockInput.pasteBracketedText("Sign up in browser");
     app.mockInput.pressEnter();
@@ -238,7 +239,7 @@ describe("Stage G screens", () => {
       app.mockInput.pressKey(char);
       await app.renderOnce();
     }
-    await app.waitForFrame((frame) => frame.includes("100% acc"));
+    await app.waitForFrame((frame) => frame.includes("enter next test"));
     app.mockInput.pressKey("r");
     expect(await app.frame()).toContain("last test replay · paused · 1×");
     app.mockInput.pressKey("END");
@@ -248,7 +249,7 @@ describe("Stage G screens", () => {
     app.mockInput.pressArrow("left");
     expect(await app.frame()).toContain("2.0 / 3.0s");
     app.mockInput.pressKey("s", { ctrl: true });
-    expect(await app.frame()).toContain("[settings]");
+    expect(await app.active("settings")).toBe(true);
     await config.flush();
   });
   test("loads public announcements with a retry after a server error", async () => {

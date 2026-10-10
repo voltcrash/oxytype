@@ -4,6 +4,7 @@ import { describe, expect, test } from "bun:test";
 import type { FinishedTest } from "../src/test/typing-test";
 
 import { sparkline, ResultChart } from "../src/results/chart";
+import { braillePlot, errorColumns } from "../src/results/plot";
 import { createTheme, ThemeContext } from "../src/theme/theme";
 import { renderTui } from "./helpers/render";
 
@@ -34,11 +35,42 @@ describe("result chart", () => {
           <ResultChart test={finished} width={78} startAtZero={false} />
         </ThemeContext.Provider>
       ));
-      expect(await app.frame()).toContain(`0s → ${seconds}.0s`);
-      expect(await app.frame()).toContain("speed 60–");
-      expect(
-        (await app.frame()).split("\n")[0]?.trimEnd().length,
-      ).toBeLessThanOrEqual(78);
+      const frame = await app.frame();
+      expect(frame).toContain(`${seconds}.0s`);
+      expect(frame).toContain("── raw   ── wpm   x errors");
+      // The y axis runs from the slowest second to the fastest.
+      expect(frame).toMatch(
+        new RegExp(`^ *${Math.max(...values)} [⠀-⣿ ]`, "m"),
+      );
+      expect(frame).toMatch(/^ *60 [⠀-⣿ ]/m);
+      for (const line of frame.split("\n")) {
+        expect(line.trimEnd().length).toBeLessThanOrEqual(78);
+      }
     });
   }
+});
+
+describe("braille plot", () => {
+  test("draws a rising line from bottom left to top right", () => {
+    const rows = braillePlot([[0, 10]], 2, 1, 0, 10);
+    expect(rows).toHaveLength(1);
+    // Dots climb from the bottom-left to the top-right pixel.
+    expect(rows[0]?.map((cell) => cell.char).join("")).toBe("⣠⠞");
+    expect(rows[0]?.every((cell) => cell.series === 0)).toBe(true);
+  });
+  test("later series own shared cells", () => {
+    const rows = braillePlot([[5], [5]], 1, 1, 0, 10);
+    expect(rows[0]?.[0]?.series).toBe(1);
+  });
+  test("marks error columns under their samples", () => {
+    expect(errorColumns([0, 2, 0, 1], 7)).toEqual([
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+    ]);
+  });
 });

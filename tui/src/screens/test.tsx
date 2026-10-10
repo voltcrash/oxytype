@@ -10,6 +10,7 @@ import {
 
 import { useConfig } from "../config/store";
 import { useRouter } from "../router/router";
+import { contentWidth } from "../shell/layout";
 import { useScreenKeys } from "../shell/screen-keys";
 import { Keymap } from "../test/keymap";
 import { caretSlot, layoutWords, lineWindow, tapeWindow } from "../test/layout";
@@ -19,6 +20,12 @@ import { useTypingTest } from "../test/typing-test";
 import { buildWordView } from "../test/word-view";
 import { Words } from "../test/words";
 import { useTheme } from "../theme/theme";
+import { KeyHints, type Hint } from "../ui/key-hints";
+
+/** Web-like three lines of words, unless all lines are shown. */
+const visibleLines = 3;
+/** A comfortable measure when max line width is unset. */
+const defaultLineWidth = 80;
 
 export function TestScreen() {
   const router = useRouter();
@@ -51,16 +58,21 @@ export function TestScreen() {
       ? test.config()
       : store.config;
   const tape = (): boolean => store.config.tapeMode !== "off";
-  /** Columns for words: the terminal width, capped by max line width. */
-  const lineWidth = (): number => {
-    const available = Math.max(
+  const running = (): boolean => test.status() === "running";
+  /** The content column minus the caret's spare cell. */
+  const available = (): number =>
+    Math.max(
       1,
-      dimensions().width - (store.config.showAllLines ? 4 : 3),
+      contentWidth(dimensions().width) - (store.config.showAllLines ? 2 : 1),
     );
-    return store.config.maxLineWidth > 0
-      ? Math.min(available, store.config.maxLineWidth)
-      : available;
-  };
+  /** Columns for words: a readable measure unless max line width says otherwise. */
+  const lineWidth = (): number =>
+    Math.min(
+      available(),
+      store.config.maxLineWidth > 0
+        ? store.config.maxLineWidth
+        : defaultLineWidth,
+    );
   const fullLayout = createMemo(() =>
     layoutWords(
       test.words().map((word, index) =>
@@ -102,7 +114,10 @@ export function TestScreen() {
       caret()?.line ?? 0,
       store.config.showAllLines,
     );
-    const count = Math.max(1, Math.floor((dimensions().height - 12) / 2));
+    const count = Math.max(
+      1,
+      Math.min(visibleLines, Math.floor((dimensions().height - 12) / 2)),
+    );
     if (store.config.showAllLines) return view;
     const start = Math.max(view.start, (caret()?.line ?? 0) - count + 1);
     return { start, end: Math.min(view.end, start + count) };
@@ -113,19 +128,22 @@ export function TestScreen() {
       ? undefined
       : caretSlot(layout(), position.wordIndex, position.letterIndex);
   });
-  const amount = (): string => {
-    const config = shownConfig();
-    if (config.mode === "time") {
-      return config.time === 0 ? "unlimited time" : `${config.time}s`;
-    }
-    if (config.mode === "words") {
-      return config.words === 0 ? "unlimited words" : `${config.words} words`;
-    }
-    if (config.mode === "custom") {
-      return `${test.customText.limit.value} ${test.customText.limit.mode} · custom text`;
-    }
-    return config.mode;
-  };
+  const customLabel = (): string =>
+    test.customText.limit.value === 0
+      ? "unlimited"
+      : `${test.customText.limit.value} ${test.customText.limit.mode}`;
+  const hints = (): Hint[] => [
+    { key: "^r", label: "restart" },
+    { key: "F7", label: "repeat" },
+    { key: "F8", label: "finish" },
+    { key: "F2", label: "mode" },
+    { key: "F3", label: "punct" },
+    { key: "F4", label: "numbers" },
+    { key: "F5/F6", label: "length" },
+    ...(store.config.mode === "custom"
+      ? [{ key: "F9", label: "limit type" }]
+      : []),
+  ];
   createEffect(() => {
     if (test.status() === "finished") router.replace("result");
   });
@@ -194,26 +212,41 @@ export function TestScreen() {
     }
   });
   return (
-    <box flexDirection="column" width="100%" gap={1}>
-      <text fg={theme().colors.main}>typing test</text>
-      <ModeBar config={shownConfig()} />
-      <text fg={theme().colors.sub}>
-        {amount()} · {test.config().language}
-      </text>
-      <LiveStatsBar />
-      <Show when={test.notice()}>
-        {(notice) => <text fg={theme().colors.error}>{notice()}</text>}
+    <box
+      flexDirection="column"
+      width="100%"
+      flexGrow={1}
+      alignItems="center"
+      paddingBottom={1}
+    >
+      <Show when={!running()} fallback={<text> </text>}>
+        <ModeBar
+          config={shownConfig()}
+          customLabel={customLabel()}
+          compact={dimensions().width < 100}
+        />
       </Show>
-      <Show
-        when={test.status() !== "loading"}
-        fallback={<text fg={theme().colors.sub}>loading words…</text>}
-      >
-        <box
-          flexDirection="column"
-          paddingLeft={Math.max(
-            0,
-            Math.floor((dimensions().width - 3 - lineWidth()) / 2),
+      <box flexGrow={1} minHeight={1} />
+      <box flexDirection="column" width={lineWidth() + 1} flexShrink={0}>
+        <box flexDirection="row" flexShrink={0}>
+          <LiveStatsBar width={lineWidth()} />
+          <box flexGrow={1} />
+          <Show when={!running()}>
+            <text fg={theme().colors.sub} flexShrink={0}>
+              {test.config().language.replaceAll("_", " ")}
+            </text>
+          </Show>
+        </box>
+        <Show when={test.notice()}>
+          {(notice) => (
+            <text fg={theme().colors.error} wrapMode="word">
+              {notice()}
+            </text>
           )}
+        </Show>
+        <Show
+          when={test.status() !== "loading"}
+          fallback={<text fg={theme().colors.sub}>loading words…</text>}
         >
           <Show
             when={
@@ -225,6 +258,7 @@ export function TestScreen() {
               memorize · {memoryRemaining()}s
             </text>
           </Show>
+          <box height={1} flexShrink={0} />
           <Words
             layout={layout()}
             funboxes={test.config().funbox}
@@ -242,16 +276,13 @@ export function TestScreen() {
                 : undefined
             }
           />
-        </box>
-      </Show>
+        </Show>
+      </box>
+      <box flexGrow={1} minHeight={1} />
       <Keymap />
-      <text fg={theme().colors.sub}>
-        F2 mode · F3 punctuation · F4 numbers · F5/F6 amount
-      </text>
-      <Show when={store.config.mode === "custom"}>
-        <text fg={theme().colors.sub}>F9 custom limit: word/time/section</text>
+      <Show when={!running()} fallback={<text> </text>}>
+        <KeyHints hints={hints()} wrap />
       </Show>
-      <text fg={theme().colors.sub}>^r restart · F7 repeat · F8 finish</text>
     </box>
   );
 }

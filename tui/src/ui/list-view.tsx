@@ -5,7 +5,7 @@ import { createMemo, For, Show } from "solid-js";
 import { useTheme } from "../theme/theme";
 import { listWindow } from "./selection";
 
-/** A windowed list with a highlighted, always visible selection. */
+/** A windowed list; the selection gets an accent bar on a raised row. */
 export function ListView<T>(props: {
   items: readonly T[];
   selected: number;
@@ -31,13 +31,26 @@ export function ListView<T>(props: {
         }
       >
         <For each={visible()}>
-          {(entry) =>
-            props.render(
-              entry.item,
-              entry.index === props.selected,
-              entry.index,
-            )
-          }
+          {(entry) => (
+            <box
+              flexDirection="row"
+              flexShrink={0}
+              backgroundColor={
+                entry.index === props.selected
+                  ? theme().colors.subAlt
+                  : undefined
+              }
+            >
+              <text fg={theme().colors.main} flexShrink={0}>
+                {entry.index === props.selected ? "▌ " : "  "}
+              </text>
+              {props.render(
+                entry.item,
+                entry.index === props.selected,
+                entry.index,
+              )}
+            </box>
+          )}
         </For>
         <Show when={props.items.length > props.height}>
           <text fg={theme().colors.sub}>

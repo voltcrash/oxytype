@@ -7,19 +7,27 @@ import { createMemo, createSignal, Show } from "solid-js";
 import { useAccount } from "../account";
 import { useConfig } from "../config/store";
 import { usePalette } from "../palette/palette";
-import { sparkline } from "../results/chart";
+import { LineChart } from "../results/chart";
 import {
   historyFiltersSchema,
   matchesFilters,
   type HistoryFilters,
 } from "../results/filters";
 import { useHistory } from "../results/history";
+import { contentWidth } from "../shell/layout";
 import { useScreenKeys } from "../shell/screen-keys";
 import { useTheme } from "../theme/theme";
+import { BigText } from "../ui/big-text";
+import { KeyHints, parseHints } from "../ui/key-hints";
 import { ListView } from "../ui/list-view";
 import { createRemote, dataOrThrow } from "../ui/remote";
 import { RemoteStatus } from "../ui/remote-status";
 import { createSelection } from "../ui/selection";
+import { Tabs } from "../ui/tabs";
+
+const sources = ["local", "tui", "web"] as const;
+/** date, speed, accuracy, test and language columns. */
+const columnWidths = [14, 8, 9, 12, 0];
 
 export function HistoryScreen() {
   const history = useHistory();
@@ -90,12 +98,15 @@ export function HistoryScreen() {
   });
   const result = () =>
     source() === "local" ? selected()?.result : full.data();
-  const chartLine = (): string => {
-    const chart = full.data()?.chartData;
-    return chart !== undefined && chart !== "toolong"
-      ? sparkline(chart.wpm, dimensions().width - 10, Math.max(1, ...chart.wpm))
-      : "";
+  const chart = () => {
+    const value = result();
+    const data =
+      value !== undefined && "chartData" in value ? value.chartData : undefined;
+    return data === undefined || data === "toolong" ? undefined : data;
   };
+  const format = (): Formatting => new Formatting(config);
+  const columns = (cells: string[]): string =>
+    cells.map((cell, index) => cell.padEnd(columnWidths[index] ?? 0)).join("");
   useScreenKeys((event) => {
     if (event.eventType === "release") return;
     if (event.ctrl || event.meta) {
@@ -161,11 +172,18 @@ export function HistoryScreen() {
     }
   });
   return (
-    <box flexDirection="column" gap={1} width="100%">
-      <text fg={theme().colors.main}>
-        {source()} history · {entries().length} tests
-        {Object.keys(filters()).length ? " · filtered" : ""}
-      </text>
+    <box flexDirection="column" gap={1} width="100%" flexGrow={1}>
+      <box flexDirection="row" gap={3} flexShrink={0}>
+        <Tabs
+          tabs={(account?.auth.user() ? sources : (["local"] as const)).map(
+            (it) => ({ label: it, active: source() === it }),
+          )}
+        />
+        <text fg={theme().colors.sub} flexShrink={0}>
+          {entries().length} {entries().length === 1 ? "test" : "tests"}
+          {Object.keys(filters()).length ? " · filtered" : ""}
+        </text>
+      </box>
       <Show when={source() !== "local"}>
         <RemoteStatus loading={remote.loading()} error={remote.error()} />
       </Show>
@@ -175,59 +193,106 @@ export function HistoryScreen() {
       <Show
         when={detail()}
         fallback={
-          <ListView
-            items={entries()}
-            selected={selection.index()}
-            height={height()}
-            empty="no saved tests match"
-            render={(entry, active) => (
-              <text fg={active ? theme().colors.main : theme().colors.text}>
-                {active ? "›" : " "}{" "}
-                {new Date(entry.result.timestamp).toLocaleDateString()} ·{" "}
-                {new Formatting(config).typingSpeed(entry.result.wpm)}{" "}
-                {config.typingSpeedUnit} · {entry.result.acc.toFixed(1)}% ·{" "}
-                {entry.result.mode} {entry.result.mode2} ·{" "}
-                {entry.result.language ?? "english"}
+          <box flexDirection="column" flexShrink={0}>
+            <Show when={entries().length > 0}>
+              <text fg={theme().colors.sub}>
+                {`  ${columns(["date", config.typingSpeedUnit, "acc", "test", "language"])}`}
               </text>
-            )}
-          />
+            </Show>
+            <ListView
+              items={entries()}
+              selected={selection.index()}
+              height={height()}
+              empty="no saved tests match"
+              render={(entry) => (
+                <text fg={theme().colors.text}>
+                  {columns([
+                    new Date(entry.result.timestamp).toLocaleDateString(),
+                    format().typingSpeed(entry.result.wpm),
+                    `${entry.result.acc.toFixed(1)}%`,
+                    `${entry.result.mode} ${entry.result.mode2}`,
+                    (entry.result.language ?? "english").replaceAll("_", " "),
+                  ])}
+                </text>
+              )}
+            />
+          </box>
         }
       >
         <RemoteStatus loading={full.loading()} error={full.error()} />
         <Show when={result()}>
           {(value) => (
-            <box flexDirection="column" gap={1}>
-              <text fg={theme().colors.main}>
-                {new Formatting(config).typingSpeed(value().wpm)}{" "}
-                {config.typingSpeedUnit} · {value().acc.toFixed(1)}% acc · raw{" "}
-                {new Formatting(config).typingSpeed(value().rawWpm)}
-              </text>
+            <box flexDirection="column" gap={1} flexShrink={0}>
+              <box flexDirection="row" gap={4} flexShrink={0}>
+                <box flexDirection="column" flexShrink={0}>
+                  <text fg={theme().colors.sub}>{config.typingSpeedUnit}</text>
+                  <BigText
+                    text={format().typingSpeed(value().wpm)}
+                    fg={theme().colors.main}
+                  />
+                </box>
+                <box flexDirection="column" flexShrink={0}>
+                  <text fg={theme().colors.sub}>acc</text>
+                  <BigText
+                    text={format().accuracy(value().acc)}
+                    fg={theme().colors.main}
+                  />
+                </box>
+              </box>
               <text fg={theme().colors.text}>
-                consistency {value().consistency.toFixed(1)}% · time{" "}
+                raw {format().typingSpeed(value().rawWpm)} · consistency{" "}
+                {value().consistency.toFixed(1)}% · time{" "}
                 {value().testDuration.toFixed(2)}s · chars{" "}
                 {value().charStats.join("/")}
               </text>
               <text fg={theme().colors.sub}>
-                tags {value().tags?.join(" ") ?? "none"} ·{" "}
-                {value().difficulty ?? "normal"} ·{" "}
+                {value().mode} {value().mode2} ·{" "}
+                {(value().language ?? "english").replaceAll("_", " ")} ·{" "}
+                {(value().tags?.length ?? 0) > 0
+                  ? `tags ${value().tags?.join(" ")}`
+                  : "no tags"}{" "}
+                · {value().difficulty ?? "normal"} ·{" "}
                 {value().offline ? "offline" : "online"}
               </text>
-              <Show
-                when={
-                  full.data()?.chartData !== undefined &&
-                  full.data()?.chartData !== "toolong"
-                }
-              >
-                <text fg={theme().colors.main}>wpm {chartLine()}</text>
+              <Show when={chart()}>
+                {(data) => (
+                  <Show when={dimensions().height >= 26}>
+                    <LineChart
+                      series={[
+                        {
+                          label: "raw",
+                          values: data().burst,
+                          color: theme().colors.sub,
+                        },
+                        {
+                          label: config.typingSpeedUnit,
+                          values: data().wpm,
+                          color: theme().colors.main,
+                        },
+                      ]}
+                      errors={data().err}
+                      width={contentWidth(dimensions().width)}
+                      height={4}
+                      minimum={0}
+                      maximum={Math.max(1, ...data().wpm, ...data().burst)}
+                      duration={value().testDuration}
+                    />
+                  </Show>
+                )}
               </Show>
             </box>
           )}
         </Show>
       </Show>
-      <text fg={theme().colors.sub}>
-        ↑↓ select · enter details · tab local/TUI/web · f filters · x clear · r
-        reload
-      </text>
+      <box flexGrow={1} />
+      <KeyHints
+        wrap
+        hints={parseHints(
+          detail()
+            ? "enter back to list · ↑↓ previous/next · tab local/TUI/web"
+            : "↑↓ select · enter details · tab local/TUI/web · f filters · x clear · r reload",
+        )}
+      />
     </box>
   );
 }

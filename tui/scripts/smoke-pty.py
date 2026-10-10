@@ -71,7 +71,7 @@ with tempfile.TemporaryDirectory(prefix="oxytype-pty-") as temporary:
     output = bytearray()
     try:
         drain(master, output, 1.2)
-        assert b"typing test" in output, bytes(output)[-2000:]
+        assert b"restart" in output, bytes(output)[-2000:]
         os.write(master, b"\x1b[17~")  # F6: default custom 9 -> 10 words
         drain(master, output, 0.4)
         for char in "The quick brown fox jumps over the lazy dog The":
@@ -99,7 +99,7 @@ with tempfile.TemporaryDirectory(prefix="oxytype-pty-") as temporary:
         drain(master, reopened, 1.2)
         os.write(master, b"\x0f")  # Ctrl+O: local history
         drain(master, reopened, 0.3)
-        assert b"1 tests" in reopened, bytes(reopened)[-2000:]
+        assert b"1 test" in reopened, bytes(reopened)[-2000:]
         os.write(master, b"\x03")
         drain(master, reopened, 0.3)
         assert child.wait(timeout=5) == 0

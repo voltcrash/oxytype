@@ -118,10 +118,10 @@ with tempfile.TemporaryDirectory(prefix="oxytype-screens-pty-") as temporary:
     output = bytearray()
     try:
         drain(master, output, 1.0)
-        assert "typing test" in screen(output), screen(output)
+        assert "^r restart" in screen(output), screen(output)
         for char in "cat dog":
             send(master, output, char, 0.15)
-        assert "100% acc" in screen(output), screen(output)
+        assert "enter next test" in screen(output), screen(output)
         send(master, output, "r")
         assert "last test replay" in screen(output), screen(output)
         send(master, output, b"\x1b[F")  # End

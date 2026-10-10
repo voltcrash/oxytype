@@ -24,9 +24,9 @@ describe("settings screen", () => {
   test("changes inline options and resets them", async () => {
     const { app, config } = await setup();
     const frame = await app.frame();
-    expect(frame).toContain("[behavior]");
+    expect(await app.active("behavior")).toBe(true);
     expect(frame).toContain("difficulty");
-    expect(frame).toContain("[normal]");
+    expect(await app.active("normal")).toBe(true);
     // The description of the selected setting comes from shared metadata.
     expect(frame).toContain("Normal is the classic typing test experience.");
     app.mockInput.pressArrow("right");
@@ -66,7 +66,7 @@ describe("settings screen", () => {
     await app.renderOnce();
     expect(config.config.minWpm).toBe("custom");
     expect(config.config.minWpmCustomSpeed).toBe(70);
-    expect(await app.frame()).toContain("[custom]");
+    expect(await app.active("custom")).toBe(true);
     expect(await app.frame()).toContain("70 wpm");
 
     await app.escape();
@@ -91,7 +91,7 @@ describe("settings screen", () => {
     const { app, config } = await setup();
     app.mockInput.pressKey("2");
     let frame = await app.frame();
-    expect(frame).toContain("[input]");
+    expect(await app.active("input")).toBe(true);
     expect(frame).toContain("freedom mode");
     // Freedom mode turns confidence mode off, like the web.
     config.set("confidenceMode", "on");
@@ -99,9 +99,9 @@ describe("settings screen", () => {
     expect(config.config.freedomMode).toBe(true);
     expect(config.config.confidenceMode).toBe("off");
     app.mockInput.pressTab();
-    expect(await app.frame()).toContain("[sound]");
+    expect(await app.active("sound")).toBe(true);
     app.mockInput.pressTab({ shift: true });
-    expect(await app.frame()).toContain("[input]");
+    expect(await app.active("input")).toBe(true);
     await search(app, "opposite shift");
     frame = await app.frame();
     expect(frame).toContain("opposite shift mode");

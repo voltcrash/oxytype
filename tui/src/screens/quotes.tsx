@@ -11,6 +11,7 @@ import { useScreenKeys } from "../shell/screen-keys";
 import { useTypingTest } from "../test/typing-test";
 import { useTheme } from "../theme/theme";
 import { createAction } from "../ui/actions";
+import { KeyHints, parseHints } from "../ui/key-hints";
 import { ListView } from "../ui/list-view";
 import { createRemote } from "../ui/remote";
 import { RemoteStatus } from "../ui/remote-status";
@@ -160,9 +161,8 @@ export function QuotesScreen() {
         selected={selection.index()}
         height={Math.max(1, dimensions().height - 15)}
         empty="no quotes match"
-        render={(quote, active) => (
-          <text fg={active ? theme().colors.main : theme().colors.text}>
-            {active ? "›" : " "}{" "}
+        render={(quote) => (
+          <text fg={theme().colors.text}>
             {isFavorite(quote.id, quote.language) ? "★" : " "} #{quote.id}{" "}
             {quote.source} ·{" "}
             {quote.text
@@ -178,10 +178,12 @@ export function QuotesScreen() {
           </text>
         )}
       </Show>
-      <text fg={theme().colors.sub}>
-        ↑↓ select · / search · enter type · f favorite · v favorites · l
-        language · r reload · b report in browser
-      </text>
+      <KeyHints
+        wrap
+        hints={parseHints(
+          "↑↓ select · / search · enter type · f favorite · v favorites · l language · r reload · b report in browser",
+        )}
+      />
     </box>
   );
 }

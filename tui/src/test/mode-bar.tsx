@@ -34,45 +34,109 @@ export function changeAmount(
     );
   }
 }
-export function ModeBar(props: { config?: Readonly<Config> }) {
+type BarItem = { label: string; active: boolean; select?: () => void };
+
+const quoteLengths: { label: string; value: Config["quoteLength"] }[] = [
+  { label: "all", value: [0, 1, 2, 3] },
+  { label: "short", value: [0] },
+  { label: "medium", value: [1] },
+  { label: "long", value: [2] },
+  { label: "thicc", value: [3] },
+];
+
+/** The web's test config strip: toggles, modes and lengths on one pill. */
+export function ModeBar(props: {
+  config?: Readonly<Config>;
+  /** Custom mode has no presets; its limit shows as text. */
+  customLabel?: string;
+  compact?: boolean;
+}) {
   const store = useConfig();
   const config = (): Readonly<Config> => props.config ?? store.config;
   const theme = useTheme();
+  const amounts = (key: "time" | "words", values: number[]): BarItem[] => {
+    const current = config()[key];
+    return [
+      ...values.map((value) => ({
+        label: String(value),
+        active: current === value,
+        select: () => store.set(key, value),
+      })),
+      ...(values.includes(current)
+        ? []
+        : [
+            {
+              label: current === 0 ? "unlimited" : String(current),
+              active: true,
+            },
+          ]),
+    ];
+  };
+  const groups = (): BarItem[][] => {
+    const mode = config().mode;
+    const length =
+      mode === "time"
+        ? amounts("time", [15, 30, 60, 120])
+        : mode === "words"
+          ? amounts("words", [10, 25, 50, 100])
+          : mode === "quote"
+            ? quoteLengths.map((it) => ({
+                label: it.label,
+                active: config().quoteLength.join() === it.value.join(),
+                select: () => store.set("quoteLength", it.value),
+              }))
+            : mode === "custom" && props.customLabel !== undefined
+              ? [{ label: props.customLabel, active: true }]
+              : [];
+    return [
+      [
+        {
+          label: props.compact === true ? "punct" : "punctuation",
+          active: config().punctuation,
+          select: () => store.set("punctuation", !store.config.punctuation),
+        },
+        {
+          label: "numbers",
+          active: config().numbers,
+          select: () => store.set("numbers", !store.config.numbers),
+        },
+      ],
+      modes.map((it) => ({
+        label: it,
+        active: mode === it,
+        select: () => store.set("mode", it),
+      })),
+      length,
+    ].filter((group) => group.length > 0);
+  };
   return (
-    <box flexDirection="row" gap={2} flexWrap="wrap" flexShrink={0}>
-      <For each={modes}>
-        {(mode) => (
-          <text
-            fg={
-              config().mode === mode ? theme().colors.main : theme().colors.sub
-            }
-            onMouseDown={() => {
-              store.set("mode", mode);
-            }}
-          >
-            <Show
-              when={config().mode === mode}
-              fallback={mode}
-            >{`[${mode}]`}</Show>
-          </text>
+    <box
+      flexDirection="row"
+      flexShrink={0}
+      backgroundColor={theme().colors.subAlt}
+      paddingLeft={1}
+      paddingRight={1}
+      gap={props.compact === true ? 1 : 2}
+    >
+      <For each={groups()}>
+        {(group, index) => (
+          <>
+            <Show when={index() > 0}>
+              <text fg={theme().colors.bg}>│</text>
+            </Show>
+            <For each={group}>
+              {(item) => (
+                <text
+                  fg={item.active ? theme().colors.main : theme().colors.sub}
+                  onMouseDown={() => item.select?.()}
+                >
+                  {item.label}
+                </text>
+              )}
+            </For>
+          </>
         )}
       </For>
-      <text
-        fg={config().punctuation ? theme().colors.main : theme().colors.sub}
-        onMouseDown={() => {
-          store.set("punctuation", !store.config.punctuation);
-        }}
-      >
-        punctuation
-      </text>
-      <text
-        fg={config().numbers ? theme().colors.main : theme().colors.sub}
-        onMouseDown={() => {
-          store.set("numbers", !store.config.numbers);
-        }}
-      >
-        numbers
-      </text>
     </box>
   );
 }

@@ -11,17 +11,21 @@ import { usePalette } from "../palette/palette";
 import { useRouter } from "../router/router";
 import { useScreenKeys } from "../shell/screen-keys";
 import { useTheme } from "../theme/theme";
+import { KeyHints, parseHints } from "../ui/key-hints";
 import { ListView } from "../ui/list-view";
 import { createRemote, dataOrThrow } from "../ui/remote";
 import { RemoteStatus } from "../ui/remote-status";
 import { createSelection } from "../ui/selection";
+import { StyledLine, type Chunk } from "../ui/styled";
 
 type BoardEntry = {
   rank: number;
   name: string;
-  score: string;
-  details: string;
+  /** Score columns after rank and name, matching the board's headings. */
+  cells: string[];
 };
+/** Rank, name, then score columns. */
+const columnWidths = [6, 20, 10, 9, 0];
 export function LeaderboardsScreen() {
   const account = useAccount();
   const { config } = useConfig();
@@ -64,8 +68,10 @@ export function LeaderboardsScreen() {
         entries: response.entries.map((entry): BoardEntry => ({
           rank: entry.rank,
           name: entry.name,
-          score: `${entry.totalXp} xp`,
-          details: `${(entry.timeTypedSeconds / 3600).toFixed(1)} hours`,
+          cells: [
+            `${entry.totalXp}`,
+            `${(entry.timeTypedSeconds / 3600).toFixed(1)}h`,
+          ],
         })),
       };
     }
@@ -79,8 +85,11 @@ export function LeaderboardsScreen() {
       entries: response.entries.map((entry): BoardEntry => ({
         rank: entry.rank,
         name: entry.name,
-        score: `${format.typingSpeed(entry.wpm)} ${config.typingSpeedUnit}`,
-        details: `${entry.acc.toFixed(1)}% · raw ${format.typingSpeed(entry.raw)}`,
+        cells: [
+          format.typingSpeed(entry.wpm),
+          `${entry.acc.toFixed(1)}%`,
+          format.typingSpeed(entry.raw),
+        ],
       })),
     };
   });
@@ -191,38 +200,81 @@ export function LeaderboardsScreen() {
       selection.handleKey(event);
     }
   });
+  const headings = (): string[] =>
+    kind() === "weekly xp"
+      ? ["#", "name", "xp", "typed"]
+      : ["#", "name", config.typingSpeedUnit, "acc", "raw"];
+  const pad = (cells: string[]): string[] =>
+    cells.map((cell, index) => {
+      const width = columnWidths[index] ?? 0;
+      return width === 0 ? cell : cell.slice(0, width - 1).padEnd(width);
+    });
+  const filters = (): Chunk[] =>
+    [
+      ["tab", kind()],
+      ["c", client()],
+      ["l", language().replaceAll("_", " ")],
+      ...(kind() === "weekly xp" ? [] : [["m", `${mode()} ${amount()}`]]),
+    ].flatMap(([key, value], index): Chunk[] => [
+      ...(index === 0 ? [] : [{ text: "   " }]),
+      { text: `${key} `, fg: theme().colors.sub },
+      {
+        text: ` ${value} `,
+        fg: theme().colors.text,
+        bg: theme().colors.subAlt,
+      },
+    ]);
+  const row = (entry: BoardEntry): Chunk[] => {
+    const [rankCell = "", name = "", ...rest] = pad([
+      String(entry.rank + 1),
+      entry.name,
+      ...entry.cells,
+    ]);
+    return [
+      {
+        text: rankCell,
+        fg: entry.rank < 3 ? theme().colors.main : theme().colors.sub,
+      },
+      { text: name, fg: theme().colors.text },
+      { text: rest.join(""), fg: theme().colors.text },
+    ];
+  };
   return (
-    <box flexDirection="column" gap={1}>
-      <text fg={theme().colors.main}>
-        leaderboards · {kind()} · {client()} · {language().replaceAll("_", " ")}{" "}
-        · {mode()} {amount()}
-      </text>
+    <box flexDirection="column" gap={1} flexGrow={1}>
+      <StyledLine chunks={filters()} />
       <RemoteStatus loading={board.loading()} error={board.error()} />
       <Show
         when={account !== undefined}
         fallback={<text fg={theme().colors.sub}>API service unavailable</text>}
       >
-        <ListView
-          items={items()}
-          selected={selection.index()}
-          height={Math.max(1, dimensions().height - 12)}
-          empty="no entries"
-          render={(entry, active) => (
-            <text fg={active ? theme().colors.main : theme().colors.text}>
-              {active ? "›" : " "} {entry.rank + 1}. {entry.name.padEnd(16)}{" "}
-              {entry.score} · {entry.details}
-            </text>
-          )}
-        />
+        <box flexDirection="column" flexShrink={0}>
+          <Show when={items().length > 0}>
+            <text
+              fg={theme().colors.sub}
+            >{`  ${pad(headings()).join("")}`}</text>
+          </Show>
+          <ListView
+            items={items()}
+            selected={selection.index()}
+            height={Math.max(1, dimensions().height - 15)}
+            empty="no entries"
+            render={(entry) => <StyledLine chunks={row(entry)} />}
+          />
+        </box>
         <text fg={theme().colors.sub}>
           page {page() + 1}/{pages()} · your rank{" "}
           {rank.data() === undefined ? "unranked" : (rank.data() ?? 0) + 1}
         </text>
         <RemoteStatus loading={rank.loading()} error={rank.error()} />
-        <text fg={theme().colors.sub}>
-          ↑↓ select · ←→ pages · tab board · c client · l language · m test ·
-          enter profile
-        </text>
+      </Show>
+      <box flexGrow={1} />
+      <Show when={account !== undefined}>
+        <KeyHints
+          wrap
+          hints={parseHints(
+            "↑↓ select · ←→ pages · tab board · c client · l language · m test · enter profile",
+          )}
+        />
       </Show>
     </box>
   );
