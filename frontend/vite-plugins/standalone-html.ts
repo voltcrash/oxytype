@@ -9,7 +9,6 @@ const pages = new Set([
   "/oauth-callback.html",
   "/404.html",
   "/privacy-policy.html",
-  "/security-policy.html",
 ]);
 
 export function standaloneHtml(): Plugin {

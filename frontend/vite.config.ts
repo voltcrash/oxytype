@@ -216,7 +216,6 @@ function getBuildOptions({
         oxytype: path.resolve(__dirname, "src/index.html"),
         oauth: path.resolve(__dirname, "src/oauth-callback.html"),
         privacy: path.resolve(__dirname, "src/privacy-policy.html"),
-        security: path.resolve(__dirname, "src/security-policy.html"),
         404: path.resolve(__dirname, "src/404.html"),
       },
       output: {
