@@ -1,7 +1,6 @@
 import { JSXElement } from "solid-js";
 
 import { getIsScreenshotting } from "../../../states/core";
-import { showModal } from "../../../states/modals";
 import { getFocus } from "../../../states/test";
 import { cn } from "../../../utils/cn";
 import { Button } from "../../common/Button";
@@ -25,15 +24,6 @@ export function Footer(): JSXElement {
         )}
       >
         <div class="grid grid-cols-1 justify-items-start [&>*]:min-h-9 xs:grid-cols-2 sm:grid-cols-4 sm:[&>*]:min-h-0 lg:flex lg:flex-wrap">
-          <Button
-            variant="text"
-            text="support"
-            fa={{
-              icon: "fa-hands-helping",
-              fixedWidth: true,
-            }}
-            onClick={() => showModal("Support")}
-          />
           <Button
             variant="text"
             text="github"
