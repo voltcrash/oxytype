@@ -1,10 +1,8 @@
 import { JSXElement } from "solid-js";
 
 import { getIsScreenshotting } from "../../../states/core";
-import { showModal } from "../../../states/modals";
 import { getFocus } from "../../../states/test";
 import { cn } from "../../../utils/cn";
-import { Button } from "../../common/Button";
 import { Keytips } from "./Keytips";
 import { ThemeIndicator } from "./ThemeIndicator";
 import { VersionButton } from "./VersionButton";
@@ -20,76 +18,12 @@ export function Footer(): JSXElement {
 
       <div
         class={cn(
-          "-m-2 flex flex-wrap justify-between gap-8 transition-opacity",
+          "-m-2 flex flex-col items-end justify-end text-right transition-opacity [&>*]:min-h-9 lg:flex-row sm:[&>*]:min-h-0",
           getFocus() && "opacity-0",
         )}
       >
-        <div class="grid grid-cols-1 justify-items-start [&>*]:min-h-9 xs:grid-cols-2 sm:grid-cols-4 sm:[&>*]:min-h-0 lg:flex lg:flex-wrap">
-          <Button
-            variant="text"
-            text="contact"
-            fa={{
-              icon: "fa-envelope",
-              fixedWidth: true,
-            }}
-            onClick={() => showModal("Contact")}
-          />
-          <Button
-            variant="text"
-            text="support"
-            fa={{
-              icon: "fa-hands-helping",
-              fixedWidth: true,
-            }}
-            onClick={() => showModal("Support")}
-          />
-          <Button
-            variant="text"
-            text="github"
-            fa={{
-              icon: "fa-code",
-              fixedWidth: true,
-            }}
-            href="https://github.com/voltcrash/oxytype"
-          />
-          <Button
-            variant="text"
-            text="discussions"
-            fa={{ icon: "fa-comments", fixedWidth: true }}
-            href="https://github.com/voltcrash/oxytype/discussions"
-          />
-          <Button
-            variant="text"
-            text="terms"
-            fa={{
-              icon: "fa-file-contract",
-              fixedWidth: true,
-            }}
-            href="/terms-of-service.html"
-          />
-          <Button
-            href="/security-policy.html"
-            variant="text"
-            text="security"
-            fa={{
-              icon: "fa-shield-alt",
-              fixedWidth: true,
-            }}
-          />
-          <Button
-            href="/privacy-policy.html"
-            variant="text"
-            text="privacy"
-            fa={{
-              icon: "fa-lock",
-              fixedWidth: true,
-            }}
-          />
-        </div>
-        <div class="flex flex-col items-end text-right [&>*]:min-h-9 lg:flex-row sm:[&>*]:min-h-0">
-          <ThemeIndicator />
-          <VersionButton />
-        </div>
+        <ThemeIndicator />
+        <VersionButton />
       </div>
     </footer>
   );

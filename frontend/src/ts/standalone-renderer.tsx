@@ -1,9 +1,9 @@
 import { generateHydrationScript, renderToString } from "solid-js/web";
 
 import { StartupScreen } from "./components/core/StartupScreen";
-import { LegalPage } from "./components/standalone/LegalPage";
 import { StandaloneNotFound } from "./components/standalone/NotFound";
 import { OAuthCallback } from "./components/standalone/OAuthCallback";
+import { PrivacyPolicy } from "./components/standalone/PrivacyPolicy";
 
 export function renderStandalone(path: string): {
   html: string;
@@ -16,8 +16,8 @@ export function renderStandalone(path: string): {
       if (path === "/oauth-callback.html") {
         return <OAuthCallback />;
       }
-      if (path === "/404.html") return <StandaloneNotFound />;
-      return <LegalPage path={path} />;
+      if (path === "/privacy-policy.html") return <PrivacyPolicy />;
+      return <StandaloneNotFound />;
     }),
   };
 }
