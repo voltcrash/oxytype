@@ -18,14 +18,12 @@ export function Footer(): JSXElement {
 
       <div
         class={cn(
-          "-m-2 flex flex-wrap justify-between gap-8 transition-opacity",
+          "-m-2 flex flex-col items-end justify-end text-right transition-opacity [&>*]:min-h-9 lg:flex-row sm:[&>*]:min-h-0",
           getFocus() && "opacity-0",
         )}
       >
-        <div class="flex flex-col items-end text-right [&>*]:min-h-9 lg:flex-row sm:[&>*]:min-h-0">
-          <ThemeIndicator />
-          <VersionButton />
-        </div>
+        <ThemeIndicator />
+        <VersionButton />
       </div>
     </footer>
   );
