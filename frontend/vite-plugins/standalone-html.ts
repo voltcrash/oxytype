@@ -9,7 +9,6 @@ const pages = new Set([
   "/oauth-callback.html",
   "/404.html",
   "/privacy-policy.html",
-  "/terms-of-service.html",
   "/security-policy.html",
 ]);
 
