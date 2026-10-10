@@ -201,13 +201,30 @@ async function ready(): Promise<void> {
 }
 
 describe("App effects", () => {
-  it("replaces startup feedback without removing application content", () => {
+  it("keeps startup feedback until config and the first page are ready", async () => {
     const startup = document.createElement("div");
     startup.id = "startupScreen";
     element.prepend(startup);
     mount();
-    expect(startup.isConnected).toBe(false);
+    expect(startup.isConnected).toBe(true);
     expect(element.querySelector("input")).not.toBeNull();
+    await ready();
+    expect(startup.isConnected).toBe(true);
+    expect(services.animate).not.toHaveBeenCalledWith(
+      startup,
+      expect.anything(),
+    );
+    setAppLoading(false);
+    expect(services.animate).toHaveBeenLastCalledWith(
+      startup,
+      expect.objectContaining({ opacity: [1, 0], duration: 200 }),
+    );
+    expect(startup.isConnected).toBe(true);
+    const options = services.animate.mock.lastCall?.[1] as {
+      onComplete: () => void;
+    };
+    options.onComplete();
+    expect(startup.isConnected).toBe(false);
   });
   it("hides owned fallbacks during screenshots and stops reacting on disposal", () => {
     const noscript = document.createElement("noscript");

@@ -137,8 +137,19 @@ export function AppEffects(props: AppElements): JSXElement {
   });
 
   onMount(() => {
-    // The build-time screen lives outside the application mount.
-    body.querySelector("#startupScreen")?.remove();
+    // Keep the original animation running while config, auth and the first
+    // page settle. Removing it at mount creates a blank frame between loaders.
+    const startupScreen = body.querySelector<HTMLElement>("#startupScreen");
+    createEffect(() => {
+      if (startupScreen === null || !isReady() || isAppLoading()) return;
+      const handoff = animate(startupScreen, {
+        opacity: [1, 0],
+        duration: applyReducedMotion(200),
+        onComplete: () => startupScreen.remove(),
+      });
+      onCleanup(() => handoff.cancel());
+    });
+    onCleanup(() => startupScreen?.remove());
     const noscript = body.querySelector<HTMLElement>("noscript");
     createEffect(() => {
       const screenshotting = getIsScreenshotting();
