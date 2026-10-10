@@ -59,6 +59,9 @@ export function standaloneHtml(): Plugin {
           throw new Error("Standalone renderer is not ready");
         }
         const rendered = render(page);
+        if (page === "/index.html") {
+          return html.replace("<!-- startup-screen -->", rendered.html);
+        }
         return html
           .replace("</head>", `${rendered.hydrationScript}</head>`)
           .replace(

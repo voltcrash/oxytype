@@ -1,26 +1,28 @@
 import { JSXElement } from "solid-js";
 
+import { LoadingIndicator } from "../common/LoadingIndicator";
+
 // Rendered into index.html at build time, before the application bundle runs.
 export function StartupScreen(): JSXElement {
   return (
-    <div id="startupScreen" class="contents">
-      <header class="text-[2rem] text-main [font-family:'Lexend_Deca',sans-serif]">
-        oxytype
-      </header>
-      <main
-        class="grid h-full content-center gap-4 text-center"
+    <div
+      id="startupScreen"
+      class="fixed inset-0 z-9999 grid grid-cols-1 place-items-center bg-bg px-8 text-text"
+    >
+      <div
+        class="grid w-full max-w-80 justify-items-center gap-6 text-center"
         role="status"
         aria-live="polite"
       >
         <div
-          class="h-2 w-full max-w-80 justify-self-center overflow-hidden rounded bg-sub-alt"
+          class="text-[2rem] text-main [font-family:'Lexend_Deca',sans-serif]"
           aria-hidden="true"
         >
-          <div class="h-full w-1/2 rounded bg-main motion-safe:animate-pulse"></div>
+          oxytype
         </div>
-        <p>Loading Oxytype...</p>
-      </main>
-      <div aria-hidden="true"></div>
+        <LoadingIndicator />
+        <p class="m-0 min-h-5 text-sm text-sub">Loading Oxytype...</p>
+      </div>
     </div>
   );
 }

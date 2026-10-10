@@ -25,6 +25,7 @@ const { deferred, lifecycle, guards, ui, services } = vi.hoisted(() => {
       active: true,
       quickRestart: false,
       dev: true,
+      cookiesAccepted: true,
     },
     ui: {
       applyFont: vi.fn(),
@@ -59,6 +60,9 @@ vi.mock("../../../src/ts/auth-client", () => ({
 }));
 vi.mock("../../../src/ts/config/store", () => ({
   Config: { mode: "words", words: 10, time: 15, tapeMode: "off" },
+}));
+vi.mock("../../../src/ts/cookies", () => ({
+  getAcceptedCookies: () => (guards.cookiesAccepted ? {} : null),
 }));
 vi.mock("../../../src/ts/states/core", async () => {
   const { createSignal } = await import("solid-js");
@@ -136,6 +140,11 @@ import {
   setFunboxBodyClasses,
   setFunboxReducedMotionIgnored,
 } from "../../../src/ts/states/funbox";
+import {
+  hideModalAndClearChain,
+  isModalOpen,
+  showModal,
+} from "../../../src/ts/states/modals";
 
 let element: HTMLDivElement;
 beforeEach(() => {
@@ -148,6 +157,7 @@ beforeEach(() => {
     active: true,
     quickRestart: false,
     dev: true,
+    cookiesAccepted: true,
   });
   setCrt(null);
   setFunboxBodyClasses([]);
@@ -174,6 +184,8 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+  hideModalAndClearChain("GoogleSignup");
+  hideModalAndClearChain("Cookies");
   element.remove();
   document.body.className = "";
   document.body.style.removeProperty("transition");
@@ -201,13 +213,91 @@ async function ready(): Promise<void> {
 }
 
 describe("App effects", () => {
-  it("replaces startup feedback without removing application content", () => {
+  it("keeps startup feedback until config and the first page are ready", async () => {
     const startup = document.createElement("div");
     startup.id = "startupScreen";
-    element.prepend(startup);
+    document.body.prepend(startup);
     mount();
-    expect(startup.isConnected).toBe(false);
+    expect(startup.isConnected).toBe(true);
     expect(element.querySelector("input")).not.toBeNull();
+    await ready();
+    expect(startup.isConnected).toBe(true);
+    expect(services.animate).not.toHaveBeenCalledWith(
+      startup,
+      expect.anything(),
+    );
+    setAppLoading(false);
+    expect(services.animate).toHaveBeenLastCalledWith(
+      startup,
+      expect.objectContaining({ opacity: [1, 0], duration: 200 }),
+    );
+    expect(startup.isConnected).toBe(true);
+    const options = services.animate.mock.lastCall?.[1] as {
+      onComplete: () => void;
+    };
+    options.onComplete();
+    expect(startup.isConnected).toBe(false);
+  });
+
+  it("retains startup feedback when navigation finishes before config", async () => {
+    const startup = document.createElement("div");
+    startup.id = "startupScreen";
+    document.body.prepend(startup);
+    mount();
+    setAppLoading(false);
+    expect(startup.isConnected).toBe(true);
+    expect(services.animate).not.toHaveBeenCalled();
+    await ready();
+    expect(services.animate).toHaveBeenCalledWith(
+      startup,
+      expect.objectContaining({ opacity: [1, 0] }),
+    );
+  });
+
+  it("cleans up a pending startup screen when its owner is disposed", async () => {
+    const startup = document.createElement("div");
+    startup.id = "startupScreen";
+    document.body.prepend(startup);
+    const { unmount } = mount();
+    unmount();
+    expect(startup.isConnected).toBe(false);
+    await ready();
+    setAppLoading(false);
+    expect(services.animate).not.toHaveBeenCalled();
+  });
+
+  it("reveals signup when startup needs the user's onboarding input", async () => {
+    const startup = document.createElement("div");
+    startup.id = "startupScreen";
+    document.body.prepend(startup);
+    mount();
+    await ready();
+    showModal("GoogleSignup");
+    expect(services.animate).toHaveBeenLastCalledWith(
+      startup,
+      expect.objectContaining({ opacity: [1, 0] }),
+    );
+    const calls = services.animate.mock.calls.length;
+    hideModalAndClearChain("GoogleSignup");
+    setAppLoading(false);
+    expect(services.animate).toHaveBeenCalledTimes(calls);
+  });
+
+  it("opens cookie consent only after the startup fade completes", async () => {
+    guards.cookiesAccepted = false;
+    const startup = document.createElement("div");
+    startup.id = "startupScreen";
+    document.body.prepend(startup);
+    mount();
+    await ready();
+    setAppLoading(false);
+    expect(isModalOpen("Cookies")).toBe(false);
+    const options = services.animate.mock.lastCall?.[1] as {
+      onComplete: () => void;
+    };
+    options.onComplete();
+    expect(startup.isConnected).toBe(false);
+    expect(isModalOpen("Cookies")).toBe(true);
   });
   it("hides owned fallbacks during screenshots and stops reacting on disposal", () => {
     const noscript = document.createElement("noscript");
