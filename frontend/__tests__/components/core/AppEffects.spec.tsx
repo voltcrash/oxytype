@@ -136,6 +136,10 @@ import {
   setFunboxBodyClasses,
   setFunboxReducedMotionIgnored,
 } from "../../../src/ts/states/funbox";
+import {
+  hideModalAndClearChain,
+  showModal,
+} from "../../../src/ts/states/modals";
 
 let element: HTMLDivElement;
 beforeEach(() => {
@@ -174,6 +178,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+  hideModalAndClearChain("GoogleSignup");
   element.remove();
   document.body.className = "";
   document.body.style.removeProperty("transition");
@@ -252,6 +257,23 @@ describe("App effects", () => {
     await ready();
     setAppLoading(false);
     expect(services.animate).not.toHaveBeenCalled();
+  });
+
+  it("reveals signup when startup needs the user's onboarding input", async () => {
+    const startup = document.createElement("div");
+    startup.id = "startupScreen";
+    document.body.prepend(startup);
+    mount();
+    await ready();
+    showModal("GoogleSignup");
+    expect(services.animate).toHaveBeenLastCalledWith(
+      startup,
+      expect.objectContaining({ opacity: [1, 0] }),
+    );
+    const calls = services.animate.mock.calls.length;
+    hideModalAndClearChain("GoogleSignup");
+    setAppLoading(false);
+    expect(services.animate).toHaveBeenCalledTimes(calls);
   });
   it("hides owned fallbacks during screenshots and stops reacting on disposal", () => {
     const noscript = document.createElement("noscript");

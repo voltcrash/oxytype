@@ -33,6 +33,7 @@ import {
   getFunboxBodyClasses,
   isFunboxReducedMotionIgnored,
 } from "../../states/funbox";
+import { isModalOpen } from "../../states/modals";
 import { isFixingSkillIssue } from "../../states/skill-issue";
 import { getResultVisible, isTestActive } from "../../states/test";
 import { getTheme } from "../../states/theme";
@@ -140,16 +141,26 @@ export function AppEffects(props: AppElements): JSXElement {
     // Keep the original animation running while config, auth and the first
     // page settle. Removing it at mount creates a blank frame between loaders.
     const startupScreen = body.querySelector<HTMLElement>("#startupScreen");
+    let handoff: ReturnType<typeof animate> | undefined;
     createEffect(() => {
-      if (startupScreen === null || !isReady() || isAppLoading()) return;
-      const handoff = animate(startupScreen, {
+      if (
+        startupScreen === null ||
+        handoff !== undefined ||
+        !isReady() ||
+        (isAppLoading() && !isModalOpen("GoogleSignup"))
+      ) {
+        return;
+      }
+      handoff = animate(startupScreen, {
         opacity: [1, 0],
         duration: applyReducedMotion(200),
         onComplete: () => startupScreen.remove(),
       });
-      onCleanup(() => handoff.cancel());
     });
-    onCleanup(() => startupScreen?.remove());
+    onCleanup(() => {
+      handoff?.cancel();
+      startupScreen?.remove();
+    });
     const noscript = body.querySelector<HTMLElement>("noscript");
     createEffect(() => {
       const screenshotting = getIsScreenshotting();
