@@ -138,8 +138,8 @@ async function showSyncLoading({
     const options = loadingOptions[i] as LoadingOptions;
     if (options.style === "bar") {
       await PageLoading.showBar();
+      await PageLoading.updateBar(currentOffset, 0);
       if (i === 0) {
-        await PageLoading.updateBar(0, 0);
         PageLoading.updateText("");
       }
     } else {
@@ -152,8 +152,13 @@ async function showSyncLoading({
         fillDivider,
         currentOffset,
       );
-      void PageLoading.updateBar(100, 125);
-      PageLoading.updateText("Done");
+      if (i === loadingOptions.length - 1) PageLoading.updateText("Done");
+      // Each stage owns only its share of the bar. Finish the visible fill
+      // before fading out, including when the request resolves immediately.
+      await PageLoading.updateBar(
+        fillOffset * (i + 1),
+        Misc.applyReducedMotion(125),
+      );
     } else {
       await options.loadingPromise();
     }
