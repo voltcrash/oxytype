@@ -1,6 +1,6 @@
 import * as TestWords from "./test-words";
-import { testSession } from "./events/data";
-import { Config } from "../config/store";
+import { getTestSession } from "./events/data";
+import { getMutableConfig } from "../config/store";
 import * as DB from "../db";
 import * as Misc from "../utils/misc";
 import { configEvent } from "../events/config";
@@ -37,17 +37,17 @@ export function setCaret(controller: CaretController): () => void {
 export function getCaret(): CaretController {
   return (caret ??= new CaretController(
     getPaceCaretElement(),
-    Config.paceCaretStyle,
+    getMutableConfig().paceCaretStyle,
   ));
 }
 
 export function setLastTestWpm(wpm: number): void {
-  testSession.pace.rememberWpm(wpm, isPaceRepeat());
+  getTestSession().pace.rememberWpm(wpm, isPaceRepeat());
 }
 
 export function resetCaretPosition(): void {
-  if (Config.paceCaret === "off" && !isPaceRepeat()) return;
-  if (Config.mode === "zen") return;
+  if (getMutableConfig().paceCaret === "off" && !isPaceRepeat()) return;
+  if (getMutableConfig().mode === "zen") return;
 
   getCaret().hide();
   getCaret().stopAllAnimations();
@@ -65,47 +65,55 @@ export function resetCaretPosition(): void {
 export async function init(): Promise<void> {
   clearTimeout(timeout);
   getCaret().hide();
-  const mode2 = Misc.getMode2(Config, getCurrentQuote());
+  const mode2 = Misc.getMode2(getMutableConfig(), getCurrentQuote());
   let wpm = 0;
-  if (Config.paceCaret === "pb") {
+  if (getMutableConfig().paceCaret === "pb") {
     wpm =
       DB.getLocalPB(
-        Config.mode,
+        getMutableConfig().mode,
         mode2,
-        Config.punctuation,
-        Config.numbers,
-        Config.language,
-        Config.difficulty,
-        Config.lazyMode,
+        getMutableConfig().punctuation,
+        getMutableConfig().numbers,
+        getMutableConfig().language,
+        getMutableConfig().difficulty,
+        getMutableConfig().lazyMode,
         getActiveFunboxes(),
       )?.wpm ?? 0;
-  } else if (Config.paceCaret === "tagPb") {
+  } else if (getMutableConfig().paceCaret === "tagPb") {
     const { getActiveTagsPB } = await import("../collections/tags");
     wpm = getActiveTagsPB(
-      Config.mode,
+      getMutableConfig().mode,
       mode2,
-      Config.punctuation,
-      Config.numbers,
-      Config.language,
-      Config.difficulty,
-      Config.lazyMode,
+      getMutableConfig().punctuation,
+      getMutableConfig().numbers,
+      getMutableConfig().language,
+      getMutableConfig().difficulty,
+      getMutableConfig().lazyMode,
     );
-  } else if (Config.paceCaret === "average") {
+  } else if (getMutableConfig().paceCaret === "average") {
     const { getUserAverage10Once } = await import("../collections/results");
-    wpm = Math.round((await getUserAverage10Once({ ...Config, mode2 })).wpm);
-  } else if (Config.paceCaret === "daily") {
+    wpm = Math.round(
+      (await getUserAverage10Once({ ...getMutableConfig(), mode2 })).wpm,
+    );
+  } else if (getMutableConfig().paceCaret === "daily") {
     const { getUserDailyBestOnce } = await import("../collections/results");
-    wpm = Math.round((await getUserDailyBestOnce({ ...Config, mode2 })).wpm);
-  } else if (Config.paceCaret === "custom") {
-    wpm = Config.paceCaretCustomSpeed;
-  } else if (Config.paceCaret === "last" || isPaceRepeat()) {
-    wpm = testSession.pace.getLastWpm();
+    wpm = Math.round(
+      (await getUserDailyBestOnce({ ...getMutableConfig(), mode2 })).wpm,
+    );
+  } else if (getMutableConfig().paceCaret === "custom") {
+    wpm = getMutableConfig().paceCaretCustomSpeed;
+  } else if (getMutableConfig().paceCaret === "last" || isPaceRepeat()) {
+    wpm = getTestSession().pace.getLastWpm();
   }
-  setPaceCaretWpm(testSession.pace.reset(wpm) ? wpm : undefined);
+  setPaceCaretWpm(getTestSession().pace.reset(wpm) ? wpm : undefined);
 }
 
 function update(): void {
-  if (!testSession.pace.isEnabled() || !isTestActive() || getResultVisible()) {
+  if (
+    !getTestSession().pace.isEnabled() ||
+    !isTestActive() ||
+    getResultVisible()
+  ) {
     return;
   }
 
@@ -113,9 +121,9 @@ function update(): void {
     getCaret().show();
   }
 
-  const position = testSession.pace.step(
+  const position = getTestSession().pace.step(
     (index) => TestWords.words.get(index)?.text,
-    Config.blindMode,
+    getMutableConfig().blindMode,
   );
   if (position === null) {
     getCaret().hide();
@@ -123,7 +131,7 @@ function update(): void {
   }
 
   try {
-    const duration = testSession.pace.getStepEnd() - performance.now();
+    const duration = getTestSession().pace.getStepEnd() - performance.now();
 
     getCaret().goTo({
       wordIndex: position.wordIndex,
@@ -146,27 +154,26 @@ function update(): void {
 
 export function reset(): void {
   clearTimeout(timeout);
-  testSession.pace.reset();
+  getTestSession().pace.reset();
 }
 
 export function handleSpace(correct: boolean, currentWord: string): void {
-  testSession.pace.correct(
+  getTestSession().pace.correct(
     getActiveWordIndex(),
     correct,
     currentWord,
-    Config.blindMode,
+    getMutableConfig().blindMode,
   );
 }
 
 export function start(): void {
-  testSession.pace.start(performance.now());
+  getTestSession().pace.start(performance.now());
   update();
 }
 
-configEvent.subscribe(
-  ({ key }) => {
+export function usePaceCaretEvents(): void {
+  configEvent.useListener(({ key }) => {
     if (!areTestElementsMounted()) return;
     if (key === "paceCaret") void init();
-  },
-  import.meta.hot,
-);
+  });
+}

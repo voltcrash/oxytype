@@ -1,3 +1,5 @@
+import { captureApplication, createAppOwned } from "../../app/application";
+import { onCleanup } from "solid-js";
 import * as TestUI from "./test-ui";
 import * as Strings from "../utils/strings";
 
@@ -65,9 +67,9 @@ import { canQuickRestart } from "../utils/quick-restart";
 import { setInputElementValue } from "../input/input-element";
 import { debounce } from "throttle-debounce";
 
-import { Config } from "../config/store";
+import { getMutableConfig } from "../config/store";
 import { toggleFunbox, setConfig } from "../config/setters";
-import { testSession, resetTestEvents } from "./events/data";
+import { getTestSession, resetTestEvents } from "./events/data";
 
 import { resetModifierState } from "../states/modifiers";
 import { nthElementFromArray } from "../utils/arrays";
@@ -94,14 +96,17 @@ export function startTest(now: number): boolean {
 
   setTestActive(true);
   TestTimer.clear();
-  testSession.start(now);
+  getTestSession().start(now);
 
   for (const fb of getActiveFunboxesWithFunction("start")) {
     fb.functions.start();
   }
 
   try {
-    if (Config.paceCaret !== "off" || (Config.repeatedPace && isPaceRepeat())) {
+    if (
+      getMutableConfig().paceCaret !== "off" ||
+      (getMutableConfig().repeatedPace && isPaceRepeat())
+    ) {
       PaceCaret.start();
     }
   } catch (e) {}
@@ -150,22 +155,22 @@ export async function restart(options = {} as RestartOptions): Promise<void> {
   }
   if (isTestActive()) {
     if (options.isQuickRestart) {
-      if (Config.mode !== "zen") options.event?.preventDefault();
+      if (getMutableConfig().mode !== "zen") options.event?.preventDefault();
       if (
         !canQuickRestart(
-          Config.mode,
-          Config.words,
-          Config.time,
+          getMutableConfig().mode,
+          getMutableConfig().words,
+          getMutableConfig().time,
           CustomText.getData(),
           getCustomTextIndicator()?.isLong ?? false,
         )
       ) {
         let message = "Use your mouse to confirm.";
-        if (Config.quickRestart === "tab") {
+        if (getMutableConfig().quickRestart === "tab") {
           message = "Press shift + tab or use your mouse to confirm.";
-        } else if (Config.quickRestart === "esc") {
+        } else if (getMutableConfig().quickRestart === "esc") {
           message = "Press shift + escape or use your mouse to confirm.";
-        } else if (Config.quickRestart === "enter") {
+        } else if (getMutableConfig().quickRestart === "enter") {
           message = "Press shift + enter or use your mouse to confirm.";
         }
         showNoticeNotification(
@@ -185,21 +190,21 @@ export async function restart(options = {} as RestartOptions): Promise<void> {
       options.withSameWordset = true;
     }
 
-    if (Config.resultSaving) {
+    if (getMutableConfig().resultSaving) {
       // Abandoning logs the timer "end" event before measuring, so idle time
       // is subtracted instead of the whole wall-clock lifetime.
       TestTimer.clear();
-      const { acc, seconds } = testSession.abandon(performance.now());
+      const { acc, seconds } = getTestSession().abandon(performance.now());
       pushIncompleteTest({ acc: Numbers.roundTo2(acc), seconds });
     }
   }
 
   const currentQuote = getCurrentQuote();
   if (
-    shouldRepeatQuote(Config) &&
+    shouldRepeatQuote(getMutableConfig()) &&
     currentQuote !== null &&
-    Config.language.startsWith(currentQuote.language) &&
-    (isTestActive() || testSession.getFinishReason() !== undefined)
+    getMutableConfig().language.startsWith(currentQuote.language) &&
+    (isTestActive() || getTestSession().getFinishReason() !== undefined)
   ) {
     options.withSameWordset = true;
   }
@@ -248,7 +253,7 @@ export async function restart(options = {} as RestartOptions): Promise<void> {
   testLogicState.testReinitCount = 0;
 
   const repeatWithPace =
-    (Config.repeatedPace && options.withSameWordset) ?? false;
+    (getMutableConfig().repeatedPace && options.withSameWordset) ?? false;
   setIsRepeated(options.withSameWordset ?? false);
   setIsPaceRepeat(repeatWithPace);
 
@@ -289,7 +294,7 @@ export async function restart(options = {} as RestartOptions): Promise<void> {
 
 //add word during the test
 export async function addWord(): Promise<void> {
-  if (Config.mode === "zen") {
+  if (getMutableConfig().mode === "zen") {
     TestUI.appendEmptyWordElement(getActiveWordIndex() + 1);
     return;
   }
@@ -316,7 +321,7 @@ export async function addWord(): Promise<void> {
   if (sectionFunbox) {
     if (TestWords.words.length - getActiveWordIndex() < 20) {
       const section = await sectionFunbox.functions.pullSection(
-        Config.language,
+        getMutableConfig().language,
       );
 
       if (section === false) {
@@ -333,7 +338,10 @@ export async function addWord(): Promise<void> {
       let wordCount = 0;
       for (let i = 0; i < section.words.length; i++) {
         const word = section.words[i] as string;
-        if (wordCount >= Config.words && Config.mode === "words") {
+        if (
+          wordCount >= getMutableConfig().words &&
+          getMutableConfig().mode === "words"
+        ) {
           break;
         }
         wordCount++;
@@ -347,7 +355,7 @@ export async function addWord(): Promise<void> {
   }
 
   try {
-    const randomWord = await testSession.nextWord(
+    const randomWord = await getTestSession().nextWord(
       TestWords.words.length,
       bound,
       TestWords.words.get(TestWords.words.length - 1)?.text ?? "",
@@ -379,39 +387,53 @@ export async function addWord(): Promise<void> {
 }
 
 export function fail(reason: string): void {
-  testSession.finish(performance.now(), reason);
+  getTestSession().finish(performance.now(), reason);
 }
 
-const debouncedZipfCheck = debounce(250, async () => {
-  const supports = await JSONData.checkIfLanguageSupportsZipf(Config.language);
-  if (supports === "no") {
-    showNoticeNotification(
-      `${Strings.capitalizeFirstLetter(
-        Strings.getLanguageDisplayString(Config.language),
-      )} does not support Zipf funbox, because the list is not ordered by frequency. Please try another word list.`,
-      {
-        durationMs: 7000,
-      },
+const zipfCheck = createAppOwned(() => {
+  const check = debounce(250, async () => {
+    const lease = captureApplication();
+    const supports = await JSONData.checkIfLanguageSupportsZipf(
+      getMutableConfig().language,
     );
-  }
-  if (supports === "unknown") {
-    showNoticeNotification(
-      `${Strings.capitalizeFirstLetter(
-        Strings.getLanguageDisplayString(Config.language),
-      )} may not support Zipf funbox, because we don't know if it's ordered by frequency or not. If you would like to add this label, please contact us.`,
-      {
-        durationMs: 7000,
-      },
-    );
-  }
+    if (lease.signal.aborted) return;
+    if (supports === "no") {
+      showNoticeNotification(
+        `${Strings.capitalizeFirstLetter(
+          Strings.getLanguageDisplayString(getMutableConfig().language),
+        )} does not support Zipf funbox, because the list is not ordered by frequency. Please try another word list.`,
+        {
+          durationMs: 7000,
+        },
+      );
+    }
+    if (supports === "unknown") {
+      showNoticeNotification(
+        `${Strings.capitalizeFirstLetter(
+          Strings.getLanguageDisplayString(getMutableConfig().language),
+        )} may not support Zipf funbox, because we don't know if it's ordered by frequency or not. If you would like to add this label, please contact us.`,
+        {
+          durationMs: 7000,
+        },
+      );
+    }
+  });
+  onCleanup(() => check.cancel());
+  return check;
 });
-
-restartTestEvent.subscribe((event) => void restart(event), import.meta.hot);
 
 // ===============================
 
-configEvent.subscribe(
-  ({ key, newValue, nosave }) => {
+// Time limits, timer failures and fail() all end the session first.
+export function useTestLogicEvents(): void {
+  onCleanup(
+    getTestSession().on("finish", ({ reason }) => {
+      void finish(reason !== undefined);
+    }),
+  );
+
+  restartTestEvent.useListener((event) => void restart(event));
+  configEvent.useListener(({ key, newValue, nosave }) => {
     if (getActivePage() === "test") {
       if (key === "language") {
         //automatically enable lazy mode for arabic
@@ -428,7 +450,7 @@ configEvent.subscribe(
       if (key === "difficulty" && !nosave) void restart();
       if (
         key === "customLayoutfluid" &&
-        Config.funbox.includes("layoutfluid")
+        getMutableConfig().funbox.includes("layoutfluid")
       ) {
         void restart();
       }
@@ -436,7 +458,7 @@ configEvent.subscribe(
       if (
         key === "keymapMode" &&
         newValue === "next" &&
-        Config.mode !== "zen"
+        getMutableConfig().mode !== "zen"
       ) {
         setTimeout(() => {
           highlight(
@@ -449,22 +471,15 @@ configEvent.subscribe(
       }
       if (
         (key === "language" || key === "funbox") &&
-        Config.funbox.includes("zipf")
+        getMutableConfig().funbox.includes("zipf")
       ) {
-        debouncedZipfCheck();
+        zipfCheck()();
       }
     }
     if (key === "lazyMode" && !nosave) {
-      if (Config.language.startsWith("arabic")) {
+      if (getMutableConfig().language.startsWith("arabic")) {
         LazyModeState.setArabicPref(newValue);
       }
     }
-  },
-  import.meta.hot,
-);
-
-// Time limits, timer failures and fail() all end the session first.
-const unsubscribeFinish = testSession.on("finish", ({ reason }) => {
-  void finish(reason !== undefined);
-});
-import.meta.hot?.dispose(unsubscribeFinish);
+  });
+}

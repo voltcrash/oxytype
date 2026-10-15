@@ -1,6 +1,14 @@
+import { createRoot } from "solid-js";
 import type { QuoteWithTextSplit } from "@oxytype/typing-core/quotes";
 import type { LanguageObject } from "@oxytype/schemas/languages";
-import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vite-plus/test";
 
 const mocks = vi.hoisted(() => ({
   active: false,
@@ -106,22 +114,25 @@ vi.mock("../../src/ts/test/test-ui", () => ({
   addWord: vi.fn(),
 }));
 vi.mock("../../src/ts/test/events/data", () => ({
-  testSession: {
-    start: mocks.sessionStart,
-    generate: mocks.generate,
-    complete: mocks.complete,
-    end: vi.fn(),
-    abandon: () => ({ acc: mocks.inputAccuracy, seconds: 0 }),
-    finish: (_now: number, reason?: string) => {
-      mocks.finishReason = reason;
-      mocks.onFinish?.({ reason });
-    },
-    getFinishReason: () => mocks.finishReason,
-    on: (_type: "finish", listener: (event: { reason?: string }) => void) => {
-      mocks.onFinish = listener;
-      return () => undefined;
-    },
-  },
+  getTestSession: (() => {
+    const session = {
+      start: mocks.sessionStart,
+      generate: mocks.generate,
+      complete: mocks.complete,
+      end: vi.fn(),
+      abandon: () => ({ acc: mocks.inputAccuracy, seconds: 0 }),
+      finish: (_now: number, reason?: string) => {
+        mocks.finishReason = reason;
+        mocks.onFinish?.({ reason });
+      },
+      getFinishReason: () => mocks.finishReason,
+      on: (_type: "finish", listener: (event: { reason?: string }) => void) => {
+        mocks.onFinish = listener;
+        return () => undefined;
+      },
+    };
+    return () => session;
+  })(),
   resetTestEvents: () => {
     mocks.finishReason = undefined;
   },
@@ -189,10 +200,13 @@ vi.mock("../../src/ts/states/remember-lazy-mode", () => ({
   setArabicPref: vi.fn(),
 }));
 vi.mock("../../src/ts/config/setters", async () => {
-  const { Config } = await import("../../src/ts/config/store");
+  const { getMutableConfig } = await import("../../src/ts/config/store");
   return {
-    setConfig: (key: keyof typeof Config, value: unknown) => {
-      Object.assign(Config, { [key]: value });
+    setConfig: (
+      key: keyof ReturnType<typeof getMutableConfig>,
+      value: unknown,
+    ) => {
+      Object.assign(getMutableConfig(), { [key]: value });
     },
     setQuoteLengthAll: vi.fn(),
     toggleFunbox: vi.fn(),
@@ -237,7 +251,7 @@ vi.mock("@oxytype/typing-core/result-validity", () => ({
   isAfkResult: () => false,
 }));
 
-import { Config } from "../../src/ts/config/store";
+import { getMutableConfig } from "../../src/ts/config/store";
 import { getDefaultConfig } from "../../src/ts/constants/default-config";
 import {
   fail,
@@ -245,10 +259,17 @@ import {
   restart,
   retrySavingResult,
   startTest,
+  useTestLogicEvents,
 } from "../../src/ts/test/test-logic";
 
+let disposeRuntime: () => void;
+afterEach(() => disposeRuntime());
 beforeEach(() => {
   vi.clearAllMocks();
+  disposeRuntime = createRoot((dispose) => {
+    useTestLogicEvents();
+    return dispose;
+  });
   Object.assign(mocks, {
     active: false,
     restarting: false,
@@ -262,7 +283,7 @@ beforeEach(() => {
     generatedWords: ["hello ", "world"],
     language: { name: "english", words: ["hello", "world"] },
   });
-  Object.assign(Config, getDefaultConfig(), {
+  Object.assign(getMutableConfig(), getDefaultConfig(), {
     mode: "words",
     words: 15,
     language: "english",
@@ -359,16 +380,16 @@ describe("test lifecycle state", () => {
 
   it("remembers a lazy-mode notice until lazy mode becomes available", async () => {
     mocks.language.noLazyMode = true;
-    Config.lazyMode = true;
+    getMutableConfig().lazyMode = true;
     await restart();
-    expect(Config.lazyMode).toBe(false);
+    expect(getMutableConfig().lazyMode).toBe(false);
     expect(mocks.rememberLazy).toBe(true);
-    Config.lazyMode = true;
+    getMutableConfig().lazyMode = true;
     await restart();
     expect(mocks.notice).toHaveBeenCalledTimes(1);
     mocks.language.noLazyMode = false;
     await restart();
-    expect(Config.lazyMode).toBe(true);
+    expect(getMutableConfig().lazyMode).toBe(true);
     expect(mocks.rememberLazy).toBe(false);
     mocks.language.noLazyMode = true;
     await restart();
@@ -426,8 +447,8 @@ describe("shared test decisions", () => {
   it.each(["off", "typing"] as const)(
     "preserves repeatQuotes=%s on an active quote restart",
     async (repeatQuotes) => {
-      Config.mode = "quote";
-      Config.repeatQuotes = repeatQuotes;
+      getMutableConfig().mode = "quote";
+      getMutableConfig().repeatQuotes = repeatQuotes;
       mocks.quote = { language: "english", id: 1 } as QuoteWithTextSplit;
       mocks.active = true;
       await restart();
@@ -436,8 +457,8 @@ describe("shared test decisions", () => {
   );
 
   it("does not repeat a quote after changing its language", async () => {
-    Config.mode = "quote";
-    Config.repeatQuotes = "typing";
+    getMutableConfig().mode = "quote";
+    getMutableConfig().repeatQuotes = "typing";
     mocks.quote = { language: "spanish", id: 1 } as QuoteWithTextSplit;
     mocks.active = true;
     await restart();

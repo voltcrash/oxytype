@@ -1,9 +1,7 @@
-import { QueryClientProvider } from "@tanstack/solid-query";
 import { JSXElement, Show } from "solid-js";
 import { Portal } from "solid-js/web";
 
 import { getConfig } from "../config/store";
-import { queryClient } from "../queries";
 import { getActivePage } from "../states/core";
 import { isFixingSkillIssue } from "../states/skill-issue";
 import { getFocus } from "../states/test";
@@ -17,8 +15,6 @@ import { HotkeyEvents } from "./core/HotkeyEvents";
 import { LinkPrefetch } from "./core/LinkPrefetch";
 import { PageHead } from "./core/PageHead";
 import { SkillIssue } from "./core/SkillIssue";
-import { Theme } from "./core/Theme";
-import { ThemeEvents } from "./core/ThemeEvents";
 import { DevTools } from "./dev/DevTools";
 import { Footer } from "./layout/footer/Footer";
 import { Header } from "./layout/header/Header";
@@ -32,12 +28,10 @@ import { Popups } from "./popups/Popups";
 
 export function App(props: AppElements): JSXElement {
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
       <Portal mount={props.body}>
         <PageHead />
         <AppEffects {...props} />
-        <Theme />
-        <ThemeEvents />
         <HotkeyEvents />
         <LinkPrefetch />
       </Portal>
@@ -79,6 +73,6 @@ export function App(props: AppElements): JSXElement {
           </Show>
         </PageScroller>
       </Show>
-    </QueryClientProvider>
+    </>
   );
 }

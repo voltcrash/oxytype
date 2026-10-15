@@ -1,7 +1,7 @@
 import * as Sound from "../controllers/sound-controller";
 import * as Arrays from "../utils/arrays";
-import { Config } from "../config/store";
-import { buildEventLog, testSession } from "./events/data";
+import { getMutableConfig } from "../config/store";
+import { buildEventLog, getTestSession } from "./events/data";
 import { getWpmHistory } from "@oxytype/typing-core/events/stats";
 import {
   applyReplayStep,
@@ -42,7 +42,7 @@ export function pauseReplay(): void {
 
 function playSound(sound: "click" | "error" | undefined): void {
   if (sound === undefined) return;
-  if (sound === "error" && Config.playSoundOnError !== "off") {
+  if (sound === "error" && getMutableConfig().playSoundOnError !== "off") {
     void Sound.playError();
   } else {
     void Sound.playClick();
@@ -100,7 +100,7 @@ export function toggleReplayDisplay(): void {
 }
 
 function refreshReplayFromEvents(): void {
-  ({ words, steps } = testSession.getReplay());
+  ({ words, steps } = getTestSession().getReplay());
   wpmHistory = getWpmHistory(buildEventLog());
   target = { wordIndex: 0, letterIndex: 0 };
 }

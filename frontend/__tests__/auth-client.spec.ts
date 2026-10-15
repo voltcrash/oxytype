@@ -10,7 +10,8 @@ vi.unmock("../src/ts/auth-client");
 vi.mock("virtual:env-config", () => ({ envConfig: config }));
 vi.mock("../src/ts/states/core", () => ({ setUserId: vi.fn() }));
 vi.mock("../src/ts/ape/user", () => ({ fetchUserFromApi: preloadUser }));
-beforeEach(() => {
+beforeEach(async () => {
+  await import("./__harness__/mock-application");
   preloadUser.mockReset();
   config.backendUrl = "/api";
   config.devOffline = false;
@@ -22,8 +23,7 @@ it("initializes frontend-only mode without sessions, refresh subscriptions or OA
   vi.stubGlobal("fetch", fetch);
   const {
     init,
-    authPromise,
-    authClient,
+    getAuthClient,
     observeAuthSession,
     isAuthAvailable,
     getAuthenticatedUser,
@@ -33,17 +33,19 @@ it("initializes frontend-only mode without sessions, refresh subscriptions or OA
   const initialized = init(callback);
   expect(callback).not.toHaveBeenCalled();
   await initialized;
-  await authPromise;
+  const { authReadiness } = await import("../src/app/readiness");
+  expect(authReadiness().state().status).toBe("ready");
   observeAuthSession()();
   expect(isAuthAvailable()).toBe(false);
   expect(getAuthenticatedUser()).toBeNull();
   expect(callback).toHaveBeenCalledWith(true, null);
   expect(preloadUser).not.toHaveBeenCalled();
-  expect((await authClient.getSession()).error?.status).toBe(503);
+  expect((await getAuthClient().getSession()).error?.status).toBe(503);
   await expect(requestOAuth("google")).rejects.toThrow("frontend-only");
   expect(fetch).not.toHaveBeenCalled();
 });
-afterEach(() => {
+afterEach(async () => {
+  (await import("./__harness__/mock-application")).releaseTestApplication();
   vi.unstubAllGlobals();
   vi.resetModules();
 });
@@ -59,13 +61,15 @@ it.each([
   "fetches cookie sessions through the configured API (%s)",
   async (backendUrl, expectedUrl) => {
     config.backendUrl = backendUrl;
+    (await import("./__harness__/mock-application")).releaseTestApplication();
     vi.resetModules();
+    await import("./__harness__/mock-application");
     const fetch = vi
       .fn<typeof globalThis.fetch>()
       .mockResolvedValue(Response.json(null));
     vi.stubGlobal("fetch", fetch);
-    const { authClient } = await import("../src/ts/auth-client");
-    const session = await authClient.getSession();
+    const { getAuthClient } = await import("../src/ts/auth-client");
+    const session = await getAuthClient().getSession();
     expect(session.error).toBeNull();
     expect(fetch).toHaveBeenCalledOnce();
     const input = fetch.mock.calls[0]?.[0];
@@ -127,12 +131,13 @@ it("preserves onboarding for sessions without an Oxytype account", async () => {
   const { SnapshotInitError } =
     await import("../src/ts/utils/snapshot-init-error");
   preloadUser.mockRejectedValue(new SnapshotInitError("Not found", 404));
-  const { init, authPromise } = await import("../src/ts/auth-client");
+  const { init } = await import("../src/ts/auth-client");
   const { googleSignUpEvent } = await import("../src/ts/events/google-sign-up");
   const dispatch = vi.spyOn(googleSignUpEvent, "dispatch");
   const callback = vi.fn(async () => undefined);
   await init(callback);
-  await authPromise;
+  const { authReadiness } = await import("../src/app/readiness");
+  expect(authReadiness().state().status).toBe("ready");
   expect(callback).not.toHaveBeenCalled();
   expect(dispatch).toHaveBeenCalledWith(
     expect.objectContaining({ isNewUser: true }),

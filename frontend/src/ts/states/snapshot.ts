@@ -1,17 +1,18 @@
-import { createStore, reconcile, unwrap } from "solid-js/store";
+import { createAccountStore, createAccountSignal } from "../../app/state";
+import { reconcile, unwrap } from "solid-js/store";
 import {
   Snapshot,
   SnapshotResult,
   SavedResult,
 } from "../constants/default-snapshot";
-import { createSignal } from "solid-js";
+
 import { Mode } from "@oxytype/schemas/shared";
 
 export type MiniSnapshot = Omit<
   Snapshot,
   "testActivity" | "testActivityByYear" | "isMiniSnapshot"
 > & { isMiniSnapshot: boolean };
-const [snapshot, updateSnapshot] = createStore<{
+const [snapshot, updateSnapshot] = createAccountStore<{
   value: MiniSnapshot | undefined;
 }>({ value: undefined });
 
@@ -40,6 +41,6 @@ export function getSnapshot(): MiniSnapshot | undefined {
   return snapshot.value;
 }
 
-export const [getLastResult, setLastResult] = createSignal<
+export const [getLastResult, setLastResult] = createAccountSignal<
   SnapshotResult<Mode> | SavedResult | undefined
 >(undefined);

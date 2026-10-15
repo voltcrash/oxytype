@@ -19,6 +19,7 @@ import {
   waitForResultChart,
 } from "../../../../states/result";
 import { isTestActive } from "../../../../states/test";
+import { subscribeResultConfigChanges } from "../../../../test/result/chart-config";
 import { Fa } from "../../../common/Fa";
 import { ResultButtons } from "./ResultButtons";
 import { ResultLoginTip } from "./ResultLoginTip";
@@ -34,6 +35,7 @@ const ResultChart = lazy(async () =>
 );
 
 export function Result(): JSXElement {
+  subscribeResultConfigChanges();
   let resultEl: HTMLDivElement | undefined;
   let wrapperEl: HTMLDivElement | undefined;
   const [chartRequested, setChartRequested] = createSignal(false);
@@ -56,7 +58,12 @@ export function Result(): JSXElement {
   useResultScreen(() => resultEl);
 
   onMount(() => {
-    setResultElements(resultEl as HTMLDivElement, wrapperEl as HTMLDivElement);
+    onCleanup(
+      setResultElements(
+        resultEl as HTMLDivElement,
+        wrapperEl as HTMLDivElement,
+      ),
+    );
   });
 
   return (

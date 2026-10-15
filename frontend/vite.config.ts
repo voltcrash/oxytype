@@ -1,3 +1,6 @@
+import { envConfig } from "./vite-plugins/env-config";
+import { languageHashes } from "./vite-plugins/language-hashes";
+import { getClientVersion } from "./vite-plugins/client-version";
 import { defineConfig } from "vite-plus";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import { tanstackStart } from "@tanstack/solid-start/plugin/vite";
@@ -5,6 +8,7 @@ import solid from "vite-plugin-solid";
 import tailwindcss from "@tailwindcss/vite";
 import { frontendLint } from "./lint.config";
 import { fontStyles } from "./vite-plugins/font-styles";
+import { ssrSafeLegacyFiles } from "./vite-plugins/import-boundaries";
 
 export default defineConfig(({ mode }) => ({
   lint: { ...frontendLint },
@@ -13,7 +17,9 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     dedupe: ["solid-js", "@tanstack/solid-router", "@tanstack/solid-query"],
   },
-  ssr: { noExternal: ["solid-js", "@tanstack/solid-router", "@solidjs/meta"] },
+  ssr: {
+    noExternal: ["solid-js", "@tanstack/solid-router", "@solidjs/meta"],
+  },
   environments: {
     ssr: {
       optimizeDeps: {
@@ -30,6 +36,15 @@ export default defineConfig(({ mode }) => ({
     },
   },
   plugins: [
+    envConfig({
+      isDevelopment: mode !== "production",
+      clientVersion: getClientVersion(mode !== "production"),
+      env: {
+        BACKEND_URL: "/api",
+        DEV_OFFLINE: mode === "offline" ? "true" : "false",
+      },
+    }),
+    languageHashes({ skip: false }),
     cloudflare({
       configPath: "wrangler.jsonc",
       config:
@@ -50,14 +65,14 @@ export default defineConfig(({ mode }) => ({
         behavior: "error",
         client: {
           specifiers: [/^@oxytype\/backend/],
-          files: ["**/backend/src/**"],
+          // User file lists replace Start's defaults; keep `.server` denied.
+          files: ["**/backend/src/**", "**/*.server.*"],
         },
+        // Legacy modules are browser state unless explicitly SSR-safe.
+        // Patterns match root-relative paths.
         server: {
-          files: [
-            "**/frontend/src/ts/index.ts",
-            "**/frontend/src/ts/test/**",
-            "**/*.client.ts",
-          ],
+          files: ["src/ts/**", "**/*.client.*"],
+          excludeFiles: ["**/node_modules/**", ...ssrSafeLegacyFiles],
         },
       },
     }),
@@ -69,7 +84,9 @@ export default defineConfig(({ mode }) => ({
   define: {
     "import.meta.env.OXYTYPE_OFFLINE": JSON.stringify(mode === "offline"),
   },
-  build: { outDir: mode === "runtime-test" ? "dist/start-test" : "dist/start" },
+  build: {
+    outDir: mode === "runtime-test" ? "dist/start-test" : "dist/start",
+  },
   server: { port: 3000, strictPort: true },
   clearScreen: false,
 }));

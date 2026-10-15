@@ -22,7 +22,10 @@ export const projects = [
     extends: false,
     test: {
       name: "start",
-      include: ["__tests__/start/foundation.spec.ts"],
+      include: [
+        "__tests__/start/foundation.spec.ts",
+        "__tests__/start/layers.spec.ts",
+      ],
       environment: "node",
       testTimeout: 30_000,
       hookTimeout: 30_000,
@@ -39,6 +42,7 @@ export const projects = [
       environment: "happy-dom",
       globalSetup: "__tests__/global-setup.ts",
       setupFiles: [
+        "__tests__/__harness__/mock-application.ts",
         "__tests__/__harness__/mock-dom.ts",
         "__tests__/__harness__/mock-auth.ts",
         "__tests__/__harness__/mock-env-config.ts",
@@ -70,6 +74,7 @@ export const projects = [
       globalSetup: "__tests__/global-setup.ts",
       setupFiles: [
         "__tests__/__harness__/setup-jsx.ts",
+        "__tests__/__harness__/mock-application.ts",
         "__tests__/__harness__/mock-dom.ts",
       ],
       globals: true,

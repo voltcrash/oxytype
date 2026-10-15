@@ -6,11 +6,12 @@ import { BTreeIndex, createCollection } from "@tanstack/solid-db";
 import { bindResultsReady } from "../../states/results-ready";
 import Ape from "../../ape";
 import { SnapshotResult } from "../../constants/default-snapshot";
-import { queryClient } from "../../queries";
+import { getQueryClient } from "../../queries";
 import { isAuthenticated } from "../../states/core";
 import { getLastResult, setLastResult } from "../../states/snapshot";
 import { getTagsOnce } from "../tags";
 import { applyIdWorkaround } from "../utils/misc";
+import { defineCollection } from "../utils/scope";
 
 function createResultsCollection(client: Client) {
   const collection = createCollection(
@@ -50,7 +51,7 @@ function createResultsCollection(client: Client) {
         }
         return results;
       },
-      queryClient,
+      queryClient: getQueryClient(),
       getKey: (it) => it._id,
     }),
   );
@@ -59,29 +60,26 @@ function createResultsCollection(client: Client) {
     indexType: BTreeIndex,
   });
 
-  import.meta.hot?.dispose(() => {
-    void collection.cleanup();
-  });
   return collection;
 }
 
 export const resultsByClient = {
-  web: createResultsCollection("web"),
-  tui: createResultsCollection("tui"),
+  web: defineCollection(import.meta.hot, () => createResultsCollection("web")),
+  tui: defineCollection(import.meta.hot, () => createResultsCollection("tui")),
 };
 
 export const resultsCollection = resultsByClient.web;
 
 export function isResultsReady(): boolean {
-  return resultsCollection.isReady();
+  return resultsCollection().isReady();
 }
 
 bindResultsReady(isResultsReady);
 
 export async function waitForResultsReady(): Promise<void> {
-  await resultsCollection.stateWhenReady();
+  await resultsCollection().stateWhenReady();
 }
 
 export function getResults(client: Client = "web"): SnapshotResult<Mode>[] {
-  return [...resultsByClient[client].values()];
+  return [...resultsByClient[client]().values()];
 }

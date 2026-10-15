@@ -1,3 +1,5 @@
+import { createAppOwned } from "../../app/application";
+import { appObject } from "../../app/state";
 import { QuotesController as CoreQuotesController } from "@oxytype/typing-core/quote-source";
 import { Quote } from "@oxytype/typing-core/quotes";
 export type { Quote } from "@oxytype/typing-core/quotes";
@@ -81,15 +83,14 @@ class QuotesController extends CoreQuotesController {
   }
 }
 
-const quoteController = new QuotesController();
+const quoteController = appObject(createAppOwned(() => new QuotesController()));
 
-configEvent.subscribe(
-  ({ key, newValue }) => {
+export default quoteController;
+
+export function useQuoteEvents(): void {
+  configEvent.useListener(({ key, newValue }) => {
     if (key === "quoteLength") {
       quoteController.updateQuoteQueue(newValue);
     }
-  },
-  import.meta.hot,
-);
-
-export default quoteController;
+  });
+}

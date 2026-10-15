@@ -55,10 +55,10 @@ import {
 
 import { getTypingTestElement } from "../states/test-dom";
 
-import { Config } from "../config/store";
+import { getMutableConfig } from "../config/store";
 
 import {
-  testSession,
+  getTestSession,
   cleanupData,
   logEventsDataToTheConsoleTable,
   forceReleaseAllKeys,
@@ -94,7 +94,7 @@ const invalidMessages: Record<
 };
 
 function getCompletedEventCustomText(): CompletedEventCustomText | undefined {
-  if (Config.mode !== "custom") return undefined;
+  if (getMutableConfig().mode !== "custom") return undefined;
   const temp = CustomText.getData();
   return {
     textLen: temp.text.length,
@@ -109,7 +109,7 @@ export async function finish(difficultyFailed = false): Promise<void> {
   setResultCalculating(true);
   const now = performance.now();
   TestTimer.clear();
-  testSession.end(now);
+  getTestSession().end(now);
   const resultReady = Promise.all([import("./result"), prepareResultScreen()]);
 
   // fade out the test and show loading
@@ -126,7 +126,7 @@ export async function finish(difficultyFailed = false): Promise<void> {
 
   TestUI.onTestFinish();
 
-  if (isRepeated() && Config.mode === "quote") {
+  if (isRepeated() && getMutableConfig().mode === "quote") {
     setIsRepeated(false);
   }
 
@@ -148,8 +148,8 @@ export async function finish(difficultyFailed = false): Promise<void> {
         .getActiveTags()
         .map((tag) => tag._id)
     : [];
-  const ce = testSession.complete(eventLog, {
-    config: Config,
+  const ce = getTestSession().complete(eventLog, {
+    config: getMutableConfig(),
     currentQuote: getCurrentQuote(),
     customText: getCompletedEventCustomText(),
     tags,
@@ -180,7 +180,7 @@ export async function finish(difficultyFailed = false): Promise<void> {
 
   ///////// completed event ready
 
-  const failReason = testSession.getFinishReason() ?? "";
+  const failReason = getTestSession().getFinishReason() ?? "";
   const afkDetected = isAfkResult(eventLog, getBailedOut());
   const invalidReason = getInvalidResultReason({
     result: completedEvent,
@@ -213,7 +213,7 @@ export async function finish(difficultyFailed = false): Promise<void> {
   // test is valid
 
   if (isRepeated() || difficultyFailed) {
-    if (Config.resultSaving) {
+    if (getMutableConfig().resultSaving) {
       pushIncompleteTest({
         acc: completedEvent.acc,
         seconds: getIncompleteTestSeconds(eventLog),
@@ -223,7 +223,7 @@ export async function finish(difficultyFailed = false): Promise<void> {
 
   const customTextName = getCustomTextIndicator()?.name ?? "";
   const isLong = getCustomTextIndicator()?.isLong === true;
-  if (Config.mode === "custom" && customTextName !== "" && isLong) {
+  if (getMutableConfig().mode === "custom" && customTextName !== "" && isLong) {
     // Let's update the custom text progress
     if (
       getBailedOut() ||
