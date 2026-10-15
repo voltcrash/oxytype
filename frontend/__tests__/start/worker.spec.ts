@@ -9,9 +9,10 @@ function functionPath(): string {
     file.includes("server-fn-resolver"),
   );
   if (file === undefined) throw new Error("Missing function manifest");
-  const id = /"([a-f0-9]{64})"/.exec(
-    readFileSync(resolve(dir, file), "utf8"),
-  )?.[1];
+  const id =
+    /"([a-f0-9]{64})":\s*\{\s*functionName:\s*"getTypingStats_createServerFn_handler"/.exec(
+      readFileSync(resolve(dir, file), "utf8"),
+    )?.[1];
   if (id === undefined) throw new Error("Missing function ID");
   return `/_serverFn/${id}`;
 }
@@ -52,7 +53,7 @@ describe("built Start application in workerd", () => {
     const db = await mf.getD1Database("DB", "a");
     await db
       .prepare(
-        "UPDATE rate_counters SET points=60 WHERE key='start:publicStatsGet:192.0.2.1'",
+        "UPDATE rate_counters SET points=60 WHERE key='rate:publicStatsGet:192.0.2.1'",
       )
       .run();
     const limited = await worker.fetch(url, { headers });

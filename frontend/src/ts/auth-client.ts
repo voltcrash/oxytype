@@ -1,55 +1,20 @@
 import { captureAccount } from "../app/account-scope";
-import { batch, onCleanup, createSignal } from "solid-js";
-import { createAuthClient } from "better-auth/client";
-import { deviceAuthorizationClient } from "better-auth/client/plugins";
-import { dashClient } from "@better-auth/infra/client";
+import { onCleanup } from "solid-js";
 import { envConfig } from "virtual:env-config";
 import { createAppOwned } from "../app/application";
 import { authReadiness } from "../app/readiness";
-import { appSignal } from "../app/state";
-import { setUserId } from "./states/core";
 import { googleSignUpEvent } from "./events/google-sign-up";
-import { createEvent } from "./hooks/createEvent";
 import { SnapshotInitError } from "./utils/snapshot-init-error";
 
-function createOxytypeAuthClient() {
-  const authURL = new URL(
-    `${envConfig.backendUrl.replace(/\/$/, "")}/auth`,
-    window.location.origin,
-  );
-  return createAuthClient({
-    baseURL: authURL.href,
-    basePath: authURL.pathname,
-    fetchOptions: {
-      credentials: "include",
-      ...(envConfig.devOffline
-        ? {
-            customFetchImpl: async () =>
-              Response.json(
-                {
-                  message:
-                    "Authentication is unavailable in frontend-only development",
-                },
-                { status: 503 },
-              ),
-          }
-        : {}),
-    },
-    plugins: [dashClient(), deviceAuthorizationClient()],
-  });
-}
-type OxytypeAuthClient = ReturnType<typeof createOxytypeAuthClient>;
-const authClient = createAppOwned(createOxytypeAuthClient);
-/** Built on first browser use, never while the module is evaluated. */
-export function getAuthClient(): OxytypeAuthClient {
-  return authClient();
-}
+import { getAuthClient } from "../features/auth/client.client";
+export { getAuthClient };
 import type { AuthUser, SocialProvider } from "./auth-types";
 export type { AuthUser, SocialProvider } from "./auth-types";
-const [getAuthenticatedUser, setAuthenticatedUser] = appSignal(() =>
-  createSignal<AuthUser | null>(null),
-);
-export { getAuthenticatedUser };
+import {
+  getAuthenticatedUser,
+  setUserState,
+} from "../features/auth/state.client";
+export { getAuthenticatedUser, setUserState };
 
 type ReadyCallback = (success: boolean, user: AuthUser | null) => Promise<void>;
 const authState = createAppOwned(() => {
@@ -65,22 +30,8 @@ const authState = createAppOwned(() => {
   return state;
 });
 
-export function checkAuthResult<T>(result: {
-  data: T;
-  error: { message?: string } | null;
-}): T {
-  if (result.error !== null) {
-    throw new Error(result.error.message ?? "Authentication failed");
-  }
-  return result.data;
-}
-
-export function setUserState(user: AuthUser | null): void {
-  batch(() => {
-    setUserId(user?.uid ?? null);
-    setAuthenticatedUser(user);
-  });
-}
+import { checkAuthResult } from "../features/auth/result";
+export { checkAuthResult };
 
 export async function refreshSession(notify = true): Promise<AuthUser | null> {
   const state = authState();
@@ -217,28 +168,8 @@ export async function deleteUnfinishedUser(): Promise<void> {
   );
 }
 
-type OAuthRequest = {
-  provider: SocialProvider;
-  link: boolean;
-  rememberMe: boolean;
-  resolve: () => void;
-  reject: (error: Error) => void;
-};
-export const oauthRequestEvent = createEvent<OAuthRequest>();
-export async function requestOAuth(
-  provider: SocialProvider,
-  link = false,
-  rememberMe = true,
-): Promise<void> {
-  if (envConfig.devOffline) {
-    throw new Error(
-      "Authentication is unavailable in frontend-only development",
-    );
-  }
-  return new Promise((resolve, reject) =>
-    oauthRequestEvent.dispatch({ provider, link, rememberMe, resolve, reject }),
-  );
-}
+import { requestOAuth } from "../features/auth/popup.client";
+export { requestOAuth } from "../features/auth/popup.client";
 export async function signInWithPopup(
   provider: SocialProvider,
   rememberMe: boolean,
