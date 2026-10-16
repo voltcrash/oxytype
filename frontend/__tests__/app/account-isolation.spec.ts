@@ -5,11 +5,9 @@ const requests = vi.hoisted(() => ({
   config: vi.fn(),
   save: vi.fn(async () => undefined),
 }));
-vi.mock("../../src/ts/ape", () => ({
-  default: { users: { get: requests.user }, configs: { get: requests.config } },
-}));
-vi.mock("../../src/ts/ape/config", () => ({ saveConfig: requests.save }));
-vi.mock("../../src/ts/ape/server-configuration", () => ({
+
+vi.mock("../../src/ts/config/sync", () => ({ saveConfig: requests.save }));
+vi.mock("../../src/ts/states/server-configuration", () => ({
   sync: async () => undefined,
 }));
 
@@ -23,6 +21,21 @@ import * as DB from "../../src/ts/db";
 import { setUserId } from "../../src/ts/states/core";
 import { getSnapshot } from "../../src/ts/states/snapshot";
 import { getTags } from "../../src/ts/collections/tags";
+import { mockHttpFixture, mockOperation } from "../__harness__/operations";
+
+mockOperation("users.get", async () => {
+  const response = (await requests.user()) as {
+    status: number;
+    body: { data?: unknown; message?: string };
+  };
+  return response.status === 200
+    ? { ok: true, status: 200, message: "", data: response.body.data }
+    : {
+        ok: false,
+        status: response.status,
+        message: response.body.message ?? "",
+      };
+});
 
 beforeEach(async () => {
   setUserId(null);
@@ -103,3 +116,5 @@ it("replaces real collection readers and refuses a previous actor's late respons
   await Promise.resolve();
   expect(getTags().map((tag) => tag._id)).toEqual(["b"]);
 });
+
+mockHttpFixture("configs.get", async (input) => await requests.config(input));

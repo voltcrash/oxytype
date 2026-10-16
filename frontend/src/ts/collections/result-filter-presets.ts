@@ -1,3 +1,4 @@
+import { operation } from "../../data/operations";
 import { ResultFilters } from "@oxytype/schemas/users";
 import { queryCollectionOptions } from "@tanstack/query-db-collection";
 import {
@@ -5,7 +6,6 @@ import {
   createOptimisticAction,
   useLiveQuery,
 } from "@tanstack/solid-db";
-import Ape from "../ape";
 import { getQueryClient } from "../queries";
 import { defineCollection } from "./utils/scope";
 import { baseKey } from "../queries/utils/keys";
@@ -14,7 +14,7 @@ import {
   replaceUnderscoresWithSpaces,
 } from "../utils/strings";
 import { applyIdWorkaround, tempId } from "./utils/misc";
-import { fetchUserFromApi } from "../ape/user";
+import { loadAccountData } from "../queries/account";
 import { isAuthenticated } from "../states/core";
 
 const queryKeys = {
@@ -31,7 +31,7 @@ const resultFilterPresetsCollection = defineCollection(import.meta.hot, () =>
       enabled: isAuthenticated,
       getKey: (it) => it._id,
       queryFn: async () => {
-        const userData = await fetchUserFromApi();
+        const userData = await loadAccountData();
         if (userData === undefined) return [];
 
         return (userData.resultFilterPresets ?? [])
@@ -74,21 +74,21 @@ const actions = {
       });
     },
     mutationFn: async ({ name, filters }) => {
-      const response = await Ape.users.addResultFilterPreset({
+      const response = await operation("users.addResultFilterPreset", {
         body: {
           ...structuredClone(filters),
           name: replaceSpacesWithUnderscores(name),
         },
       });
-      if (response.status !== 200) {
+      if (!response.ok) {
         throw new Error(
-          `Failed to insert result filter presets: ${response.body.message}`,
+          `Failed to insert result filter presets: ${response.message}`,
         );
       }
 
       const newPreset: ResultFilters = {
         ...structuredClone(filters),
-        _id: response.body.data,
+        _id: response.data,
         name,
       };
 
@@ -102,13 +102,13 @@ const actions = {
       resultFilterPresetsCollection().delete(presetId);
     },
     mutationFn: async ({ presetId }) => {
-      const response = await Ape.users.removeResultFilterPreset({
+      const response = await operation("users.removeResultFilterPreset", {
         params: { presetId },
       });
 
-      if (response.status !== 200) {
+      if (!response.ok) {
         throw new Error(
-          `Failed to delete result filter presets: ${response.body.message}`,
+          `Failed to delete result filter presets: ${response.message}`,
         );
       }
 

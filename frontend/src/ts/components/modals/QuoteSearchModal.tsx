@@ -11,12 +11,13 @@ import {
 import { z } from "zod";
 
 import * as TestLogic from "../../../features/typing/runtime/test-logic";
-import Ape from "../../ape";
 import { setConfig } from "../../config/setters";
 import { getMutableConfig } from "../../config/store";
 import QuotesController, { Quote } from "../../controllers/quotes-controller";
 import * as DB from "../../db";
 import { createDebouncedEffectOn } from "../../hooks/effects";
+import { getQueryClient } from "../../queries";
+import { getQuoteSubmissionEnabledQueryOptions } from "../../queries/quotes";
 import { isAuthenticated } from "../../states/core";
 import { hideLoaderBar, showLoaderBar } from "../../states/loader-bar";
 import {
@@ -424,12 +425,16 @@ export function QuoteSearchModal(): JSXElement {
 
   const handleSubmitClick = async (): Promise<void> => {
     showLoaderBar();
-    const getSubmissionEnabled = await Ape.quotes.isSubmissionEnabled();
-    const isEnabled =
-      (getSubmissionEnabled.status === 200 &&
-        getSubmissionEnabled.body.data?.isEnabled) ??
-      false;
-    hideLoaderBar();
+    let isEnabled = false;
+    try {
+      isEnabled = (
+        await getQueryClient().query(getQuoteSubmissionEnabledQueryOptions())
+      ).isEnabled;
+    } catch {
+      // Preserve the disabled-submission notice on an unavailable service.
+    } finally {
+      hideLoaderBar();
+    }
     if (!isEnabled) {
       showNoticeNotification(
         "Quote submission is disabled temporarily due to a large submission queue.",

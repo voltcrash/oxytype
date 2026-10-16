@@ -12,6 +12,7 @@ export async function createWorkerd(
   testEntry = false,
   port?: number,
   captcha = false,
+  overrides: Partial<Pick<WorkerEnv, "MODE" | "API_PATH_OVERRIDE">> = {},
 ): Promise<Miniflare> {
   const dir = resolve(
     root,
@@ -47,6 +48,7 @@ export async function createWorkerd(
         manifest: { mainModule: "index.js", modules },
         env: {
           DB: { type: "d1" as const, name, id: name },
+          ASSETS: { type: "assets" as const },
           ...(captcha
             ? {
                 TURNSTILE_SECRET_KEY: {
@@ -66,6 +68,13 @@ export async function createWorkerd(
             value: `${origin}/api/auth`,
           },
           BETTER_AUTH_SECRET: { type: "text" as const, value: testSecret },
+          ...Object.fromEntries(
+            Object.entries(overrides).flatMap(([key, value]) =>
+              value === undefined
+                ? []
+                : [[key, { type: "text" as const, value }]],
+            ),
+          ),
         },
       },
       dev: {

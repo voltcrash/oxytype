@@ -5,6 +5,7 @@ import { createAppOwned } from "../app/application";
 import { authReadiness } from "../app/readiness";
 import { googleSignUpEvent } from "./events/google-sign-up";
 import { SnapshotInitError } from "./utils/snapshot-init-error";
+import { operation } from "../data/operations";
 
 import { getAuthClient } from "../features/auth/client.client";
 export { getAuthClient };
@@ -105,8 +106,8 @@ export async function init(
         // A social sign-in can return before the username/captcha onboarding is complete.
         try {
           // Share the onboarding check with snapshot/config initialization.
-          const { fetchUserFromApi } = await import("./ape/user");
-          await fetchUserFromApi(user.uid);
+          const { loadAccountData } = await import("./queries/account");
+          await loadAccountData(user.uid);
           lease.assertCurrent();
         } catch (error) {
           if (
@@ -183,10 +184,7 @@ export async function signInWithPopup(
     await requestOAuth(provider, false, rememberMe);
     const user = await refreshSession(false);
     if (!user) throw new Error("Sign in did not create a session");
-    const response = await fetch(`${envConfig.backendUrl}/users`, {
-      credentials: "include",
-      headers: { "X-Client-Version": envConfig.clientVersion },
-    });
+    const response = await operation("users.get");
     if (response.status === 404) {
       googleSignUpEvent.dispatch({ signedInUser: { user }, isNewUser: true });
     } else if (response.ok) {

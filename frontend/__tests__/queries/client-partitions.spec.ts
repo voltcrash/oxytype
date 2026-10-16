@@ -13,64 +13,11 @@ vi.mock("../../src/ts/states/core", () => ({
 vi.mock("../../src/ts/states/snapshot", () => ({
   getSnapshot: () => undefined,
 }));
-vi.mock("../../src/ts/ape", () => ({
-  default: {
-    users: {
-      get: (args: unknown) => {
-        calls("account", args);
-        return {
-          status: 200,
-          body: {
-            data: {
-              uid: state.uid,
-              startedTests: 8,
-              completedTests: 6,
-              timeTyping: 180,
-              xp: 400,
-              streak: { length: 2, maxLength: 9 },
-              personalBests: { time: {}, words: {} },
-            },
-          },
-        };
-      },
-      getProfile: (args: unknown) => {
-        calls("profile", args);
-        return { status: 200, body: { data: { name: "Tester" } } };
-      },
-      getTestActivity: (args: unknown) => {
-        calls("activity", args);
-        return { status: 200, body: { data: { "2026": [1] } } };
-      },
-      updateLeaderboardMemory: (args: unknown) => {
-        calls("memory", args);
-        return { status: 200, body: {} };
-      },
-    },
-    leaderboards: Object.fromEntries(
-      [
-        "get",
-        "getDaily",
-        "getWeeklyXp",
-        "getRank",
-        "getDailyRank",
-        "getWeeklyXpRank",
-      ].map((method) => [
-        method,
-        (args: unknown) => {
-          calls(method, args);
-          return {
-            status: 200,
-            body: { data: { entries: [{ uid: "one" }], count: 1, rank: 1 } },
-          };
-        },
-      ]),
-    ),
-  },
-}));
-
+import { mockOperation, ok } from "../__harness__/operations";
 import {
   getAccountActivityQueryOptions,
   getAccountQueryOptions,
+  getTerminalAccountQueryOptions,
   updateTerminalLeaderboardMemory,
 } from "../../src/ts/queries/account";
 import {
@@ -79,6 +26,39 @@ import {
 } from "../../src/ts/queries/leaderboards";
 import { getUserProfile } from "../../src/ts/queries/profile";
 import { getQueryClient } from "../../src/ts/queries";
+
+const answer = (name: string, data: unknown) => (args: unknown) => {
+  calls(name, args);
+  return ok(data);
+};
+mockOperation("users.get", (args) => {
+  calls("account", args);
+  return ok({
+    uid: state.uid,
+    startedTests: 8,
+    completedTests: 6,
+    timeTyping: 180,
+    xp: 400,
+    streak: { length: 2, maxLength: 9 },
+    personalBests: { time: {}, words: {} },
+  });
+});
+mockOperation("users.getProfile", answer("profile", { name: "Tester" }));
+mockOperation("users.getTestActivity", answer("activity", { "2026": [1] }));
+mockOperation("users.updateLeaderboardMemory", answer("memory", null));
+for (const method of [
+  "get",
+  "getDaily",
+  "getWeeklyXp",
+  "getRank",
+  "getDailyRank",
+  "getWeeklyXpRank",
+] as const) {
+  mockOperation(
+    `leaderboards.${method}`,
+    answer(method, { entries: [{ uid: "one" }], count: 1, rank: 1 }),
+  );
+}
 
 const client = new QueryClient();
 afterEach(() => {
@@ -105,8 +85,8 @@ describe("client query partitions", () => {
     });
   });
   it("keeps account caches separate by user and client and projects selected totals", async () => {
-    const web = getAccountQueryOptions("web");
-    const tui = getAccountQueryOptions("tui");
+    const web = getAccountQueryOptions();
+    const tui = getTerminalAccountQueryOptions();
     expect(web.queryKey).not.toEqual(tui.queryKey);
     const account = await client.query(tui);
     expect(account).toMatchObject({
@@ -117,7 +97,7 @@ describe("client query partitions", () => {
     });
     expect(calls).toHaveBeenCalledWith("account", { query: { client: "tui" } });
     state.uid = "two";
-    expect(getAccountQueryOptions("tui").queryKey).not.toEqual(tui.queryKey);
+    expect(getTerminalAccountQueryOptions().queryKey).not.toEqual(tui.queryKey);
   });
   it("partitions year archives by client", async () => {
     for (const selected of ["web", "tui"] as const) {
@@ -183,10 +163,10 @@ describe("client query partitions", () => {
     },
   );
   it("updates terminal rank memory without writing the web cache", async () => {
-    await getQueryClient().query(getAccountQueryOptions("web"));
-    await getQueryClient().query(getAccountQueryOptions("tui"));
+    await getQueryClient().query(getAccountQueryOptions());
+    await getQueryClient().query(getTerminalAccountQueryOptions());
     const web = getQueryClient().getQueryData(
-      getAccountQueryOptions("web").queryKey,
+      getAccountQueryOptions().queryKey,
     );
     await updateTerminalLeaderboardMemory("15", 7);
     expect(calls).toHaveBeenCalledWith("memory", {
@@ -194,11 +174,11 @@ describe("client query partitions", () => {
       body: { mode: "time", mode2: "15", language: "english", rank: 7 },
     });
     expect(
-      getQueryClient().getQueryData(getAccountQueryOptions("tui").queryKey)
+      getQueryClient().getQueryData(getTerminalAccountQueryOptions().queryKey)
         ?.lbMemory,
     ).toEqual({ time: { "15": { english: 7 } } });
     expect(
-      getQueryClient().getQueryData(getAccountQueryOptions("web").queryKey),
+      getQueryClient().getQueryData(getAccountQueryOptions().queryKey),
     ).toBe(web);
   });
 });

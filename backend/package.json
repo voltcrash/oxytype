@@ -16,6 +16,7 @@
     "./policies/configuration": "./src/policies/configuration.ts",
     "./policies/permission": "./src/policies/permission.ts",
     "./policies/rate-limit": "./src/policies/rate-limit.ts",
+    "./policies/operation-runner": "./src/policies/operation-runner.ts",
     "./configuration": "./src/init/configuration.ts",
     "./services/context": "./src/services/context.ts",
     "./services/public-operations": "./src/services/operations/public.ts",
@@ -27,7 +28,8 @@
     "./services/profile": "./src/services/operations/user/profile.ts",
     "./services/leaderboards": "./src/services/operations/leaderboard.ts",
     "./auth/ui-session": "./src/auth/ui-session.ts",
-    "./legacy-http": "./src/app.ts"
+    "./http": "./src/http/handler.ts",
+    "./http/openapi": "./src/http/openapi.ts"
   },
   "scripts": {
     "lint": "vp lint . --type-aware --type-check --format agent",
