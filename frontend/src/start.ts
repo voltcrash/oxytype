@@ -8,17 +8,26 @@ import { setResponseStatus } from "@tanstack/solid-start/server";
 import { createServiceContext } from "./server/context.server";
 
 const services = createMiddleware().server(
-  async ({ request, next }) =>
-    await next({ context: { services: createServiceContext(request) } }),
+  async ({ request, handlerType, next }) =>
+    await next({
+      context: {
+        services: createServiceContext(request, handlerType === "serverFn"),
+      },
+    }),
 );
 
 const functionErrors = createMiddleware({ type: "function" }).server(
-  async ({ next }) => {
+  async ({ next, context }) => {
     try {
       return await next();
     } catch (error) {
       if (error instanceof ZodError) {
-        setResponseStatus(422);
+        // SSR calls share the document response; only a direct call is a 422.
+        if (
+          (context as unknown as { services?: { rpc?: boolean } }).services?.rpc
+        ) {
+          setResponseStatus(422);
+        }
         throw new Error("Invalid operation input");
       }
       throw error;

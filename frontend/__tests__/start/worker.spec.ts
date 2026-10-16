@@ -113,12 +113,79 @@ describe("built Start application in workerd", () => {
     ).toBe(403);
   });
 
-  it("owns unknown-route 404s and leaves legacy HTTP unmounted", async () => {
-    for (const path of ["/missing", "/api/public/typingStats"]) {
+  it("owns unknown-route 404s inside the application layout", async () => {
+    for (const path of ["/missing", "/404.html", "/profile/a/b"]) {
       const response = await mf.dispatchFetch(`http://localhost:3000${path}`);
       expect(response.status).toBe(404);
-      expect(await response.text()).toContain("Page not found");
+      const html = await response.text();
+      expect(html).toContain("404 | Oxytype");
+      expect(html).toContain("Ooops! Looks like this page");
+      expect(html).toContain('aria-label="Main navigation"');
     }
+  });
+
+  it("redirects former entry URLs to canonical routes with their query", async () => {
+    for (const [path, location] of [
+      ["/index.html?mode=time", "/?mode=time"],
+      ["/index", "/"],
+      ["/privacy-policy", "/privacy-policy.html"],
+      ["/oauth-callback?requestId=a", "/oauth-callback.html?requestId=a"],
+      ["/404", "/404.html"],
+    ] as const) {
+      const response = await mf.dispatchFetch(`http://localhost:3000${path}`, {
+        redirect: "manual",
+      });
+      expect(response.status).toBe(301);
+      expect(
+        new URL(response.headers.get("location") ?? "", "http://x").href,
+      ).toBe(new URL(location, "http://x").href);
+    }
+  });
+
+  it("server-renders the privacy policy at its published URL", async () => {
+    const response = await mf.dispatchFetch(
+      "http://localhost:3000/privacy-policy.html",
+    );
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain("Privacy Policy | Oxytype");
+    expect(html).toContain('content="noindex"');
+    expect(html).toContain("Visit project discussions");
+  });
+
+  it("serves retained HTTP contracts in-process with their legacy policies", async () => {
+    const worker = await mf.getWorker("b");
+    const health = await worker.fetch("http://localhost:3000/api");
+    expect(health.status).toBe(200);
+    expect(await health.json()).toMatchObject({ message: "ok" });
+    const stats = await worker.fetch(
+      "http://localhost:3000/api/public/typingStats",
+      { headers: { "cf-connecting-ip": "192.0.2.9" } },
+    );
+    expect(stats.status).toBe(200);
+    expect(stats.headers.get("x-compatibility-check")).not.toBeNull();
+    expect(await stats.json()).toMatchObject({
+      data: { testsCompleted: 22 },
+    });
+    const missing = await worker.fetch("http://localhost:3000/api/missing");
+    expect(missing.status).toBe(404);
+    expect(await missing.text()).not.toContain("Ooops!");
+    const privateRead = await worker.fetch("http://localhost:3000/api/users");
+    expect(privateRead.status).toBe(401);
+    const session = await seedSession(mf, "b");
+    const crossSite = await worker.fetch(
+      "http://localhost:3000/api/users/tags",
+      {
+        method: "POST",
+        headers: {
+          cookie: session.cookie,
+          origin: "https://attacker.test",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ tagName: "x" }),
+      },
+    );
+    expect(crossSite.status).toBe(403);
   });
 
   it("exports working queue and scheduled handlers with D1", async () => {
