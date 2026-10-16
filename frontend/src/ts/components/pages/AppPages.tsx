@@ -2,16 +2,25 @@ import { typedKeys } from "@oxytype/util/objects";
 import { animate } from "animejs";
 import { createSignal, For, JSXElement, onCleanup, Show } from "solid-js";
 
+import type { PageName } from "../../pages/page";
+
+import { TestPage } from "../../../features/typing/components/TestPage";
+import { bindTypingActivity } from "../../../features/typing/scope";
 import { createEffectOn } from "../../hooks/effects";
-import { PageName } from "../../pages/page";
-import { getPageView } from "../../states/page-transition";
+import { getActivePage } from "../../states/core";
+import {
+  get as isPageTransitioning,
+  getPageView,
+} from "../../states/page-transition";
 import { cn } from "../../utils/cn";
 import { applyReducedMotion } from "../../utils/misc";
 import { lazyPages } from "./lazy-pages";
 import { LoadingPage } from "./LoadingPage";
-import { TestPage } from "./test/TestPage";
 
 export function AppPages(): JSXElement {
+  onCleanup(
+    bindTypingActivity(() => getActivePage() === "test", isPageTransitioning),
+  );
   const refs = new Map<PageName, HTMLElement>();
   const [visited, setVisited] = createSignal(new Set<PageName>());
   createEffectOn(getPageView, ({ id }) => {
@@ -72,7 +81,17 @@ export function AppPages(): JSXElement {
     device: deferredPage("device"),
     profile: deferredPage("profile"),
     profileSearch: deferredPage("profileSearch"),
-    test: <TestPage ref={(el) => refs.set("test", el)} />,
+    test: (
+      <TestPage
+        ref={(el) => refs.set("test", el)}
+        class={cn(
+          view("test")?.phase === "prepared" &&
+            !view("test")?.revealed &&
+            "hidden",
+          view("test")?.phase === "active" && "active",
+        )}
+      />
+    ),
     "404": deferredPage("404"),
     leaderboards: deferredPage("leaderboards"),
   };

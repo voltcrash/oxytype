@@ -16,3 +16,29 @@ export const ssrSafeLegacyFiles = [
   "src/ts/utils/cn.ts",
   "src/ts/types/**",
 ];
+
+/**
+ * Browser-only typing modules. Reachable solely through the client-only typing
+ * leaf (`*.client.*` entry), so server import protection denies them like
+ * legacy state and the layer test treats them as client code.
+ */
+export const clientOnlyFeatureFiles = [
+  "src/features/typing/components/**",
+  "src/features/typing/runtime/**",
+  "src/features/typing/lifecycle.ts",
+  "src/features/typing/scope.ts",
+];
+
+/**
+ * Rollback-only page system (Stage 8 deletes it). Start's client build must
+ * never bundle it; typing route entry/exit replaced its page lifecycle.
+ */
+export const rollbackOnlyFiles = [
+  "src/ts/controllers/page-controller.ts",
+  "src/ts/components/pages/AppPages.tsx",
+  "src/ts/components/core/NavigationRuntime.tsx",
+  "src/ts/components/AppRouter.tsx",
+  "src/ts/components/App.tsx",
+  "src/ts/pages/**",
+  "src/app/legacy-runtime.client.tsx",
+];

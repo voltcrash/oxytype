@@ -12,13 +12,13 @@ import { CompletedEvent, IncompleteTest } from "@oxytype/schemas/results";
 
 import { keymapEvent } from "../events/keymap";
 import { createAppSignalWithSetters } from "../hooks/createSignalWithSetters";
-import * as CustomText from "../test/custom-text";
+import * as CustomText from "../../features/typing/runtime/custom-text";
 import { QuoteWithTextSplit } from "@oxytype/typing-core/quotes";
 import { getLayout } from "../utils/json-data";
 import { mirrorLayoutKeys } from "../utils/key-converter";
 import { canQuickRestart } from "../utils/quick-restart";
 import { replaceUnderscoresWithSpaces } from "../utils/strings";
-import { getActivePage, getCustomTextIndicator } from "./core";
+import { getCustomTextIndicator } from "./core";
 import { useResourceWithPromise } from "../hooks/useResourceWithPromise";
 import { clearTimeouts } from "../utils/misc";
 
@@ -136,7 +136,6 @@ export const [currentLiveStats, setCurrentLiveStats] = createAppStore<{
 
 export const initializeTypingState = createAppOwned(() =>
   createEffect(() => {
-    getActivePage(); // depend on active page
     setIsLongTest(
       !canQuickRestart(
         getConfig.mode,

@@ -45,9 +45,6 @@ vi.mock("../../../../src/ts/states/test", () => ({
   setTestFocusState: vi.fn(),
   setTestInitError: vi.fn(),
 }));
-vi.mock("../../../../src/ts/states/core", () => ({
-  getActivePage: () => mocks.activePage,
-}));
 vi.mock("../../../../src/ts/states/background", () => ({
   getBackground: () => ({ url: "" }),
 }));
@@ -81,35 +78,40 @@ vi.mock("../../../../src/ts/events/keymap", () => ({
 vi.mock("../../../../src/ts/hooks/useWordsFocus", () => ({
   useWordsFocus: vi.fn(),
 }));
-vi.mock("../../../../src/ts/test/focus", () => ({ set: mocks.focus }));
-vi.mock("../../../../src/ts/test/caret", () => ({
+vi.mock("../../../../src/features/typing/runtime/focus", () => ({
+  set: mocks.focus,
+}));
+vi.mock("../../../../src/features/typing/runtime/caret", () => ({
   getCaret: () => mocks.caret,
   updatePosition: vi.fn(),
   stopAnimation: vi.fn(),
   resetPosition: vi.fn(),
   hide: vi.fn(),
 }));
-vi.mock("../../../../src/ts/test/pace-caret", () => ({
+vi.mock("../../../../src/features/typing/runtime/pace-caret", () => ({
   getCaret: () => mocks.caret,
   resetCaretPosition: vi.fn(),
 }));
-vi.mock("../../../../src/ts/test/custom-text", () => ({
+vi.mock("../../../../src/features/typing/runtime/custom-text", () => ({
   getLimitMode: () => "word",
   getLimitValue: () => 15,
 }));
-vi.mock("../../../../src/ts/test/funbox/list", () => ({
+vi.mock("../../../../src/features/typing/runtime/funbox/list", () => ({
   findSingleActiveFunboxWithFunction: () => undefined,
 }));
-vi.mock("../../../../src/ts/test/funbox/layoutfluid-funbox-timer", () => ({
-  instantHide: vi.fn(),
-}));
-vi.mock("../../../../src/ts/test/events/data", () => ({
+vi.mock(
+  "../../../../src/features/typing/runtime/funbox/layoutfluid-funbox-timer",
+  () => ({
+    instantHide: vi.fn(),
+  }),
+);
+vi.mock("../../../../src/features/typing/runtime/events/data", () => ({
   getCurrentInput: () => mocks.input,
 }));
-vi.mock("../../../../src/ts/test/events/live-cache", () => ({
+vi.mock("../../../../src/features/typing/runtime/events/live-cache", () => ({
   getLiveCachedAccuracy: () => mocks.accuracy,
 }));
-vi.mock("../../../../src/ts/components/pages/test/MonkeyPower", () => ({
+vi.mock("../../../../src/features/typing/components/MonkeyPower", () => ({
   addPower: mocks.power,
   reset: vi.fn(),
 }));
@@ -118,7 +120,10 @@ vi.mock("../../../../src/ts/anim", () => ({
 }));
 vi.mock("animejs", () => ({ animate: vi.fn() }));
 
-import { Words } from "../../../../src/ts/components/pages/test/Words";
+import { Words } from "../../../../src/features/typing/components/Words";
+import * as ui from "../../../../src/features/typing/runtime/test-ui";
+import { words } from "../../../../src/features/typing/runtime/test-words";
+import { bindTypingActivity } from "../../../../src/features/typing/scope";
 import { getMutableConfig } from "../../../../src/ts/config/store";
 import { configEvent } from "../../../../src/ts/events/config";
 import { setCurrentLiveStats } from "../../../../src/ts/states/test";
@@ -127,8 +132,6 @@ import {
   getWordsInputStyle,
   getWordsWrapperHeight,
 } from "../../../../src/ts/states/words-layout";
-import * as ui from "../../../../src/ts/test/test-ui";
-import { words } from "../../../../src/ts/test/test-words";
 
 let element: HTMLDivElement;
 let wrapper: HTMLDivElement;
@@ -162,7 +165,9 @@ async function flushFrames(): Promise<void> {
   }
 }
 
+let unbind: () => void;
 beforeEach(() => {
+  unbind = bindTypingActivity(() => mocks.activePage === "test");
   document.documentElement.style.fontSize = "16px";
   vi.clearAllMocks();
   Object.assign(mocks, {
@@ -226,6 +231,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  unbind();
   cleanup();
   wrapper.remove();
   words.reset();

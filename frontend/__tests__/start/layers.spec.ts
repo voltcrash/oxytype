@@ -2,7 +2,11 @@ import { describe, expect, it } from "vite-plus/test";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, matchesGlob, relative, resolve } from "node:path";
 
-import { ssrSafeLegacyFiles } from "../../vite-plugins/import-boundaries";
+import {
+  clientOnlyFeatureFiles,
+  rollbackOnlyFiles,
+  ssrSafeLegacyFiles,
+} from "../../vite-plugins/import-boundaries";
 
 const root = resolve(import.meta.dirname, "../..");
 const src = resolve(root, "src");
@@ -118,11 +122,55 @@ describe("source layer boundaries", () => {
           "src/router.tsx",
         ],
         (edge) =>
-          !is(edge.from, "**/*.client.*") &&
+          !is(edge.from, "**/*.client.*", ...clientOnlyFeatureFiles) &&
           is(edge.to, "src/ts/**") &&
           !is(edge.to, ...ssrSafeLegacyFiles),
       ),
     ).toEqual([]);
+  });
+
+  it("reaches client-only feature modules only from client code", () => {
+    expect(
+      violations(
+        [
+          "src/app/**",
+          "src/routes/**",
+          "src/components/**",
+          "src/features/**",
+          "src/router.tsx",
+        ],
+        (edge) =>
+          !is(edge.from, "**/*.client.*", ...clientOnlyFeatureFiles) &&
+          is(edge.to, ...clientOnlyFeatureFiles),
+      ),
+    ).toEqual([]);
+  });
+
+  it("never reaches the rollback page system from Start routes", () => {
+    const reached = new Map<string, string>();
+    const queue = files(resolve(src, "routes")).map((file) =>
+      relative(root, file),
+    );
+    for (const file of queue) reached.set(file, file);
+    for (const file of queue) {
+      for (const edge of edges) {
+        if (edge.from !== file || reached.has(edge.to)) continue;
+        reached.set(edge.to, file);
+        queue.push(edge.to);
+      }
+    }
+    const path = (file: string): string[] => {
+      const parent = reached.get(file);
+      return parent === undefined || parent === file
+        ? [file]
+        : [...path(parent), file];
+    };
+    expect(
+      [...reached.keys()]
+        .filter((file) => is(file, ...rollbackOnlyFiles))
+        .map((file) => path(file).join(" → ")),
+    ).toEqual([]);
+    expect(reached.has("src/features/typing/page.client.tsx")).toBe(true);
   });
 
   it("imports the backend only through narrow server-only subpaths", () => {

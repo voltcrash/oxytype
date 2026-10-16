@@ -3,8 +3,8 @@ import {
   createHintsNodes,
   joinOverlappingHints,
   updateHintsPositionDebounced,
-} from "../../src/ts/components/pages/test/words/hints";
-import * as TestWords from "../../src/ts/test/test-words";
+} from "../../src/features/typing/components/words/hints";
+import * as TestWords from "../../src/features/typing/runtime/test-words";
 
 const state = vi.hoisted(() => ({ rtl: false, result: false }));
 vi.mock("../../src/ts/config/store", () => ({

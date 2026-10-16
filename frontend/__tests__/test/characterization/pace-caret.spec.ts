@@ -43,36 +43,39 @@ vi.mock("../../../src/ts/states/test-dom", () => ({
   areTestElementsMounted: () => false,
   getPaceCaretElement: () => document.createElement("div"),
 }));
-vi.mock("../../../src/ts/components/pages/test/words/caret-controller", () => ({
-  CaretController: class {
-    hide(): void {
-      mocks.hidden = true;
-    }
-    show(): void {
-      mocks.hidden = false;
-    }
-    isHidden(): boolean {
-      return mocks.hidden;
-    }
-    stopAllAnimations = vi.fn();
-    clearMargins = vi.fn();
-    setStyle = vi.fn();
-    goTo(options: GoTo): void {
-      mocks.goTo.push(options);
-    }
-  },
-}));
+vi.mock(
+  "../../../src/features/typing/components/words/caret-controller",
+  () => ({
+    CaretController: class {
+      hide(): void {
+        mocks.hidden = true;
+      }
+      show(): void {
+        mocks.hidden = false;
+      }
+      isHidden(): boolean {
+        return mocks.hidden;
+      }
+      stopAllAnimations = vi.fn();
+      clearMargins = vi.fn();
+      setStyle = vi.fn();
+      goTo(options: GoTo): void {
+        mocks.goTo.push(options);
+      }
+    },
+  }),
+);
 vi.mock("../../../src/ts/db", () => ({
   getLocalPB: () => mocks.localPb,
 }));
-vi.mock("../../../src/ts/test/funbox/list", () => ({
+vi.mock("../../../src/features/typing/runtime/funbox/list", () => ({
   getActiveFunboxes: () => [],
 }));
 
 import { getMutableConfig } from "../../../src/ts/config/store";
 import { getDefaultConfig } from "../../../src/ts/constants/default-config";
-import * as PaceCaret from "../../../src/ts/test/pace-caret";
-import * as TestWords from "../../../src/ts/test/test-words";
+import * as PaceCaret from "../../../src/features/typing/runtime/pace-caret";
+import * as TestWords from "../../../src/features/typing/runtime/test-words";
 
 function positions(): string[] {
   return mocks.goTo

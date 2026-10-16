@@ -22,6 +22,8 @@ import { decompressFromURI } from "lz-ts";
 import { z } from "zod";
 
 import { captureAccount } from "../../app/account-scope";
+import * as CustomText from "../../features/typing/runtime/custom-text";
+import { restart as restartTest } from "../../features/typing/runtime/test-logic";
 import { setConfig } from "../config/setters";
 import { getMutableConfig } from "../config/store";
 import { authEvent } from "../events/auth";
@@ -31,8 +33,6 @@ import {
   showSuccessNotification,
 } from "../states/notifications";
 import { setSelectedQuoteId } from "../states/test";
-import * as CustomText from "../test/custom-text";
-import { restart as restartTest } from "../test/test-logic";
 import * as Misc from "../utils/misc";
 import { loadBrowserHandoff } from "./browser-handoff";
 import * as ChallengeController from "./challenge-controller";
@@ -294,6 +294,14 @@ async function loadChallengeFromUrl(getOverride?: string): Promise<void> {
     });
 }
 
+/** Shared theme, test-settings and challenge links; raw search keeps legacy decoding. */
+export function applyUrlSettings(search: string): void {
+  loadCustomThemeFromUrl(search);
+  loadTestSettingsFromUrl(search);
+  void loadChallengeFromUrl(search);
+}
+
+/** Rollback: reapplies on every auth change. Start applies once from the typing route. */
 export function useUrlEvents(): void {
   authEvent.useListener(async (event) => {
     if (event.type === "authStateChanged") {
@@ -303,9 +311,7 @@ export function useUrlEvents(): void {
       await event.data.loadPromise;
       if (!lease.isCurrent()) return;
 
-      loadCustomThemeFromUrl(search);
-      loadTestSettingsFromUrl(search);
-      void loadChallengeFromUrl(search);
+      applyUrlSettings(search);
       void loadBrowserHandoff(search, event.data.isUserSignedIn);
     }
   });

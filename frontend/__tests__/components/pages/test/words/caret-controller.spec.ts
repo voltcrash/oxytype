@@ -19,7 +19,7 @@ const config = vi.hoisted(() => ({
 vi.mock("../../../../../src/ts/config/store", () => ({
   getMutableConfig: () => config,
 }));
-vi.mock("../../../../../src/ts/test/test-words", () => ({
+vi.mock("../../../../../src/features/typing/runtime/test-words", () => ({
   words: { get: () => ({ display: "ab" }) },
 }));
 const anime = vi.hoisted(() => ({ animate: vi.fn() }));
@@ -29,7 +29,7 @@ vi.mock("../../../../../src/ts/utils/debounced-animation-frame", () => ({
     callback(),
 }));
 
-import { CaretController } from "../../../../../src/ts/components/pages/test/words/caret-controller";
+import { CaretController } from "../../../../../src/features/typing/components/words/caret-controller";
 import { setTestElements } from "../../../../../src/ts/states/test-dom";
 
 let element: HTMLDivElement;

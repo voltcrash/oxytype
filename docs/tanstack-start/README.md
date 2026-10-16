@@ -27,7 +27,11 @@ No preceding implementation stage or handoff exists. Prerequisite: merged
 | 4.2 Settings/private routes | Complete | [Stage 4](stage-4.md) |
 | 4.3 Navigation | Complete | [Stage 4](stage-4.md) |
 | Stage 4 exit | Complete; intermediate Worker footprint recorded | [Validation and handoff](stage-4.md#exit-validation) |
-| Stages 5–8 | Not started | Separate assignments |
+| 5.1 Typing session/lifecycle | Complete | [Stage 5](stage-5.md) |
+| 5.2 Browser integrations/URLs | Complete | [Stage 5](stage-5.md) |
+| 5.3 Typing behavior/performance | Complete | [Stage 5 validation](stage-5.md#53-responsiveness-and-route-behavior) |
+| Stage 5 exit | Complete; intermediate Worker footprint recorded | [Validation and handoff](stage-5.md#remaining-adapters-and-next-stage) |
+| Stages 6–8 | Not started | Separate assignments |
 
 Stage 0 moves responsibility for migration evidence from an unverified proposal
 to this versioned ledger and reproducible checks. It moves no application

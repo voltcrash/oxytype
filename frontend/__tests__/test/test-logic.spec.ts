@@ -1,4 +1,7 @@
-import { createRoot } from "solid-js";
+import { animateAsync } from "../../src/ts/anim";
+import { requireApplication } from "../../src/app/application";
+import { bindTypingActivity } from "../../src/features/typing/scope";
+import { createRoot, onCleanup } from "solid-js";
 import type { QuoteWithTextSplit } from "@oxytype/typing-core/quotes";
 import type { LanguageObject } from "@oxytype/schemas/languages";
 import {
@@ -103,7 +106,7 @@ vi.mock("../../src/ts/utils/json-data", () => ({
   getLanguage: async () => mocks.language,
   checkIfLanguageSupportsZipf: async () => "yes",
 }));
-vi.mock("../../src/ts/test/test-ui", () => ({
+vi.mock("../../src/features/typing/runtime/test-ui", () => ({
   onTestStart: mocks.uiStart,
   fadeOutForRestart: vi.fn().mockResolvedValue(undefined),
   fadeInAfterRestart: vi.fn().mockResolvedValue(undefined),
@@ -113,7 +116,7 @@ vi.mock("../../src/ts/test/test-ui", () => ({
   appendEmptyWordElement: vi.fn(),
   addWord: vi.fn(),
 }));
-vi.mock("../../src/ts/test/events/data", () => ({
+vi.mock("../../src/features/typing/runtime/events/data", () => ({
   getTestSession: (() => {
     const session = {
       start: mocks.sessionStart,
@@ -144,10 +147,10 @@ vi.mock("../../src/ts/test/events/data", () => ({
     context: { targetWords: mocks.generatedWords },
   }),
 }));
-vi.mock("../../src/ts/test/words-generator", () => ({
+vi.mock("../../src/features/typing/runtime/words-generator", () => ({
   areAllWordsGenerated: () => true,
 }));
-vi.mock("../../src/ts/test/funbox/list", () => ({
+vi.mock("../../src/features/typing/runtime/funbox/list", () => ({
   getActiveFunboxes: () => [],
   getActiveFunboxesWithFunction: () => [],
   getActiveFunboxNames: () => [],
@@ -155,28 +158,32 @@ vi.mock("../../src/ts/test/funbox/list", () => ({
   isFunboxActive: (name: string) => name === "no_quit" && mocks.noQuit,
   isFunboxActiveWithProperty: () => false,
 }));
-vi.mock("../../src/ts/test/funbox/funbox", () => ({
+vi.mock("../../src/features/typing/runtime/funbox/funbox", () => ({
   rememberSettings: vi.fn().mockResolvedValue(undefined),
   activate: vi.fn().mockResolvedValue(undefined),
   toggleScript: vi.fn(),
 }));
-vi.mock("../../src/ts/test/pace-caret", () => ({
+vi.mock("../../src/features/typing/runtime/pace-caret", () => ({
   start: vi.fn(),
   reset: vi.fn(),
   init: vi.fn().mockResolvedValue(undefined),
   setLastTestWpm: vi.fn(),
 }));
-vi.mock("../../src/ts/test/test-timer", () => ({
+vi.mock("../../src/features/typing/runtime/test-timer", () => ({
   clear: vi.fn(),
   start: vi.fn().mockResolvedValue(undefined),
 }));
-vi.mock("../../src/ts/test/replay", () => ({ pauseReplay: vi.fn() }));
-vi.mock("../../src/ts/test/practise-words", () => ({
+vi.mock("../../src/features/typing/runtime/replay", () => ({
+  pauseReplay: vi.fn(),
+}));
+vi.mock("../../src/features/typing/runtime/practise-words", () => ({
   before: { mode: null },
   resetBefore: vi.fn(),
 }));
-vi.mock("../../src/ts/test/today-tracker", () => ({ addSeconds: vi.fn() }));
-vi.mock("../../src/ts/test/result", () => ({
+vi.mock("../../src/features/typing/runtime/today-tracker", () => ({
+  addSeconds: vi.fn(),
+}));
+vi.mock("../../src/features/typing/runtime/result", () => ({
   update: mocks.resultUpdate,
   updateRetrySaving: mocks.retryUpdate,
   updateTodayTracker: vi.fn(),
@@ -260,13 +267,14 @@ import {
   retrySavingResult,
   startTest,
   useTestLogicEvents,
-} from "../../src/ts/test/test-logic";
+} from "../../src/features/typing/runtime/test-logic";
 
 let disposeRuntime: () => void;
 afterEach(() => disposeRuntime());
 beforeEach(() => {
   vi.clearAllMocks();
   disposeRuntime = createRoot((dispose) => {
+    onCleanup(bindTypingActivity(() => !mocks.transition));
     useTestLogicEvents();
     return dispose;
   });
@@ -335,7 +343,7 @@ describe("test lifecycle state", () => {
     expect(saved).not.toHaveProperty("timeTyping");
     expect(saved).not.toHaveProperty("dayTimestamp");
   });
-  it("rejects starts during page transitions", () => {
+  it("rejects starts outside the active typing route", () => {
     mocks.transition = true;
     expect(startTest(100)).toBe(false);
     expect(mocks.sessionStart).not.toHaveBeenCalled();
@@ -474,4 +482,43 @@ describe("shared test decisions", () => {
     );
     expect(mocks.signedOut).not.toHaveBeenCalled();
   });
+});
+
+it("drops completion presentation after forced navigation during the fade", async () => {
+  let resolve!: () => void;
+  vi.mocked(animateAsync).mockImplementationOnce(
+    async () =>
+      new Promise<void>((done) => {
+        resolve = done;
+      }),
+  );
+  mocks.active = true;
+  const completion = finish();
+  mocks.transition = true;
+  resolve();
+  await completion;
+  expect(mocks.resultUpdate).not.toHaveBeenCalled();
+  expect(mocks.addResult).not.toHaveBeenCalled();
+});
+
+it("never applies a pending save acknowledgement to another actor", async () => {
+  let resolve!: (value: {
+    status: number;
+    body: { data: { insertedId: string } };
+  }) => void;
+  mocks.addResult.mockImplementationOnce(
+    async () =>
+      new Promise((done) => {
+        resolve = done;
+      }),
+  );
+  mocks.user = { uid: "user" };
+  mocks.active = true;
+  const completion = finish();
+  await vi.waitFor(() => expect(mocks.addResult).toHaveBeenCalledOnce());
+  requireApplication().accountData.setActor("other-actor");
+  resolve({ status: 200, body: { data: { insertedId: "old-actor-result" } } });
+  await completion;
+  expect(mocks.saveLocal).not.toHaveBeenCalled();
+  requireApplication().accountData.setActor(null);
 });
