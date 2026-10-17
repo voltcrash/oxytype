@@ -8,6 +8,30 @@ import { runtime, withRuntime, type WorkerEnv } from "@oxytype/backend/runtime";
 import { consumeBatch, scheduled } from "@oxytype/backend/jobs";
 import { boundedRequest } from "./request-body.server";
 import { applyResponsePolicy } from "./response-policy.server";
+import { requestLog, serverBuildId } from "./observability.server";
+
+async function observeJob(
+  event: "queue" | "scheduled",
+  env: WorkerEnv,
+  run: () => Promise<void>,
+): Promise<void> {
+  const started = Date.now();
+  let completed = false;
+  try {
+    await run();
+    completed = true;
+  } finally {
+    console.info(
+      JSON.stringify({
+        event,
+        build: serverBuildId,
+        release: env.VERSION,
+        outcome: completed ? "ok" : "error",
+        durationMs: Date.now() - started,
+      }),
+    );
+  }
+}
 
 export type ApplicationWorker = {
   fetch: (
@@ -64,18 +88,25 @@ export function createApplicationWorker(
               );
             }
           } catch (error) {
-            console.error("Application request failed", { requestId, error });
+            console.error("Application request failed", {
+              requestId,
+              build: serverBuildId,
+              release: env.VERSION,
+              error,
+            });
             response = new Response("Internal Server Error", { status: 500 });
           }
           console.info(
-            JSON.stringify({
-              event: "request",
-              requestId,
-              method: request.method,
-              path: new URL(request.url).pathname,
-              status: response.status,
-              durationMs: Date.now() - started,
-            }),
+            JSON.stringify(
+              requestLog({
+                request,
+                requestId,
+                status: response.status,
+                durationMs: Date.now() - started,
+                release: env.VERSION,
+                staleClient: response.headers.has("X-Oxytype-Stale-Client"),
+              }),
+            ),
           );
           return applyResponsePolicy(
             response,
@@ -92,7 +123,12 @@ export function createApplicationWorker(
       env: WorkerEnv,
       ctx: ExecutionContext,
     ): Promise<void> {
-      await withRuntime(env, async () => await consumeBatch(batch), ctx);
+      await withRuntime(
+        env,
+        async () =>
+          await observeJob("queue", env, async () => await consumeBatch(batch)),
+        ctx,
+      );
     },
     async scheduled(
       controller: ScheduledController,
@@ -101,7 +137,12 @@ export function createApplicationWorker(
     ): Promise<void> {
       await withRuntime(
         env,
-        async () => await scheduled(controller.scheduledTime),
+        async () =>
+          await observeJob(
+            "scheduled",
+            env,
+            async () => await scheduled(controller.scheduledTime),
+          ),
         ctx,
       );
     },

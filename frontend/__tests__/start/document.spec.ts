@@ -21,6 +21,12 @@ describe("Start document and response policy in workerd", () => {
     expect(response.headers.get("Cache-Control")).toBe("no-store");
     expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
     expect(response.headers.get("X-Request-Id")).not.toBeNull();
+    const version = await mf.dispatchFetch(
+      "http://localhost:3000/version.json",
+    );
+    expect(response.headers.get("X-Oxytype-Build")).toBe(
+      ((await version.json()) as { version: string }).version,
+    );
     expect(html).toContain("<noscript data-nosnippet>");
     expect(html).toContain('id="nocss"');
     expect(html).toContain("reinstallServiceWorker()");
@@ -54,7 +60,7 @@ describe("Start document and response policy in workerd", () => {
       "/webfonts/RobotoMono-Regular.woff2",
       "/webfonts/LexendDeca-Regular.woff2",
       "/images/favicon/oxytype.svg",
-      "/manifest.start.webmanifest",
+      "/manifest.json",
     ]) {
       const asset = await mf.dispatchFetch(`http://localhost:3000${path}`);
       expect(asset.status).toBe(200);

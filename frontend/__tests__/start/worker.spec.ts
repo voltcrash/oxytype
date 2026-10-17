@@ -1,21 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
 import { createWorkerd, seedSession } from "./workerd";
-import { readdirSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
-
-function functionPath(): string {
-  const dir = resolve(import.meta.dirname, "../../dist/start/server/assets");
-  const file = readdirSync(dir).find((file) =>
-    file.includes("server-fn-resolver"),
-  );
-  if (file === undefined) throw new Error("Missing function manifest");
-  const id =
-    /"([a-f0-9]{64})":\s*\{\s*functionName:\s*"getTypingStats_createServerFn_handler"/.exec(
-      readFileSync(resolve(dir, file), "utf8"),
-    )?.[1];
-  if (id === undefined) throw new Error("Missing function ID");
-  return `/_serverFn/${id}`;
-}
+import { rpcPath } from "./rpc";
 
 describe("built Start application in workerd", () => {
   let mf: Awaited<ReturnType<typeof createWorkerd>>;
@@ -26,7 +11,7 @@ describe("built Start application in workerd", () => {
 
   it("executes real RPC with origin protection and stable rate limits", async () => {
     const worker = await mf.getWorker("a");
-    const url = `http://localhost:3000${functionPath()}`;
+    const url = `http://localhost:3000${rpcPath("getTypingStats")}`;
     const headers = {
       "x-tsr-serverFn": "true",
       origin: "http://localhost:3000",
@@ -59,6 +44,38 @@ describe("built Start application in workerd", () => {
     const limited = await worker.fetch(url, { headers });
     expect(limited.status).toBe(429);
     expect(limited.headers.get("Retry-After")).not.toBeNull();
+  });
+
+  it("answers another build's unknown function ID with an explicit stale-client conflict", async () => {
+    const worker = await mf.getWorker("a");
+    const url = `http://localhost:3000/_serverFn/${"0".repeat(64)}`;
+    const headers = {
+      "x-tsr-serverFn": "true",
+      origin: "http://localhost:3000",
+      "content-type": "application/json",
+      "X-Client-Version": "previous-build",
+    };
+    for (const method of ["GET", "POST"]) {
+      const response = await worker.fetch(url, {
+        method,
+        headers,
+        ...(method === "POST" ? { body: "{}" } : {}),
+      });
+      expect(response.status).toBe(409);
+      expect(response.headers.get("X-Oxytype-Stale-Client")).toBe("1");
+      expect(response.headers.get("Cache-Control")).toBe("no-store");
+      expect(await response.text()).toBe(
+        "Oxytype was updated. Refresh the page to continue.",
+      );
+    }
+    // Same-origin protection still applies before function lookup.
+    const crossSite = await worker.fetch(url, {
+      method: "POST",
+      body: "{}",
+      headers: { ...headers, origin: "https://attacker.test" },
+    });
+    expect(crossSite.status).toBe(403);
+    expect(crossSite.headers.has("X-Oxytype-Stale-Client")).toBe(false);
   });
 
   it("SSR reads real D1 through the function and keeps binding-specific caches isolated", async () => {
